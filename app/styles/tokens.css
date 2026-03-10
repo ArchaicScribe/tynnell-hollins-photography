@@ -1,0 +1,21 @@
+:root {
+  /* Colors */
+  --color-bg:          #0C0C0C;
+  --color-bg-accent:   #131313;
+  --color-heading:     #D6D1CE;
+  --color-body:        #E6E1DE;
+  --color-detail:      #9B9A9A;
+  --color-btn-bg:      #9B9A9A;
+  --color-btn-text:    #E6E1DE;
+  --color-btn-hover:   #807F7F;
+
+  /* Typography */
+  --font-display:      'Tangerine', cursive;
+  --font-heading:      'Archivo', sans-serif;
+  --font-body:         'Roboto Mono', monospace;
+
+  /* Spacing */
+  --max-width:         1680px;
+  --padding-x:         2.5vw;
+  --padding-block:     4vmax;
+}
