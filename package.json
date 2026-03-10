@@ -9,11 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@sanity/image-url": "^1.2.0",
+    "@sanity/vision": "^4.22.0",
     "next": "14.2.35",
+    "next-sanity": "^11.6.12",
     "react": "^18",
     "react-dom": "^18",
     "resend": "^6.9.3",
-    "stripe": "^20.4.1"
+    "sanity": "^4.22.0",
+    "stripe": "^20.4.1",
+    "styled-components": "^6.3.11"
   },
   "devDependencies": {
     "@types/node": "^20.19.37",
