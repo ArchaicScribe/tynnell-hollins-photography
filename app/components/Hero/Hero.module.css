@@ -1,0 +1,43 @@
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.slide {
+  width: 100%;
+  height: 100%;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.tagline {
+  font-family: 'Tangerine', cursive;
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 700;
+  color: var(--color-heading);
+  text-align: center;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  padding: 0 2.5vw;
+}
