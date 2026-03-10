@@ -18,7 +18,8 @@
     "resend": "^6.9.3",
     "sanity": "^4.22.0",
     "stripe": "^20.4.1",
-    "styled-components": "^6.3.11"
+    "styled-components": "^6.3.11",
+    "swiper": "^12.1.2"
   },
   "devDependencies": {
     "@types/node": "^20.19.37",
