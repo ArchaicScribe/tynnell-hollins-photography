@@ -1,0 +1,86 @@
+.section {
+  background-color: var(--color-bg-accent);
+  padding: 100px 48px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--color-detail);
+  margin-bottom: 16px;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  color: var(--color-heading);
+  font-weight: 400;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card {
+  background-color: #1a1a1a;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stars {
+  color: var(--color-detail);
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+}
+
+.divider {
+  width: 60%;
+  border: none;
+  border-top: 1px solid var(--color-detail);
+  opacity: 0.4;
+  margin: 0;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--color-heading);
+  font-weight: 400;
+}
+
+.quote {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.8;
+  color: var(--color-body);
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 80px 24px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .heading {
+    font-size: 2.5rem;
+  }
+}
