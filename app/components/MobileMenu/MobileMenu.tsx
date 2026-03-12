@@ -59,6 +59,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
   return (
     <div
+      id="mobile-menu"
       ref={menuRef}
       className={`${styles.overlay} ${isOpen ? styles.open : ''}`}
       role="dialog"
