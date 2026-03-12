@@ -98,6 +98,25 @@
 
 /* ── Responsive ──────────────────────────────────────────── */
 
+@media (min-width: 769px) and (max-width: 1024px) {
+  .navbar {
+    padding: 1.25rem 2vw;
+  }
+
+  .brand {
+    font-size: 0.75rem;
+  }
+
+  .links {
+    gap: 1.25rem;
+  }
+
+  .link {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+  }
+}
+
 @media (max-width: 768px) {
   .links {
     display: none;
