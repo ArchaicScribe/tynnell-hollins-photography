@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { navLinks } from '@/app/constants/nav'
 import { useScrollLock } from '@/app/hooks/useScrollLock'
 import MobileMenu from '@/app/components/MobileMenu/MobileMenu'
@@ -8,6 +9,8 @@ import styles from './Navbar.module.css'
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const isHome = pathname === '/'
 
   useScrollLock(menuOpen)
 
@@ -21,7 +24,7 @@ export default function Navbar() {
 
   const navClass = [
     styles.navbar,
-    scrolled ? styles.scrolled : '',
+    !isHome || scrolled ? styles.scrolled : '',
     menuOpen ? styles.menuOpen : '',
   ]
     .filter(Boolean)
