@@ -1,0 +1,184 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Layout helpers ──────────────────────────────────────── */
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── Labels ──────────────────────────────────────────────── */
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+}
+
+.required {
+  color: var(--color-detail);
+  margin-left: 2px;
+}
+
+/* ── Inputs ──────────────────────────────────────────────── */
+
+.input,
+.select,
+.textarea {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--color-body);
+  background: var(--color-bg-accent);
+  border: 1px solid #2a2a2a;
+  border-radius: 2px;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  transition: border-color 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-detail);
+}
+
+.input::placeholder {
+  color: #444;
+}
+
+/* Date input — fix browser default text color */
+.input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+}
+
+.select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239B9A9A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.7;
+}
+
+/* ── Submit button ───────────────────────────────────────── */
+
+.submit {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-btn-text);
+  background: var(--color-btn-bg);
+  border: none;
+  padding: 1rem 2.5rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.2s ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--color-btn-hover);
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Error ───────────────────────────────────────────────── */
+
+.errorMsg {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #c87171;
+  margin: 0;
+}
+
+/* ── Success state ───────────────────────────────────────── */
+
+.success {
+  padding: 3rem 0;
+}
+
+.successEyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0 0 1rem;
+}
+
+.successHeading {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 400;
+  color: var(--color-heading);
+  margin: 0 0 1rem;
+}
+
+.successBody {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--color-body);
+  margin: 0 0 2rem;
+}
+
+.resetBtn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.resetBtn:hover {
+  color: var(--color-body);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .submit {
+    align-self: stretch;
+    text-align: center;
+  }
+}
