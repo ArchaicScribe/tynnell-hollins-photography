@@ -8,6 +8,7 @@ interface FormFields {
   name: string
   email: string
   phone: string
+  contactPreference: string
   sessionType: string
   date: string
   location: string
@@ -37,6 +38,7 @@ const EMPTY_FORM: FormFields = {
   name: '',
   email: '',
   phone: '',
+  contactPreference: '',
   sessionType: '',
   date: '',
   location: '',
@@ -129,19 +131,43 @@ export default function ContactForm() {
         </div>
       </div>
 
-      {/* Row: Phone + Session Type */}
+      {/* Row: Phone + Preferred Contact */}
       <div className={styles.row}>
         <div className={styles.field}>
-          <label htmlFor="phone" className={styles.label}>Phone</label>
+          <label htmlFor="phone" className={styles.label}>
+            Phone <span className={styles.required} aria-hidden="true">*</span>
+          </label>
           <input
             id="phone"
             type="tel"
             className={styles.input}
             value={fields.phone}
             onChange={update('phone')}
+            required
             autoComplete="tel"
           />
         </div>
+        <div className={styles.field}>
+          <label htmlFor="contactPreference" className={styles.label}>
+            Preferred Contact <span className={styles.required} aria-hidden="true">*</span>
+          </label>
+          <select
+            id="contactPreference"
+            className={styles.select}
+            value={fields.contactPreference}
+            onChange={update('contactPreference')}
+            required
+          >
+            <option value="" disabled>Select one</option>
+            <option value="Text">Text</option>
+            <option value="Call">Call</option>
+            <option value="Email">Email</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Row: Session Type + Date */}
+      <div className={styles.row}>
         <div className={styles.field}>
           <label htmlFor="sessionType" className={styles.label}>
             Type of Session <span className={styles.required} aria-hidden="true">*</span>
@@ -159,10 +185,6 @@ export default function ContactForm() {
             ))}
           </select>
         </div>
-      </div>
-
-      {/* Row: Date + Location */}
-      <div className={styles.row}>
         <div className={styles.field}>
           <label htmlFor="date" className={styles.label}>
             Desired Date <span className={styles.required} aria-hidden="true">*</span>
@@ -176,17 +198,19 @@ export default function ContactForm() {
             required
           />
         </div>
-        <div className={styles.field}>
-          <label htmlFor="location" className={styles.label}>Location / Venue</label>
-          <input
-            id="location"
-            type="text"
-            className={styles.input}
-            value={fields.location}
-            onChange={update('location')}
-            placeholder="Optional"
-          />
-        </div>
+      </div>
+
+      {/* Location */}
+      <div className={styles.field}>
+        <label htmlFor="location" className={styles.label}>Location / Venue</label>
+        <input
+          id="location"
+          type="text"
+          className={styles.input}
+          value={fields.location}
+          onChange={update('location')}
+          placeholder="Optional"
+        />
       </div>
 
       {/* Message */}

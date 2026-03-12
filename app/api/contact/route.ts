@@ -4,9 +4,9 @@ import { NextResponse } from 'next/server'
 export async function POST(request: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   const body = await request.json()
-  const { name, email, phone, sessionType, date, location, message, howHeard } = body
+  const { name, email, phone, contactPreference, sessionType, date, location, message, howHeard } = body
 
-  if (!name || !email || !sessionType || !date || !message) {
+  if (!name || !email || !phone || !contactPreference || !sessionType || !date || !message) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
@@ -33,11 +33,14 @@ export async function POST(request: Request) {
               <td style="padding: 8px 0; font-weight: bold;">Email</td>
               <td style="padding: 8px 0;"><a href="mailto:${email}">${email}</a></td>
             </tr>
-            ${phone ? `
             <tr>
               <td style="padding: 8px 0; font-weight: bold;">Phone</td>
               <td style="padding: 8px 0;">${phone}</td>
-            </tr>` : ''}
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: bold;">Preferred Contact</td>
+              <td style="padding: 8px 0;">${contactPreference}</td>
+            </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: bold;">Session Type</td>
               <td style="padding: 8px 0;">${sessionType}</td>
