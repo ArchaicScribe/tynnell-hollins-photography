@@ -65,7 +65,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       role="dialog"
       aria-modal="true"
       aria-label="Navigation menu"
-      aria-hidden={!isOpen}
+      aria-hidden={!isOpen ? 'true' : undefined}
     >
       <nav>
         <ul className={styles.links}>

@@ -51,7 +51,7 @@ export default function Navbar() {
           className={`${styles.hamburger} ${menuOpen ? styles.hamburgerOpen : ''}`}
           onClick={() => setMenuOpen((prev) => !prev)}
           aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          aria-expanded={menuOpen}
+          aria-expanded={menuOpen ? 'true' : 'false'}
           aria-controls="mobile-menu"
         >
           <span className={styles.bar} />

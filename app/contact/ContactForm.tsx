@@ -252,7 +252,7 @@ export default function ContactForm() {
         type="submit"
         className={styles.submit}
         disabled={status === 'loading'}
-        aria-busy={status === 'loading'}
+        aria-busy={status === 'loading' ? 'true' : 'false'}
       >
         {status === 'loading' ? 'Sending…' : 'Send Inquiry'}
       </button>

@@ -25,7 +25,7 @@ export default function ContactPage() {
               hello@tynnellhollinsphotography.com
             </a>
             <span className={styles.contactDivider}>·</span>
-            <a href="https://instagram.com/tynnellhollinsphotography" className={styles.contactLink} target="_blank" rel="noreferrer">
+            <a href="https://instagram.com/tynnellhollinsphotography" className={styles.contactLink} target="_blank" rel="noopener noreferrer">
               @tynnellhollinsphotography
             </a>
           </div>
