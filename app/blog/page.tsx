@@ -6,6 +6,15 @@ import { postsQuery } from '@/sanity/queries'
 import { urlFor } from '@/sanity/lib/image'
 import styles from './page.module.css'
 
+type PostSummary = {
+  _id: string
+  title: string
+  slug: { current: string }
+  publishedAt: string
+  excerpt?: string
+  coverImage?: { image: unknown; alt?: string }
+}
+
 export const metadata: Metadata = {
   title: 'Blog | Tynnell Hollins Photography',
   description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',
@@ -25,7 +34,7 @@ export default async function BlogPage() {
 
       {/* ── Posts grid ───────────────────────────────────────── */}
       <section className={styles.grid} aria-label="Blog posts">
-        {posts && posts.length > 0 ? posts.map((post) => (
+        {posts && posts.length > 0 ? (posts as PostSummary[]).map((post) => (
           <article key={post._id} className={styles.card}>
             {post.coverImage && (
               <Link href={`/blog/${post.slug.current}`} className={styles.cardImageLink} tabIndex={-1} aria-hidden="true">
