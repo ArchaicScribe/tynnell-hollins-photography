@@ -44,12 +44,39 @@
 }
 
 .card {
-  padding: 3rem 2.5rem;
   border-right: 1px solid #1a1a1a;
   border-bottom: 1px solid #1a1a1a;
   display: flex;
   flex-direction: column;
+}
+
+.cardImageLink {
+  display: block;
+  overflow: hidden;
+}
+
+.cardImage {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.cardPhoto {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.cardImageLink:hover .cardPhoto {
+  transform: scale(1.03);
+}
+
+.cardBody {
+  padding: 2rem 2.5rem 3rem;
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
+  flex: 1;
 }
 
 .cardCategory {
