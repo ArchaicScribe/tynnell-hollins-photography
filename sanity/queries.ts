@@ -28,6 +28,20 @@ export const galleriesQuery = groq`
   }
 `
 
+export const galleryBySlugQuery = groq`
+  *[_type == "gallery" && slug.current == $slug][0] {
+    _id, title, slug, category,
+    coverImage->{ _id, image, alt },
+    photos[]->{ _id, title, alt, image, category }
+  }
+`
+
+export const allGallerySlugsQuery = groq`
+  *[_type == "gallery" && defined(slug.current)] {
+    "slug": slug.current
+  }
+`
+
 // ── Testimonials ──────────────────────────────────────────────
 export const testimonialsQuery = groq`
   *[_type == "testimonial"] | order(order asc) {
