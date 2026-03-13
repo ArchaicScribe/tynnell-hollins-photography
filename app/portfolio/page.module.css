@@ -11,12 +11,22 @@
   margin-bottom: 3rem;
 }
 
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin-bottom: 0.75rem;
+}
+
 .heading {
   font-family: var(--font-display);
   font-size: clamp(3rem, 7vw, 6rem);
-  font-weight: 700;
+  font-weight: 400;
   color: var(--color-heading);
   margin-bottom: 0.5rem;
+  line-height: 1;
 }
 
 .subheading {
@@ -26,6 +36,42 @@
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
+
+/* ── View toggle ──────────────────────────────────────────── */
+
+.viewToggle {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(214, 209, 206, 0.2);
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.toggleBtn {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  background: transparent;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleBtn:hover {
+  color: var(--color-heading);
+}
+
+.toggleActive {
+  background: rgba(214, 209, 206, 0.1);
+  color: var(--color-heading);
+}
+
+/* ── Filter bar ───────────────────────────────────────────── */
 
 .filterBar {
   display: flex;
@@ -53,6 +99,14 @@
   border-color: var(--color-heading);
 }
 
+.filterBtnActive {
+  color: var(--color-heading);
+  border-color: var(--color-heading);
+  background: rgba(214, 209, 206, 0.08);
+}
+
+/* ── Grid ─────────────────────────────────────────────────── */
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -60,27 +114,96 @@
 }
 
 .imageSlot {
+  position: relative;
   aspect-ratio: 4 / 3;
   background: #1a1a1a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed rgba(214, 209, 206, 0.1);
+  overflow: hidden;
 }
 
-.placeholderLabel {
+.photo {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.imageSlot:hover .photo {
+  transform: scale(1.03);
+}
+
+/* ── Gallery cards ────────────────────────────────────────── */
+
+.galleryCard {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: #1a1a1a;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+}
+
+.galleryCard:hover .photo {
+  transform: scale(1.03);
+}
+
+.nocover {
+  width: 100%;
+  height: 100%;
+  background: #1a1a1a;
+}
+
+.galleryOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.25rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.galleryCard:hover .galleryOverlay {
+  opacity: 1;
+}
+
+.galleryTitle {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.galleryCount {
   font-family: var(--font-body);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  margin-top: 0.25rem;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+
+.empty {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
   color: var(--color-detail);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0.4;
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 0;
+  opacity: 0.5;
 }
+
+/* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .gap { gap: 1rem; }
 }
 
 @media (max-width: 480px) {
