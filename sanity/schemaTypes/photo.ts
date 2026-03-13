@@ -51,6 +51,19 @@ export const photo = defineType({
       description: 'Show this photo on the homepage.',
       initialValue: false,
     }),
+    defineField({
+      name: 'order',
+      title: 'Order',
+      type: 'number',
+      description: 'Controls display order within its gallery or category.',
+    }),
+  ],
+  orderings: [
+    {
+      title: 'Display Order',
+      name: 'orderAsc',
+      by: [{ field: 'order', direction: 'asc' }],
+    },
   ],
   preview: {
     select: {
