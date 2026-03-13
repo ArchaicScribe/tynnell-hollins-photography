@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 import { sanityFetch } from '@/sanity/lib/live'
 import { postsQuery } from '@/sanity/queries'
 import { urlFor } from '@/sanity/lib/image'
@@ -12,7 +13,7 @@ type PostSummary = {
   slug: { current: string }
   publishedAt: string
   excerpt?: string
-  coverImage?: { image: unknown; alt?: string }
+  coverImage?: { image: SanityImageSource; alt?: string }
 }
 
 export const metadata: Metadata = {
