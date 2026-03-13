@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { PortableText } from '@portabletext/react'
+import type { PortableTextBlock } from '@portabletext/types'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 import { sanityFetch } from '@/sanity/lib/live'
 import { aboutPageQuery } from '@/sanity/queries'
@@ -17,7 +18,7 @@ type AboutPage = {
   headshot?: SanityImageSource
   headshotAlt?: string
   tagline?: string
-  bio?: unknown[]
+  bio?: PortableTextBlock[]
   values?: string[]
 }
 
