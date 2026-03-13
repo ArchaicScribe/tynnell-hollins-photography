@@ -43,12 +43,18 @@
 }
 
 .storyImage {
+  position: relative;
   aspect-ratio: 3 / 4;
   background: var(--color-bg-accent);
   border: 1px solid #1e1e1e;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.headshotImg {
+  object-fit: cover;
 }
 
 .placeholderLabel {
@@ -91,6 +97,33 @@
   line-height: 1.85;
   color: var(--color-body);
   margin: 0;
+}
+
+/* Portable Text bio from Sanity */
+.bioBody {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: var(--color-body);
+}
+
+.bioBody p {
+  margin: 0 0 1.25rem;
+}
+
+.bioBody p:last-child {
+  margin-bottom: 0;
+}
+
+.bioBody strong {
+  font-weight: 500;
+  color: var(--color-heading);
+}
+
+.bioBody em {
+  font-style: italic;
+  color: var(--color-detail);
 }
 
 /* ── Philosophy ───────────────────────────────────────────── */
