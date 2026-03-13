@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { client } from '@/sanity/lib/client'
+import Image from 'next/image'
+import { sanityFetch } from '@/sanity/lib/live'
 import { postsQuery } from '@/sanity/queries'
+import { urlFor } from '@/sanity/lib/image'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
@@ -9,19 +11,8 @@ export const metadata: Metadata = {
   description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',
 }
 
-export const revalidate = 60
-
-interface SanityPost {
-  _id: string
-  title: string
-  slug: { current: string }
-  publishedAt: string
-  excerpt?: string
-  coverImage?: { image: { asset: { _ref: string } }; alt: string }
-}
-
 export default async function BlogPage() {
-  const posts: SanityPost[] = await client.fetch(postsQuery)
+  const { data: posts } = await sanityFetch({ query: postsQuery })
 
   return (
     <main className={styles.main}>
@@ -34,22 +25,41 @@ export default async function BlogPage() {
 
       {/* ── Posts grid ───────────────────────────────────────── */}
       <section className={styles.grid} aria-label="Blog posts">
-        {posts.length > 0 ? posts.map((post) => (
+        {posts && posts.length > 0 ? posts.map((post) => (
           <article key={post._id} className={styles.card}>
-            <h2 className={styles.cardTitle}>
-              <Link href={`/blog/${post.slug.current}`} className={styles.cardLink}>
-                {post.title}
+            {post.coverImage && (
+              <Link href={`/blog/${post.slug.current}`} className={styles.cardImageLink} tabIndex={-1} aria-hidden="true">
+                <div className={styles.cardImage}>
+                  <Image
+                    src={urlFor(post.coverImage.image).width(600).height(400).fit('crop').auto('format').url()}
+                    alt={post.coverImage.alt ?? post.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className={styles.cardPhoto}
+                  />
+                </div>
               </Link>
-            </h2>
-            <p className={styles.cardDate}>
-              {new Date(post.publishedAt).toLocaleDateString('en-US', {
-                year: 'numeric', month: 'long', day: 'numeric',
-              })}
-            </p>
-            {post.excerpt && <p className={styles.cardExcerpt}>{post.excerpt}</p>}
-            <Link href={`/blog/${post.slug.current}`} className={styles.readMore} aria-label={`Read: ${post.title}`}>
-              Read More
-            </Link>
+            )}
+            <div className={styles.cardBody}>
+              <p className={styles.cardDate}>
+                {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                  year: 'numeric', month: 'long', day: 'numeric',
+                })}
+              </p>
+              <h2 className={styles.cardTitle}>
+                <Link href={`/blog/${post.slug.current}`} className={styles.cardLink}>
+                  {post.title}
+                </Link>
+              </h2>
+              {post.excerpt && <p className={styles.cardExcerpt}>{post.excerpt}</p>}
+              <Link
+                href={`/blog/${post.slug.current}`}
+                className={styles.readMore}
+                aria-label={`Read: ${post.title}`}
+              >
+                Read More →
+              </Link>
+            </div>
           </article>
         )) : (
           <p className={styles.emptyState}>

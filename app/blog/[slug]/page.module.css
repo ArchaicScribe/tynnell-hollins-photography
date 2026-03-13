@@ -1,0 +1,219 @@
+.main {
+  background: var(--color-bg);
+  min-height: 100vh;
+}
+
+/* ── Header / Hero ────────────────────────────────────────── */
+
+.header {
+  position: relative;
+}
+
+.coverImage {
+  position: relative;
+  width: 100%;
+  height: 65vh;
+  min-height: 380px;
+  overflow: hidden;
+}
+
+.coverPhoto {
+  object-fit: cover;
+}
+
+.coverOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(12,12,12,0.3) 0%,
+    rgba(12,12,12,0.1) 40%,
+    rgba(12,12,12,0.7) 100%
+  );
+}
+
+.headerContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 3rem var(--padding-x);
+}
+
+/* When no cover image, headerContent is static */
+.header:not(:has(.coverImage)) .headerContent {
+  position: static;
+  padding-top: calc(var(--padding-block) * 2);
+  padding-bottom: 3rem;
+  border-bottom: 1px solid #1a1a1a;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 0.75rem;
+}
+
+.header:not(:has(.coverImage)) .eyebrow {
+  color: var(--color-detail);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.header:not(:has(.coverImage)) .title {
+  color: var(--color-heading);
+}
+
+.date {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+}
+
+.header:not(:has(.coverImage)) .date {
+  color: var(--color-detail);
+}
+
+/* ── Article body ─────────────────────────────────────────── */
+
+.article {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4rem var(--padding-x);
+}
+
+.excerpt {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--color-body);
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid #1a1a1a;
+  font-style: italic;
+}
+
+/* ── Portable Text styles ─────────────────────────────────── */
+
+.body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.9;
+  color: var(--color-body);
+}
+
+.body p {
+  margin-bottom: 1.5rem;
+}
+
+.body h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 400;
+  color: var(--color-heading);
+  margin: 3rem 0 1rem;
+  line-height: 1.15;
+}
+
+.body h3 {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  margin: 2.5rem 0 0.75rem;
+}
+
+.body strong {
+  color: var(--color-heading);
+  font-weight: 500;
+}
+
+.body em {
+  font-style: italic;
+  color: var(--color-detail);
+}
+
+.body a {
+  color: var(--color-heading);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.body a:hover {
+  opacity: 0.7;
+}
+
+.body ul,
+.body ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.body li {
+  margin-bottom: 0.5rem;
+}
+
+.body blockquote {
+  border-left: 2px solid var(--color-detail);
+  margin: 2rem 0;
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  font-style: italic;
+  color: var(--color-detail);
+}
+
+/* ── Footer ───────────────────────────────────────────────── */
+
+.footer {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 var(--padding-x) 6rem;
+  border-top: 1px solid #1a1a1a;
+  padding-top: 2.5rem;
+}
+
+.back {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back:hover {
+  color: var(--color-heading);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .coverImage {
+    height: 45vh;
+  }
+
+  .headerContent {
+    padding: 2rem var(--padding-x);
+  }
+
+  .article {
+    padding: 2.5rem var(--padding-x);
+  }
+}
