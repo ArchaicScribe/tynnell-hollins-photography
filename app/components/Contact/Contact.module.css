@@ -1,6 +1,6 @@
 .section {
   background-color: var(--color-bg);
-  padding: 120px 48px;
+  padding: var(--padding-block) var(--padding-x);
 }
 
 .inner {
@@ -10,11 +10,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 1.5rem;
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   color: var(--color-detail);
@@ -22,14 +22,14 @@
 
 .heading {
   font-family: var(--font-display);
-  font-size: 3.5rem;
+  font-size: clamp(2.5rem, 5vw, 4rem);
   color: var(--color-heading);
   font-weight: 400;
   line-height: 1.2;
 }
 
 .body {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.85rem;
   line-height: 1.8;
   color: var(--color-body);
@@ -38,11 +38,11 @@
 
 .btn {
   display: inline-block;
-  margin-top: 8px;
-  padding: 14px 40px;
+  margin-top: 0.5rem;
+  padding: 0.875rem 2.5rem;
   background-color: var(--color-btn-bg);
   color: var(--color-btn-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.75rem;
   letter-spacing: 0.15em;
   text-decoration: none;
@@ -51,14 +51,4 @@
 
 .btn:hover {
   background-color: var(--color-btn-hover);
-}
-
-@media (max-width: 768px) {
-  .section {
-    padding: 80px 24px;
-  }
-
-  .heading {
-    font-size: 2.5rem;
-  }
 }
