@@ -21,3 +21,15 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* ── Focus styles ──────────────────────────────────────────── */
+/* Keyboard-only focus ring; hidden for mouse/touch users     */
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-detail);
+  outline-offset: 3px;
+}

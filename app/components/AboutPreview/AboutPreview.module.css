@@ -6,12 +6,12 @@
 }
 
 .imageSlot {
-  background: #111;
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  border-right: 1px solid rgba(214, 209, 206, 0.06);
+  border-right: 1px solid var(--color-border-subtle);
 }
 
 .placeholderLabel {
@@ -82,7 +82,7 @@
   .imageSlot {
     min-height: 40vh;
     border-right: none;
-    border-bottom: 1px solid rgba(214, 209, 206, 0.06);
+    border-bottom: 1px solid var(--color-border-subtle);
   }
 
   .content {

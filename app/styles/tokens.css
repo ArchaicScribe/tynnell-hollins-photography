@@ -1,13 +1,16 @@
 :root {
   /* Colors */
-  --color-bg:          #0C0C0C;
-  --color-bg-accent:   #131313;
-  --color-heading:     #D6D1CE;
-  --color-body:        #E6E1DE;
-  --color-detail:      #9B9A9A;
-  --color-btn-bg:      #9B9A9A;
-  --color-btn-text:    #E6E1DE;
-  --color-btn-hover:   #807F7F;
+  --color-bg:             #0C0C0C;
+  --color-bg-accent:      #131313;
+  --color-bg-card:        #1a1a1a;
+  --color-heading:        #D6D1CE;
+  --color-body:           #E6E1DE;
+  --color-detail:         #9B9A9A;
+  --color-btn-bg:         #9B9A9A;
+  --color-btn-text:       #E6E1DE;
+  --color-btn-hover:      #807F7F;
+  --color-border:         rgba(214, 209, 206, 0.08);
+  --color-border-subtle:  rgba(214, 209, 206, 0.06);
 
   /* Typography */
   --font-display:      'Tangerine', cursive;

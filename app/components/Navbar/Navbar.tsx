@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { navLinks } from '@/app/constants/nav'
 import { useScrollLock } from '@/app/hooks/useScrollLock'
@@ -15,9 +16,16 @@ export default function Navbar() {
   useScrollLock(menuOpen)
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    let rafId: number
+    const handleScroll = () => {
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(() => setScrolled(window.scrollY > 50))
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      cancelAnimationFrame(rafId)
+    }
   }, [])
 
   const closeMenu = () => setMenuOpen(false)
@@ -39,9 +47,9 @@ export default function Navbar() {
         <ul className={styles.links}>
           {navLinks.map((link) => (
             <li key={link.href}>
-              <a href={link.href} className={styles.link}>
+              <Link href={link.href} className={styles.link}>
                 {link.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

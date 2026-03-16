@@ -43,13 +43,15 @@ export default function Testimonials({ testimonials }: Props) {
       </div>
       <div className={styles.grid}>
         {items.map((t) => (
-          <div key={t._id} className={styles.card}>
-            <div className={styles.stars}>★★★★★</div>
+          <figure key={t._id} className={styles.card}>
+            <div className={styles.stars} aria-label="5 out of 5 stars" role="img">
+              ★★★★★
+            </div>
             <hr className={styles.divider} />
-            <p className={styles.name}>{t.clientName}</p>
+            <figcaption className={styles.name}>{t.clientName}</figcaption>
             <hr className={styles.divider} />
-            <p className={styles.quote}>{t.quote}</p>
-          </div>
+            <blockquote className={styles.quote}>{t.quote}</blockquote>
+          </figure>
         ))}
       </div>
     </section>
