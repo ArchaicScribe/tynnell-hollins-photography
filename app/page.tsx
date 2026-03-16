@@ -5,9 +5,9 @@ import {
   testimonialsQuery,
   aboutPageQuery,
 } from '@/sanity/queries'
-import Hero from './components/Hero/Hero'
-import PortfolioTeaser from './components/PortfolioTeaser/PortfolioTeaser'
-import AboutPreview from './components/AboutPreview/AboutPreview'
+import Hero from '@/app/components/Hero/Hero'
+import PortfolioTeaser from '@/app/components/PortfolioTeaser/PortfolioTeaser'
+import AboutPreview from '@/app/components/AboutPreview/AboutPreview'
 import Testimonials from '@/app/components/Testimonials/Testimonials'
 import Contact from '@/app/components/Contact/Contact'
 
