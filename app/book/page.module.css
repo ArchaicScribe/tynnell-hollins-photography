@@ -1,0 +1,292 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding: 8rem 2.5vw 6rem;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+.header {
+  max-width: 640px;
+  margin: 0 auto 5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0 0 1.25rem;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 400;
+  color: var(--color-heading);
+  margin: 0 0 1.25rem;
+  line-height: 1.1;
+}
+
+.subheading {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--color-body);
+  margin: 0;
+}
+
+.subheadingLink {
+  color: var(--color-detail);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.subheadingLink:hover {
+  color: var(--color-body);
+}
+
+/* ── Grid ────────────────────────────────────────────────── */
+
+.grid {
+  max-width: 1200px;
+  margin: 0 auto 4rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+
+.card {
+  background: var(--color-bg-accent);
+  border: 1px solid #1e1e1e;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: border-color 0.2s ease;
+}
+
+.cardActive {
+  border-color: var(--color-detail);
+}
+
+.cardTop {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.cardEyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--color-heading);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.cardDesc {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--color-body);
+  margin: 0;
+}
+
+.cardDeposit {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--color-heading);
+  margin: 0;
+}
+
+/* ── Select button ───────────────────────────────────────── */
+
+.selectBtn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-btn-text);
+  background: var(--color-btn-bg);
+  border: none;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  align-self: flex-start;
+}
+
+.selectBtn:hover {
+  background: var(--color-btn-hover);
+}
+
+/* ── Inline booking form ─────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-top: 1px solid #1e1e1e;
+  padding-top: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+}
+
+.input {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 300;
+  color: var(--color-body);
+  background: var(--color-bg);
+  border: 1px solid #2a2a2a;
+  border-radius: 2px;
+  padding: 0.65rem 0.85rem;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-detail);
+}
+
+.input::placeholder {
+  color: #444;
+}
+
+.error {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #c87171;
+  margin: 0;
+}
+
+.formActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.checkoutBtn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-btn-text);
+  background: var(--color-btn-bg);
+  border: none;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.checkoutBtn:hover:not(:disabled) {
+  background: var(--color-btn-hover);
+}
+
+.checkoutBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.cancelBtn:hover {
+  color: var(--color-body);
+}
+
+/* ── Footer note ─────────────────────────────────────────── */
+
+.note {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 300;
+  color: var(--color-detail);
+  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.noteLink {
+  color: var(--color-detail);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.noteLink:hover {
+  color: var(--color-body);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 6rem 1.5rem 5rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    margin-bottom: 3rem;
+  }
+}

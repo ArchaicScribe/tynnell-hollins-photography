@@ -59,7 +59,7 @@ export const aboutPageQuery = groq`
 // ── Services ──────────────────────────────────────────────────
 export const servicesQuery = groq`
   *[_type == "service"] | order(order asc) {
-    _id, eyebrow, title, description, features, price, order
+    _id, eyebrow, title, description, features, price, depositAmount, order
   }
 `
 
