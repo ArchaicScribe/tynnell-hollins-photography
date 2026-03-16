@@ -40,6 +40,12 @@ export const service = defineType({
       description: 'e.g. "Starting at $2,500" — leave blank to hide pricing.',
     }),
     defineField({
+      name: 'depositAmount',
+      title: 'Deposit Amount (USD)',
+      type: 'number',
+      description: 'Booking deposit in dollars (e.g. 500 for a $500 deposit). Leave blank to hide the "Book Now" button for this service.',
+    }),
+    defineField({
       name: 'order',
       title: 'Order',
       type: 'number',
