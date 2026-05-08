@@ -37,40 +37,6 @@
   text-transform: uppercase;
 }
 
-/* ── View toggle ──────────────────────────────────────────── */
-
-.viewToggle {
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(214, 209, 206, 0.2);
-  width: fit-content;
-  margin-inline: auto;
-}
-
-.toggleBtn {
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-  background: transparent;
-  border: none;
-  padding: 0.6rem 1.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.toggleBtn:hover {
-  color: var(--color-heading);
-}
-
-.toggleActive {
-  background: rgba(214, 209, 206, 0.1);
-  color: var(--color-heading);
-}
-
 /* ── Filter bar ───────────────────────────────────────────── */
 
 .filterBar {
