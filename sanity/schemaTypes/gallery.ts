@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { PhotosArrayInput } from '../components/PhotosArrayInput'
 
 export const gallery = defineType({
   name: 'gallery',
@@ -55,7 +56,8 @@ export const gallery = defineType({
           preview: { select: { media: 'image', title: 'alt' } },
         },
       ],
-      description: 'Drag and drop multiple photos at once using the Media Library.',
+      description: 'Use the "Upload photos" button above to select multiple files at once.',
+      components: { input: PhotosArrayInput },
     }),
     defineField({
       name: 'featured',
