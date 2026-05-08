@@ -32,7 +32,7 @@ export const galleryBySlugQuery = groq`
   *[_type == "gallery" && slug.current == $slug][0] {
     _id, title, slug, category,
     coverImage->{ _id, image, alt },
-    photos[]->{ _id, title, alt, image, category }
+    photos[]{ _key, image, alt, caption }
   }
 `
 
