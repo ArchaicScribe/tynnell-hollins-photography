@@ -21,6 +21,7 @@
     "react-dom": "^18",
     "resend": "^6.9.3",
     "sanity": "^4.22.0",
+    "sanity-plugin-media": "^4.2.0",
     "stripe": "^20.4.1",
     "styled-components": "^6.3.11",
     "swiper": "^12.1.2"

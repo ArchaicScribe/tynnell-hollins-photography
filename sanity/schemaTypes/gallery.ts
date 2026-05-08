@@ -44,7 +44,18 @@ export const gallery = defineType({
       name: 'photos',
       title: 'Photos',
       type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'photo' }] }],
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({ name: 'image', title: 'Image', type: 'image', options: { hotspot: true }, validation: (Rule) => Rule.required() }),
+            defineField({ name: 'alt', title: 'Alt Text', type: 'string' }),
+            defineField({ name: 'caption', title: 'Caption', type: 'string' }),
+          ],
+          preview: { select: { media: 'image', title: 'alt' } },
+        },
+      ],
+      description: 'Drag and drop multiple photos at once using the Media Library.',
     }),
     defineField({
       name: 'featured',
