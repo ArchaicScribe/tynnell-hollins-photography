@@ -47,15 +47,15 @@ export const structure: StructureResolver = (S) =>
                 .title('Galleries')
                 .child(S.documentTypeList('gallery').title('Galleries')),
               S.listItem()
-                .title('Photo')
-                .child(S.documentTypeList('photo').title('Photo')),
-              S.listItem()
                 .title('Photos')
                 .id('bulkUpload')
                 .child(
                   S.component(BulkUploadPane)
                     .title('Upload Multiple Photos')
                 ),
+              S.listItem()
+                .title('Photo')
+                .child(S.documentTypeList('photo').title('Photo')),
             ])
         ),
 
