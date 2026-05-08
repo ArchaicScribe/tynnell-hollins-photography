@@ -11,15 +11,32 @@ interface FileState {
   error?: string
 }
 
+const IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.heic', '.gif', '.tiff']
+
+async function pickFiles(): Promise<File[]> {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const handles = await (window as any).showOpenFilePicker({
+        multiple: true,
+        startIn: 'pictures',
+        types: [{ description: 'Images', accept: { 'image/*': IMAGE_TYPES } }],
+      })
+      return Promise.all(handles.map((h: any) => h.getFile()))
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 export function BulkUploadPane() {
   const client = useClient({ apiVersion: '2026-03-10' })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [files, setFiles] = useState<FileState[]>([])
   const [running, setRunning] = useState(false)
 
-  const handleFiles = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const selected = Array.from(e.target.files ?? [])
+  const processFiles = useCallback(
+    async (selected: File[]) => {
       if (!selected.length) return
 
       setFiles(selected.map((f) => ({ name: f.name, status: 'pending' })))
@@ -53,6 +70,23 @@ export function BulkUploadPane() {
     [client],
   )
 
+  const handleClick = useCallback(async () => {
+    if ('showOpenFilePicker' in window) {
+      const selected = await pickFiles()
+      if (selected.length) await processFiles(selected)
+    } else {
+      fileInputRef.current?.click()
+    }
+  }, [processFiles])
+
+  const handleInputChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const selected = Array.from(e.target.files ?? [])
+      await processFiles(selected)
+    },
+    [processFiles],
+  )
+
   const done = files.filter((f) => f.status === 'done').length
   const errors = files.filter((f) => f.status === 'error').length
 
@@ -74,20 +108,16 @@ export function BulkUploadPane() {
             accept="image/*"
             multiple
             style={{ display: 'none' }}
-            onChange={handleFiles}
-            id="bulk-upload-pane-input"
+            onChange={handleInputChange}
             disabled={running}
           />
-          <label htmlFor="bulk-upload-pane-input">
-            <Button
-              as="span"
-              icon={UploadIcon}
-              text={running ? `Uploading ${done} of ${files.length}...` : 'Choose photos'}
-              tone="primary"
-              disabled={running}
-              style={{ cursor: running ? 'not-allowed' : 'pointer' }}
-            />
-          </label>
+          <Button
+            icon={UploadIcon}
+            text={running ? `Uploading ${done} of ${files.length}...` : 'Choose photos'}
+            tone="primary"
+            disabled={running}
+            onClick={handleClick}
+          />
           {files.length > 0 && !running && (
             <Button text="Clear" mode="ghost" onClick={() => setFiles([])} />
           )}

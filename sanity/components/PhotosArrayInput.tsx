@@ -4,15 +4,32 @@ import { useClient } from 'sanity'
 import { Button, Stack, Text } from '@sanity/ui'
 import { UploadIcon } from '@sanity/icons'
 
+const IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.heic', '.gif', '.tiff']
+
+async function pickFiles(): Promise<File[]> {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const handles = await (window as any).showOpenFilePicker({
+        multiple: true,
+        startIn: 'pictures',
+        types: [{ description: 'Images', accept: { 'image/*': IMAGE_TYPES } }],
+      })
+      return Promise.all(handles.map((h: any) => h.getFile()))
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 export function PhotosArrayInput(props: ArrayOfObjectsInputProps) {
   const client = useClient({ apiVersion: '2026-03-10' })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
 
-  const handleFiles = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files ?? [])
+  const processFiles = useCallback(
+    async (files: File[]) => {
       if (!files.length) return
 
       setUploading(true)
@@ -44,6 +61,22 @@ export function PhotosArrayInput(props: ArrayOfObjectsInputProps) {
     [client, props],
   )
 
+  const handleClick = useCallback(async () => {
+    if ('showOpenFilePicker' in window) {
+      const selected = await pickFiles()
+      if (selected.length) await processFiles(selected)
+    } else {
+      fileInputRef.current?.click()
+    }
+  }, [processFiles])
+
+  const handleInputChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      await processFiles(Array.from(e.target.files ?? []))
+    },
+    [processFiles],
+  )
+
   return (
     <Stack space={4}>
       <Stack space={3}>
@@ -53,24 +86,20 @@ export function PhotosArrayInput(props: ArrayOfObjectsInputProps) {
           accept="image/*"
           multiple
           style={{ display: 'none' }}
-          onChange={handleFiles}
-          id="photos-multi-upload"
+          onChange={handleInputChange}
           disabled={uploading}
         />
-        <label htmlFor="photos-multi-upload">
-          <Button
-            as="span"
-            icon={UploadIcon}
-            text={uploading ? `Uploading ${progress?.done ?? 0} of ${progress?.total ?? 0}…` : 'Upload photos'}
-            mode="ghost"
-            tone="primary"
-            disabled={uploading}
-            style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}
-          />
-        </label>
+        <Button
+          icon={UploadIcon}
+          text={uploading ? `Uploading ${progress?.done ?? 0} of ${progress?.total ?? 0}...` : 'Upload photos'}
+          mode="ghost"
+          tone="primary"
+          disabled={uploading}
+          onClick={handleClick}
+        />
         {!uploading && (
           <Text size={1} muted>
-            Use Ctrl+click (Windows/Linux) or Cmd+click (Mac) to select multiple files. Shift+click for a range.
+            Use Ctrl+click or Shift+click to select multiple files.
           </Text>
         )}
       </Stack>
