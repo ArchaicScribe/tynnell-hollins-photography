@@ -1,5 +1,7 @@
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
+import { groq } from 'next-sanity'
+import { client } from '@/sanity/lib/client'
 import { isValidEmail } from '@/app/lib/validation'
 import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
 
@@ -43,6 +45,22 @@ export async function POST(request: Request) {
 
   if (!isValidEmail(clientEmail)) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
+  }
+
+  // Validate depositAmount against Sanity - Sanity is the source of truth for pricing
+  const sanityPackage = await client.fetch<{ depositAmount: number } | null>(
+    groq`*[_type == "service" && title == $packageName && defined(depositAmount)][0] {
+      depositAmount
+    }`,
+    { packageName }
+  )
+
+  if (!sanityPackage) {
+    return NextResponse.json({ error: 'Package not found' }, { status: 400 })
+  }
+
+  if (sanityPackage.depositAmount !== depositAmount) {
+    return NextResponse.json({ error: 'Invalid deposit amount' }, { status: 400 })
   }
 
   try {
