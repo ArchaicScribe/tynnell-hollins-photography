@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
+import { escapeHtml } from '@/app/lib/validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,16 +35,16 @@ export async function POST(request: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
 
-    const clientName = session.metadata?.clientName ?? 'Client'
-    const clientEmail = session.metadata?.clientEmail ?? session.customer_email ?? ''
-    const packageName = session.metadata?.packageName ?? 'Session'
-    const amountPaid = session.amount_total ? `$${(session.amount_total / 100).toFixed(0)}` : ''
+    const clientName  = escapeHtml(session.metadata?.clientName ?? 'Client')
+    const clientEmail = escapeHtml(session.metadata?.clientEmail ?? session.customer_email ?? '')
+    const packageName = escapeHtml(session.metadata?.packageName ?? 'Session')
+    const amountPaid  = session.amount_total ? `$${(session.amount_total / 100).toFixed(0)}` : ''
 
     // Email to Tynnell
     await resend.emails.send({
       from: 'Tynnell Hollins Photography <hello@tynnellhollinsphotography.com>',
       to: process.env.CONTACT_TO_EMAIL!,
-      subject: `New Booking Deposit: ${packageName} — ${clientName}`,
+      subject: `New Booking Deposit: ${packageName} - ${clientName}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
           <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">New Booking Deposit Received</h2>
@@ -70,13 +71,14 @@ export async function POST(request: Request) {
       `,
     })
 
-    // Confirmation email to client
-    if (clientEmail) {
+    // Confirmation email to client - use raw (unescaped) email as the To address
+    const rawClientEmail = session.metadata?.clientEmail ?? session.customer_email ?? ''
+    if (rawClientEmail) {
       await resend.emails.send({
         from: 'Tynnell Hollins Photography <hello@tynnellhollinsphotography.com>',
-        to: clientEmail,
+        to: rawClientEmail,
         replyTo: process.env.CONTACT_TO_EMAIL,
-        subject: `Your deposit is confirmed — ${packageName}`,
+        subject: `Your deposit is confirmed - ${packageName}`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
             <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">You're officially on the calendar.</h2>
