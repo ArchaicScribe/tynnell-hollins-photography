@@ -10,7 +10,7 @@ export const siteConfig = defineType({
       title: 'Business Name',
       type: 'string',
       description: 'Your business name as it appears in browser tabs and search results. Example: "Tynnell Hollins Photography".',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Business Name is required before publishing.'),
     }),
     defineField({
       name: 'tagline',
