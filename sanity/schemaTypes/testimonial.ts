@@ -10,7 +10,7 @@ export const testimonial = defineType({
       title: 'Client Name',
       type: 'string',
       description: 'The name shown below the quote, like "Sarah & James" or "The Martinez Family".',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Client Name is required before publishing.'),
     }),
     defineField({
       name: 'quote',
@@ -18,7 +18,7 @@ export const testimonial = defineType({
       type: 'text',
       rows: 4,
       description: "The client's review, exactly as you want it to appear on your website.",
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error("Their Words (the quote) is required before publishing."),
     }),
     defineField({
       name: 'sessionType',
@@ -41,7 +41,7 @@ export const testimonial = defineType({
       title: 'Display Position',
       type: 'number',
       description: 'The position of this testimonial on your homepage. 1 appears first.',
-      validation: (Rule) => Rule.required().integer().positive(),
+      validation: (Rule) => Rule.required().error('Display Position is required.').integer().positive(),
     }),
   ],
   orderings: [
