@@ -62,11 +62,11 @@ export default async function GalleryPage({ params }: Props) {
 
         {photos.length > 0 ? (
           <div className={styles.grid}>
-            {photos.map((photo: { _id: string; image: object; alt: string; title: string }) => (
-              <div key={photo._id} className={styles.imageSlot}>
+            {photos.map((photo: { _key: string; image: object; alt: string; caption: string }) => (
+              <div key={photo._key} className={styles.imageSlot}>
                 <Image
                   src={urlFor(photo.image).width(800).height(600).fit('crop').auto('format').url()}
-                  alt={photo.alt ?? photo.title}
+                  alt={photo.alt ?? photo.caption ?? ''}
                   fill
                   sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
                   className={styles.photo}

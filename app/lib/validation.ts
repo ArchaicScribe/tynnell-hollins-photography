@@ -15,3 +15,18 @@ export function isValidEmail(email: unknown): email is string {
   if (/[\r\n]/.test(email)) return false
   return EMAIL_REGEX.test(email)
 }
+
+/**
+ * Escapes user-supplied strings before embedding them in HTML email templates.
+ * Prevents HTML injection attacks where an attacker crafts input containing
+ * tags, scripts, or malicious links that render inside the email.
+ */
+export function escapeHtml(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}

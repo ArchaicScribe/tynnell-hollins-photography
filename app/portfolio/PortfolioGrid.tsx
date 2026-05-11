@@ -39,34 +39,17 @@ type Props = {
 
 export default function PortfolioGrid({ photos, galleries }: Props) {
   const [activeCategory, setActiveCategory] = useState('all')
-  const [view, setView] = useState<'photos' | 'galleries'>('photos')
+
+  const showAlbums = activeCategory === 'weddings'
 
   const filteredPhotos = activeCategory === 'all'
     ? photos
     : photos.filter(p => p.category === activeCategory)
 
-  const filteredGalleries = activeCategory === 'all'
-    ? galleries
-    : galleries.filter(g => g.category === activeCategory)
+  const weddingGalleries = galleries.filter(g => g.category === 'weddings')
 
   return (
     <>
-      {/* View toggle */}
-      <div className={styles.viewToggle}>
-        <button
-          className={`${styles.toggleBtn} ${view === 'photos' ? styles.toggleActive : ''}`}
-          onClick={() => setView('photos')}
-        >
-          All Photos
-        </button>
-        <button
-          className={`${styles.toggleBtn} ${view === 'galleries' ? styles.toggleActive : ''}`}
-          onClick={() => setView('galleries')}
-        >
-          Galleries
-        </button>
-      </div>
-
       {/* Category filter */}
       <div className={styles.filterBar}>
         {CATEGORIES.map(cat => (
@@ -80,29 +63,10 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
         ))}
       </div>
 
-      {/* Photos grid */}
-      {view === 'photos' && (
+      {/* Wedding albums grid */}
+      {showAlbums && (
         <div className={styles.grid}>
-          {filteredPhotos.length > 0 ? filteredPhotos.map(photo => (
-            <div key={photo._id} className={styles.imageSlot}>
-              <Image
-                src={urlFor(photo.image).width(800).height(600).fit('crop').auto('format').url()}
-                alt={photo.alt ?? photo.title}
-                fill
-                sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-                className={styles.photo}
-              />
-            </div>
-          )) : (
-            <p className={styles.empty}>No photos in this category yet.</p>
-          )}
-        </div>
-      )}
-
-      {/* Galleries grid */}
-      {view === 'galleries' && (
-        <div className={styles.grid}>
-          {filteredGalleries.length > 0 ? filteredGalleries.map(gallery => (
+          {weddingGalleries.length > 0 ? weddingGalleries.map(gallery => (
             <Link
               key={gallery._id}
               href={`/portfolio/${gallery.slug.current}`}
@@ -125,7 +89,26 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
               </div>
             </Link>
           )) : (
-            <p className={styles.empty}>No galleries yet.</p>
+            <p className={styles.empty}>No wedding albums yet.</p>
+          )}
+        </div>
+      )}
+
+      {/* Flat photo grid */}
+      {!showAlbums && (
+        <div className={styles.grid}>
+          {filteredPhotos.length > 0 ? filteredPhotos.map(photo => (
+            <div key={photo._id} className={styles.imageSlot}>
+              <Image
+                src={urlFor(photo.image).width(800).height(600).fit('crop').auto('format').url()}
+                alt={photo.alt ?? photo.title}
+                fill
+                sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+                className={styles.photo}
+              />
+            </div>
+          )) : (
+            <p className={styles.empty}>No photos in this category yet.</p>
           )}
         </div>
       )}
