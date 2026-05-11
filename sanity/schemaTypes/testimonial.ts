@@ -9,19 +9,22 @@ export const testimonial = defineType({
       name: 'clientName',
       title: 'Client Name',
       type: 'string',
+      description: 'The name shown below the quote, like "Sarah & James" or "The Martinez Family".',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'quote',
-      title: 'Quote',
+      title: 'Their Words',
       type: 'text',
       rows: 4,
+      description: "The client's review, exactly as you want it to appear on your website.",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'sessionType',
-      title: 'Session Type',
+      title: 'Type of Session',
       type: 'string',
+      description: 'The type of session this review is from.',
       options: {
         list: [
           { title: 'Wedding', value: 'Wedding' },
@@ -35,9 +38,9 @@ export const testimonial = defineType({
     }),
     defineField({
       name: 'order',
-      title: 'Order',
+      title: 'Display Position',
       type: 'number',
-      description: 'Controls display order on the homepage.',
+      description: 'The position of this testimonial on your homepage. 1 appears first.',
       validation: (Rule) => Rule.required().integer().positive(),
     }),
   ],
