@@ -10,14 +10,14 @@ export const service = defineType({
       title: 'Category Label',
       type: 'string',
       description: 'The category shown above the service name, like "Weddings" or "Portraits".',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Category Label is required before publishing.'),
     }),
     defineField({
       name: 'title',
       title: 'Service Name',
       type: 'string',
       description: 'The name of this service as it appears on your website, like "Wedding Day" or "Portrait Session".',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Service Name is required before publishing.'),
     }),
     defineField({
       name: 'description',
@@ -25,7 +25,7 @@ export const service = defineType({
       type: 'text',
       rows: 3,
       description: 'A short description of what clients can expect from this session.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Description is required before publishing.'),
     }),
     defineField({
       name: 'features',
@@ -51,7 +51,7 @@ export const service = defineType({
       title: 'Display Position',
       type: 'number',
       description: 'The position of this service in the list. 1 appears first, 2 appears second, and so on.',
-      validation: (Rule) => Rule.required().integer().positive(),
+      validation: (Rule) => Rule.required().error('Display Position is required.').integer().positive(),
     }),
   ],
   orderings: [

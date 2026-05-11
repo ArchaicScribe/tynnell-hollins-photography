@@ -10,14 +10,14 @@ export const photo = defineType({
       title: 'Photo Name',
       type: 'string',
       description: 'A short name to identify this photo in your Studio. Clients do not see this.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Photo Name is required before publishing.'),
     }),
     defineField({
       name: 'alt',
       title: 'Photo Description',
       type: 'string',
       description: 'A brief description of what is in this photo. Used by screen readers and Google. Example: "Mother holding newborn in soft window light".',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Photo Description is required before publishing.'),
     }),
     defineField({
       name: 'image',
@@ -25,7 +25,7 @@ export const photo = defineType({
       type: 'image',
       options: { hotspot: true },
       description: 'The photo file.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Photo is required before publishing.'),
     }),
     defineField({
       name: 'caption',
