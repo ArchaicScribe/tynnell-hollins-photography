@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
+import { isValidEmail } from '@/app/lib/validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,8 +13,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email)) {
+  if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
   }
 
