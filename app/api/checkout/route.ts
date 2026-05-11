@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
 import { isValidEmail } from '@/app/lib/validation'
+import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +21,11 @@ export async function POST(request: Request) {
 
   if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const { success } = await checkoutRatelimit.limit(getClientIp(request))
+  if (!success) {
+    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)

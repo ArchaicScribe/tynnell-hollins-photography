@@ -1,4 +1,5 @@
 import type { StructureResolver } from 'sanity/structure'
+import { BulkUploadPane } from './components/BulkUploadPane'
 
 export const structure: StructureResolver = (S) =>
   S.list()
@@ -34,13 +35,29 @@ export const structure: StructureResolver = (S) =>
 
       S.divider(),
 
-      // ── Portfolio ────────────────────────────────────────────
+      // ── Upload Photos ────────────────────────────────────────
       S.listItem()
-        .title('Photos')
-        .child(S.documentTypeList('photo').title('Photos')),
-      S.listItem()
-        .title('Galleries')
-        .child(S.documentTypeList('gallery').title('Galleries')),
+        .title('Upload Photos')
+        .id('uploadPhotos')
+        .child(
+          S.list()
+            .title('Upload Photos')
+            .items([
+              S.listItem()
+                .title('Galleries')
+                .child(S.documentTypeList('gallery').title('Galleries')),
+              S.listItem()
+                .title('Photos')
+                .id('bulkUpload')
+                .child(
+                  S.component(BulkUploadPane)
+                    .title('Upload Multiple Photos')
+                ),
+              S.listItem()
+                .title('Photo')
+                .child(S.documentTypeList('photo').title('Photo')),
+            ])
+        ),
 
       S.divider(),
 
