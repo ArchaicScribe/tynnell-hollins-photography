@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { isValidEmail, escapeHtml } from '@/app/lib/validation'
+import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,6 +9,11 @@ export async function POST(request: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   const body = await request.json()
   const { name, email, phone, contactPreference, sessionType, date, location, message, howHeard } = body
+
+  const { success } = await contactRatelimit.limit(getClientIp(request))
+  if (!success) {
+    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+  }
 
   if (!name || !email || !phone || !contactPreference || !sessionType || !date || !message) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
