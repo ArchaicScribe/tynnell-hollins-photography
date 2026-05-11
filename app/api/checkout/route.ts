@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
+import { isValidEmail } from '@/app/lib/validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,6 +33,10 @@ export async function POST(request: Request) {
 
   if (typeof depositAmount !== 'number' || depositAmount <= 0) {
     return NextResponse.json({ error: 'Invalid deposit amount' }, { status: 400 })
+  }
+
+  if (!isValidEmail(clientEmail)) {
+    return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
   }
 
   try {
