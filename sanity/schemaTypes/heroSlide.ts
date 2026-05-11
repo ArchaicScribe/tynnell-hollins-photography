@@ -7,29 +7,30 @@ export const heroSlide = defineType({
   fields: [
     defineField({
       name: 'image',
-      title: 'Image',
+      title: 'Slide Photo',
       type: 'image',
       options: { hotspot: true },
+      description: 'The photo that fills the screen on your homepage carousel.',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'alt',
-      title: 'Alt Text',
+      title: 'Photo Description',
       type: 'string',
-      description: 'Describe the image for accessibility and SEO.',
+      description: 'A brief description of this photo for screen readers and search engines. Example: "Bride and groom laughing during an outdoor ceremony".',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'tagline',
-      title: 'Tagline',
+      title: 'Caption Text',
       type: 'string',
-      description: 'Optional text overlaid on the slide.',
+      description: 'Optional text displayed over the photo on your homepage. Leave blank for no text.',
     }),
     defineField({
       name: 'order',
-      title: 'Order',
+      title: 'Slide Position',
       type: 'number',
-      description: 'Lower numbers appear first.',
+      description: 'The position of this slide in the carousel. 1 plays first, 2 plays second, and so on.',
       validation: (Rule) => Rule.required().integer().positive(),
     }),
   ],
@@ -50,7 +51,7 @@ export const heroSlide = defineType({
       return {
         title: title || 'Untitled slide',
         media,
-        subtitle: `Order: ${subtitle}`,
+        subtitle: `Slide ${subtitle}`,
       }
     },
   },
