@@ -8,49 +8,52 @@ export const aboutPage = defineType({
   fields: [
     defineField({
       name: 'headshot',
-      title: 'Headshot',
+      title: 'Your Photo',
       type: 'image',
       options: { hotspot: true },
+      description: 'Your professional photo shown on the About page.',
     }),
     defineField({
       name: 'headshotAlt',
-      title: 'Headshot Alt Text',
+      title: 'Photo Description',
       type: 'string',
+      description: 'A brief description of your photo for screen readers and search engines. Example: "Tynnell Hollins holding a camera outdoors".',
     }),
     defineField({
       name: 'tagline',
-      title: 'Tagline',
+      title: 'Your Tagline',
       type: 'string',
-      description: 'Short line shown above the bio (e.g. "Photographer & Storyteller").',
+      description: 'A short line that captures who you are, shown prominently on your About page. Example: "Photographer & Storyteller".',
     }),
     defineField({
       name: 'bio',
-      title: 'Bio',
+      title: 'Your Full Story',
       type: 'array',
       of: [{ type: 'block' }],
-      description: 'Full bio shown on the About page. Supports rich text.',
+      description: 'Your full bio shown on the About page. You can use bold, italic, and paragraph breaks.',
     }),
     defineField({
       name: 'previewBio',
-      title: 'Preview Bio',
+      title: 'Homepage Bio',
       type: 'text',
       rows: 3,
-      description: 'Short version shown in the homepage AboutPreview section.',
+      description: 'A shorter version of your story shown on the homepage. Keep it to 2-3 sentences.',
     }),
     defineField({
       name: 'values',
-      title: 'Values / Philosophy',
+      title: 'Your Values',
       type: 'array',
       of: [
         {
           type: 'object',
           fields: [
-            defineField({ name: 'heading', title: 'Heading', type: 'string' }),
-            defineField({ name: 'body', title: 'Body', type: 'text', rows: 2 }),
+            defineField({ name: 'heading', title: 'Value Heading', type: 'string', description: 'A short title for this value, like "Authenticity" or "Presence".' }),
+            defineField({ name: 'body', title: 'Description', type: 'text', rows: 2, description: 'A sentence or two describing what this value means to you.' }),
           ],
           preview: { select: { title: 'heading' } },
         },
       ],
+      description: 'Your core values or philosophy, displayed on your About page.',
     }),
   ],
   preview: {
