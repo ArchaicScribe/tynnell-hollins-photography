@@ -10,7 +10,7 @@ export const post = defineType({
       title: 'Post Title',
       type: 'string',
       description: 'The title of your blog post, shown on the blog page and in search results.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Post Title is required before publishing.'),
     }),
     defineField({
       name: 'slug',
@@ -18,14 +18,14 @@ export const post = defineType({
       type: 'slug',
       options: { source: 'title' },
       description: 'The web address for this post. Click "Generate" to create it automatically from the title.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Page URL is required. Click "Generate" to create it from the post title.'),
     }),
     defineField({
       name: 'publishedAt',
       title: 'Publish Date',
       type: 'datetime',
       description: 'The date this post will show as published. You can set a future date to schedule it.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Publish Date is required before publishing.'),
     }),
     defineField({
       name: 'coverImage',

@@ -11,14 +11,14 @@ export const heroSlide = defineType({
       type: 'image',
       options: { hotspot: true },
       description: 'The photo that fills the screen on your homepage carousel.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Slide Photo is required before publishing.'),
     }),
     defineField({
       name: 'alt',
       title: 'Photo Description',
       type: 'string',
       description: 'A brief description of this photo for screen readers and search engines. Example: "Bride and groom laughing during an outdoor ceremony".',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Photo Description is required before publishing.'),
     }),
     defineField({
       name: 'tagline',
@@ -31,7 +31,7 @@ export const heroSlide = defineType({
       title: 'Slide Position',
       type: 'number',
       description: 'The position of this slide in the carousel. 1 plays first, 2 plays second, and so on.',
-      validation: (Rule) => Rule.required().integer().positive(),
+      validation: (Rule) => Rule.required().error('Slide Position is required.').integer().positive(),
     }),
   ],
   orderings: [

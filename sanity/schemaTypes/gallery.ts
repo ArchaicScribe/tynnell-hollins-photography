@@ -11,7 +11,7 @@ export const gallery = defineType({
       title: 'Gallery Name',
       type: 'string',
       description: 'The name of this gallery, shown on your portfolio page. Example: "Smith Wedding" or "Fall Family Portraits".',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Gallery Name is required before publishing.'),
     }),
     defineField({
       name: 'slug',
@@ -19,7 +19,7 @@ export const gallery = defineType({
       type: 'slug',
       options: { source: 'title' },
       description: 'The web address for this gallery. Click "Generate" to create it automatically from the name.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Page URL is required. Click "Generate" to create it from the gallery name.'),
     }),
     defineField({
       name: 'category',
@@ -35,7 +35,7 @@ export const gallery = defineType({
           { title: 'Brands', value: 'brands' },
         ],
       },
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Session Type is required before publishing.'),
     }),
     defineField({
       name: 'coverImage',
@@ -43,7 +43,7 @@ export const gallery = defineType({
       type: 'reference',
       to: [{ type: 'photo' }],
       description: 'The photo shown as the preview for this gallery on your portfolio page.',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Cover Photo is required before publishing.'),
     }),
     defineField({
       name: 'photos',
@@ -53,7 +53,7 @@ export const gallery = defineType({
         {
           type: 'object',
           fields: [
-            defineField({ name: 'image', title: 'Photo', type: 'image', options: { hotspot: true }, validation: (Rule) => Rule.required() }),
+            defineField({ name: 'image', title: 'Photo', type: 'image', options: { hotspot: true }, validation: (Rule) => Rule.required().error('Photo is required.') }),
             defineField({ name: 'alt', title: 'Photo Description', type: 'string', description: 'A brief description for screen readers and search engines.' }),
             defineField({ name: 'caption', title: 'Caption', type: 'string', description: 'Optional caption displayed beneath this photo in the gallery.' }),
           ],
