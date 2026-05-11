@@ -7,6 +7,9 @@ const ALLOWED_ORIGINS = [
   'https://tynnellhollinsphotography.com',
   'https://www.tynnellhollinsphotography.com',
   process.env.NEXT_PUBLIC_SITE_URL,
+  ...(process.env.NODE_ENV === 'development'
+    ? ['http://localhost:3000', 'http://localhost:3001']
+    : []),
 ].filter(Boolean) as string[]
 
 const SITE_ORIGIN = 'https://tynnellhollinsphotography.com'
