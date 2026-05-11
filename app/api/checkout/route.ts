@@ -3,7 +3,21 @@ import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+const ALLOWED_ORIGINS = [
+  'https://tynnellhollinsphotography.com',
+  'https://www.tynnellhollinsphotography.com',
+  process.env.NEXT_PUBLIC_SITE_URL,
+].filter(Boolean) as string[]
+
+const SITE_ORIGIN = 'https://tynnellhollinsphotography.com'
+
 export async function POST(request: Request) {
+  const origin = request.headers.get('origin')
+
+  if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   const body = await request.json()
@@ -16,8 +30,6 @@ export async function POST(request: Request) {
   if (typeof depositAmount !== 'number' || depositAmount <= 0) {
     return NextResponse.json({ error: 'Invalid deposit amount' }, { status: 400 })
   }
-
-  const origin = request.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tynnellhollinsphotography.com'
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -41,8 +53,8 @@ export async function POST(request: Request) {
         clientEmail,
         packageName,
       },
-      success_url: `${origin}/book/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/book/cancel`,
+      success_url: `${SITE_ORIGIN}/book/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${SITE_ORIGIN}/book/cancel`,
     })
 
     return NextResponse.json({ url: session.url })
