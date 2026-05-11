@@ -63,6 +63,13 @@ export const servicesQuery = groq`
   }
 `
 
+// Only services with a depositAmount set - used by the /book page and checkout API
+export const bookingPackagesQuery = groq`
+  *[_type == "service" && defined(depositAmount)] | order(order asc) {
+    _id, eyebrow, title, description, depositAmount
+  }
+`
+
 // ── Blog ──────────────────────────────────────────────────────
 export const postsQuery = groq`
   *[_type == "post"] | order(publishedAt desc) {
