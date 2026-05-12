@@ -13,6 +13,9 @@ const ALLOWED_ORIGINS = [
   'https://tynnellhollinsphotography.com',
   'https://www.tynnellhollinsphotography.com',
   process.env.NEXT_PUBLIC_SITE_URL,
+  // Vercel sets VERCEL_URL to the deployment's canonical hostname (no protocol)
+  // This allows form submissions from preview and branch deployments
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
   ...(process.env.NODE_ENV === 'development'
     ? ['http://localhost:3000', 'http://localhost:3001']
     : []),
