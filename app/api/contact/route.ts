@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { isValidEmail, escapeHtml, anyFieldTooLong, CONTACT_MAX_LENGTHS } from '@/app/lib/validation'
 import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
+import { inquiryEmailHtml } from '@/app/lib/emails'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,52 +49,17 @@ export async function POST(request: Request) {
       to: process.env.CONTACT_TO_EMAIL!,
       replyTo: email,
       subject: `New Inquiry: ${safeSessionType} - ${safeName}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-          <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">New Session Inquiry</h2>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold; width: 160px;">Name</td>
-              <td style="padding: 8px 0;">${safeName}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Email</td>
-              <td style="padding: 8px 0;"><a href="mailto:${safeEmail}">${safeEmail}</a></td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Phone</td>
-              <td style="padding: 8px 0;">${safePhone}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Preferred Contact</td>
-              <td style="padding: 8px 0;">${safeContactPreference}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Session Type</td>
-              <td style="padding: 8px 0;">${safeSessionType}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Desired Date</td>
-              <td style="padding: 8px 0;">${safeDate}</td>
-            </tr>
-            ${safeLocation ? `
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Location / Venue</td>
-              <td style="padding: 8px 0;">${safeLocation}</td>
-            </tr>` : ''}
-            ${safeHowHeard ? `
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">How They Found You</td>
-              <td style="padding: 8px 0;">${safeHowHeard}</td>
-            </tr>` : ''}
-          </table>
-          <h3 style="margin-top: 1.5rem;">Message</h3>
-          <p style="white-space: pre-wrap; background: #f9f9f9; padding: 1rem; border-radius: 4px;">${safeMessage}</p>
-          <p style="margin-top: 2rem; color: #999; font-size: 0.875rem;">
-            Reply directly to this email to respond to ${safeName}.
-          </p>
-        </div>
-      `,
+      html: inquiryEmailHtml({
+        name: safeName,
+        email: safeEmail,
+        phone: safePhone,
+        contactPreference: safeContactPreference,
+        sessionType: safeSessionType,
+        date: safeDate,
+        location: safeLocation,
+        howHeard: safeHowHeard,
+        message: safeMessage,
+      }),
     })
 
     return NextResponse.json({ success: true })

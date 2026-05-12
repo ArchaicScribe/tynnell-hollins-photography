@@ -2,6 +2,7 @@ import Stripe from 'stripe'
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { escapeHtml } from '@/app/lib/validation'
+import { bookingConfirmEmailHtml, clientReceiptEmailHtml } from '@/app/lib/emails'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,30 +46,7 @@ export async function POST(request: Request) {
       from: 'Tynnell Hollins Photography <hello@tynnellhollinsphotography.com>',
       to: process.env.CONTACT_TO_EMAIL!,
       subject: `New Booking Deposit: ${packageName} - ${clientName}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-          <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">New Booking Deposit Received</h2>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold; width: 160px;">Client</td>
-              <td style="padding: 8px 0;">${clientName}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Email</td>
-              <td style="padding: 8px 0;"><a href="mailto:${clientEmail}">${clientEmail}</a></td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Package</td>
-              <td style="padding: 8px 0;">${packageName}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-weight: bold;">Deposit Paid</td>
-              <td style="padding: 8px 0;">${amountPaid}</td>
-            </tr>
-          </table>
-          <p style="margin-top: 1.5rem; color: #555;">Reach out to ${clientName} to confirm the date and next steps.</p>
-        </div>
-      `,
+      html: bookingConfirmEmailHtml({ clientName, clientEmail, packageName, amountPaid }),
     })
 
     // Confirmation email to client - use raw (unescaped) email as the To address
@@ -79,17 +57,7 @@ export async function POST(request: Request) {
         to: rawClientEmail,
         replyTo: process.env.CONTACT_TO_EMAIL,
         subject: `Your deposit is confirmed - ${packageName}`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-            <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">You're officially on the calendar.</h2>
-            <p>Hi ${clientName},</p>
-            <p>Your ${amountPaid} deposit for a <strong>${packageName}</strong> session has been received. Your date is now held.</p>
-            <p>I'll be reaching out shortly to confirm all the details and start planning your session.</p>
-            <p style="margin-top: 2rem;">Talk soon,<br/><strong>Tynnell Hollins</strong><br/>Tynnell Hollins Photography</p>
-            <hr style="margin: 2rem 0; border: none; border-top: 1px solid #eee;" />
-            <p style="color: #999; font-size: 0.8rem;">Questions? Reply to this email or reach out at <a href="mailto:hello@tynnellhollinsphotography.com">hello@tynnellhollinsphotography.com</a></p>
-          </div>
-        `,
+        html: clientReceiptEmailHtml({ clientName, packageName, amountPaid }),
       })
     }
   }
