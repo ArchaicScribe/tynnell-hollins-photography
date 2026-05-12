@@ -4,24 +4,14 @@ import { groq } from 'next-sanity'
 import { client } from '@/sanity/lib/client'
 import { isValidEmail } from '@/app/lib/validation'
 import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
+import { isAllowedOrigin } from '@/app/lib/cors'
 
 export const dynamic = 'force-dynamic'
-
-const ALLOWED_ORIGINS = [
-  'https://tynnellhollinsphotography.com',
-  'https://www.tynnellhollinsphotography.com',
-  process.env.NEXT_PUBLIC_SITE_URL,
-  ...(process.env.NODE_ENV === 'development'
-    ? ['http://localhost:3000', 'http://localhost:3001']
-    : []),
-].filter(Boolean) as string[]
 
 const SITE_ORIGIN = 'https://tynnellhollinsphotography.com'
 
 export async function POST(request: Request) {
-  const origin = request.headers.get('origin')
-
-  if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+  if (!isAllowedOrigin(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
