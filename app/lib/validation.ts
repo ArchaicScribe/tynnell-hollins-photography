@@ -51,6 +51,43 @@ export function isValidEmail(email: unknown): email is string {
 }
 
 /**
+ * Validates a session date string submitted via the contact form.
+ *
+ * Rules:
+ * - Must be a parseable date in YYYY-MM-DD format
+ * - Must be at least MIN_LEAD_TIME_HOURS from now (default: 48h)
+ * - Must be no more than MAX_BOOKING_MONTHS in the future (default: 24 months)
+ *
+ * These constants will be replaced with Sanity-fetched values in TYN-92.
+ */
+export const MIN_LEAD_TIME_HOURS = 48
+export const MAX_BOOKING_MONTHS = 24
+
+export function isValidSessionDate(dateStr: unknown): boolean {
+  if (typeof dateStr !== 'string') return false
+  // Must match YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false
+
+  // Parse as local calendar date (not UTC) to avoid timezone shifting
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const submitted = new Date(year, month - 1, day)
+  if (isNaN(submitted.getTime())) return false
+
+  // Compare against calendar days, not exact timestamps:
+  // "48 hours minimum" = submitted date must be at least 2 full days from today
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const earliest = new Date(today)
+  earliest.setDate(earliest.getDate() + Math.ceil(MIN_LEAD_TIME_HOURS / 24))
+
+  const latest = new Date(today)
+  latest.setMonth(latest.getMonth() + MAX_BOOKING_MONTHS)
+
+  return submitted >= earliest && submitted <= latest
+}
+
+/**
  * Escapes user-supplied strings before embedding them in HTML email templates.
  * Prevents HTML injection attacks where an attacker crafts input containing
  * tags, scripts, or malicious links that render inside the email.
