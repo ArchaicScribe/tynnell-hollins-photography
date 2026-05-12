@@ -2,7 +2,7 @@ import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
 import { groq } from 'next-sanity'
 import { client } from '@/sanity/lib/client'
-import { isValidEmail } from '@/app/lib/validation'
+import { isValidEmail, anyFieldTooLong, CHECKOUT_MAX_LENGTHS } from '@/app/lib/validation'
 import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 
@@ -27,6 +27,10 @@ export async function POST(request: Request) {
 
   if (!packageName || !depositAmount || !clientName || !clientEmail) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
+  if (anyFieldTooLong({ packageName, clientName }, CHECKOUT_MAX_LENGTHS)) {
+    return NextResponse.json({ error: 'One or more fields exceeds the maximum allowed length' }, { status: 400 })
   }
 
   if (typeof depositAmount !== 'number' || depositAmount <= 0) {
