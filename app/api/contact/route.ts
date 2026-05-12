@@ -2,10 +2,15 @@ import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { isValidEmail, escapeHtml } from '@/app/lib/validation'
 import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
+import { isAllowedOrigin } from '@/app/lib/cors'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const resend = new Resend(process.env.RESEND_API_KEY)
   const body = await request.json()
   const { name, email, phone, contactPreference, sessionType, date, location, message, howHeard } = body
