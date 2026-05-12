@@ -1,3 +1,4 @@
+'use client'
 import { useCallback, useRef, useState } from 'react'
 import { useClient } from 'sanity'
 import { Badge, Button, Card, Flex, Stack, Text } from '@sanity/ui'
