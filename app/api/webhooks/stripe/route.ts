@@ -3,6 +3,7 @@ import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { escapeHtml } from '@/app/lib/validation'
 import { bookingConfirmEmailHtml, clientReceiptEmailHtml } from '@/app/lib/emails'
+import { EMAIL_FROM } from '@/app/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
 
     // Email to Tynnell
     await resend.emails.send({
-      from: 'Tynnell Hollins Photography <hello@tynnellhollinsphotography.com>',
+      from: EMAIL_FROM,
       to: process.env.CONTACT_TO_EMAIL!,
       subject: `New Booking Deposit: ${packageName} - ${clientName}`,
       html: bookingConfirmEmailHtml({ clientName, clientEmail, packageName, amountPaid }),
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
     const rawClientEmail = session.metadata?.clientEmail ?? session.customer_email ?? ''
     if (rawClientEmail) {
       await resend.emails.send({
-        from: 'Tynnell Hollins Photography <hello@tynnellhollinsphotography.com>',
+        from: EMAIL_FROM,
         to: rawClientEmail,
         replyTo: process.env.CONTACT_TO_EMAIL,
         subject: `Your deposit is confirmed - ${packageName}`,

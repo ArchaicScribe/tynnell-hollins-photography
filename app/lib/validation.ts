@@ -1,3 +1,5 @@
+import { CONTACT_EMAIL } from '@/app/lib/constants'
+
 /**
  * Maximum character lengths for API input fields.
  * Prevents oversized payloads from reaching Resend or Stripe.
@@ -62,6 +64,19 @@ export function isValidEmail(email: unknown): email is string {
  */
 export const MIN_LEAD_TIME_HOURS = 48
 export const MAX_BOOKING_MONTHS = 24
+
+/**
+ * Returns the user-facing error message for an invalid session date.
+ * Derived from MIN_LEAD_TIME_HOURS and MAX_BOOKING_MONTHS so the copy
+ * stays in sync automatically when the constants change (TYN-92).
+ */
+export function sessionDateErrorMessage(): string {
+  const minDays  = Math.ceil(MIN_LEAD_TIME_HOURS / 24)
+  const maxYears = MAX_BOOKING_MONTHS / 12
+  const daysStr  = minDays  === 1 ? '1 day'  : `${minDays} days`
+  const yearsStr = maxYears === 1 ? '1 year' : `${maxYears} years`
+  return `Please select a date at least ${daysStr} from today. For sessions more than ${yearsStr} out, reach out directly at ${CONTACT_EMAIL}.`
+}
 
 export function isValidSessionDate(dateStr: unknown): boolean {
   if (typeof dateStr !== 'string') return false

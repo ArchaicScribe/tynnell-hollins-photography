@@ -1,6 +1,7 @@
 'use client'
 import { useState, FormEvent } from 'react'
 import styles from './ContactForm.module.css'
+import { CONTACT_EMAIL } from '@/app/lib/constants'
 
 type FormStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -76,7 +77,7 @@ export default function ContactForm() {
           ? (data.error || 'Please check your details and try again.')
           : res.status === 429
             ? 'Too many submissions. Please wait a moment and try again.'
-            : 'Something went wrong. Please try again or reach out directly at hello@tynnellhollinsphotography.com.'
+            : `Something went wrong. Please try again or reach out directly at ${CONTACT_EMAIL}.`
         throw new Error(userMessage)
       }
 

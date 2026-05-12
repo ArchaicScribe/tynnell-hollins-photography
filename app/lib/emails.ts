@@ -5,6 +5,8 @@
  * Templates use inline styles for maximum email client compatibility.
  */
 
+import { CONTACT_EMAIL } from '@/app/lib/constants'
+
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
@@ -108,6 +110,6 @@ export function clientReceiptEmailHtml(f: ClientReceiptEmailFields): string {
     <p>I'll be reaching out shortly to confirm all the details and start planning your session.</p>
     <p style="margin-top: 2rem;">Talk soon,<br/><strong>Tynnell Hollins</strong><br/>Tynnell Hollins Photography</p>
     <hr style="margin: 2rem 0; border: none; border-top: 1px solid #eee;" />
-    <p style="color: #999; font-size: 0.8rem;">Questions? Reply to this email or reach out at <a href="mailto:hello@tynnellhollinsphotography.com">hello@tynnellhollinsphotography.com</a></p>
+    <p style="color: #999; font-size: 0.8rem;">Questions? Reply to this email or reach out at <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p>
   `)
 }
