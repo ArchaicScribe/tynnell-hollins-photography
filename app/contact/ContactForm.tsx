@@ -70,7 +70,14 @@ export default function ContactForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong.')
+        // 400 errors carry user-facing validation messages — show them directly.
+        // All other errors (403, 429, 500, etc.) use a safe generic fallback.
+        const userMessage = res.status === 400
+          ? (data.error || 'Please check your details and try again.')
+          : res.status === 429
+            ? 'Too many submissions. Please wait a moment and try again.'
+            : 'Something went wrong. Please try again or reach out directly at hello@tynnellhollinsphotography.com.'
+        throw new Error(userMessage)
       }
 
       setStatus('success')
