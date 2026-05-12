@@ -1,4 +1,4 @@
-import { client } from '@/sanity/lib/client'
+import { sanityFetch } from '@/sanity/lib/live'
 import {
   heroSlidesQuery,
   featuredPhotosQuery,
@@ -11,14 +11,17 @@ import AboutPreview from '@/app/components/AboutPreview/AboutPreview'
 import Testimonials from '@/app/components/Testimonials/Testimonials'
 import Contact from '@/app/components/Contact/Contact'
 
-export const revalidate = 60
-
 export default async function Home() {
-  const [heroSlides, featuredPhotos, testimonials, about] = await Promise.all([
-    client.fetch(heroSlidesQuery),
-    client.fetch(featuredPhotosQuery),
-    client.fetch(testimonialsQuery),
-    client.fetch(aboutPageQuery),
+  const [
+    { data: heroSlides },
+    { data: featuredPhotos },
+    { data: testimonials },
+    { data: about },
+  ] = await Promise.all([
+    sanityFetch({ query: heroSlidesQuery }),
+    sanityFetch({ query: featuredPhotosQuery }),
+    sanityFetch({ query: testimonialsQuery }),
+    sanityFetch({ query: aboutPageQuery }),
   ])
 
   return (
