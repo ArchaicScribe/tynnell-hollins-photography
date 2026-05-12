@@ -68,12 +68,20 @@ export function isValidSessionDate(dateStr: unknown): boolean {
   // Must match YYYY-MM-DD
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false
 
-  const submitted = new Date(dateStr)
+  // Parse as local calendar date (not UTC) to avoid timezone shifting
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const submitted = new Date(year, month - 1, day)
   if (isNaN(submitted.getTime())) return false
 
-  const now = new Date()
-  const earliest = new Date(now.getTime() + MIN_LEAD_TIME_HOURS * 60 * 60 * 1000)
-  const latest = new Date(now)
+  // Compare against calendar days, not exact timestamps:
+  // "48 hours minimum" = submitted date must be at least 2 full days from today
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const earliest = new Date(today)
+  earliest.setDate(earliest.getDate() + Math.ceil(MIN_LEAD_TIME_HOURS / 24))
+
+  const latest = new Date(today)
   latest.setMonth(latest.getMonth() + MAX_BOOKING_MONTHS)
 
   return submitted >= earliest && submitted <= latest
