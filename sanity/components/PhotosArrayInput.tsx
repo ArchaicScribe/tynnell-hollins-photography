@@ -1,3 +1,4 @@
+'use client'
 import { useCallback, useRef, useState } from 'react'
 import { ArrayOfObjectsInputProps, insert, setIfMissing } from 'sanity'
 import { useClient } from 'sanity'
