@@ -14,21 +14,26 @@ export const metadata: Metadata = {
   description: 'Meet Tynnell Hollins — New Mexico photographer specializing in weddings, engagements, portraits, and family sessions.',
 }
 
+type AboutValue = {
+  heading: string
+  body?: string
+}
+
 type AboutPage = {
   headshot?: SanityImageSource
   headshotAlt?: string
   tagline?: string
   bio?: PortableTextBlock[]
-  values?: string[]
+  values?: AboutValue[]
 }
 
-const DEFAULT_SPECIALTIES = [
-  'Weddings',
-  'Engagements',
-  'Portraits',
-  'Family Sessions',
-  'Maternity',
-  'Events',
+const DEFAULT_VALUES: AboutValue[] = [
+  { heading: 'Weddings' },
+  { heading: 'Engagements' },
+  { heading: 'Portraits' },
+  { heading: 'Family Sessions' },
+  { heading: 'Maternity' },
+  { heading: 'Events' },
 ]
 
 export default async function AboutPage() {
@@ -38,7 +43,7 @@ export default async function AboutPage() {
     ? urlFor(about.headshot).width(800).height(1000).fit('crop').auto('format').url()
     : null
 
-  const specialties = about?.values?.length ? about.values : DEFAULT_SPECIALTIES
+  const specialties = about?.values?.length ? about.values : DEFAULT_VALUES
 
   return (
     <main className={styles.main}>
@@ -113,9 +118,14 @@ export default async function AboutPage() {
         </h2>
         <ul className={styles.specialtyList}>
           {specialties.map((item) => (
-            <li key={item} className={styles.specialtyItem}>
+            <li key={item.heading} className={styles.specialtyItem}>
               <span className={styles.specialtyDot} aria-hidden="true" />
-              {item}
+              <span className={styles.specialtyContent}>
+                <span className={styles.specialtyHeading}>{item.heading}</span>
+                {item.body && (
+                  <span className={styles.specialtyBody}>{item.body}</span>
+                )}
+              </span>
             </li>
           ))}
         </ul>
