@@ -52,7 +52,8 @@ export const testimonialsQuery = groq`
 // ── About ─────────────────────────────────────────────────────
 export const aboutPageQuery = groq`
   *[_type == "aboutPage"][0] {
-    headshot, headshotAlt, tagline, bio, previewBio, values
+    headshot, headshotAlt, tagline, bio, previewBio,
+    values[]{ heading, body }
   }
 `
 

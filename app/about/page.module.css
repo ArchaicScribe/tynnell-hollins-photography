@@ -192,12 +192,8 @@
 }
 
 .specialtyItem {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 300;
-  color: var(--color-body);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
 }
 
@@ -207,6 +203,28 @@
   border-radius: 50%;
   background: var(--color-detail);
   flex-shrink: 0;
+  margin-top: 0.4em;
+}
+
+.specialtyContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.specialtyHeading {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--color-body);
+}
+
+.specialtyBody {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--color-detail);
 }
 
 /* ── CTA ──────────────────────────────────────────────────── */
