@@ -6,14 +6,20 @@ import { PanelLeftIcon } from '@sanity/icons'
 
 const STORAGE_KEY = 'studio-nav-collapsed'
 
-// Confirmed via DOM inspection:
-// The nav pane is [data-ui="ListPane"]:first-child inside [data-ui="PaneLayout"]
+// DOM-confirmed pane types (via console inspection):
+//   ListPane          — top-level nav (My Website, Portfolio, etc.)
+//   DocumentListPane  — item list within a type (Galleries, Blog Posts, etc.)
+//   Layer             — resize handle between panes
+// All three collapse so the document/upload pane gets full width.
 const COLLAPSE_CSS = `
-  [data-ui="PaneLayout"] > [data-ui="ListPane"]:first-child {
+  [data-ui="PaneLayout"] > [data-ui="ListPane"],
+  [data-ui="PaneLayout"] > [data-ui="DocumentListPane"] {
     transition: max-width 0.25s ease, min-width 0.25s ease, opacity 0.2s ease !important;
   }
 
-  html[data-studio-nav="collapsed"] [data-ui="PaneLayout"] > [data-ui="ListPane"]:first-child {
+  html[data-studio-nav="collapsed"] [data-ui="PaneLayout"] > [data-ui="ListPane"],
+  html[data-studio-nav="collapsed"] [data-ui="PaneLayout"] > [data-ui="DocumentListPane"],
+  html[data-studio-nav="collapsed"] [data-ui="PaneLayout"] > [data-ui="Layer"] {
     max-width: 0 !important;
     min-width: 0 !important;
     opacity: 0 !important;
@@ -62,7 +68,7 @@ export function StudioLayout(props: LayoutProps) {
         <Tooltip
           content={
             <Box padding={2}>
-              <Text size={1}>{collapsed ? 'Show navigation' : 'Hide navigation'}</Text>
+              <Text size={1}>{collapsed ? 'Maximize workspace' : 'Restore navigation'}</Text>
             </Box>
           }
           placement="right"
@@ -75,7 +81,7 @@ export function StudioLayout(props: LayoutProps) {
             fontSize={1}
             padding={2}
             onClick={toggle}
-            aria-label={collapsed ? 'Show navigation' : 'Hide navigation'}
+            aria-label={collapsed ? 'Maximize workspace' : 'Restore navigation'}
           />
         </Tooltip>
       </Box>
