@@ -6,6 +6,7 @@ import {media} from 'sanity-plugin-media'
 import {apiVersion, dataset, projectId} from './sanity/env'
 import {schemaTypes} from './sanity/schemaTypes'
 import {structure} from './sanity/structure'
+import {StudioLayout} from './sanity/components/StudioLayout'
 
 export default defineConfig({
   basePath: '/studio',
@@ -17,4 +18,9 @@ export default defineConfig({
     visionTool({defaultApiVersion: apiVersion}),
     media(),
   ],
+  studio: {
+    components: {
+      layout: StudioLayout,
+    },
+  },
 })
