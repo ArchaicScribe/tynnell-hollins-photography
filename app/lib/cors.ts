@@ -13,6 +13,11 @@ const ALLOWED_ORIGINS = [
   'https://tynnellhollinsphotography.com',
   'https://www.tynnellhollinsphotography.com',
   process.env.NEXT_PUBLIC_SITE_URL,
+  // VERCEL_URL = deployment-specific hostname (e.g. tynnell-abc123-...vercel.app)
+  // VERCEL_BRANCH_URL = stable branch alias (e.g. tynnell-git-dev-...vercel.app)
+  // Both are needed so forms work on the exact deployment and the branch URL used for QA.
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+  process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : undefined,
   ...(process.env.NODE_ENV === 'development'
     ? ['http://localhost:3000', 'http://localhost:3001']
     : []),
