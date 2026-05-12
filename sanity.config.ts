@@ -6,6 +6,8 @@ import {apiVersion, dataset, projectId} from './sanity/env'
 import {schemaTypes} from './sanity/schemaTypes'
 import {structure} from './sanity/structure'
 import {StudioLayout} from './sanity/components/StudioLayout'
+import {publishStatusBadge} from './sanity/components/PublishStatusBadge'
+import {publishStatusAction} from './sanity/components/PublishStatusAction'
 
 export default defineConfig({
   basePath: '/studio',
@@ -21,5 +23,11 @@ export default defineConfig({
     components: {
       layout: StudioLayout,
     },
+  },
+  document: {
+    // Colored badge in the document list pane ("Draft", "Changes pending")
+    badges: [publishStatusBadge],
+    // Status indicator button in the document toolbar ("Live on your site", "Not live yet", etc.)
+    actions: (prev) => [...prev, publishStatusAction],
   },
 })
