@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
-import { isValidEmail, escapeHtml } from '@/app/lib/validation'
+import { isValidEmail, escapeHtml, anyFieldTooLong, CONTACT_MAX_LENGTHS } from '@/app/lib/validation'
 import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 
@@ -22,6 +22,10 @@ export async function POST(request: Request) {
 
   if (!name || !email || !phone || !contactPreference || !sessionType || !date || !message) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
+  if (anyFieldTooLong({ name, phone, contactPreference, sessionType, date, location, message, howHeard }, CONTACT_MAX_LENGTHS)) {
+    return NextResponse.json({ error: 'One or more fields exceeds the maximum allowed length' }, { status: 400 })
   }
 
   if (!isValidEmail(email)) {
