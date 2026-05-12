@@ -8,6 +8,8 @@ import { isAllowedOrigin } from '@/app/lib/cors'
 
 export const dynamic = 'force-dynamic'
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
 const SITE_ORIGIN = 'https://tynnellhollinsphotography.com'
 
 export async function POST(request: Request) {
@@ -19,8 +21,6 @@ export async function POST(request: Request) {
   if (!success) {
     return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
   }
-
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   const body = await request.json()
   const { packageName, depositAmount, clientName, clientEmail } = body

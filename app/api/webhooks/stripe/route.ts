@@ -5,11 +5,12 @@ import { escapeHtml } from '@/app/lib/validation'
 
 export const dynamic = 'force-dynamic'
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const resend = new Resend(process.env.RESEND_API_KEY)
+
 // Stripe requires the raw request body for signature verification —
 // disable Next.js body parsing by reading text directly.
 export async function POST(request: Request) {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-  const resend = new Resend(process.env.RESEND_API_KEY)
 
   const body = await request.text()
   const signature = request.headers.get('stripe-signature')
@@ -28,7 +29,6 @@ export async function POST(request: Request) {
     )
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Webhook signature verification failed'
-    console.error('Stripe webhook error:', message)
     return NextResponse.json({ error: message }, { status: 400 })
   }
 
