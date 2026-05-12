@@ -1,4 +1,38 @@
 /**
+ * Maximum character lengths for API input fields.
+ * Prevents oversized payloads from reaching Resend or Stripe.
+ */
+export const CONTACT_MAX_LENGTHS = {
+  name:              100,
+  phone:              20,
+  contactPreference:  20,
+  sessionType:       100,
+  date:               10,
+  location:          300,
+  message:          5000,
+  howHeard:          100,
+} as const
+
+export const CHECKOUT_MAX_LENGTHS = {
+  packageName: 200,
+  clientName:  100,
+} as const
+
+/**
+ * Returns true if any field in `values` exceeds its limit in `limits`.
+ * Only checks string values — non-strings are skipped.
+ */
+export function anyFieldTooLong(
+  values: Record<string, unknown>,
+  limits: Record<string, number>,
+): boolean {
+  return Object.entries(limits).some(([key, max]) => {
+    const val = values[key]
+    return typeof val === 'string' && val.length > max
+  })
+}
+
+/**
  * Validates an email address for use in API routes.
  *
  * Rejects:
