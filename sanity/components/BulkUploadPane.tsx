@@ -165,7 +165,7 @@ export function BulkUploadPane() {
 
         {!running && files.length > 0 && (
           <Text size={1} muted>
-            {done} uploaded{errors > 0 ? `, ${errors} failed` : ''}. Go to Photo in the sidebar to edit titles, alt text, and categories.
+            {done} uploaded{errors > 0 ? `, ${errors} failed` : ''}. Go to All Photos in the sidebar to edit titles, alt text, and categories.
           </Text>
         )}
       </Stack>
