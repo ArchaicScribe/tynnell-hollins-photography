@@ -8,6 +8,7 @@ import {structure} from './sanity/structure'
 import {StudioLayout} from './sanity/components/StudioLayout'
 import {publishStatusBadge} from './sanity/components/PublishStatusBadge'
 import {publishStatusAction} from './sanity/components/PublishStatusAction'
+import {resolveProductionUrl} from './sanity/lib/productionUrl'
 
 export default defineConfig({
   basePath: '/studio',
@@ -29,5 +30,7 @@ export default defineConfig({
     badges: [publishStatusBadge],
     // Status indicator button in the document toolbar ("Live on your site", "Not live yet", etc.)
     actions: (prev) => [...prev, publishStatusAction],
+    // "View on site" external link icon in the document toolbar
+    productionUrl: resolveProductionUrl,
   },
 })
