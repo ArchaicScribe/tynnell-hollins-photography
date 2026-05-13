@@ -12,7 +12,6 @@
   "dependencies": {
     "@portabletext/react": "^6.0.3",
     "@sanity/image-url": "^1.2.0",
-    "@sanity/orderable-document-list": "^1.5.1",
     "@sanity/vision": "^4.22.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
@@ -28,11 +27,6 @@
     "stripe": "^20.4.1",
     "styled-components": "^6.3.11",
     "swiper": "^12.1.2"
-  },
-  "overrides": {
-    "@sanity/orderable-document-list": {
-      "@sanity/ui": "^3"
-    }
   },
   "devDependencies": {
     "@types/node": "^20.19.37",
