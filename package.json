@@ -29,6 +29,11 @@
     "styled-components": "^6.3.11",
     "swiper": "^12.1.2"
   },
+  "overrides": {
+    "@sanity/orderable-document-list": {
+      "@sanity/ui": "^3"
+    }
+  },
   "devDependencies": {
     "@types/node": "^20.19.37",
     "@types/react": "^18",
