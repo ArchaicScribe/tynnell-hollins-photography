@@ -13,9 +13,10 @@ import {
   UploadIcon,
   UserIcon,
 } from '@sanity/icons'
+import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list'
 import { BulkUploadPane } from './components/BulkUploadPane'
 
-export const structure: StructureResolver = (S) =>
+export const structure: StructureResolver = (S, context) =>
   S.list()
     .title('Studio')
     .items([
@@ -55,10 +56,13 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title('Portfolio')
             .items([
-              S.listItem()
-                .title('Galleries')
-                .icon(FolderIcon)
-                .child(S.documentTypeList('gallery').title('Galleries')),
+              orderableDocumentListDeskItem({
+                type: 'gallery',
+                title: 'Galleries',
+                icon: FolderIcon,
+                S,
+                context,
+              }),
               S.listItem()
                 .title('Upload Photos')
                 .icon(UploadIcon)

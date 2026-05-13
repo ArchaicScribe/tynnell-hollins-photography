@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 import { PhotosArrayInput } from '../components/PhotosArrayInput'
 
 export const gallery = defineType({
@@ -94,19 +95,10 @@ export const gallery = defineType({
       description: 'Turn this on to feature this gallery on your homepage.',
       initialValue: false,
     }),
-    defineField({
-      name: 'order',
-      title: 'Display Position',
-      type: 'number',
-      description: 'Controls the order this gallery appears in on your portfolio page. Lower numbers appear first. Leave blank to sort manually later.',
-    }),
+    orderRankField({ type: 'gallery' }),
   ],
   orderings: [
-    {
-      title: 'Display Order',
-      name: 'orderAsc',
-      by: [{ field: 'order', direction: 'asc' }],
-    },
+    orderRankOrdering,
     {
       title: 'Title A-Z',
       name: 'titleAsc',
