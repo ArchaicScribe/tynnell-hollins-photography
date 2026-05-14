@@ -21,7 +21,7 @@ export const structure: StructureResolver = (S) =>
     .items([
 
       // ── My Website ──────────────────────────────────────────────
-      // Homepage-facing content: slides, services, testimonials
+      // Homepage-facing content: slides and services
       S.listItem()
         .title('My Website')
         .icon(EarthGlobeIcon)
@@ -37,12 +37,14 @@ export const structure: StructureResolver = (S) =>
                 .title('Services')
                 .icon(TagIcon)
                 .child(S.documentTypeList('service').title('Services')),
-              S.listItem()
-                .title('Testimonials')
-                .icon(StarFilledIcon)
-                .child(S.documentTypeList('testimonial').title('Testimonials')),
             ])
         ),
+
+      // ── Testimonials ─────────────────────────────────────────────
+      S.listItem()
+        .title('Testimonials')
+        .icon(StarFilledIcon)
+        .child(S.documentTypeList('testimonial').title('Testimonials')),
 
       S.divider(),
 
