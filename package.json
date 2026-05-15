@@ -10,6 +10,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "^3.84.1",
+    "@payloadcms/next": "^3.84.1",
+    "@payloadcms/richtext-lexical": "^3.84.1",
     "@portabletext/react": "^6.0.3",
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.22.0",
@@ -17,10 +20,12 @@
     "@upstash/redis": "^1.38.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "next": "14.2.35",
+    "graphql": "^16.14.0",
+    "next": "15.4.11",
     "next-sanity": "^11.6.12",
-    "react": "^18",
-    "react-dom": "^18",
+    "payload": "^3.84.1",
+    "react": "^19",
+    "react-dom": "^19",
     "resend": "^6.9.3",
     "sanity": "^4.22.0",
     "sanity-plugin-media": "^4.2.0",
@@ -30,10 +35,10 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.37",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "eslint": "^8",
-    "eslint-config-next": "14.2.35",
+    "eslint-config-next": "15.4.11",
     "typescript": "^5"
   }
 }

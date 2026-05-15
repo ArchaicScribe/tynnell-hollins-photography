@@ -10,6 +10,10 @@ async function sha256(str: string): Promise<string> {
 }
 
 export async function middleware(request: NextRequest) {
+  // DEV ONLY: bypass auth on localhost — remove before pipelining
+  const host = request.headers.get('host') ?? ''
+  if (host.startsWith('localhost')) return NextResponse.next()
+
   const basicAuth = request.headers.get('authorization')
 
   if (basicAuth) {
