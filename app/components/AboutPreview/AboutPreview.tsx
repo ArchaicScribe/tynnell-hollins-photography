@@ -1,10 +1,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { urlFor } from '@/sanity/lib/image'
 import styles from './AboutPreview.module.css'
 
 export interface AboutData {
-  headshot?: { asset: { _ref: string } }
+  headshotUrl: string | null
   headshotAlt?: string
   tagline?: string
   previewBio?: string
@@ -15,16 +14,12 @@ interface Props {
 }
 
 export default function AboutPreview({ about }: Props) {
-  const headshotUrl = about?.headshot
-    ? urlFor(about.headshot).width(800).height(1000).quality(85).url()
-    : null
-
   return (
     <section className={styles.section}>
       <div className={styles.imageSlot}>
-        {headshotUrl ? (
+        {about?.headshotUrl ? (
           <Image
-            src={headshotUrl}
+            src={about.headshotUrl}
             alt={about?.headshotAlt ?? 'Tynnell Hollins'}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"

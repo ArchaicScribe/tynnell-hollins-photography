@@ -4,7 +4,7 @@ import { useState } from 'react'
 import styles from './page.module.css'
 
 export type BookingPackage = {
-  _id: string
+  id: string
   eyebrow?: string
   title: string
   description?: string
@@ -22,7 +22,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const selected = packages.find((p) => p._id === activeId)
+  const selected = packages.find((p) => p.id === activeId)
 
   function handleSelect(id: string) {
     setActiveId(id)
@@ -76,8 +76,8 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
       <div className={styles.grid}>
         {packages.map((pkg) => (
           <article
-            key={pkg._id}
-            className={`${styles.card} ${activeId === pkg._id ? styles.cardActive : ''}`}
+            key={pkg.id}
+            className={`${styles.card} ${activeId === pkg.id ? styles.cardActive : ''}`}
           >
             <div className={styles.cardTop}>
               {pkg.eyebrow && <p className={styles.cardEyebrow}>{pkg.eyebrow}</p>}
@@ -86,13 +86,13 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
               <p className={styles.cardDeposit}>${pkg.depositAmount} deposit</p>
             </div>
 
-            {activeId === pkg._id ? (
+            {activeId === pkg.id ? (
               <form className={styles.form} onSubmit={handleCheckout} noValidate>
                 <div className={styles.field}>
-                  <label className={styles.label} htmlFor={`name-${pkg._id}`}>Your Name *</label>
+                  <label className={styles.label} htmlFor={`name-${pkg.id}`}>Your Name *</label>
                   <input
                     className={styles.input}
-                    id={`name-${pkg._id}`}
+                    id={`name-${pkg.id}`}
                     type="text"
                     autoComplete="name"
                     required
@@ -102,10 +102,10 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
                   />
                 </div>
                 <div className={styles.field}>
-                  <label className={styles.label} htmlFor={`email-${pkg._id}`}>Email Address *</label>
+                  <label className={styles.label} htmlFor={`email-${pkg.id}`}>Email Address *</label>
                   <input
                     className={styles.input}
-                    id={`email-${pkg._id}`}
+                    id={`email-${pkg.id}`}
                     type="email"
                     autoComplete="email"
                     required
@@ -135,7 +135,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
             ) : (
               <button
                 className={styles.selectBtn}
-                onClick={() => handleSelect(pkg._id)}
+                onClick={() => handleSelect(pkg.id)}
               >
                 Book This Session
               </button>

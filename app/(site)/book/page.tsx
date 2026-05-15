@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { sanityFetch } from '@/sanity/lib/live'
-import { bookingPackagesQuery } from '@/sanity/queries'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import BookClient, { type BookingPackage } from './BookClient'
 import styles from './page.module.css'
 
@@ -10,7 +10,21 @@ export const metadata: Metadata = {
 }
 
 export default async function BookPage() {
-  const { data: packages } = await sanityFetch({ query: bookingPackagesQuery })
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'services',
+    where: { depositAmount: { exists: true } },
+    sort: 'displayOrder',
+    depth: 0,
+  })
+
+  const packages: BookingPackage[] = docs.map(s => ({
+    id: String(s.id),
+    eyebrow: s.eyebrow ?? undefined,
+    title: s.title,
+    description: s.description ?? undefined,
+    depositAmount: s.depositAmount ?? 0,
+  }))
 
   return (
     <main className={styles.page}>
@@ -24,7 +38,7 @@ export default async function BookPage() {
         </p>
       </div>
 
-      <BookClient packages={(packages ?? []) as BookingPackage[]} />
+      <BookClient packages={packages} />
     </main>
   )
 }

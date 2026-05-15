@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
-import { sanityFetch } from '@/sanity/lib/live'
-import { allPhotosQuery, galleriesQuery } from '@/sanity/queries'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import type { Photo } from '@/payload-types'
 import PortfolioGrid from './PortfolioGrid'
+import type { PortfolioPhoto, PortfolioGallery } from './PortfolioGrid'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
@@ -10,10 +12,36 @@ export const metadata: Metadata = {
 }
 
 export default async function PortfolioPage() {
-  const [{ data: photos }, { data: galleries }] = await Promise.all([
-    sanityFetch({ query: allPhotosQuery }),
-    sanityFetch({ query: galleriesQuery }),
+  const payload = await getPayload({ config })
+
+  const [{ docs: rawPhotos }, { docs: rawGalleries }] = await Promise.all([
+    payload.find({ collection: 'photos', sort: 'displayOrder', depth: 0 }),
+    payload.find({ collection: 'galleries', sort: 'displayOrder', depth: 1 }),
   ])
+
+  const photos: PortfolioPhoto[] = rawPhotos.map(p => ({
+    id: String(p.id),
+    title: p.title,
+    alt: p.alt ?? undefined,
+    imageUrl: p.sizes?.card?.url ?? p.url ?? null,
+    category: p.category ?? 'portraits',
+  }))
+
+  const galleries: PortfolioGallery[] = rawGalleries.map(g => {
+    const cover = typeof g.coverPhoto === 'object' && g.coverPhoto !== null
+      ? g.coverPhoto as Photo
+      : null
+    return {
+      id: String(g.id),
+      title: g.title,
+      slug: typeof g.slug === 'string' ? g.slug : '',
+      category: g.category ?? 'weddings',
+      featured: g.featured ?? false,
+      coverImageUrl: cover?.sizes?.card?.url ?? cover?.url ?? null,
+      coverImageAlt: cover?.alt ?? undefined,
+      photoCount: Array.isArray(g.photos) ? g.photos.length : 0,
+    }
+  })
 
   return (
     <main className={styles.main}>
@@ -22,7 +50,7 @@ export default async function PortfolioPage() {
         <h1 className={styles.heading}>Portfolio</h1>
         <p className={styles.subheading}>Every story, every moment, every face</p>
       </div>
-      <PortfolioGrid photos={photos ?? []} galleries={galleries ?? []} />
+      <PortfolioGrid photos={photos} galleries={galleries} />
     </main>
   )
 }

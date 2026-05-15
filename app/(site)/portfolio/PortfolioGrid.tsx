@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { urlFor } from '@/sanity/lib/image'
 import styles from './page.module.css'
 
 const CATEGORIES = [
@@ -14,27 +13,28 @@ const CATEGORIES = [
   { label: 'Brands',    value: 'brands' },
 ]
 
-type Photo = {
-  _id: string
+export type PortfolioPhoto = {
+  id: string
   title: string
-  alt: string
-  image: object
+  alt?: string
+  imageUrl: string | null
   category: string
 }
 
-type Gallery = {
-  _id: string
+export type PortfolioGallery = {
+  id: string
   title: string
-  slug: { current: string }
+  slug: string
   category: string
   featured: boolean
-  coverImage: { _id: string; image: object; alt: string } | null
+  coverImageUrl: string | null
+  coverImageAlt?: string
   photoCount: number
 }
 
 type Props = {
-  photos: Photo[]
-  galleries: Gallery[]
+  photos: PortfolioPhoto[]
+  galleries: PortfolioGallery[]
 }
 
 export default function PortfolioGrid({ photos, galleries }: Props) {
@@ -68,14 +68,14 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
         <div className={styles.grid}>
           {weddingGalleries.length > 0 ? weddingGalleries.map(gallery => (
             <Link
-              key={gallery._id}
-              href={`/portfolio/${gallery.slug.current}`}
+              key={gallery.id}
+              href={`/portfolio/${gallery.slug}`}
               className={styles.galleryCard}
             >
-              {gallery.coverImage ? (
+              {gallery.coverImageUrl ? (
                 <Image
-                  src={urlFor(gallery.coverImage.image).width(800).height(600).fit('crop').auto('format').url()}
-                  alt={gallery.coverImage.alt ?? gallery.title}
+                  src={gallery.coverImageUrl}
+                  alt={gallery.coverImageAlt ?? gallery.title}
                   fill
                   sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
                   className={styles.photo}
@@ -98,15 +98,17 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
       {!showAlbums && (
         <div className={styles.grid}>
           {filteredPhotos.length > 0 ? filteredPhotos.map(photo => (
-            <div key={photo._id} className={styles.imageSlot}>
-              <Image
-                src={urlFor(photo.image).width(800).height(600).fit('crop').auto('format').url()}
-                alt={photo.alt ?? photo.title}
-                fill
-                sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-                className={styles.photo}
-              />
-            </div>
+            photo.imageUrl ? (
+              <div key={photo.id} className={styles.imageSlot}>
+                <Image
+                  src={photo.imageUrl}
+                  alt={photo.alt ?? photo.title}
+                  fill
+                  sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+                  className={styles.photo}
+                />
+              </div>
+            ) : null
           )) : (
             <p className={styles.empty}>No photos in this category yet.</p>
           )}
