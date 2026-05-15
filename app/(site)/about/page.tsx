@@ -1,12 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { PortableText } from '@portabletext/react'
-import type { PortableTextBlock } from '@portabletext/types'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
-import { sanityFetch } from '@/sanity/lib/live'
-import { aboutPageQuery } from '@/sanity/queries'
-import { urlFor } from '@/sanity/lib/image'
+import { RichText } from '@payloadcms/richtext-lexical/react'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import type { Photo } from '@/payload-types'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
@@ -19,14 +17,6 @@ type AboutValue = {
   body?: string
 }
 
-type AboutPage = {
-  headshot?: SanityImageSource
-  headshotAlt?: string
-  tagline?: string
-  bio?: PortableTextBlock[]
-  values?: AboutValue[]
-}
-
 const DEFAULT_VALUES: AboutValue[] = [
   { heading: 'Weddings' },
   { heading: 'Engagements' },
@@ -37,18 +27,22 @@ const DEFAULT_VALUES: AboutValue[] = [
 ]
 
 export default async function AboutPage() {
-  const { data: about } = await sanityFetch({ query: aboutPageQuery }) as { data: AboutPage | null }
+  const payload = await getPayload({ config })
+  const about = await payload.findGlobal({ slug: 'about-page', depth: 1 })
 
-  const headshotUrl = about?.headshot
-    ? urlFor(about.headshot).width(800).height(1000).fit('crop').auto('format').url()
+  const headshotPhoto = typeof about?.headshot === 'object' && about.headshot !== null
+    ? about.headshot as Photo
     : null
+  const headshotUrl = headshotPhoto?.sizes?.card?.url ?? headshotPhoto?.url ?? null
 
-  const specialties = about?.values?.length ? about.values : DEFAULT_VALUES
+  const specialties: AboutValue[] = about?.values?.length
+    ? about.values.map(v => ({ heading: v.heading ?? '', body: v.body ?? undefined }))
+    : DEFAULT_VALUES
 
   return (
     <main className={styles.main}>
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {/* Hero */}
       <section className={styles.hero}>
         <p className={styles.eyebrow}>About Tynnell</p>
         <h1 className={styles.heroHeading}>
@@ -56,7 +50,7 @@ export default async function AboutPage() {
         </h1>
       </section>
 
-      {/* ── Story ────────────────────────────────────────────── */}
+      {/* Story */}
       <section className={styles.story}>
         <div className={styles.storyImage}>
           {headshotUrl ? (
@@ -76,7 +70,7 @@ export default async function AboutPage() {
           <h2 className={styles.sectionHeading}>Where It All Began</h2>
           {about?.bio ? (
             <div className={styles.bioBody}>
-              <PortableText value={about.bio} />
+              <RichText data={about.bio} />
             </div>
           ) : (
             <>
@@ -98,23 +92,23 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* ── Philosophy ───────────────────────────────────────── */}
+      {/* Philosophy */}
       <section className={styles.philosophy}>
         <p className={styles.sectionEyebrow}>My Approach</p>
         <blockquote className={styles.philosophyQuote}>
           {about?.tagline ??
-            "I don\u2019t just take photographs. I preserve the in-between moments. The laugh before the kiss. The tear that falls before you even know it\u2019s there."}
+            "I don’t just take photographs. I preserve the in-between moments. The laugh before the kiss. The tear that falls before you even know it’s there."}
         </blockquote>
         <p className={styles.philosophyBody}>
-          {"Whether it\u2019s a wedding of three hundred or an intimate session for two, the goal is always the same: images that feel like a memory rather than a photograph. Warm, honest, and undeniably yours."}
+          {"Whether it’s a wedding of three hundred or an intimate session for two, the goal is always the same: images that feel like a memory rather than a photograph. Warm, honest, and undeniably yours."}
         </p>
       </section>
 
-      {/* ── Specialties ──────────────────────────────────────── */}
+      {/* Specialties */}
       <section className={styles.specialties}>
         <p className={styles.sectionEyebrow}>What I Shoot</p>
         <h2 className={styles.sectionHeading}>
-          {"Capturing Life\u2019s Most"}<br />Meaningful Moments
+          {"Capturing Life’s Most"}<br />Meaningful Moments
         </h2>
         <ul className={styles.specialtyList}>
           {specialties.map((item) => (
@@ -131,14 +125,14 @@ export default async function AboutPage() {
         </ul>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────── */}
+      {/* CTA */}
       <section className={styles.cta}>
-        <p className={styles.sectionEyebrow}>{"Let\u2019s Work Together"}</p>
+        <p className={styles.sectionEyebrow}>{"Let’s Work Together"}</p>
         <h2 className={styles.ctaHeading}>
           Ready to Create<br />Something Beautiful?
         </h2>
         <p className={styles.ctaBody}>
-          {"I\u2019d love to hear about your story and how I can help you preserve it."}
+          {"I’d love to hear about your story and how I can help you preserve it."}
         </p>
         <Link href="/contact" className={styles.ctaBtn}>Book a Session</Link>
       </section>

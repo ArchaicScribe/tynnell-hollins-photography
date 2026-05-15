@@ -1,7 +1,7 @@
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
-import { groq } from 'next-sanity'
-import { client } from '@/sanity/lib/client'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { isValidEmail, anyFieldTooLong, CHECKOUT_MAX_LENGTHS } from '@/app/lib/validation'
 import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
@@ -41,19 +41,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
   }
 
-  // Validate depositAmount against Sanity - Sanity is the source of truth for pricing
-  const sanityPackage = await client.fetch<{ depositAmount: number } | null>(
-    groq`*[_type == "service" && title == $packageName && defined(depositAmount)][0] {
-      depositAmount
-    }`,
-    { packageName }
-  )
+  // Validate depositAmount against Payload — Payload is the source of truth for pricing
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'services',
+    where: {
+      and: [
+        { title: { equals: packageName } },
+        { depositAmount: { exists: true } },
+      ],
+    },
+    depth: 0,
+    limit: 1,
+  })
+  const payloadPackage = docs[0] ?? null
 
-  if (!sanityPackage) {
+  if (!payloadPackage) {
     return NextResponse.json({ error: 'Package not found' }, { status: 400 })
   }
 
-  if (sanityPackage.depositAmount !== depositAmount) {
+  if (payloadPackage.depositAmount !== depositAmount) {
     return NextResponse.json({ error: 'Invalid deposit amount' }, { status: 400 })
   }
 
@@ -65,7 +72,7 @@ export async function POST(request: Request) {
         {
           price_data: {
             currency: 'usd',
-            unit_amount: Math.round(depositAmount * 100), // convert dollars → cents
+            unit_amount: Math.round(depositAmount * 100), // convert dollars to cents
             product_data: {
               name: `${packageName} — Booking Deposit`,
               description: `Secures your date with Tynnell Hollins Photography. The remaining balance is due before your session.`,
