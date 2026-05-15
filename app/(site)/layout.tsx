@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import './styles/tokens.css'
-import Navbar from './components/Navbar/Navbar'
+import Navbar from '../components/Navbar/Navbar'
 import { SanityLive } from '@/sanity/lib/live'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
