@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { sanityFetch } from '@/sanity/lib/live'
-import { testimonialsQuery } from '@/sanity/queries'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
@@ -9,16 +9,13 @@ export const metadata: Metadata = {
   description: 'Kind words from couples, families, and portrait clients who have worked with Tynnell Hollins Photography.',
 }
 
-interface Testimonial {
-  _id: string
-  clientName: string
-  quote: string
-  sessionType?: string
-  order?: number
-}
-
 export default async function TestimonialsPage() {
-  const { data: testimonials } = await sanityFetch({ query: testimonialsQuery })
+  const payload = await getPayload({ config })
+  const { docs: testimonials } = await payload.find({
+    collection: 'testimonials',
+    sort: 'displayOrder',
+    depth: 0,
+  })
 
   return (
     <main className={styles.page}>
@@ -31,10 +28,10 @@ export default async function TestimonialsPage() {
         </p>
       </div>
 
-      {testimonials && testimonials.length > 0 ? (
+      {testimonials.length > 0 ? (
         <div className={styles.grid}>
-          {(testimonials as Testimonial[]).map((t) => (
-            <article key={t._id} className={styles.card}>
+          {testimonials.map((t) => (
+            <article key={t.id} className={styles.card}>
               <p className={styles.stars} aria-label="5 stars">★★★★★</p>
               <blockquote className={styles.quote}>&ldquo;{t.quote}&rdquo;</blockquote>
               <footer className={styles.footer}>

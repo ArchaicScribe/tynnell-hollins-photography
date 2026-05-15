@@ -2,22 +2,33 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { sanityFetch } from '@/sanity/lib/live'
-import { client } from '@/sanity/lib/client'
-import { galleryBySlugQuery, allGallerySlugsQuery } from '@/sanity/queries'
-import { urlFor } from '@/sanity/lib/image'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import type { Photo } from '@/payload-types'
 import styles from './page.module.css'
 
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
-  const slugs = await client.fetch(allGallerySlugsQuery)
-  return slugs.map(({ slug }: { slug: string }) => ({ slug }))
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'galleries',
+    depth: 0,
+    limit: 1000,
+  })
+  return docs.map(g => ({ slug: typeof g.slug === 'string' ? g.slug : '' }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const { data: gallery } = await sanityFetch({ query: galleryBySlugQuery, params: { slug } })
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'galleries',
+    where: { slug: { equals: slug } },
+    depth: 0,
+    limit: 1,
+  })
+  const gallery = docs[0]
   if (!gallery) return { title: 'Gallery | Tynnell Hollins Photography' }
   return {
     title: `${gallery.title} | Tynnell Hollins Photography`,
@@ -27,20 +38,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GalleryPage({ params }: Props) {
   const { slug } = await params
-  const { data: gallery } = await sanityFetch({ query: galleryBySlugQuery, params: { slug } })
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'galleries',
+    where: { slug: { equals: slug } },
+    depth: 2,
+    limit: 1,
+  })
+  const gallery = docs[0]
 
   if (!gallery) notFound()
 
-  const photos = gallery.photos ?? []
+  const cover = typeof gallery.coverPhoto === 'object' && gallery.coverPhoto !== null
+    ? gallery.coverPhoto as Photo
+    : null
+  const coverUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
+
+  const photos: Photo[] = Array.isArray(gallery.photos)
+    ? gallery.photos.filter((p): p is Photo => typeof p === 'object' && p !== null)
+    : []
 
   return (
     <main className={styles.main}>
       {/* Hero */}
-      {gallery.coverImage && (
+      {coverUrl && (
         <div className={styles.hero}>
           <Image
-            src={urlFor(gallery.coverImage.image).width(1600).height(900).fit('crop').auto('format').url()}
-            alt={gallery.coverImage.alt ?? gallery.title}
+            src={coverUrl}
+            alt={cover?.alt ?? gallery.title}
             fill
             priority
             className={styles.heroImage}
@@ -62,17 +87,21 @@ export default async function GalleryPage({ params }: Props) {
 
         {photos.length > 0 ? (
           <div className={styles.grid}>
-            {photos.map((photo: { _key: string; image: object; alt: string; caption: string }) => (
-              <div key={photo._key} className={styles.imageSlot}>
-                <Image
-                  src={urlFor(photo.image).width(800).height(600).fit('crop').auto('format').url()}
-                  alt={photo.alt ?? photo.caption ?? ''}
-                  fill
-                  sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-                  className={styles.photo}
-                />
-              </div>
-            ))}
+            {photos.map((photo) => {
+              const url = photo.sizes?.card?.url ?? photo.url ?? null
+              if (!url) return null
+              return (
+                <div key={String(photo.id)} className={styles.imageSlot}>
+                  <Image
+                    src={url}
+                    alt={photo.alt ?? photo.title ?? ''}
+                    fill
+                    sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+                    className={styles.photo}
+                  />
+                </div>
+              )
+            })}
           </div>
         ) : (
           <p className={styles.empty}>Photos coming soon.</p>
