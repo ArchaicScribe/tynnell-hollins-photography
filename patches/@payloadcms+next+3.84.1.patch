@@ -1,0 +1,12 @@
+diff --git a/node_modules/@payloadcms/next/dist/layouts/Root/index.js b/node_modules/@payloadcms/next/dist/layouts/Root/index.js
+index b8fbbe1..5c46a4b 100644
+--- a/node_modules/@payloadcms/next/dist/layouts/Root/index.js
++++ b/node_modules/@payloadcms/next/dist/layouts/Root/index.js
+@@ -109,6 +109,7 @@ const RootLayoutContent = async ({
+         children: `@layer payload-default, payload;`
+       })
+     }), /*#__PURE__*/_jsxs("body", {
++      suppressHydrationWarning: true,
+       children: [/*#__PURE__*/_jsxs(RootProvider, {
+         config: clientConfig,
+         dateFNSKey: req.i18n.dateFNSKey,
