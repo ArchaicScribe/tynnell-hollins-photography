@@ -1,4 +1,4 @@
-import type { ServerFunctionHandler } from 'payload'
+import type { ServerFunctionClient } from 'payload'
 import { handleServerFunctions, RootLayout } from '@payloadcms/next/layouts'
 import React from 'react'
 
@@ -9,7 +9,7 @@ type Args = {
   children: React.ReactNode
 }
 
-const serverFunction: ServerFunctionHandler = async function (args) {
+const serverFunction: ServerFunctionClient = async function (args) {
   'use server'
   return handleServerFunctions({
     ...args,
