@@ -1,13 +1,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { urlFor } from '@/sanity/lib/image'
 import styles from './PortfolioTeaser.module.css'
 
 export interface FeaturedPhoto {
-  _id: string
+  id: string
   title: string
-  alt: string
-  image: { asset: { _ref: string } }
+  alt?: string
+  imageUrl: string | null
   category?: string
 }
 
@@ -33,16 +32,16 @@ export default function PortfolioTeaser({ photos }: Props) {
       <div className={styles.grid}>
         {slots.map((photo, i) => (
           <div
-            key={photo?._id ?? i}
+            key={photo?.id ?? i}
             className={styles.card}
             style={{ '--rotation': `${TAPE_ANGLES[i]}deg` } as React.CSSProperties}
           >
             <div className={styles.tape} />
             <div className={styles.imageSlot}>
-              {photo ? (
+              {photo?.imageUrl ? (
                 <Image
-                  src={urlFor(photo.image).width(600).height(750).quality(85).url()}
-                  alt={photo.alt}
+                  src={photo.imageUrl}
+                  alt={photo.alt ?? photo.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
                   className={styles.photo}

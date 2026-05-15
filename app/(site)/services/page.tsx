@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { sanityFetch } from '@/sanity/lib/live'
-import { servicesQuery } from '@/sanity/queries'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
@@ -9,17 +9,13 @@ export const metadata: Metadata = {
   description: "Photography packages for weddings, portraits, families, couples, and brands. View pricing and what's included.",
 }
 
-type Service = {
-  _id: string
-  eyebrow?: string
-  title: string
-  description?: string
-  features?: string[]
-  price?: string
-}
-
 export default async function ServicesPage() {
-  const { data: services } = await sanityFetch({ query: servicesQuery })
+  const payload = await getPayload({ config })
+  const { docs: services } = await payload.find({
+    collection: 'services',
+    sort: 'displayOrder',
+    depth: 0,
+  })
 
   return (
     <main className={styles.main}>
@@ -35,8 +31,8 @@ export default async function ServicesPage() {
 
       {/* Service cards */}
       <section className={styles.grid} aria-label="Service packages">
-        {services && services.length > 0 ? (services as Service[]).map((service) => (
-          <article key={service._id} className={styles.card}>
+        {services.length > 0 ? services.map((service) => (
+          <article key={service.id} className={styles.card}>
             {service.eyebrow && (
               <p className={styles.cardEyebrow}>{service.eyebrow}</p>
             )}
@@ -49,10 +45,10 @@ export default async function ServicesPage() {
             )}
             {service.features && service.features.length > 0 && (
               <ul className={styles.featureList}>
-                {service.features.map((feature, i) => (
+                {service.features.map((item, i) => (
                   <li key={i} className={styles.featureItem}>
                     <span className={styles.featureDash} aria-hidden="true">{"—"}</span>
-                    {feature}
+                    {item.feature}
                   </li>
                 ))}
               </ul>
