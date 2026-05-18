@@ -22,7 +22,8 @@ export default async function Home() {
       payload.findGlobal({ slug: 'about-page', depth: 1 }),
     ])
 
-  const slides: HeroSlide[] = (heroData?.slides ?? []).map((slide, i) => {
+  type RawSlide = { image: import('@/payload-types').Photo | string | number; caption?: string | null }
+  const slides: HeroSlide[] = (heroData?.slides ?? []).map((slide: RawSlide, i) => {
     const photo = typeof slide.image === 'object' && slide.image !== null ? slide.image as Photo : null
     return {
       id: String(i),
