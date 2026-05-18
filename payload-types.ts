@@ -6,6 +6,8 @@
  * Run `npx payload generate:types` to regenerate with full type information.
  */
 
+import type { SerializedEditorState } from '@payloadcms/richtext-lexical'
+
 // Wire our Config into Payload's generic type system so that findGlobal / find
 // return properly-typed results without needing explicit cast annotations.
 declare module 'payload' {
@@ -109,7 +111,7 @@ export interface Post {
   publishedAt?: string | null
   coverImage?: Photo | string | number | null
   excerpt?: string | null
-  body?: Record<string, unknown> | null
+  body?: SerializedEditorState | null
   updatedAt: string
   createdAt: string
 }
@@ -133,7 +135,7 @@ export interface AboutPage {
   headshot?: Photo | string | number | null
   headshotAlt?: string | null
   tagline?: string | null
-  bio?: Record<string, unknown> | null
+  bio?: SerializedEditorState | null
   previewBio?: string | null
   values?:
     | {
