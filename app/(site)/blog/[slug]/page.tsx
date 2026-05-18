@@ -92,7 +92,8 @@ export default async function BlogPostPage({ params }: Props) {
         {post.excerpt && <p className={styles.excerpt}>{post.excerpt}</p>}
         {post.body && (
           <div className={styles.body}>
-            <RichText data={post.body} />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <RichText data={post.body as any} />
           </div>
         )}
       </article>
