@@ -108,6 +108,55 @@ export interface Post {
   createdAt: string
 }
 
+export interface HeroSlides {
+  slides?:
+    | {
+        image: Photo | string | number
+        caption?: string | null
+        displayOrder?: number | null
+        id?: string | null
+      }[]
+    | null
+  updatedAt?: string | null
+  createdAt?: string | null
+  globalType?: string | null
+  id: string | number
+}
+
+export interface AboutPage {
+  headshot?: Photo | string | number | null
+  headshotAlt?: string | null
+  tagline?: string | null
+  bio?: Record<string, unknown> | null
+  previewBio?: string | null
+  values?:
+    | {
+        heading: string
+        body?: string | null
+        id?: string | null
+      }[]
+    | null
+  updatedAt?: string | null
+  createdAt?: string | null
+  globalType?: string | null
+  id: string | number
+}
+
+export interface SiteConfig {
+  title: string
+  tagline?: string | null
+  email?: string | null
+  phone?: string | null
+  instagramUrl?: string | null
+  facebookUrl?: string | null
+  tiktokUrl?: string | null
+  pinterestUrl?: string | null
+  updatedAt?: string | null
+  createdAt?: string | null
+  globalType?: string | null
+  id: string | number
+}
+
 export type Config = {
   collections: {
     photos: Photo
@@ -116,5 +165,10 @@ export type Config = {
     services: Service
     posts: Post
     users: User
+  }
+  globals: {
+    'hero-slides': HeroSlides
+    'about-page': AboutPage
+    'site-config': SiteConfig
   }
 }

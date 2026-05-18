@@ -35,8 +35,9 @@ export default async function AboutPage() {
     : null
   const headshotUrl = headshotPhoto?.sizes?.card?.url ?? headshotPhoto?.url ?? null
 
+  type RawValue = { heading?: string | null; body?: string | null }
   const specialties: AboutValue[] = about?.values?.length
-    ? about.values.map(v => ({ heading: v.heading ?? '', body: v.body ?? undefined }))
+    ? about.values.map((v: RawValue) => ({ heading: v.heading ?? '', body: v.body ?? undefined }))
     : DEFAULT_VALUES
 
   return (
