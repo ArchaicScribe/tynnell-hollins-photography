@@ -1,0 +1,50 @@
+/* Tynnell Hollins Photography — Payload admin brand theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Roboto+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+
+/* Override Payload CSS variables — applied under both themes so the dark
+   palette holds regardless of the user's system preference. */
+:root,
+[data-theme="dark"],
+[data-theme="light"] {
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --theme-bg:             #0C0C0C;
+  --theme-elevation-0:    #0C0C0C;
+  --theme-elevation-50:   #0f0f0f;
+  --theme-elevation-100:  #131313;
+  --theme-elevation-150:  #161616;
+  --theme-elevation-200:  #1a1a1a;
+  --theme-elevation-250:  #1d1d1d;
+  --theme-elevation-500:  #131313;
+  --theme-elevation-800:  #222222;
+  --theme-elevation-1000: #2a2a2a;
+
+  /* Text */
+  --theme-text:     #E6E1DE;
+  --theme-text-dim: #9B9A9A;
+
+  /* Borders */
+  --theme-border-color: rgba(214, 209, 206, 0.08);
+
+  /* Fonts */
+  --font-body:    'Roboto Mono', monospace;
+  --font-heading: 'Archivo', sans-serif;
+  --font-mono:    'Roboto Mono', monospace;
+}
+
+/* Apply fonts globally across the admin */
+html,
+body {
+  font-family: 'Roboto Mono', monospace;
+  background-color: #0C0C0C;
+  color: #E6E1DE;
+}
+
+h1, h2, h3, h4, h5, h6,
+.nav__label,
+.collection-list__header,
+.doc-header__title {
+  font-family: 'Archivo', sans-serif;
+}
