@@ -71,7 +71,8 @@ export default async function AboutPage() {
           <h2 className={styles.sectionHeading}>Where It All Began</h2>
           {about?.bio ? (
             <div className={styles.bioBody}>
-              <RichText data={about.bio} />
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              <RichText data={about.bio as any} />
             </div>
           ) : (
             <>
