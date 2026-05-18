@@ -6,6 +6,12 @@
  * Run `npx payload generate:types` to regenerate with full type information.
  */
 
+// Wire our Config into Payload's generic type system so that findGlobal / find
+// return properly-typed results without needing explicit cast annotations.
+declare module 'payload' {
+  export interface GeneratedTypes extends Config {}
+}
+
 export interface Photo {
   id: string | number
   title: string
