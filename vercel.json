@@ -1,4 +1,5 @@
 {
+  "buildCommand": "npx payload migrate && npm run build",
   "rewrites": [
     {
       "source": "/robots.txt",
