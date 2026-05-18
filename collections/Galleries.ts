@@ -10,7 +10,7 @@ export const Galleries: CollectionConfig = {
     useAsTitle: 'title',
     description:
       'Curated collections of photos shown on your Portfolio page. Each gallery has a category, a cover photo, and a set of photos.',
-    defaultColumns: ['title', 'category', 'featured', 'displayOrder', 'updatedAt'],
+    defaultColumns: ['coverPhoto', 'title', 'category', 'featured', 'updatedAt'],
   },
   fields: [
     {
@@ -59,17 +59,28 @@ export const Galleries: CollectionConfig = {
       admin: {
         description:
           'The photo shown as the preview for this gallery on your portfolio page. Must be a photo already uploaded to All Photos.',
+        components: {
+          Cell: './components/admin/CoverPhotoCell#CoverPhotoCell',
+        },
       },
     },
     {
       name: 'photos',
-      type: 'relationship',
+      type: 'array',
       label: 'Photos in This Gallery',
-      relationTo: 'photos',
-      hasMany: true,
       admin: {
-        description: 'Select all photos to include in this gallery. You can reorder them after saving.',
+        description:
+          'Select photos to include in this gallery. Drag the handle on the left of each row to reorder them.',
       },
+      fields: [
+        {
+          name: 'photo',
+          type: 'relationship',
+          label: 'Photo',
+          relationTo: 'photos',
+          required: true,
+        },
+      ],
     },
     {
       name: 'featured',
