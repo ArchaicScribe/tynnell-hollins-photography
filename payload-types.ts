@@ -71,7 +71,7 @@ export interface Gallery {
   slug?: string | null
   category?: string | null
   coverPhoto?: Photo | string | number | null
-  photos?: (Photo | string | number)[] | null
+  photos?: { photo: Photo | string | number; id?: string | null }[] | null
   featured?: boolean | null
   displayOrder?: number | null
   updatedAt: string
