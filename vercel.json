@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx payload migrate && npm run build",
+  "buildCommand": "node scripts/migrate-db.mjs && npm run build",
   "rewrites": [
     {
       "source": "/robots.txt",
