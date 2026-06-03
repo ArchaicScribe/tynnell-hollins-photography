@@ -162,6 +162,13 @@
   opacity: 0.5;
 }
 
+/* Gallery title always visible on touch devices (no hover available) */
+@media (hover: none) {
+  .galleryOverlay {
+    opacity: 1;
+  }
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
@@ -169,7 +176,10 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .gap { gap: 1rem; }
+  /* 44px minimum tap target for filter buttons */
+  .filterBtn {
+    min-height: 44px;
+  }
 }
 
 @media (max-width: 480px) {
