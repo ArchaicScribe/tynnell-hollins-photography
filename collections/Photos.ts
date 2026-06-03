@@ -35,7 +35,7 @@ export const Photos: CollectionConfig = {
     useAsTitle: 'title',
     description:
       'Your photo library. Every image you upload lives here and can be used in galleries, blog posts, and your homepage.',
-    defaultColumns: ['filename', 'title', 'category', 'featured', 'updatedAt'],
+    defaultColumns: ['filename', 'category', 'featured', 'displayOrder', 'updatedAt'],
   },
   fields: [
     {
