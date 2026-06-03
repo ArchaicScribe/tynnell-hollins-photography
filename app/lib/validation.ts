@@ -33,6 +33,20 @@ export function anyFieldTooLong(
 }
 
 /**
+ * Validates a phone number submitted via the contact form.
+ *
+ * Strips all non-digit characters, then checks that the result has
+ * between 7 and 15 digits (covers local US numbers through E.164 international).
+ * Leading + for country codes is intentionally allowed before stripping.
+ */
+export function isValidPhone(phone: unknown): boolean {
+  if (typeof phone !== 'string') return false
+  if (phone.trim().length === 0) return false
+  const digits = phone.replace(/\D/g, '')
+  return digits.length >= 7 && digits.length <= 15
+}
+
+/**
  * Validates an email address for use in API routes.
  *
  * Rejects:

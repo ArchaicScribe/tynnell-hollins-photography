@@ -2,6 +2,12 @@
 import { useState, FormEvent } from 'react'
 import styles from './ContactForm.module.css'
 
+function isValidPhoneClient(phone: string): boolean {
+  if (phone.trim().length === 0) return false
+  const digits = phone.replace(/\D/g, '')
+  return digits.length >= 7 && digits.length <= 15
+}
+
 type FormStatus = 'idle' | 'loading' | 'success' | 'error'
 
 interface FormFields {
@@ -50,15 +56,32 @@ export default function ContactForm() {
   const [fields, setFields] = useState<FormFields>(EMPTY_FORM)
   const [status, setStatus] = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [phoneError, setPhoneError] = useState('')
 
   const update = (field: keyof FormFields) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setFields((prev) => ({ ...prev, [field]: e.target.value }))
 
+  const handlePhoneBlur = () => {
+    if (fields.phone && !isValidPhoneClient(fields.phone)) {
+      setPhoneError('Please enter a valid phone number.')
+    } else {
+      setPhoneError('')
+    }
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+
+    // Client-side phone check before hitting the API
+    if (!isValidPhoneClient(fields.phone)) {
+      setPhoneError('Please enter a valid phone number.')
+      return
+    }
+
     setStatus('loading')
     setErrorMessage('')
+    setPhoneError('')
 
     try {
       const res = await fetch('/api/contact', {
@@ -149,10 +172,16 @@ export default function ContactForm() {
             type="tel"
             className={styles.input}
             value={fields.phone}
-            onChange={update('phone')}
+            onChange={(e) => { update('phone')(e); if (phoneError) setPhoneError('') }}
+            onBlur={handlePhoneBlur}
             required
             autoComplete="tel"
+            aria-describedby={phoneError ? 'phone-error' : undefined}
+            aria-invalid={phoneError ? 'true' : undefined}
           />
+          {phoneError && (
+            <p id="phone-error" className={styles.errorMsg} role="alert">{phoneError}</p>
+          )}
         </div>
         <div className={styles.field}>
           <label htmlFor="contactPreference" className={styles.label}>

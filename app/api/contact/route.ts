@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
-import { isValidEmail, isValidSessionDate, escapeHtml, anyFieldTooLong, CONTACT_MAX_LENGTHS } from '@/app/lib/validation'
+import { isValidEmail, isValidPhone, isValidSessionDate, escapeHtml, anyFieldTooLong, CONTACT_MAX_LENGTHS } from '@/app/lib/validation'
 import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { inquiryEmailHtml } from '@/app/lib/emails'
@@ -31,6 +31,10 @@ export async function POST(request: Request) {
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
+  }
+
+  if (!isValidPhone(phone)) {
+    return NextResponse.json({ error: 'Please enter a valid phone number (at least 7 digits).' }, { status: 400 })
   }
 
   if (!isValidSessionDate(date)) {
