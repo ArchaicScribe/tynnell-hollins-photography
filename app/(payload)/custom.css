@@ -48,3 +48,117 @@ h1, h2, h3, h4, h5, h6,
 .doc-header__title {
   font-family: 'Archivo', sans-serif;
 }
+
+/* ── Scrollbars ────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0C0C0C;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* ── List view — taller rows so thumbnails breathe ─────────── */
+
+.cell--relationship img,
+.cell--upload img,
+.thumbnail img {
+  border-radius: 3px;
+}
+
+/* Row height for list tables */
+tbody tr,
+.row--no-link {
+  height: 64px;
+}
+
+/* ── Upload thumbnail — make it larger in the list ─────────── */
+
+.file-meta__thumbnail img,
+.thumbnail--list img {
+  width: 80px !important;
+  height: 54px !important;
+  object-fit: cover !important;
+  border-radius: 3px !important;
+}
+
+/* ── Navigation sidebar ────────────────────────────────────── */
+
+.nav {
+  border-right: 1px solid rgba(214, 209, 206, 0.06);
+}
+
+.nav__label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ── Collection list header ────────────────────────────────── */
+
+.collection-list__header h1,
+.list-header__title {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* ── Document header ───────────────────────────────────────── */
+
+.doc-header__title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+
+.btn {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+/* ── Table header cells ────────────────────────────────────── */
+
+.sort-column__label,
+th,
+.cell--header {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9B9A9A;
+}
+
+/* ── Input fields ──────────────────────────────────────────── */
+
+input[type='text'],
+input[type='email'],
+input[type='number'],
+textarea,
+select,
+.rs__control {
+  font-family: 'Roboto Mono', monospace !important;
+  font-size: 0.8rem !important;
+}
+
+/* ── Status select pills ───────────────────────────────────── */
+
+.pill {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

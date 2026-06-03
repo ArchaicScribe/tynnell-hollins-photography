@@ -10,7 +10,7 @@ export const Posts: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     description: 'Your blog posts, shown on the Blog page and individual post pages.',
-    defaultColumns: ['title', 'status', 'publishedAt', 'updatedAt'],
+    defaultColumns: ['coverImage', 'title', 'status', 'publishedAt', 'updatedAt'],
   },
   fields: [
     {
@@ -71,6 +71,9 @@ export const Posts: CollectionConfig = {
       admin: {
         description:
           'The main photo for this post, shown at the top of the post and on the blog listing page.',
+        components: {
+          Cell: './components/admin/PostCoverCell#PostCoverCell',
+        },
       },
     },
     {
