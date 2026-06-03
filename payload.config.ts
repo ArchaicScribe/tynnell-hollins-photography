@@ -45,6 +45,10 @@ export default buildConfig({
         photos: true,
       },
       bucket: process.env.R2_BUCKET ?? 'tynnell-hollins-photos',
+      // TODO (TYN-144): replace with media.tynnellhollinsphotography.com once the domain is
+      // transferred from Enom into Cloudflare. The r2.dev URL is rate-limited and
+      // Cloudflare recommends against it for production.
+      baseURL: process.env.R2_PUBLIC_URL ?? 'https://pub-db2dd9a6665142e4adcd4f822fbe2683.r2.dev',
       config: {
         endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
         credentials: {
