@@ -1,6 +1,7 @@
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import sharp from 'sharp'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -38,4 +39,21 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI || '',
     },
   }),
+  plugins: [
+    s3Storage({
+      collections: {
+        photos: true,
+      },
+      bucket: process.env.R2_BUCKET ?? 'tynnell-hollins-photos',
+      config: {
+        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
+        },
+        region: 'auto',
+        forcePathStyle: true,
+      },
+    }),
+  ],
 })
