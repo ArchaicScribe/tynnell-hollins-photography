@@ -62,12 +62,13 @@
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  width: 2rem;
-  height: 2rem;
+  /* 44px minimum tap target (WCAG 2.5.5) */
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 6px;
   z-index: 101;
 }
 
