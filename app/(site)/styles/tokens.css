@@ -19,6 +19,7 @@
 
   /* Spacing */
   --max-width:         1680px;
-  --padding-x:         2.5vw;
+  /* min 1.25rem (20px) so small phones never get less than 20px side padding */
+  --padding-x:         max(1.25rem, 2.5vw);
   --padding-block:     4vmax;
 }
