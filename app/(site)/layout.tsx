@@ -6,8 +6,25 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export const metadata: Metadata = {
-  title: 'Tynnell Hollins Photography',
-  description: 'Documentary wedding and portrait photographer.',
+  metadataBase: new URL('https://tynnellhollinsphotography.com'),
+  title: {
+    default: 'Tynnell Hollins Photography',
+    template: '%s | Tynnell Hollins Photography',
+  },
+  description:
+    'Tynnell Hollins is a wedding and portrait photographer capturing authentic moments for couples and families.',
+  openGraph: {
+    type: 'website',
+    siteName: 'Tynnell Hollins Photography',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({
