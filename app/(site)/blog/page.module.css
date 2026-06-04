@@ -167,4 +167,10 @@
     padding: 2.5rem 0;
     border-right: none;
   }
+
+  /* Grid already provides 1.5rem side padding — cardBody's 2.5rem sides
+     would double-stack to 64px from screen edge on a 375px phone. */
+  .cardBody {
+    padding: 1.5rem 0 2rem;
+  }
 }
