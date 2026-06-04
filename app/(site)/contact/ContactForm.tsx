@@ -2,7 +2,14 @@
 import { useState, FormEvent, ReactNode } from 'react'
 import styles from './ContactForm.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
-import LocationInput from '@/app/components/LocationInput/LocationInput'
+import dynamic from 'next/dynamic'
+
+// ssr: false prevents @googlemaps/js-api-loader from being evaluated on the
+// server — it references `window` at module load time and throws during SSR.
+const LocationInput = dynamic(
+  () => import('@/app/components/LocationInput/LocationInput'),
+  { ssr: false },
+)
 
 function isValidPhoneClient(phone: string): boolean {
   if (phone.trim().length === 0) return false
