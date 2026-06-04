@@ -11,6 +11,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^2.1.0",
     "@payloadcms/db-postgres": "^3.84.1",
     "@payloadcms/next": "^3.84.1",
     "@payloadcms/richtext-lexical": "^3.84.1",
@@ -31,6 +32,7 @@
     "swiper": "^12.1.2"
   },
   "devDependencies": {
+    "@types/google.maps": "^3.65.0",
     "@types/node": "^20.19.37",
     "@types/react": "^19",
     "@types/react-dom": "^19",
