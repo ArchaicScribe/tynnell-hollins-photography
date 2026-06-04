@@ -28,14 +28,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { docs } = await payload.find({
     collection: 'posts',
     where: { slug: { equals: slug } },
-    depth: 0,
+    depth: 1,
     limit: 1,
   })
   const post = docs[0]
   if (!post) return { title: 'Post | Tynnell Hollins Photography' }
+
+  const cover = typeof post.coverImage === 'object' && post.coverImage !== null
+    ? post.coverImage as Photo
+    : null
+  const ogImageUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
+
   return {
     title: `${post.title} | Tynnell Hollins Photography`,
     description: post.excerpt ?? undefined,
+    ...(ogImageUrl && {
+      openGraph: {
+        type: 'article',
+        images: [{ url: ogImageUrl, width: 1920, height: 1080, alt: post.title }],
+        publishedTime: post.publishedAt,
+      },
+      twitter: {
+        images: [ogImageUrl],
+      },
+    }),
   }
 }
 
