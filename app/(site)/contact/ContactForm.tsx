@@ -2,6 +2,7 @@
 import { useState, FormEvent, ReactNode } from 'react'
 import styles from './ContactForm.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
+import LocationInput from '@/app/components/LocationInput/LocationInput'
 
 function isValidPhoneClient(phone: string): boolean {
   if (phone.trim().length === 0) return false
@@ -257,13 +258,12 @@ export default function ContactForm() {
       {/* Location */}
       <div className={styles.field}>
         <label htmlFor="location" className={styles.label}>Location / Venue</label>
-        <input
+        <LocationInput
           id="location"
-          type="text"
-          className={styles.input}
           value={fields.location}
-          onChange={update('location')}
-          placeholder="Optional"
+          onChange={(val) => setFields((prev) => ({ ...prev, location: val }))}
+          className={styles.input}
+          placeholder="City, venue, or address (optional)"
         />
       </div>
 
