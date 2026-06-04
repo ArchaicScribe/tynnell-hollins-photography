@@ -4,6 +4,7 @@ import { isValidEmail, isValidPhone, isValidSessionDate, escapeHtml, anyFieldToo
 import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { inquiryEmailHtml } from '@/app/lib/emails'
+import { CONTACT_EMAIL, EMAIL_FROM } from '@/app/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
 
   if (!isValidSessionDate(date)) {
     return NextResponse.json(
-      { error: `Please select a date at least 2 days from today. For sessions more than 2 years out, reach out directly at hello@tynnellhollinsphotography.com.` },
+      { error: `Please select a date at least 2 days from today. For sessions more than 2 years out, reach out directly at ${CONTACT_EMAIL}.` },
       { status: 400 },
     )
   }
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
 
   try {
     await resend.emails.send({
-      from: 'Tynnell Hollins Photography <hello@tynnellhollinsphotography.com>',
+      from: EMAIL_FROM,
       to: process.env.CONTACT_TO_EMAIL!,
       replyTo: email,
       subject: `New Inquiry: ${safeSessionType} - ${safeName}`,
