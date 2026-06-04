@@ -12,7 +12,8 @@
   --color-border:         rgba(214, 209, 206, 0.08);
   --color-border-subtle:  rgba(214, 209, 206, 0.06);
 
-  /* Typography */
+  /* Typography — values are overridden by next/font CSS variables on <html>.
+     Fallbacks here ensure nothing breaks if the variable is unset. */
   --font-display:      'Tangerine', cursive;
   --font-heading:      'Archivo', sans-serif;
   --font-body:         'Roboto Mono', monospace;

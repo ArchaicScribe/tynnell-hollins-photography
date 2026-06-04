@@ -1,9 +1,31 @@
 import type { Metadata } from 'next'
+import { Tangerine, Archivo, Roboto_Mono } from 'next/font/google'
 import './globals.css'
 import './styles/tokens.css'
 import Navbar from '../components/Navbar/Navbar'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+
+const tangerine = Tangerine({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+})
+
+const archivo = Archivo({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  variable: '--font-heading',
+  display: 'swap',
+})
+
+const robotoMono = Roboto_Mono({
+  weight: ['300', '400'],
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tynnellhollinsphotography.com'),
@@ -33,15 +55,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&family=Archivo:wght@400;500;600&family=Roboto+Mono:wght@300;400&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${tangerine.variable} ${archivo.variable} ${robotoMono.variable}`}>
       <body>
         <Navbar />
         {children}
