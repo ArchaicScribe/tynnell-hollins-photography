@@ -6,6 +6,7 @@ import { RichText } from '@payloadcms/richtext-lexical/react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
+import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -56,8 +57,30 @@ export default async function BlogPostPage({ params }: Props) {
     : null
   const coverUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
 
+  const blogPostingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt ?? undefined,
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt,
+    author: {
+      '@type': 'Person',
+      name: 'Tynnell Hollins',
+      url: 'https://tynnellhollinsphotography.com/about',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Tynnell Hollins Photography',
+      url: 'https://tynnellhollinsphotography.com',
+    },
+    url: `https://tynnellhollinsphotography.com/blog/${post.slug}`,
+    ...(coverUrl && { image: coverUrl }),
+  }
+
   return (
     <main className={styles.main}>
+      <JsonLd data={blogPostingSchema} />
 
       {/* Hero */}
       <header className={styles.header}>
