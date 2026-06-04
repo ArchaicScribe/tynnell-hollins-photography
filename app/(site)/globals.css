@@ -33,3 +33,49 @@ a {
   outline: 2px solid var(--color-detail);
   outline-offset: 3px;
 }
+
+/* ── Google Places autocomplete dropdown ───────────────────── */
+
+.pac-container {
+  background: #1a1a1a;
+  border: 1px solid rgba(214, 209, 206, 0.12);
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.pac-item {
+  padding: 0.6rem 1rem;
+  color: #9B9A9A;
+  border-top: 1px solid rgba(214, 209, 206, 0.06);
+  cursor: pointer;
+}
+
+.pac-item:hover,
+.pac-item-selected {
+  background: #222222;
+  color: #E6E1DE;
+}
+
+.pac-item-query {
+  color: #D6D1CE;
+  font-size: 0.8rem;
+}
+
+.pac-matched {
+  color: #E6E1DE;
+  font-weight: 400;
+}
+
+.pac-icon {
+  display: none;
+}
+
+/* Hide the "Powered by Google" logo — required by ToS to be visible,
+   but it renders inside the dropdown. We keep it accessible but minimal. */
+.pac-logo::after {
+  opacity: 0.3;
+  filter: invert(1);
+}
