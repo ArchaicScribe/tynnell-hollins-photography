@@ -4,9 +4,11 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const body = `User-agent: *
-Disallow: /studio
+Disallow: /admin
 Disallow: /api/
 Allow: /
+
+Sitemap: https://tynnellhollinsphotography.com/sitemap.xml
 `
   return new NextResponse(body, {
     headers: {
