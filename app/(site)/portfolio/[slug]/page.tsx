@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
+import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -61,8 +62,30 @@ export default async function GalleryPage({ params }: Props) {
         .filter((p): p is Photo => typeof p === 'object' && p !== null)
     : []
 
+  const pageUrl = `https://tynnellhollinsphotography.com/portfolio/${gallery.slug}`
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Portfolio', item: 'https://tynnellhollinsphotography.com/portfolio' },
+      { '@type': 'ListItem', position: 2, name: gallery.title, item: pageUrl },
+    ],
+  }
+  const imageGallerySchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ImageGallery',
+    name: gallery.title,
+    description: `${gallery.title} — a ${gallery.category} session by Tynnell Hollins Photography.`,
+    url: pageUrl,
+    author: { '@type': 'Person', name: 'Tynnell Hollins' },
+    ...(coverUrl && { thumbnailUrl: coverUrl }),
+    numberOfItems: photos.length,
+  }
+
   return (
     <main className={styles.main}>
+      <JsonLd data={breadcrumbSchema} />
+      <JsonLd data={imageGallerySchema} />
       {/* Hero */}
       {coverUrl && (
         <div className={styles.hero}>
