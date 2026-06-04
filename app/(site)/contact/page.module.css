@@ -21,7 +21,7 @@
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0.25em;
@@ -40,7 +40,7 @@
 }
 
 .body {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 300;
   line-height: 1.8;
@@ -56,7 +56,7 @@
 }
 
 .contactLink {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
   font-weight: 300;
   letter-spacing: 0.05em;

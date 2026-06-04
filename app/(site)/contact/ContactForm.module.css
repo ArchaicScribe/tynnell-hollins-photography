@@ -21,10 +21,10 @@
 /* ── Labels ──────────────────────────────────────────────── */
 
 .label {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
   font-weight: 400;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-detail);
 }
@@ -39,12 +39,12 @@
 .input,
 .select,
 .textarea {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 300;
   color: var(--color-body);
   background: var(--color-bg-accent);
-  border: 1px solid #2a2a2a;
+  border: 1px solid rgba(214, 209, 206, 0.12);
   border-radius: 2px;
   padding: 0.75rem 1rem;
   width: 100%;
@@ -57,7 +57,7 @@
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--color-detail);
+  border-color: rgba(214, 209, 206, 0.35);
 }
 
 .input::placeholder {
@@ -87,7 +87,7 @@
 /* ── Submit button ───────────────────────────────────────── */
 
 .submit {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0.2em;
@@ -113,8 +113,9 @@
 /* ── Error ───────────────────────────────────────────────── */
 
 .errorMsg {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.75rem;
+  line-height: 1.6;
   color: #c87171;
   margin: 0;
 }
@@ -126,7 +127,7 @@
 }
 
 .successEyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.65rem;
   letter-spacing: 0.25em;
   text-transform: uppercase;
@@ -143,7 +144,7 @@
 }
 
 .successBody {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 300;
   line-height: 1.8;
@@ -152,7 +153,7 @@
 }
 
 .resetBtn {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.65rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
