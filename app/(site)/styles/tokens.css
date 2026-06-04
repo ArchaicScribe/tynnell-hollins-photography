@@ -16,6 +16,7 @@
   --font-display:      'Tangerine', cursive;
   --font-heading:      'Archivo', sans-serif;
   --font-body:         'Roboto Mono', monospace;
+  --font-mono:         var(--font-body); /* alias — resolves to Roboto Mono */
 
   /* Spacing */
   --max-width:         1680px;

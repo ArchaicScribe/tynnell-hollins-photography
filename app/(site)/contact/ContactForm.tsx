@@ -1,6 +1,7 @@
 'use client'
-import { useState, FormEvent } from 'react'
+import { useState, FormEvent, ReactNode } from 'react'
 import styles from './ContactForm.module.css'
+import { CONTACT_EMAIL } from '@/app/lib/constants'
 
 function isValidPhoneClient(phone: string): boolean {
   if (phone.trim().length === 0) return false
@@ -55,7 +56,7 @@ const EMPTY_FORM: FormFields = {
 export default function ContactForm() {
   const [fields, setFields] = useState<FormFields>(EMPTY_FORM)
   const [status, setStatus] = useState<FormStatus>('idle')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState<ReactNode>('')
   const [phoneError, setPhoneError] = useState('')
 
   const update = (field: keyof FormFields) => (
@@ -93,21 +94,35 @@ export default function ContactForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        // 400 errors carry user-facing validation messages — show them directly.
-        // All other errors (403, 429, 500, etc.) use a safe generic fallback.
-        const userMessage = res.status === 400
-          ? (data.error || 'Please check your details and try again.')
-          : res.status === 429
-            ? 'Too many submissions. Please wait a moment and try again.'
-            : 'Something went wrong. Please try again or reach out directly at hello@tynnellhollinsphotography.com.'
-        throw new Error(userMessage)
+        // 400: server returned a user-facing validation message — show it directly.
+        // 429: rate limit hit.
+        // anything else: generic fallback with a clickable email link.
+        let message: ReactNode
+        if (res.status === 400) {
+          message = data.error || 'Please check your details and try again.'
+        } else if (res.status === 429) {
+          message = 'Too many submissions. Please wait a moment and try again.'
+        } else {
+          message = (
+            <>
+              Something went wrong. Please try again or reach out directly at{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                {CONTACT_EMAIL}
+              </a>
+              .
+            </>
+          )
+        }
+        setStatus('error')
+        setErrorMessage(message)
+        return
       }
 
       setStatus('success')
       setFields(EMPTY_FORM)
-    } catch (err) {
+    } catch {
       setStatus('error')
-      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong.')
+      setErrorMessage('Something went wrong. Please try again.')
     }
   }
 
@@ -143,6 +158,7 @@ export default function ContactForm() {
             onChange={update('name')}
             required
             autoComplete="name"
+            placeholder="Your full name"
           />
         </div>
         <div className={styles.field}>
@@ -157,6 +173,7 @@ export default function ContactForm() {
             onChange={update('email')}
             required
             autoComplete="email"
+            placeholder="you@example.com"
           />
         </div>
       </div>
@@ -176,6 +193,7 @@ export default function ContactForm() {
             onBlur={handlePhoneBlur}
             required
             autoComplete="tel"
+            placeholder="(555) 123-4567"
             aria-describedby={phoneError ? 'phone-error' : undefined}
             aria-invalid={phoneError ? 'true' : undefined}
           />
