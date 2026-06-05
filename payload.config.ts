@@ -37,15 +37,13 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
+      ssl: { rejectUnauthorized: false },
     },
   }),
   plugins: [
     s3Storage({
       collections: {
         photos: {
-          // TODO (TYN-144): replace R2_PUBLIC_URL with media.tynnellhollinsphotography.com
-          // once the domain is transferred from Enom into Cloudflare. The r2.dev URL is
-          // rate-limited and Cloudflare recommends against it for production.
           generateFileURL: ({ filename }) => {
             const base = process.env.R2_PUBLIC_URL ?? 'https://pub-db2dd9a6665142e4adcd4f822fbe2683.r2.dev'
             return `${base}/${filename}`

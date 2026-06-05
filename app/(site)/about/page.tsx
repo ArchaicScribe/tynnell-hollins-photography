@@ -9,7 +9,7 @@ import styles from './page.module.css'
 
 export const metadata: Metadata = {
   title: 'About | Tynnell Hollins Photography',
-  description: 'Meet Tynnell Hollins — New Mexico photographer specializing in weddings, engagements, portraits, and family sessions.',
+  description: 'Meet Tynnell Hollins, New Mexico photographer specializing in weddings, engagements, portraits, and family sessions.',
 }
 
 type AboutValue = {
