@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import ContactForm from './ContactForm'
 import styles from './page.module.css'
+import { CONTACT_EMAIL } from '@/app/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Contact | Tynnell Hollins Photography',
@@ -21,8 +22,8 @@ export default function ContactPage() {
             Fill out the form and I&apos;ll be in touch within 48 hours.
           </p>
           <div className={styles.directContact}>
-            <a href="mailto:hello@tynnellhollinsphotography.com" className={styles.contactLink}>
-              hello@tynnellhollinsphotography.com
+            <a href={`mailto:${CONTACT_EMAIL}`} className={styles.contactLink}>
+              {CONTACT_EMAIL}
             </a>
             <span className={styles.contactDivider}>·</span>
             <a href="https://instagram.com/tynnellhollinsphotography" className={styles.contactLink} target="_blank" rel="noopener noreferrer">
