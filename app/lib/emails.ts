@@ -83,13 +83,19 @@ export interface ClientAcknowledgmentEmailFields {
   name: string
   sessionType: string
   date: string
+  oooMessage?: string
 }
 
 export function clientAcknowledgmentEmailHtml(f: ClientAcknowledgmentEmailFields): string {
+  const responseNote = f.oooMessage
+    ? `<p>${f.oooMessage}</p>`
+    : `<p>I will be in touch shortly to confirm availability and talk through the details.</p>`
+
   return wrapper(`
     <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">I received your inquiry!</h2>
     <p>Hi ${f.name},</p>
-    <p>Thank you for reaching out. I received your inquiry for a <strong>${f.sessionType}</strong> session on <strong>${f.date}</strong> and will be in touch shortly to confirm availability and talk through the details.</p>
+    <p>Thank you for reaching out about a <strong>${f.sessionType}</strong> session on <strong>${f.date}</strong>.</p>
+    ${responseNote}
     <p>In the meantime, feel free to browse my portfolio or reach out directly if you have any questions.</p>
     <p style="margin-top: 2rem;">Talk soon,<br/><strong>Tynnell Hollins</strong><br/>Tynnell Hollins Photography</p>
     ${emailFooter()}
@@ -128,14 +134,19 @@ export interface ClientReceiptEmailFields {
   clientName: string
   packageName: string
   amountPaid: string
+  oooMessage?: string
 }
 
 export function clientReceiptEmailHtml(f: ClientReceiptEmailFields): string {
+  const followUpNote = f.oooMessage
+    ? `<p>${f.oooMessage}</p>`
+    : `<p>I'll be reaching out shortly to confirm all the details and start planning your session.</p>`
+
   return wrapper(`
     <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">You're officially on the calendar.</h2>
     <p>Hi ${f.clientName},</p>
     <p>Your ${f.amountPaid} deposit for a <strong>${f.packageName}</strong> session has been received. Your date is now held.</p>
-    <p>I'll be reaching out shortly to confirm all the details and start planning your session.</p>
+    ${followUpNote}
     <p style="margin-top: 2rem;">Talk soon,<br/><strong>Tynnell Hollins</strong><br/>Tynnell Hollins Photography</p>
     ${emailFooter()}
   `)
