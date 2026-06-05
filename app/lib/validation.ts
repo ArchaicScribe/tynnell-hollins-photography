@@ -64,39 +64,38 @@ export function isValidEmail(email: unknown): email is string {
   return EMAIL_REGEX.test(email)
 }
 
-/**
- * Validates a session date string submitted via the contact form.
- *
- * Rules:
- * - Must be a parseable date in YYYY-MM-DD format
- * - Must be at least MIN_LEAD_TIME_HOURS from now (default: 48h)
- * - Must be no more than MAX_BOOKING_MONTHS in the future (default: 24 months)
- *
- * These constants will be replaced with Sanity-fetched values in TYN-92.
- */
 export const MIN_LEAD_TIME_HOURS = 48
 export const MAX_BOOKING_MONTHS = 24
 
-export function isValidSessionDate(dateStr: unknown): boolean {
+/**
+ * Validates a session date string submitted via the contact form.
+ *
+ * Accepts optional overrides for lead time and booking window — used when
+ * the contact API route fetches live values from the BookingSettings global.
+ * Falls back to the hardcoded constants if overrides are not provided.
+ */
+export function isValidSessionDate(
+  dateStr: unknown,
+  options?: { minLeadTimeHours?: number; maxBookingMonths?: number },
+): boolean {
   if (typeof dateStr !== 'string') return false
-  // Must match YYYY-MM-DD
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false
 
-  // Parse as local calendar date (not UTC) to avoid timezone shifting
   const [year, month, day] = dateStr.split('-').map(Number)
   const submitted = new Date(year, month - 1, day)
   if (isNaN(submitted.getTime())) return false
 
-  // Compare against calendar days, not exact timestamps:
-  // "48 hours minimum" = submitted date must be at least 2 full days from today
+  const leadTimeHours = options?.minLeadTimeHours ?? MIN_LEAD_TIME_HOURS
+  const bookingMonths = options?.maxBookingMonths ?? MAX_BOOKING_MONTHS
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
   const earliest = new Date(today)
-  earliest.setDate(earliest.getDate() + Math.ceil(MIN_LEAD_TIME_HOURS / 24))
+  earliest.setDate(earliest.getDate() + Math.ceil(leadTimeHours / 24))
 
   const latest = new Date(today)
-  latest.setMonth(latest.getMonth() + MAX_BOOKING_MONTHS)
+  latest.setMonth(latest.getMonth() + bookingMonths)
 
   return submitted >= earliest && submitted <= latest
 }
