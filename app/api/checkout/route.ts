@@ -31,6 +31,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
+  if (
+    typeof packageName !== 'string' ||
+    typeof clientName !== 'string' ||
+    typeof clientEmail !== 'string' ||
+    typeof sessionDate !== 'string'
+  ) {
+    return NextResponse.json({ error: 'Invalid field types' }, { status: 400 })
+  }
+
   if (anyFieldTooLong({ packageName, clientName }, CHECKOUT_MAX_LENGTHS)) {
     return NextResponse.json({ error: 'One or more fields exceeds the maximum allowed length' }, { status: 400 })
   }
@@ -135,7 +144,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: session.url })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to create checkout session'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('[checkout] Stripe session creation failed:', err)
+    return NextResponse.json({ error: 'Failed to create checkout session. Please try again.' }, { status: 500 })
   }
 }
