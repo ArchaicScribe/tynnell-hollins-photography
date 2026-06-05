@@ -8,3 +8,5 @@
 export const CONTACT_EMAIL = 'hello@tynnellhollinsphotography.com'
 
 export const EMAIL_FROM = `Tynnell Hollins Photography <${CONTACT_EMAIL}>`
+
+export const RATE_LIMIT_ERROR = 'Too many requests. Please try again later.'

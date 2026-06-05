@@ -4,7 +4,7 @@ import { isValidEmail, isValidPhone, isValidSessionDate, escapeHtml, anyFieldToo
 import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { inquiryEmailHtml, clientAcknowledgmentEmailHtml } from '@/app/lib/emails'
-import { CONTACT_EMAIL, EMAIL_FROM } from '@/app/lib/constants'
+import { CONTACT_EMAIL, EMAIL_FROM, RATE_LIMIT_ERROR } from '@/app/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
   const { success } = await contactRatelimit.limit(getClientIp(request))
   if (!success) {
-    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+    return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 })
   }
 
   if (!name || !email || !phone || !contactPreference || !sessionType || !date || !message) {
