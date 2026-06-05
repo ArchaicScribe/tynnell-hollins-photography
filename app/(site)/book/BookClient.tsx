@@ -14,11 +14,26 @@ export type BookingPackage = {
 type BookingState = {
   name: string
   email: string
+  sessionDate: string
+}
+
+// Client-side date constraints use the hardcoded defaults.
+// Server-side validation uses the admin-driven values from Payload.
+function getMinDate(): string {
+  const d = new Date()
+  d.setDate(d.getDate() + 2)
+  return d.toISOString().split('T')[0]
+}
+
+function getMaxDate(): string {
+  const d = new Date()
+  d.setMonth(d.getMonth() + 24)
+  return d.toISOString().split('T')[0]
 }
 
 export default function BookClient({ packages }: { packages: BookingPackage[] }) {
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [fields, setFields] = useState<BookingState>({ name: '', email: '' })
+  const [fields, setFields] = useState<BookingState>({ name: '', email: '', sessionDate: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -26,7 +41,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
 
   function handleSelect(id: string) {
     setActiveId(id)
-    setFields({ name: '', email: '' })
+    setFields({ name: '', email: '', sessionDate: '' })
     setError('')
   }
 
@@ -45,6 +60,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
           depositAmount: selected.depositAmount,
           clientName: fields.name,
           clientEmail: fields.email,
+          sessionDate: fields.sessionDate,
         }),
       })
 
@@ -114,12 +130,25 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
                     placeholder="jane@example.com"
                   />
                 </div>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor={`date-${pkg.id}`}>Desired Session Date *</label>
+                  <input
+                    className={styles.input}
+                    id={`date-${pkg.id}`}
+                    type="date"
+                    required
+                    min={getMinDate()}
+                    max={getMaxDate()}
+                    value={fields.sessionDate}
+                    onChange={(e) => setFields((f) => ({ ...f, sessionDate: e.target.value }))}
+                  />
+                </div>
                 {error && <p className={styles.error} role="alert">{error}</p>}
                 <div className={styles.formActions}>
                   <button
                     type="submit"
                     className={styles.checkoutBtn}
-                    disabled={loading || !fields.name || !fields.email}
+                    disabled={loading || !fields.name || !fields.email || !fields.sessionDate}
                   >
                     {loading ? 'Redirecting…' : `Pay $${pkg.depositAmount} Deposit`}
                   </button>
