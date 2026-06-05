@@ -7,20 +7,12 @@ import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { inquiryEmailHtml, clientAcknowledgmentEmailHtml } from '@/app/lib/emails'
 import { CONTACT_EMAIL, EMAIL_FROM, RATE_LIMIT_ERROR } from '@/app/lib/constants'
+import { getActiveOoo, getBlockedDateResult, type BlockedRange } from '@/app/lib/availability'
 
 export const dynamic = 'force-dynamic'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Compute the effective end of a blocked range, including optional return buffer
-function blockedRangeEnd(endDate: string, applyBuffer: boolean, bufferDays: number): Date {
-  const end = new Date(endDate)
-  if (applyBuffer && bufferDays > 0) {
-    end.setDate(end.getDate() + bufferDays)
-  }
-  end.setHours(23, 59, 59, 999)
-  return end
-}
 
 export async function POST(request: Request) {
   if (!isAllowedOrigin(request)) {
@@ -94,40 +86,16 @@ export async function POST(request: Request) {
     )
   }
 
-  // Check against blocked/OOO ranges
-  if (blockedRanges.length > 0 && typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    const [year, month, day] = date.split('-').map(Number)
-    const submitted = new Date(year, month - 1, day)
-    submitted.setHours(0, 0, 0, 0)
-    const now = new Date()
-
-    for (const range of blockedRanges) {
-      if (!range.startDate || !range.endDate) continue
-
-      const rangeStart = new Date(range.startDate)
-      rangeStart.setHours(0, 0, 0, 0)
-
-      const rangeEnd = blockedRangeEnd(
-        range.endDate,
-        range.applyReturnBuffer ?? true,
-        range.returnBufferDays ?? 2,
-      )
-
-      // Skip ranges that have fully ended
-      if (rangeEnd < now) continue
-
-      if (submitted >= rangeStart && submitted <= rangeEnd) {
-        const returnDate = rangeEnd.toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        })
-        const message = (range.customerMessage ?? 'That date is not currently available. Please select a different date or reach out directly.')
-          .replace('{returnDate}', returnDate)
-        return NextResponse.json({ error: message }, { status: 400 })
-      }
+  // Check if the requested session date falls within a blocked range
+  if (blockedRanges.length > 0 && typeof date === 'string') {
+    const blocked = getBlockedDateResult(date, blockedRanges)
+    if (blocked) {
+      return NextResponse.json({ error: blocked.message }, { status: 400 })
     }
   }
+
+  // Check if today is within an OOO period — used to set acknowledgment expectations
+  const activeOoo = blockedRanges.length > 0 ? getActiveOoo(blockedRanges) : null
 
   const safeName              = escapeHtml(name)
   const safeEmail             = escapeHtml(email)
@@ -161,11 +129,13 @@ export async function POST(request: Request) {
       resend.emails.send({
         from: EMAIL_FROM,
         to: email,
+        replyTo: process.env.CONTACT_TO_EMAIL,
         subject: `Got your inquiry, ${safeName}!`,
         html: clientAcknowledgmentEmailHtml({
           name: safeName,
           sessionType: safeSessionType,
           date: safeDate,
+          oooMessage: activeOoo?.message,
         }),
       }),
     ])

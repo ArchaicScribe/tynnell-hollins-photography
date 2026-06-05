@@ -4,30 +4,19 @@ import config from '@payload-config'
 import ContactForm from './ContactForm'
 import styles from './page.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
+import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 
 export const metadata: Metadata = {
   title: 'Contact | Tynnell Hollins Photography',
   description: 'Book a session with Tynnell Hollins Photography. Weddings, engagements, portraits, and more.',
 }
 
-interface BlockedRange {
-  startDate?: string | null
-  endDate?: string | null
-  applyReturnBuffer?: boolean | null
-  returnBufferDays?: number | null
-  customerMessage?: string | null
-}
+function findActiveOrUpcoming(ranges: BlockedRange[]): string | null {
+  // Check active OOO first
+  const active = getActiveOoo(ranges)
+  if (active) return active.message
 
-function getReturnDate(range: BlockedRange): Date {
-  const end = new Date(range.endDate!)
-  if (range.applyReturnBuffer !== false && (range.returnBufferDays ?? 2) > 0) {
-    end.setDate(end.getDate() + (range.returnBufferDays ?? 2))
-  }
-  end.setHours(23, 59, 59, 999)
-  return end
-}
-
-function findActiveOrUpcomingRange(ranges: BlockedRange[]): { range: BlockedRange; returnDate: Date } | null {
+  // Also surface an upcoming range starting within 7 days
   const now = new Date()
   now.setHours(0, 0, 0, 0)
   const sevenDaysOut = new Date(now)
@@ -37,42 +26,31 @@ function findActiveOrUpcomingRange(ranges: BlockedRange[]): { range: BlockedRang
     if (!range.startDate || !range.endDate) continue
     const start = new Date(range.startDate)
     start.setHours(0, 0, 0, 0)
-    const returnDate = getReturnDate(range)
-
-    // Active: today is within the blocked window
-    if (now >= start && now <= returnDate) {
-      return { range, returnDate }
-    }
-
-    // Upcoming: starts within the next 7 days
     if (start > now && start <= sevenDaysOut) {
-      return { range, returnDate }
+      const returnDate = new Date(range.endDate)
+      const bufferDays = range.applyReturnBuffer !== false ? (range.returnBufferDays ?? 2) : 0
+      if (bufferDays > 0) returnDate.setDate(returnDate.getDate() + bufferDays)
+      const returnDateStr = returnDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      return (range.customerMessage ?? `I will be away soon and back on ${returnDateStr}.`)
+        .replace('{returnDate}', returnDateStr)
     }
   }
   return null
 }
 
 export default async function ContactPage() {
-  let ooo: { range: BlockedRange; returnDate: Date } | null = null
+  let oooMessage: string | null = null
 
   try {
     const payload = await getPayload({ config })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const availability = await payload.findGlobal({ slug: 'availability' as any }) as any
     if (Array.isArray(availability?.blockedRanges)) {
-      ooo = findActiveOrUpcomingRange(availability.blockedRanges)
+      oooMessage = findActiveOrUpcoming(availability.blockedRanges)
     }
   } catch {
     // Non-fatal: banner simply won't show if globals are unavailable
   }
-
-  const oooMessage = ooo
-    ? (ooo.range.customerMessage ?? 'I am currently away and will be back soon.')
-        .replace(
-          '{returnDate}',
-          ooo.returnDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        )
-    : null
 
   return (
     <main className={styles.main}>
