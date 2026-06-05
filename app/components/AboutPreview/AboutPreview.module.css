@@ -6,12 +6,19 @@
 }
 
 .imageSlot {
+  position: relative;
   background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 60vh;
+  overflow: hidden;
   border-right: 1px solid var(--color-border-subtle);
+}
+
+.headshotImg {
+  object-fit: cover;
+  object-position: center top;
 }
 
 .placeholderLabel {

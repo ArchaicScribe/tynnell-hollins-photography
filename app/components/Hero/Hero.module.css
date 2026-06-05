@@ -30,6 +30,21 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.15) 0%,
+    rgba(0,0,0,0.05) 40%,
+    rgba(0,0,0,0.45) 100%
+  );
+}
+
+.overlayContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+  padding: 0 var(--padding-x);
 }
 
 .tagline {
@@ -37,7 +52,34 @@
   font-size: clamp(3rem, 8vw, 7rem);
   font-weight: 700;
   color: var(--color-heading);
-  text-align: center;
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-  padding: 0 2.5vw;
+  line-height: 1.1;
+}
+
+.subline {
+  font-family: var(--font-body);
+  font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
+.ctaBtn {
+  pointer-events: auto;
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-btn-text);
+  background: var(--color-btn-bg);
+  padding: 0.9rem 2.5rem;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.ctaBtn:hover {
+  background: var(--color-btn-hover);
 }

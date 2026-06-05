@@ -1,5 +1,5 @@
-import Image from 'next/image'
 import Link from 'next/link'
+import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import styles from './AboutPreview.module.css'
 
 export interface AboutData {
@@ -18,7 +18,7 @@ export default function AboutPreview({ about }: Props) {
     <section className={styles.section}>
       <div className={styles.imageSlot}>
         {about?.headshotUrl ? (
-          <Image
+          <ProtectedImage
             src={about.headshotUrl}
             alt={about?.headshotAlt ?? 'Tynnell Hollins'}
             fill
@@ -31,7 +31,7 @@ export default function AboutPreview({ about }: Props) {
       </div>
       <div className={styles.content}>
         <p className={styles.eyebrow}>About Tynnell</p>
-        <h2 className={styles.heading}>Every Moment Deserves to Last Forever</h2>
+        <h2 className={styles.heading}>{about?.tagline ?? 'Every Moment Deserves to Last Forever'}</h2>
         <p className={styles.body}>
           {about?.previewBio ??
             'Based in New Mexico, Tynnell Hollins is a photographer who believes the best images are the ones that feel like a memory. Warm, honest, and full of life. From weddings to family portraits, she brings the same quiet attention to every shoot.'}

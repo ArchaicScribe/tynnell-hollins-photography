@@ -15,8 +15,9 @@
 
 .eyebrow {
   font-family: var(--font-body);
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
   color: var(--color-detail);
 }
 
@@ -25,30 +26,62 @@
   font-size: clamp(2.5rem, 5vw, 4rem);
   color: var(--color-heading);
   font-weight: 400;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .body {
   font-family: var(--font-body);
-  font-size: 0.85rem;
-  line-height: 1.8;
+  font-size: 0.82rem;
+  line-height: 1.85;
   color: var(--color-body);
-  max-width: 480px;
+  max-width: 420px;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
 
 .btn {
   display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.875rem 2.5rem;
+  padding: 0.9rem 2.5rem;
   background-color: var(--color-btn-bg);
   color: var(--color-btn-text);
   font-family: var(--font-body);
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   text-decoration: none;
   transition: background-color 0.2s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 .btn:hover {
   background-color: var(--color-btn-hover);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.9rem 2.5rem;
+  background: transparent;
+  color: var(--color-detail);
+  border: 1px solid rgba(155, 154, 154, 0.3);
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  min-height: 44px;
+}
+
+.btnSecondary:hover {
+  color: var(--color-heading);
+  border-color: var(--color-detail);
 }

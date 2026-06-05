@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, EffectFade } from 'swiper/modules'
 import 'swiper/css'
@@ -47,9 +48,13 @@ export default function Hero({ slides, defaultTagline = FALLBACK_TAGLINE }: Prop
         <div className={styles.swiper} />
       )}
       <div className={styles.overlay}>
-        <p className={styles.tagline}>
-          {slides[0]?.tagline ?? defaultTagline}
-        </p>
+        <div className={styles.overlayContent}>
+          <p className={styles.tagline}>
+            {slides[0]?.tagline ?? defaultTagline}
+          </p>
+          <p className={styles.subline}>Weddings · Portraits · Families</p>
+          <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
+        </div>
       </div>
     </section>
   )

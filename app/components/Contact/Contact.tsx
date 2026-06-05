@@ -1,20 +1,21 @@
-import styles from './Contact.module.css';
-import Link from 'next/link';
+import styles from './Contact.module.css'
+import Link from 'next/link'
 
 export default function Contact() {
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
-        <p className={styles.eyebrow}>GET IN TOUCH</p>
-        <h2 className={styles.heading}>Let&apos;s Create Something Beautiful</h2>
+        <p className={styles.eyebrow}>Ready to Begin?</p>
+        <h2 className={styles.heading}>Your Story Deserves to Be Captured</h2>
         <p className={styles.body}>
-          Ready to capture your story? Reach out and let&apos;s start planning
+          Reserve your date with a deposit, or send a message to start planning
           your session together.
         </p>
-        <Link href="/contact" className={styles.btn}>
-          BOOK A SESSION
-        </Link>
+        <div className={styles.actions}>
+          <Link href="/book" className={styles.btn}>Book a Session</Link>
+          <Link href="/contact" className={styles.btnSecondary}>Send an Inquiry</Link>
+        </div>
       </div>
     </section>
-  );
+  )
 }
