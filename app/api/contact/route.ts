@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { isValidEmail, isValidPhone, isValidSessionDate, escapeHtml, anyFieldTooLong, CONTACT_MAX_LENGTHS } from '@/app/lib/validation'
 import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
-import { inquiryEmailHtml } from '@/app/lib/emails'
+import { inquiryEmailHtml, clientAcknowledgmentEmailHtml } from '@/app/lib/emails'
 import { CONTACT_EMAIL, EMAIL_FROM } from '@/app/lib/constants'
 
 export const dynamic = 'force-dynamic'
@@ -56,23 +56,35 @@ export async function POST(request: Request) {
   const safeMessage           = escapeHtml(message)
 
   try {
-    await resend.emails.send({
-      from: EMAIL_FROM,
-      to: process.env.CONTACT_TO_EMAIL!,
-      replyTo: email,
-      subject: `New Inquiry: ${safeSessionType} - ${safeName}`,
-      html: inquiryEmailHtml({
-        name: safeName,
-        email: safeEmail,
-        phone: safePhone,
-        contactPreference: safeContactPreference,
-        sessionType: safeSessionType,
-        date: safeDate,
-        location: safeLocation,
-        howHeard: safeHowHeard,
-        message: safeMessage,
+    await Promise.all([
+      resend.emails.send({
+        from: EMAIL_FROM,
+        to: process.env.CONTACT_TO_EMAIL!,
+        replyTo: email,
+        subject: `New Inquiry: ${safeSessionType} - ${safeName}`,
+        html: inquiryEmailHtml({
+          name: safeName,
+          email: safeEmail,
+          phone: safePhone,
+          contactPreference: safeContactPreference,
+          sessionType: safeSessionType,
+          date: safeDate,
+          location: safeLocation,
+          howHeard: safeHowHeard,
+          message: safeMessage,
+        }),
       }),
-    })
+      resend.emails.send({
+        from: EMAIL_FROM,
+        to: email,
+        subject: `Got your inquiry, ${safeName}!`,
+        html: clientAcknowledgmentEmailHtml({
+          name: safeName,
+          sessionType: safeSessionType,
+          date: safeDate,
+        }),
+      }),
+    ])
 
     return NextResponse.json({ success: true })
   } catch {
