@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -20,8 +21,7 @@ export default async function BookPage() {
       sort: 'displayOrder',
       depth: 0,
     }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload.findGlobal({ slug: 'availability' as any }).catch(() => null) as Promise<any>,
+    payload.findGlobal({ slug: 'availability' }).catch(() => null),
   ])
 
   const packages: BookingPackage[] = docs.map(s => ({
@@ -53,7 +53,9 @@ export default async function BookPage() {
         </p>
       </div>
 
-      <BookClient packages={packages} />
+      <Suspense fallback={null}>
+        <BookClient packages={packages} />
+      </Suspense>
     </main>
   )
 }

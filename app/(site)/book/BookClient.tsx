@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 
 export type BookingPackage = {
@@ -17,8 +18,10 @@ type BookingState = {
   sessionDate: string
 }
 
-// Client-side date constraints use the hardcoded defaults.
-// Server-side validation uses the admin-driven values from Payload.
+function slugify(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
 function getMinDate(): string {
   const d = new Date()
   d.setDate(d.getDate() + 2)
@@ -32,7 +35,11 @@ function getMaxDate(): string {
 }
 
 export default function BookClient({ packages }: { packages: BookingPackage[] }) {
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const packageParam = searchParams.get('package')
+  const matched = packageParam ? packages.find(p => slugify(p.title) === packageParam) : null
+
+  const [activeId, setActiveId] = useState<string | null>(matched?.id ?? null)
   const [fields, setFields] = useState<BookingState>({ name: '', email: '', sessionDate: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -90,87 +97,103 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
   return (
     <>
       <div className={styles.grid}>
-        {packages.map((pkg) => (
-          <article
-            key={pkg.id}
-            className={`${styles.card} ${activeId === pkg.id ? styles.cardActive : ''}`}
-          >
-            <div className={styles.cardTop}>
-              {pkg.eyebrow && <p className={styles.cardEyebrow}>{pkg.eyebrow}</p>}
-              <h2 className={styles.cardTitle}>{pkg.title}</h2>
-              {pkg.description && <p className={styles.cardDesc}>{pkg.description}</p>}
-              <p className={styles.cardDeposit}>${pkg.depositAmount} deposit</p>
-            </div>
-
-            {activeId === pkg.id ? (
-              <form className={styles.form} onSubmit={handleCheckout} noValidate>
-                <div className={styles.field}>
-                  <label className={styles.label} htmlFor={`name-${pkg.id}`}>Your Name *</label>
-                  <input
-                    className={styles.input}
-                    id={`name-${pkg.id}`}
-                    type="text"
-                    autoComplete="name"
-                    required
-                    value={fields.name}
-                    onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))}
-                    placeholder="Jane Smith"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label} htmlFor={`email-${pkg.id}`}>Email Address *</label>
-                  <input
-                    className={styles.input}
-                    id={`email-${pkg.id}`}
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={fields.email}
-                    onChange={(e) => setFields((f) => ({ ...f, email: e.target.value }))}
-                    placeholder="jane@example.com"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label} htmlFor={`date-${pkg.id}`}>Desired Session Date *</label>
-                  <input
-                    className={styles.input}
-                    id={`date-${pkg.id}`}
-                    type="date"
-                    required
-                    min={getMinDate()}
-                    max={getMaxDate()}
-                    value={fields.sessionDate}
-                    onChange={(e) => setFields((f) => ({ ...f, sessionDate: e.target.value }))}
-                  />
-                </div>
-                {error && <p className={styles.error} role="alert">{error}</p>}
-                <div className={styles.formActions}>
-                  <button
-                    type="submit"
-                    className={styles.checkoutBtn}
-                    disabled={loading || !fields.name || !fields.email || !fields.sessionDate}
-                  >
-                    {loading ? 'Redirecting…' : `Pay $${pkg.depositAmount} Deposit`}
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.cancelBtn}
-                    onClick={() => setActiveId(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <button
-                className={styles.selectBtn}
-                onClick={() => handleSelect(pkg.id)}
+        {packages.map((pkg) => {
+          const isActive = activeId === pkg.id
+          return (
+            <article
+              key={pkg.id}
+              className={`${styles.card} ${isActive ? styles.cardActive : ''}`}
+            >
+              <div
+                className={styles.cardTop}
+                role={isActive ? undefined : 'button'}
+                tabIndex={isActive ? undefined : 0}
+                onClick={() => !isActive && handleSelect(pkg.id)}
+                onKeyDown={(e) => !isActive && e.key === 'Enter' && handleSelect(pkg.id)}
               >
-                Book This Session
-              </button>
-            )}
-          </article>
-        ))}
+                {pkg.eyebrow && <p className={styles.cardEyebrow}>{pkg.eyebrow}</p>}
+                <h2 className={styles.cardTitle}>{pkg.title}</h2>
+                {pkg.description && <p className={styles.cardDesc}>{pkg.description}</p>}
+                <p className={styles.cardDeposit}><span className={styles.depositAmount}>${pkg.depositAmount}</span> deposit</p>
+              </div>
+
+              {isActive ? (
+                <form className={styles.form} onSubmit={handleCheckout} noValidate>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor={`name-${pkg.id}`}>Your Name *</label>
+                    <input
+                      className={styles.input}
+                      id={`name-${pkg.id}`}
+                      type="text"
+                      autoComplete="name"
+                      required
+                      value={fields.name}
+                      onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))}
+                      placeholder="Jane Smith"
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor={`email-${pkg.id}`}>Email Address *</label>
+                    <input
+                      className={styles.input}
+                      id={`email-${pkg.id}`}
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={fields.email}
+                      onChange={(e) => setFields((f) => ({ ...f, email: e.target.value }))}
+                      placeholder="jane@example.com"
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor={`date-${pkg.id}`}>Desired Session Date *</label>
+                    <input
+                      className={styles.input}
+                      id={`date-${pkg.id}`}
+                      type="date"
+                      required
+                      min={getMinDate()}
+                      max={getMaxDate()}
+                      value={fields.sessionDate}
+                      onChange={(e) => setFields((f) => ({ ...f, sessionDate: e.target.value }))}
+                    />
+                  </div>
+                  {error && <p className={styles.error} role="alert">{error}</p>}
+                  <div className={styles.formActions}>
+                    <button
+                      type="submit"
+                      className={styles.checkoutBtn}
+                      disabled={loading || !fields.name || !fields.email || !fields.sessionDate}
+                    >
+                      {loading ? 'Redirecting…' : `Pay $${pkg.depositAmount} Deposit`}
+                    </button>
+                    <p className={styles.trustSignal}>
+                      <svg width="11" height="13" viewBox="0 0 11 13" fill="none" aria-hidden="true">
+                        <rect x="1" y="5" width="9" height="8" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+                        <path d="M3 5V3.5a2.5 2.5 0 0 1 5 0V5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                      </svg>
+                      Secure checkout via Stripe
+                    </p>
+                    <button
+                      type="button"
+                      className={styles.cancelBtn}
+                      onClick={() => setActiveId(null)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <button
+                  className={styles.selectBtn}
+                  onClick={() => handleSelect(pkg.id)}
+                >
+                  Book This Session
+                </button>
+              )}
+            </article>
+          )
+        })}
       </div>
 
       <p className={styles.note}>

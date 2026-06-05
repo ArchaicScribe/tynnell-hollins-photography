@@ -53,7 +53,10 @@ export default async function ServicesPage() {
                 ))}
               </ul>
             )}
-            <Link href="/contact" className={styles.bookBtn}>
+            <Link
+              href={`/book?package=${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
+              className={styles.bookBtn}
+            >
               Book This Session
             </Link>
           </article>
@@ -66,8 +69,11 @@ export default async function ServicesPage() {
 
       {/* Bottom CTA */}
       <section className={styles.cta}>
-        <p className={styles.ctaText}>Not sure which package is right for you?</p>
-        <Link href="/contact" className={styles.ctaBtn}>Get in Touch</Link>
+        <p className={styles.ctaText}>Ready to reserve your date?</p>
+        <div className={styles.ctaActions}>
+          <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
+          <Link href="/contact" className={styles.ctaBtnSecondary}>Have questions?</Link>
+        </div>
       </section>
 
     </main>

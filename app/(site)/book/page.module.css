@@ -91,7 +91,12 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:not(.cardActive):hover {
+  border-color: rgba(155, 154, 154, 0.35);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
 }
 
 .cardActive {
@@ -103,6 +108,11 @@
   flex-direction: column;
   gap: 0.75rem;
   flex: 1;
+  cursor: pointer;
+}
+
+.cardActive .cardTop {
+  cursor: default;
 }
 
 .cardEyebrow {
@@ -138,8 +148,15 @@
   font-size: 0.75rem;
   font-weight: 400;
   letter-spacing: 0.05em;
-  color: var(--color-heading);
+  color: var(--color-detail);
   margin: 0;
+}
+
+.depositAmount {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-heading);
+  letter-spacing: 0;
 }
 
 /* ── Select button ───────────────────────────────────────── */
@@ -156,7 +173,8 @@
   padding: 0.85rem 1.5rem;
   cursor: pointer;
   transition: background 0.2s ease;
-  align-self: flex-start;
+  width: 100%;
+  min-height: 44px;
 }
 
 .selectBtn:hover {
@@ -244,6 +262,19 @@
 .checkoutBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.trustSignal {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--color-detail);
+  opacity: 0.7;
+  margin: 0;
+  justify-content: center;
 }
 
 .cancelBtn {

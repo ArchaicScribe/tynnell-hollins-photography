@@ -196,6 +196,31 @@
   background: var(--color-btn-hover);
 }
 
+.ctaActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ctaBtnSecondary {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  background: transparent;
+  border: 1px solid rgba(155, 154, 154, 0.3);
+  padding: 0.9rem 2.5rem;
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.ctaBtnSecondary:hover {
+  color: var(--color-heading);
+  border-color: var(--color-detail);
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 
 @media (max-width: 768px) {
