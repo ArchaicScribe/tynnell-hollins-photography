@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     template: '%s | Tynnell Hollins Photography',
   },
   description:
-    'Tynnell Hollins is a wedding and portrait photographer capturing authentic moments for couples and families.',
+    'Albuquerque, New Mexico wedding and portrait photographer. Tynnell Hollins captures authentic, timeless moments for couples, families, and engagements.',
   openGraph: {
     type: 'website',
     siteName: 'Tynnell Hollins Photography',
