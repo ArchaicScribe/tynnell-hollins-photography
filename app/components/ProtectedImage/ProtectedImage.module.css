@@ -1,0 +1,5 @@
+.protected {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}

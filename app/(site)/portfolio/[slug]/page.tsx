@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
@@ -103,7 +103,7 @@ export default async function GalleryPage({ params }: Props) {
       {/* Hero */}
       {coverUrl && (
         <div className={styles.hero}>
-          <Image
+          <ProtectedImage
             src={coverUrl}
             alt={cover?.alt ?? gallery.title}
             fill
@@ -132,7 +132,7 @@ export default async function GalleryPage({ params }: Props) {
               if (!url) return null
               return (
                 <div key={String(photo.id)} className={styles.imageSlot}>
-                  <Image
+                  <ProtectedImage
                     src={url}
                     alt={photo.alt ?? photo.title ?? ''}
                     fill

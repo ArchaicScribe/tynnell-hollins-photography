@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
-import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import styles from './page.module.css'
 
 const CATEGORIES = [
@@ -38,7 +39,10 @@ type Props = {
 }
 
 export default function PortfolioGrid({ photos, galleries }: Props) {
-  const [activeCategory, setActiveCategory] = useState('all')
+  const searchParams = useSearchParams()
+  const paramCategory = searchParams.get('category') ?? 'all'
+  const initialCategory = CATEGORIES.some(c => c.value === paramCategory) ? paramCategory : 'all'
+  const [activeCategory, setActiveCategory] = useState(initialCategory)
 
   const showAlbums = activeCategory === 'weddings'
 
@@ -73,7 +77,7 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
               className={styles.galleryCard}
             >
               {gallery.coverImageUrl ? (
-                <Image
+                <ProtectedImage
                   src={gallery.coverImageUrl}
                   alt={gallery.coverImageAlt ?? gallery.title}
                   fill
@@ -100,7 +104,7 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
           {filteredPhotos.length > 0 ? filteredPhotos.map(photo => (
             photo.imageUrl ? (
               <div key={photo.id} className={styles.imageSlot}>
-                <Image
+                <ProtectedImage
                   src={photo.imageUrl}
                   alt={photo.alt ?? photo.title}
                   fill

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -50,7 +51,9 @@ export default async function PortfolioPage() {
         <h1 className={styles.heading}>Portfolio</h1>
         <p className={styles.subheading}>Every story, every moment, every face</p>
       </div>
-      <PortfolioGrid photos={photos} galleries={galleries} />
+      <Suspense fallback={null}>
+        <PortfolioGrid photos={photos} galleries={galleries} />
+      </Suspense>
     </main>
   )
 }
