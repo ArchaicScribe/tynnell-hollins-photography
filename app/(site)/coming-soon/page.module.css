@@ -1,0 +1,58 @@
+.main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg);
+  padding: var(--padding-x);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  max-width: 640px;
+}
+
+.tagline {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  color: var(--color-heading);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-size: clamp(0.75rem, 2vw, 0.875rem);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0;
+}
+
+.message {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-detail);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.email {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  color: var(--color-detail);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.email:hover {
+  color: var(--color-body);
+  border-bottom-color: var(--color-detail);
+}
