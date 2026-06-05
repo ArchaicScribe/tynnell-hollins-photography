@@ -8,7 +8,7 @@ import styles from './page.module.css'
 
 export const metadata: Metadata = {
   title: 'Portfolio | Tynnell Hollins Photography',
-  description: 'Browse the full collection — weddings, portraits, families, couples, and more.',
+  description: 'Browse the full portfolio: weddings, portraits, families, couples, and more.',
 }
 
 export default async function PortfolioPage() {

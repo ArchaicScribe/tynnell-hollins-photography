@@ -67,6 +67,28 @@ export function inquiryEmailHtml(f: InquiryEmailFields): string {
 }
 
 // ---------------------------------------------------------------------------
+// Contact form acknowledgment (sent to the client on form submission)
+// ---------------------------------------------------------------------------
+
+export interface ClientAcknowledgmentEmailFields {
+  name: string
+  sessionType: string
+  date: string
+}
+
+export function clientAcknowledgmentEmailHtml(f: ClientAcknowledgmentEmailFields): string {
+  return wrapper(`
+    <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">I received your inquiry!</h2>
+    <p>Hi ${f.name},</p>
+    <p>Thank you for reaching out. I received your inquiry for a <strong>${f.sessionType}</strong> session on <strong>${f.date}</strong> and will be in touch shortly to confirm availability and talk through the details.</p>
+    <p>In the meantime, feel free to browse my portfolio or reach out directly if you have any questions.</p>
+    <p style="margin-top: 2rem;">Talk soon,<br/><strong>Tynnell Hollins</strong><br/>Tynnell Hollins Photography</p>
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #eee;" />
+    <p style="color: #999; font-size: 0.8rem;">Questions? Reply to this email or reach out at <a href="mailto:hello@tynnellhollinsphotography.com">hello@tynnellhollinsphotography.com</a></p>
+  `)
+}
+
+// ---------------------------------------------------------------------------
 // Booking deposit notification (sent to Tynnell after Stripe payment)
 // ---------------------------------------------------------------------------
 
