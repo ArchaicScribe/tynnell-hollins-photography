@@ -85,6 +85,11 @@
   gap: 1.5rem;
 }
 
+.imageWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 .imageSlot {
   position: relative;
   aspect-ratio: 4 / 3;
@@ -99,6 +104,16 @@
 
 .imageSlot:hover .photo {
   transform: scale(1.03);
+}
+
+.caption {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: var(--color-detail);
+  letter-spacing: 0.1em;
+  text-align: center;
+  padding: 0.5rem 0.25rem 0;
+  opacity: 0.6;
 }
 
 .empty {

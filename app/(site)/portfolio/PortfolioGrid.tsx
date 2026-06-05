@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import styles from './page.module.css'
@@ -31,6 +31,7 @@ export type PortfolioGallery = {
   coverImageUrl: string | null
   coverImageAlt?: string
   photoCount: number
+  previewUrls: string[]
 }
 
 type Props = {
@@ -39,10 +40,24 @@ type Props = {
 }
 
 export default function PortfolioGrid({ photos, galleries }: Props) {
+  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const paramCategory = searchParams.get('category') ?? 'all'
   const initialCategory = CATEGORIES.some(c => c.value === paramCategory) ? paramCategory : 'all'
   const [activeCategory, setActiveCategory] = useState(initialCategory)
+
+  function handleFilter(value: string) {
+    setActiveCategory(value)
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === 'all') {
+      params.delete('category')
+    } else {
+      params.set('category', value)
+    }
+    const qs = params.toString()
+    router.push(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false })
+  }
 
   const showAlbums = activeCategory === 'weddings'
 
@@ -60,36 +75,53 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
           <button
             key={cat.value}
             className={`${styles.filterBtn} ${activeCategory === cat.value ? styles.filterBtnActive : ''}`}
-            onClick={() => setActiveCategory(cat.value)}
+            onClick={() => handleFilter(cat.value)}
           >
             {cat.label}
           </button>
         ))}
       </div>
 
-      {/* Wedding albums grid */}
+      {/* Wedding album cards */}
       {showAlbums && (
-        <div className={styles.grid}>
+        <div className={styles.albumGrid}>
           {weddingGalleries.length > 0 ? weddingGalleries.map(gallery => (
             <Link
               key={gallery.id}
-              href={`/portfolio/${gallery.slug}`}
-              className={styles.galleryCard}
+              href={`/portfolio/${gallery.slug}?from=weddings`}
+              className={styles.albumCard}
             >
-              {gallery.coverImageUrl ? (
-                <ProtectedImage
-                  src={gallery.coverImageUrl}
-                  alt={gallery.coverImageAlt ?? gallery.title}
-                  fill
-                  sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-                  className={styles.photo}
-                />
-              ) : (
-                <div className={styles.nocover} />
+              <div className={styles.albumCover}>
+                {gallery.coverImageUrl ? (
+                  <ProtectedImage
+                    src={gallery.coverImageUrl}
+                    alt={gallery.coverImageAlt ?? gallery.title}
+                    fill
+                    sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+                    className={styles.photo}
+                  />
+                ) : (
+                  <div className={styles.nocover} />
+                )}
+              </div>
+              {gallery.previewUrls.length > 0 && (
+                <div className={styles.albumPreviews}>
+                  {gallery.previewUrls.slice(0, 3).map((url, i) => (
+                    <div key={i} className={styles.albumPreview}>
+                      <ProtectedImage
+                        src={url}
+                        alt=""
+                        fill
+                        sizes="(max-width: 768px) 33vw, 11vw"
+                        className={styles.photo}
+                      />
+                    </div>
+                  ))}
+                </div>
               )}
-              <div className={styles.galleryOverlay}>
-                <span className={styles.galleryTitle}>{gallery.title}</span>
-                <span className={styles.galleryCount}>{gallery.photoCount} photos</span>
+              <div className={styles.albumFooter}>
+                <span className={styles.albumTitle}>{gallery.title}</span>
+                <span className={styles.albumMeta}>{gallery.photoCount} photos &rarr;</span>
               </div>
             </Link>
           )) : (
@@ -98,25 +130,32 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
         </div>
       )}
 
-      {/* Flat photo grid */}
+      {/* Masonry photo grid */}
       {!showAlbums && (
-        <div className={styles.grid}>
-          {filteredPhotos.length > 0 ? filteredPhotos.map(photo => (
-            photo.imageUrl ? (
-              <div key={photo.id} className={styles.imageSlot}>
-                <ProtectedImage
-                  src={photo.imageUrl}
-                  alt={photo.alt ?? photo.title}
-                  fill
-                  sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-                  className={styles.photo}
-                />
-              </div>
-            ) : null
-          )) : (
-            <p className={styles.empty}>No photos in this category yet.</p>
-          )}
-        </div>
+        filteredPhotos.length > 0 ? (
+          <div className={styles.masonry}>
+            {filteredPhotos.map((photo, i) =>
+              photo.imageUrl ? (
+                <div key={photo.id} className={`${styles.masonryItem} ${styles[`aspect${i % 5}`]}`}>
+                  <ProtectedImage
+                    src={photo.imageUrl}
+                    alt={photo.alt ?? photo.title}
+                    fill
+                    sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+                    className={styles.photo}
+                  />
+                  {photo.title && (
+                    <div className={styles.photoOverlay}>
+                      <span className={styles.photoTitle}>{photo.title}</span>
+                    </div>
+                  )}
+                </div>
+              ) : null
+            )}
+          </div>
+        ) : (
+          <p className={styles.empty}>No photos in this category yet.</p>
+        )
       )}
     </>
   )

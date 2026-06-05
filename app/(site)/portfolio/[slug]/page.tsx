@@ -8,7 +8,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-type Props = { params: Promise<{ slug: string }> }
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ from?: string }> }
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config })
@@ -51,8 +51,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function GalleryPage({ params }: Props) {
+export default async function GalleryPage({ params, searchParams }: Props) {
   const { slug } = await params
+  const { from } = await searchParams
+  const backHref = from ? `/portfolio?category=${from}` : '/portfolio'
+  const backLabel = from ? `← Back to ${from.charAt(0).toUpperCase() + from.slice(1)}` : '← Back to Portfolio'
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'galleries',
@@ -121,8 +124,8 @@ export default async function GalleryPage({ params }: Props) {
 
       {/* Back link + grid */}
       <div className={styles.content}>
-        <Link href="/portfolio" className={styles.back}>
-          ← Back to Portfolio
+        <Link href={backHref} className={styles.back}>
+          {backLabel}
         </Link>
 
         {photos.length > 0 ? (
@@ -130,15 +133,19 @@ export default async function GalleryPage({ params }: Props) {
             {photos.map((photo) => {
               const url = photo.sizes?.card?.url ?? photo.url ?? null
               if (!url) return null
+              const caption = photo.alt || photo.title || null
               return (
-                <div key={String(photo.id)} className={styles.imageSlot}>
-                  <ProtectedImage
-                    src={url}
-                    alt={photo.alt ?? photo.title ?? ''}
-                    fill
-                    sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-                    className={styles.photo}
-                  />
+                <div key={String(photo.id)} className={styles.imageWrapper}>
+                  <div className={styles.imageSlot}>
+                    <ProtectedImage
+                      src={url}
+                      alt={photo.alt ?? photo.title ?? ''}
+                      fill
+                      sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+                      className={styles.photo}
+                    />
+                  </div>
+                  {caption && <p className={styles.caption}>{caption}</p>}
                 </div>
               )
             })}

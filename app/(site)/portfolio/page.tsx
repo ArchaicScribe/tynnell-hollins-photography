@@ -32,6 +32,17 @@ export default async function PortfolioPage() {
     const cover = typeof g.coverPhoto === 'object' && g.coverPhoto !== null
       ? g.coverPhoto as Photo
       : null
+
+    const previewUrls: string[] = Array.isArray(g.photos)
+      ? g.photos
+          .slice(0, 4)
+          .map(row => {
+            const p = typeof row.photo === 'object' && row.photo !== null ? row.photo as Photo : null
+            return p?.sizes?.card?.url ?? p?.url ?? null
+          })
+          .filter((url): url is string => url !== null)
+      : []
+
     return {
       id: String(g.id),
       title: g.title,
@@ -41,6 +52,7 @@ export default async function PortfolioPage() {
       coverImageUrl: cover?.sizes?.card?.url ?? cover?.url ?? null,
       coverImageAlt: cover?.alt ?? undefined,
       photoCount: Array.isArray(g.photos) ? g.photos.length : 0,
+      previewUrls,
     }
   })
 
