@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { RichText } from '@payloadcms/richtext-lexical/react'
+import type { SerializedEditorState } from 'lexical'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
@@ -131,8 +132,7 @@ export default async function BlogPostPage({ params }: Props) {
         {post.excerpt && <p className={styles.excerpt}>{post.excerpt}</p>}
         {post.body && (
           <div className={styles.body}>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <RichText data={post.body as any} />
+            <RichText data={post.body as SerializedEditorState} />
           </div>
         )}
       </article>
