@@ -7,7 +7,7 @@ import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { inquiryEmailHtml, clientAcknowledgmentEmailHtml } from '@/app/lib/emails'
 import { CONTACT_EMAIL, EMAIL_FROM, RATE_LIMIT_ERROR } from '@/app/lib/constants'
-import { getActiveOoo, getBlockedDateResult, type BlockedRange } from '@/app/lib/availability'
+import { getActiveOoo, getBlockedDateResult } from '@/app/lib/availability'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,11 +56,10 @@ export async function POST(request: Request) {
 
   try {
     const payload = await getPayload({ config })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [bookingSettings, availability] = await Promise.all([
-      payload.findGlobal({ slug: 'booking-settings' as any }),
-      payload.findGlobal({ slug: 'availability' as any }),
-    ]) as [any, any] // payload-types.ts needs regenerating after deploy to add these globals
+      payload.findGlobal({ slug: 'booking-settings' }),
+      payload.findGlobal({ slug: 'availability' }),
+    ])
 
     if (typeof bookingSettings?.minLeadTimeHours === 'number') {
       minLeadTimeHours = bookingSettings.minLeadTimeHours

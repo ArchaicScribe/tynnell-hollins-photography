@@ -57,11 +57,10 @@ export async function POST(request: Request) {
   const payload = await getPayload({ config })
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [bookingSettings, availability] = await Promise.all([
-      payload.findGlobal({ slug: 'booking-settings' as any }),
-      payload.findGlobal({ slug: 'availability' as any }),
-    ]) as [any, any]
+      payload.findGlobal({ slug: 'booking-settings' }),
+      payload.findGlobal({ slug: 'availability' }),
+    ])
 
     if (typeof bookingSettings?.minLeadTimeHours === 'number') minLeadTimeHours = bookingSettings.minLeadTimeHours
     if (typeof bookingSettings?.maxBookingMonths === 'number') maxBookingMonths = bookingSettings.maxBookingMonths

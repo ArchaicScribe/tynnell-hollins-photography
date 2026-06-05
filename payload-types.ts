@@ -99,11 +99,15 @@ export interface Config {
     'hero-slides': HeroSlide;
     'about-page': AboutPage;
     'site-config': SiteConfig;
+    'booking-settings': BookingSetting;
+    availability: Availability;
   };
   globalsSelect: {
     'hero-slides': HeroSlidesSelect<false> | HeroSlidesSelect<true>;
     'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
     'site-config': SiteConfigSelect<false> | SiteConfigSelect<true>;
+    'booking-settings': BookingSettingsSelect<false> | BookingSettingsSelect<true>;
+    availability: AvailabilitySelect<false> | AvailabilitySelect<true>;
   };
   locale: null;
   widgets: {
@@ -812,6 +816,68 @@ export interface SiteConfig {
   createdAt?: string | null;
 }
 /**
+ * Controls how far in advance clients can request sessions. Changes take effect immediately — no code change needed.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "booking-settings".
+ */
+export interface BookingSetting {
+  id: number;
+  /**
+   * How many hours in advance a client must request a session. Default is 48 hours (2 days). Set to 0 to allow same-day requests.
+   */
+  minLeadTimeHours: number;
+  /**
+   * How many months into the future clients can request sessions. Default is 24 months (2 years). Requests beyond this window are rejected.
+   */
+  maxBookingMonths: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Block out dates when you are unavailable — vacations, personal time, recovery periods. Clients requesting sessions during these windows will see your custom message.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availability".
+ */
+export interface Availability {
+  id: number;
+  /**
+   * Add a range for each period you are unavailable. Clients who try to book during a blocked range will see your message instead.
+   */
+  blockedRanges?:
+    | {
+        /**
+         * A private note for your reference only — never shown to clients. Example: "Cancun trip" or "Wedding weekend".
+         */
+        internalLabel: string;
+        /**
+         * The first day you are unavailable.
+         */
+        startDate: string;
+        /**
+         * The last day you are unavailable.
+         */
+        endDate: string;
+        /**
+         * Extends the blocked window a few days past your return so you have time to catch up before new sessions begin.
+         */
+        applyReturnBuffer?: boolean | null;
+        /**
+         * How many extra days to block after your last unavailable day. Only applies when "Add recovery buffer" is checked.
+         */
+        returnBufferDays?: number | null;
+        /**
+         * Shown to clients who try to book during this period. Use {returnDate} as a placeholder for your computed return date. Example: "I'm currently away and will be back accepting inquiries on {returnDate}."
+         */
+        customerMessage: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hero-slides_select".
  */
@@ -862,6 +928,37 @@ export interface SiteConfigSelect<T extends boolean = true> {
   facebookUrl?: T;
   tiktokUrl?: T;
   pinterestUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "booking-settings_select".
+ */
+export interface BookingSettingsSelect<T extends boolean = true> {
+  minLeadTimeHours?: T;
+  maxBookingMonths?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availability_select".
+ */
+export interface AvailabilitySelect<T extends boolean = true> {
+  blockedRanges?:
+    | T
+    | {
+        internalLabel?: T;
+        startDate?: T;
+        endDate?: T;
+        applyReturnBuffer?: T;
+        returnBufferDays?: T;
+        customerMessage?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
