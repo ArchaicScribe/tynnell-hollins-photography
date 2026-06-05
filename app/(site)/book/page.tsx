@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import BookClient, { type BookingPackage } from './BookClient'
 import styles from './page.module.css'
+import { getActiveOoo } from '@/app/lib/availability'
 
 export const metadata: Metadata = {
   title: 'Book a Session | Tynnell Hollins Photography',
@@ -11,12 +12,17 @@ export const metadata: Metadata = {
 
 export default async function BookPage() {
   const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'services',
-    where: { depositAmount: { exists: true } },
-    sort: 'displayOrder',
-    depth: 0,
-  })
+
+  const [{ docs }, availability] = await Promise.all([
+    payload.find({
+      collection: 'services',
+      where: { depositAmount: { exists: true } },
+      sort: 'displayOrder',
+      depth: 0,
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload.findGlobal({ slug: 'availability' as any }).catch(() => null) as Promise<any>,
+  ])
 
   const packages: BookingPackage[] = docs.map(s => ({
     id: String(s.id),
@@ -26,8 +32,17 @@ export default async function BookPage() {
     depositAmount: s.depositAmount ?? 0,
   }))
 
+  const ooo = Array.isArray(availability?.blockedRanges)
+    ? getActiveOoo(availability.blockedRanges)
+    : null
+
   return (
     <main className={styles.page}>
+      {ooo && (
+        <div className={styles.oooBanner}>
+          <p className={styles.oooMessage}>{ooo.message}</p>
+        </div>
+      )}
       <div className={styles.header}>
         <p className={styles.eyebrow}>Reserve Your Date</p>
         <h1 className={styles.heading}>Book a Session</h1>
