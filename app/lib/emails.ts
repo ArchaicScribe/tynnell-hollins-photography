@@ -103,6 +103,31 @@ export function clientAcknowledgmentEmailHtml(f: ClientAcknowledgmentEmailFields
 }
 
 // ---------------------------------------------------------------------------
+// OOO return notification (sent to Tynnell when her return buffer expires)
+// ---------------------------------------------------------------------------
+
+export interface OooReturnNotificationFields {
+  internalLabel: string
+  returnDate: string
+}
+
+export function oooReturnNotificationEmailHtml(f: OooReturnNotificationFields): string {
+  return wrapper(`
+    <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">You're back — availability is open again.</h2>
+    <p>Your OOO period <strong>${f.internalLabel}</strong> has ended and your return buffer has expired.</p>
+    <p>As of <strong>${f.returnDate}</strong>, the site is accepting new session inquiries and bookings again.</p>
+    <p>
+      Check your admin for any inquiries that came in while you were away.
+      Reply to anyone who's waiting and lock in new sessions.
+    </p>
+    <p style="margin-top: 2rem; color: #555;">
+      &rarr; <a href="https://tynnellhollinsphotography.com/admin">Open the admin</a>
+    </p>
+    ${emailFooter()}
+  `)
+}
+
+// ---------------------------------------------------------------------------
 // Booking deposit notification (sent to Tynnell after Stripe payment)
 // ---------------------------------------------------------------------------
 

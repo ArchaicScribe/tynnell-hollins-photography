@@ -145,6 +145,16 @@ async function run() {
         ON "availability_blocked_ranges" USING btree ("_parent_id")
     `)
 
+    // ------------------------------------------------------------------
+    // Migration 20260605_200000: add notification_sent column to
+    // availability_blocked_ranges for TYN-110 return notification cron.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "availability_blocked_ranges"
+        ADD COLUMN IF NOT EXISTS "notification_sent" boolean DEFAULT false
+    `)
+
     console.log('✓ availability tables ready')
   } finally {
     client.release()

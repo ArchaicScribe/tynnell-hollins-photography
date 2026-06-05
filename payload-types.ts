@@ -871,6 +871,7 @@ export interface Availability {
          * Shown to clients who try to book during this period. Use {returnDate} as a placeholder for your computed return date. Example: "I'm currently away and will be back accepting inquiries on {returnDate}."
          */
         customerMessage: string;
+        notificationSent?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -957,6 +958,7 @@ export interface AvailabilitySelect<T extends boolean = true> {
         applyReturnBuffer?: T;
         returnBufferDays?: T;
         customerMessage?: T;
+        notificationSent?: T;
         id?: T;
       };
   updatedAt?: T;

@@ -48,6 +48,14 @@ export const Availability: GlobalConfig = {
             description: 'The last day you are unavailable.',
             date: { pickerAppearance: 'dayOnly' },
           },
+          validate: (value, { siblingData }) => {
+            const sibling = siblingData as { startDate?: string }
+            if (!value || !sibling?.startDate) return true
+            if (new Date(value as unknown as string) < new Date(sibling.startDate)) {
+              return 'End date cannot be before the start date.'
+            }
+            return true
+          },
         },
         {
           name: 'applyReturnBuffer',
@@ -80,7 +88,27 @@ export const Availability: GlobalConfig = {
               'Shown to clients who try to book during this period. Use {returnDate} as a placeholder for your computed return date. Example: "I\'m currently away and will be back accepting inquiries on {returnDate}."',
           },
         },
+        {
+          // Managed by the OOO return notification cron (TYN-110). Never set manually.
+          name: 'notificationSent',
+          type: 'checkbox',
+          label: 'Return Notification Sent',
+          defaultValue: false,
+          admin: {
+            hidden: true,
+          },
+        },
       ],
+    },
+    {
+      // Renders soft warnings (overlaps, long periods, currently active) in the admin UI.
+      name: 'oooWarnings',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/OooWarnings#OooWarnings',
+        },
+      },
     },
   ],
 }

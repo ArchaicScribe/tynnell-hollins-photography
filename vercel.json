@@ -5,5 +5,11 @@
       "source": "/robots.txt",
       "destination": "/api/robots"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/ooo-return-notify",
+      "schedule": "0 9 * * *"
+    }
   ]
 }

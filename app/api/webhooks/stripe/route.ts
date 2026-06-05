@@ -49,8 +49,7 @@ export async function POST(request: Request) {
     let oooMessage: string | undefined
     try {
       const payload = await getPayload({ config })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const availability = await payload.findGlobal({ slug: 'availability' as any }) as any
+      const availability = await payload.findGlobal({ slug: 'availability' })
       if (Array.isArray(availability?.blockedRanges)) {
         const ooo = getActiveOoo(availability.blockedRanges)
         oooMessage = ooo?.message
