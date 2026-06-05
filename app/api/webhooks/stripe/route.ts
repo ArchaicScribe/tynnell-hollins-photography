@@ -1,9 +1,12 @@
 import Stripe from 'stripe'
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { escapeHtml } from '@/app/lib/validation'
 import { bookingConfirmEmailHtml, clientReceiptEmailHtml } from '@/app/lib/emails'
 import { EMAIL_FROM } from '@/app/lib/constants'
+import { getActiveOoo } from '@/app/lib/availability'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,6 +45,20 @@ export async function POST(request: Request) {
     const packageName = escapeHtml(session.metadata?.packageName ?? 'Session')
     const amountPaid  = session.amount_total ? `$${(session.amount_total / 100).toFixed(0)}` : ''
 
+    // Check OOO status — non-fatal if unavailable
+    let oooMessage: string | undefined
+    try {
+      const payload = await getPayload({ config })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const availability = await payload.findGlobal({ slug: 'availability' as any }) as any
+      if (Array.isArray(availability?.blockedRanges)) {
+        const ooo = getActiveOoo(availability.blockedRanges)
+        oooMessage = ooo?.message
+      }
+    } catch {
+      // Non-fatal: send standard receipt if globals are unavailable
+    }
+
     // Email to Tynnell
     await resend.emails.send({
       from: EMAIL_FROM,
@@ -50,7 +67,7 @@ export async function POST(request: Request) {
       html: bookingConfirmEmailHtml({ clientName, clientEmail, packageName, amountPaid }),
     })
 
-    // Confirmation email to client - use raw (unescaped) email as the To address
+    // Confirmation email to client
     const rawClientEmail = session.metadata?.clientEmail ?? session.customer_email ?? ''
     if (rawClientEmail) {
       await resend.emails.send({
@@ -58,7 +75,7 @@ export async function POST(request: Request) {
         to: rawClientEmail,
         replyTo: process.env.CONTACT_TO_EMAIL,
         subject: `Your deposit is confirmed - ${packageName}`,
-        html: clientReceiptEmailHtml({ clientName, packageName, amountPaid }),
+        html: clientReceiptEmailHtml({ clientName, packageName, amountPaid, oooMessage }),
       })
     }
   }
