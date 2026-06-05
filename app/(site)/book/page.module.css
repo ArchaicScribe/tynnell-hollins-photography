@@ -4,6 +4,27 @@
   padding: 8rem 2.5vw 6rem;
 }
 
+/* ── OOO banner ──────────────────────────────────────────── */
+
+.oooBanner {
+  max-width: 640px;
+  margin: 0 auto 3rem;
+  padding: 1rem 1.5rem;
+  border: 1px solid rgba(214, 209, 206, 0.15);
+  border-left: 3px solid var(--color-detail);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.oooMessage {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--color-body);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
 /* ── Header ──────────────────────────────────────────────── */
 
 .header {
