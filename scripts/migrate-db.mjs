@@ -79,6 +79,73 @@ async function run() {
     `)
 
     console.log('✓ galleries_photos table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260605_120000: add booking_settings global table
+    // Required by TYN-92: Booking Settings global for configurable
+    // lead time and booking window.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "booking_settings" (
+        "id"                   serial  PRIMARY KEY NOT NULL,
+        "min_lead_time_hours"  numeric DEFAULT 48,
+        "max_booking_months"   numeric DEFAULT 24,
+        "updated_at"           timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"           timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    console.log('✓ booking_settings table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260605_120001: add availability global tables
+    // Required by TYN-102: OOO / blocked availability date ranges global.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "availability" (
+        "id"          serial  PRIMARY KEY NOT NULL,
+        "updated_at"  timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"  timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "availability_blocked_ranges" (
+        "id"                   serial  PRIMARY KEY NOT NULL,
+        "_order"               integer NOT NULL,
+        "_parent_id"           integer NOT NULL,
+        "internal_label"       varchar,
+        "start_date"           timestamp(3) with time zone,
+        "end_date"             timestamp(3) with time zone,
+        "apply_return_buffer"  boolean DEFAULT true,
+        "return_buffer_days"   numeric DEFAULT 2,
+        "customer_message"     varchar
+      )
+    `)
+
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "availability_blocked_ranges"
+          ADD CONSTRAINT "availability_blocked_ranges_parent_id_fk"
+          FOREIGN KEY ("_parent_id")
+          REFERENCES "availability"("id")
+          ON DELETE CASCADE ON UPDATE NO ACTION;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "availability_blocked_ranges_order_idx"
+        ON "availability_blocked_ranges" USING btree ("_order")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "availability_blocked_ranges_parent_id_idx"
+        ON "availability_blocked_ranges" USING btree ("_parent_id")
+    `)
+
+    console.log('✓ availability tables ready')
   } finally {
     client.release()
     await pool.end()
