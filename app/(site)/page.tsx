@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { CONTACT_EMAIL } from '@/app/lib/constants'
 import Hero from '@/app/components/Hero/Hero'
 import PortfolioTeaser from '@/app/components/PortfolioTeaser/PortfolioTeaser'
 import AboutPreview from '@/app/components/AboutPreview/AboutPreview'
@@ -66,7 +67,7 @@ export default async function Home() {
     description:
       'Tynnell Hollins is a wedding and portrait photographer capturing authentic moments for couples and families.',
     url: 'https://tynnellhollinsphotography.com',
-    email: 'hello@tynnellhollinsphotography.com',
+    email: CONTACT_EMAIL,
     image: 'https://tynnellhollinsphotography.com/og-image.jpg',
     sameAs: [
       'https://instagram.com/tynnellhollinsphotography',
