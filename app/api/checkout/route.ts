@@ -5,6 +5,7 @@ import config from '@payload-config'
 import { isValidEmail, anyFieldTooLong, CHECKOUT_MAX_LENGTHS } from '@/app/lib/validation'
 import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
+import { RATE_LIMIT_ERROR } from '@/app/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
 
   const { success } = await checkoutRatelimit.limit(getClientIp(request))
   if (!success) {
-    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+    return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 })
   }
 
   const body = await request.json()
