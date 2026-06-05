@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/_next')) return NextResponse.next()
   if (pathname.startsWith('/favicon')) return NextResponse.next()
 
-  return NextResponse.redirect(new URL('/coming-soon', request.url))
+  return NextResponse.rewrite(new URL('/coming-soon', request.url))
 }
 
 export const config = {
