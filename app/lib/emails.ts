@@ -5,6 +5,8 @@
  * Templates use inline styles for maximum email client compatibility.
  */
 
+import { CONTACT_EMAIL } from './constants'
+
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
@@ -23,6 +25,13 @@ function tableRow(label: string, value: string): string {
 
 function table(rows: string): string {
   return `<table style="width: 100%; border-collapse: collapse;">${rows}</table>`
+}
+
+function emailFooter(): string {
+  return `
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #eee;" />
+    <p style="color: #999; font-size: 0.8rem;">Questions? Reply to this email or reach out at <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p>
+  `
 }
 
 // ---------------------------------------------------------------------------
@@ -83,8 +92,7 @@ export function clientAcknowledgmentEmailHtml(f: ClientAcknowledgmentEmailFields
     <p>Thank you for reaching out. I received your inquiry for a <strong>${f.sessionType}</strong> session on <strong>${f.date}</strong> and will be in touch shortly to confirm availability and talk through the details.</p>
     <p>In the meantime, feel free to browse my portfolio or reach out directly if you have any questions.</p>
     <p style="margin-top: 2rem;">Talk soon,<br/><strong>Tynnell Hollins</strong><br/>Tynnell Hollins Photography</p>
-    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #eee;" />
-    <p style="color: #999; font-size: 0.8rem;">Questions? Reply to this email or reach out at <a href="mailto:hello@tynnellhollinsphotography.com">hello@tynnellhollinsphotography.com</a></p>
+    ${emailFooter()}
   `)
 }
 
@@ -129,7 +137,6 @@ export function clientReceiptEmailHtml(f: ClientReceiptEmailFields): string {
     <p>Your ${f.amountPaid} deposit for a <strong>${f.packageName}</strong> session has been received. Your date is now held.</p>
     <p>I'll be reaching out shortly to confirm all the details and start planning your session.</p>
     <p style="margin-top: 2rem;">Talk soon,<br/><strong>Tynnell Hollins</strong><br/>Tynnell Hollins Photography</p>
-    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #eee;" />
-    <p style="color: #999; font-size: 0.8rem;">Questions? Reply to this email or reach out at <a href="mailto:hello@tynnellhollinsphotography.com">hello@tynnellhollinsphotography.com</a></p>
+    ${emailFooter()}
   `)
 }
