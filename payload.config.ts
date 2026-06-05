@@ -15,6 +15,8 @@ import { Posts } from './collections/Posts'
 import { HeroSlides } from './globals/HeroSlides'
 import { AboutPage } from './globals/AboutPage'
 import { SiteConfig } from './globals/SiteConfig'
+import { BookingSettings } from './globals/BookingSettings'
+import { Availability } from './globals/Availability'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -28,7 +30,7 @@ export default buildConfig({
   },
   sharp,
   collections: [Users, Photos, Galleries, Testimonials, Services, Posts],
-  globals: [HeroSlides, AboutPage, SiteConfig],
+  globals: [HeroSlides, AboutPage, SiteConfig, BookingSettings, Availability],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
