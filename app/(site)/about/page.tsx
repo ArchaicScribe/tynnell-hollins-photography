@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { RichText } from '@payloadcms/richtext-lexical/react'
+import type { SerializedEditorState } from 'lexical'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
@@ -71,8 +72,7 @@ export default async function AboutPage() {
           <h2 className={styles.sectionHeading}>Where It All Began</h2>
           {about?.bio ? (
             <div className={styles.bioBody}>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              <RichText data={about.bio as any} />
+              <RichText data={about.bio as SerializedEditorState} />
             </div>
           ) : (
             <>
