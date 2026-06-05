@@ -2,10 +2,11 @@ import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { isValidEmail, anyFieldTooLong, CHECKOUT_MAX_LENGTHS } from '@/app/lib/validation'
+import { isValidEmail, anyFieldTooLong, CHECKOUT_MAX_LENGTHS, isValidSessionDate, MIN_LEAD_TIME_HOURS, MAX_BOOKING_MONTHS } from '@/app/lib/validation'
 import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
-import { RATE_LIMIT_ERROR } from '@/app/lib/constants'
+import { RATE_LIMIT_ERROR, CONTACT_EMAIL } from '@/app/lib/constants'
+import { getBlockedDateResult } from '@/app/lib/availability'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,9 +25,9 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { packageName, depositAmount, clientName, clientEmail } = body
+  const { packageName, depositAmount, clientName, clientEmail, sessionDate } = body
 
-  if (!packageName || !depositAmount || !clientName || !clientEmail) {
+  if (!packageName || !depositAmount || !clientName || !clientEmail || !sessionDate) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
@@ -42,8 +43,49 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
   }
 
-  // Validate depositAmount against Payload — Payload is the source of truth for pricing
+  // Fetch booking settings + availability for date validation — fall back to defaults
+  let minLeadTimeHours = MIN_LEAD_TIME_HOURS
+  let maxBookingMonths = MAX_BOOKING_MONTHS
+  let blockedRanges: Array<{
+    startDate?: string | null
+    endDate?: string | null
+    applyReturnBuffer?: boolean | null
+    returnBufferDays?: number | null
+    customerMessage?: string | null
+  }> = []
+
   const payload = await getPayload({ config })
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [bookingSettings, availability] = await Promise.all([
+      payload.findGlobal({ slug: 'booking-settings' as any }),
+      payload.findGlobal({ slug: 'availability' as any }),
+    ]) as [any, any]
+
+    if (typeof bookingSettings?.minLeadTimeHours === 'number') minLeadTimeHours = bookingSettings.minLeadTimeHours
+    if (typeof bookingSettings?.maxBookingMonths === 'number') maxBookingMonths = bookingSettings.maxBookingMonths
+    if (Array.isArray(availability?.blockedRanges)) blockedRanges = availability.blockedRanges
+  } catch {
+    // Non-fatal: proceed with defaults
+  }
+
+  if (!isValidSessionDate(sessionDate, { minLeadTimeHours, maxBookingMonths })) {
+    const leadDays = Math.ceil(minLeadTimeHours / 24)
+    return NextResponse.json(
+      { error: `Please select a date at least ${leadDays} day${leadDays === 1 ? '' : 's'} from today and within ${maxBookingMonths} months. For dates further out, reach out directly at ${CONTACT_EMAIL}.` },
+      { status: 400 },
+    )
+  }
+
+  if (blockedRanges.length > 0) {
+    const blocked = getBlockedDateResult(sessionDate, blockedRanges)
+    if (blocked) {
+      return NextResponse.json({ error: blocked.message }, { status: 400 })
+    }
+  }
+
+  // Validate depositAmount against Payload — Payload is the source of truth for pricing
   const { docs } = await payload.find({
     collection: 'services',
     where: {
@@ -73,7 +115,7 @@ export async function POST(request: Request) {
         {
           price_data: {
             currency: 'usd',
-            unit_amount: Math.round(depositAmount * 100), // convert dollars to cents
+            unit_amount: Math.round(depositAmount * 100),
             product_data: {
               name: `${packageName} — Booking Deposit`,
               description: `Secures your date with Tynnell Hollins Photography. The remaining balance is due before your session.`,
@@ -86,6 +128,7 @@ export async function POST(request: Request) {
         clientName,
         clientEmail,
         packageName,
+        sessionDate,
       },
       success_url: `${SITE_ORIGIN}/book/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_ORIGIN}/book/cancel`,
