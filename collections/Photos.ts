@@ -1,4 +1,23 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+
+// Auto-populate title and alt from the filename so bulk uploads never get
+// blocked by required-field validation. Tynnell can clean up titles/alt text
+// later at her own pace.
+const autoPopulateFromFilename: CollectionBeforeValidateHook = ({ data = {} }) => {
+  const filename = (data.filename as string | undefined) ?? ''
+
+  if (!data.title && filename) {
+    // "smith-wedding_first-dance.jpg" -> "Smith wedding first dance"
+    const stem = filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')
+    data.title = stem.charAt(0).toUpperCase() + stem.slice(1)
+  }
+
+  if (!data.alt && data.title) {
+    data.alt = data.title as string
+  }
+
+  return data
+}
 
 export const Photos: CollectionConfig = {
   slug: 'photos',
@@ -6,9 +25,13 @@ export const Photos: CollectionConfig = {
     singular: 'Photo',
     plural: 'Photos',
   },
+  hooks: {
+    beforeValidate: [autoPopulateFromFilename],
+  },
   upload: {
     staticDir: 'media',
     adminThumbnail: 'thumbnail',
+    bulkUpload: true,
     imageSizes: [
       {
         name: 'thumbnail',
@@ -34,28 +57,26 @@ export const Photos: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     description:
-      'Your photo library. Every image you upload lives here and can be used in galleries, blog posts, and your homepage.',
-    defaultColumns: ['filename', 'category', 'featured', 'displayOrder', 'updatedAt'],
+      'Your photo library. Drop images here and they upload instantly — title and alt text are filled in automatically from the filename so you can bulk-upload without stopping. Edit any photo afterwards to update the details.',
+    defaultColumns: ['filename', 'title', 'category', 'featured', 'updatedAt'],
   },
   fields: [
     {
       name: 'title',
       type: 'text',
       label: 'Title',
-      required: true,
       admin: {
         description:
-          'A short name to identify this photo in your dashboard. Clients do not see this. Example: "Smith Wedding – First Dance".',
+          'Auto-filled from the filename on upload. Edit this to give the photo a meaningful name — clients never see it. Example: "Smith Wedding - First Dance".',
       },
     },
     {
       name: 'alt',
       type: 'text',
-      label: 'Alt Text (for Accessibility & SEO)',
-      required: true,
+      label: 'Alt Text (Accessibility and SEO)',
       admin: {
         description:
-          'Describe what is happening in this photo in one or two sentences. This text is read aloud by screen readers for visually impaired visitors and used by Google to understand your images. Example: "Bride and groom laughing together during their first dance at an outdoor reception."',
+          'Describe what is in this photo. Screen readers read this aloud for visually impaired visitors and Google uses it to understand your images. Auto-filled on upload — update it when you have a moment. Example: "Bride and groom laughing during their first dance at an outdoor reception."',
       },
     },
     {
@@ -63,7 +84,7 @@ export const Photos: CollectionConfig = {
       type: 'select',
       label: 'Category',
       admin: {
-        description: 'The type of session this photo is from. Used to organise your portfolio.',
+        description: 'The type of session this photo is from. Used to filter your portfolio.',
       },
       options: [
         { label: 'Weddings', value: 'weddings' },
@@ -79,7 +100,7 @@ export const Photos: CollectionConfig = {
       label: 'Caption',
       admin: {
         description:
-          'An optional caption displayed beneath this photo in galleries. Leave blank for no caption.',
+          'Optional text displayed beneath this photo in galleries. Leave blank for no caption.',
       },
     },
     {
@@ -89,7 +110,7 @@ export const Photos: CollectionConfig = {
       defaultValue: false,
       admin: {
         description:
-          'Turn this on to feature this photo in the portfolio preview section on your homepage. Up to 6 photos are shown.',
+          'Turn on to feature this photo in the portfolio preview section on your homepage. Up to 6 photos are shown.',
       },
     },
     {
@@ -98,7 +119,7 @@ export const Photos: CollectionConfig = {
       label: 'Display Position',
       admin: {
         description:
-          'Controls the order this photo appears in. Lower numbers appear first. You can leave this blank and sort manually later.',
+          'Controls the order this photo appears in. Lower numbers appear first. Leave blank and sort manually later.',
       },
     },
   ],

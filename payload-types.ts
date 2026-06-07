@@ -174,13 +174,13 @@ export interface User {
 export interface Photo {
   id: number;
   /**
-   * A short name to identify this photo in your dashboard. Clients do not see this. Example: "Smith Wedding – First Dance".
+   * Auto-filled from filename on upload. A short name to identify this photo in your dashboard. Clients do not see this.
    */
-  title: string;
+  title?: string | null;
   /**
-   * Describe what is happening in this photo in one or two sentences. This text is read aloud by screen readers for visually impaired visitors and used by Google to understand your images. Example: "Bride and groom laughing together during their first dance at an outdoor reception."
+   * Auto-filled from filename on upload. Describe what is in this photo for screen readers and SEO.
    */
-  alt: string;
+  alt?: string | null;
   /**
    * The type of session this photo is from. Used to organise your portfolio.
    */

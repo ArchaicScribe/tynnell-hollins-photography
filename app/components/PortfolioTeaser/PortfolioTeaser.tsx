@@ -4,8 +4,8 @@ import styles from './PortfolioTeaser.module.css'
 
 export interface FeaturedPhoto {
   id: string
-  title: string
-  alt?: string
+  title?: string | null
+  alt?: string | null
   imageUrl: string | null
   category?: string
 }
@@ -51,7 +51,7 @@ export default function PortfolioTeaser({ photos }: Props) {
               {photo?.imageUrl ? (
                 <ProtectedImage
                   src={photo.imageUrl}
-                  alt={photo.alt ?? photo.title}
+                  alt={photo.alt ?? photo.title ?? ''}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
                   className={styles.photo}

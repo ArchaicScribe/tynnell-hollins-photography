@@ -16,8 +16,8 @@ const CATEGORIES = [
 
 export type PortfolioPhoto = {
   id: string
-  title: string
-  alt?: string
+  title?: string | null
+  alt?: string | null
   imageUrl: string | null
   category: string
 }
@@ -139,7 +139,7 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
                 <div key={photo.id} className={`${styles.masonryItem} ${styles[`aspect${i % 5}`]}`}>
                   <ProtectedImage
                     src={photo.imageUrl}
-                    alt={photo.alt ?? photo.title}
+                    alt={photo.alt ?? photo.title ?? ''}
                     fill
                     sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
                     className={styles.photo}
