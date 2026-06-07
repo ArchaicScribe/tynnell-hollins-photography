@@ -70,6 +70,13 @@ export default buildConfig({
     },
     theme: 'dark',
     suppressHydrationWarning: true,
+    components: {
+      views: {
+        dashboard: {
+          Component: './components/admin/Dashboard#Dashboard',
+        },
+      },
+    },
   },
   sharp,
   collections: [Users, Photos, Galleries, Testimonials, Services, Posts],
