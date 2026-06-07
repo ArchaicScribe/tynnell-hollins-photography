@@ -1,5 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface CollectionStat {
   slug: string
@@ -317,9 +318,9 @@ export function Dashboard() {
           <p style={css.quickUploadHeading}>Ready to add new photos?</p>
           <p style={css.quickUploadSub}>Upload images to start curating your portfolio.</p>
         </div>
-        <a href="/admin/collections/photos/create" style={css.quickUploadBtn}>
+        <Link href="/admin/collections/photos/create" style={css.quickUploadBtn}>
           Upload Photos
-        </a>
+        </Link>
       </div>
 
       {/* Collections */}
@@ -337,12 +338,12 @@ export function Dashboard() {
               <span style={css.count}>{col.count}</span>
             )}
             <div style={css.actions}>
-              <a href={col.addPath} style={css.btnPrimary}>
+              <Link href={col.addPath} style={css.btnPrimary}>
                 + Add
-              </a>
-              <a href={col.listPath} style={css.btnSecondary}>
+              </Link>
+              <Link href={col.listPath} style={css.btnSecondary}>
                 View All
-              </a>
+              </Link>
             </div>
           </div>
         ))}
@@ -352,10 +353,10 @@ export function Dashboard() {
       <p style={css.sectionLabel}>Site Globals</p>
       <div style={css.globalGrid}>
         {GLOBALS.map((g) => (
-          <a key={g.slug} href={g.path} style={css.globalCard}>
+          <Link key={g.slug} href={g.path} style={css.globalCard}>
             <span style={css.emoji}>{g.emoji}</span>
             <span>{g.label}</span>
-          </a>
+          </Link>
         ))}
       </div>
 
