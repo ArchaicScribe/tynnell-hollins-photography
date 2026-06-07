@@ -2,6 +2,7 @@ import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
+import { Resend } from 'resend'
 import sharp from 'sharp'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -21,7 +22,48 @@ import { Availability } from './globals/Availability'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const FROM_NAME = 'Tynnell Hollins Photography'
+const FROM_ADDRESS = process.env.CONTACT_TO_EMAIL ?? 'Hello@TynnellHollinsPhotography.com'
+
 export default buildConfig({
+  email: ({ payload }) => {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    return {
+      name: 'resend',
+      defaultFromName: FROM_NAME,
+      defaultFromAddress: FROM_ADDRESS,
+      sendEmail: async (message) => {
+        type Addr = string | { name?: string; address?: string }
+        const rawTo = message.to as Addr | Addr[]
+        const to: string | string[] = Array.isArray(rawTo)
+          ? (rawTo as Addr[]).map((t) => (typeof t === 'string' ? t : (t.address ?? ''))).filter(Boolean)
+          : typeof rawTo === 'string'
+          ? rawTo
+          : (rawTo as { address?: string })?.address ?? ''
+
+        const rawFrom = message.from as Addr | undefined
+        const fromStr =
+          !rawFrom
+            ? `${FROM_NAME} <${FROM_ADDRESS}>`
+            : typeof rawFrom === 'string'
+            ? rawFrom
+            : rawFrom.address
+            ? `${rawFrom.name ?? FROM_NAME} <${rawFrom.address}>`
+            : `${FROM_NAME} <${FROM_ADDRESS}>`
+
+        try {
+          await resend.emails.send({
+            from: fromStr,
+            to,
+            subject: message.subject ?? '(no subject)',
+            html: (message.html as string) ?? (message.text as string) ?? '',
+          })
+        } catch (err) {
+          payload.logger.error({ msg: 'Resend email send failed', err })
+        }
+      },
+    }
+  },
   admin: {
     importMap: {
       baseDir: path.resolve(dirname),
