@@ -27,6 +27,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     theme: 'dark',
+    suppressHydrationWarning: true,
   },
   sharp,
   collections: [Users, Photos, Galleries, Testimonials, Services, Posts],
