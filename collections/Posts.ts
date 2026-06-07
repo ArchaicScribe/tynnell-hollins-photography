@@ -1,11 +1,34 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+
+function toSlug(str: string): string {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+// Auto-generate slug from title and default publishedAt to now.
+// Manual values are always preserved — only fills in if empty.
+const autoPopulate: CollectionBeforeValidateHook = ({ data = {} }) => {
+  if (!data.slug && data.title) {
+    data.slug = toSlug(data.title as string)
+  }
+  if (!data.publishedAt) {
+    data.publishedAt = new Date().toISOString()
+  }
+  return data
+}
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
   labels: {
     singular: 'Blog Post',
     plural: 'Blog Posts',
+  },
+  hooks: {
+    beforeValidate: [autoPopulate],
   },
   admin: {
     useAsTitle: 'title',
@@ -31,7 +54,7 @@ export const Posts: CollectionConfig = {
       unique: true,
       admin: {
         description:
-          'The web address for this post. Example: "smith-wedding-recap". Use lowercase letters and hyphens only.',
+          'Auto-generated from the title — you do not need to set this. Edit here only if you want a custom web address. Use lowercase letters and hyphens only.',
       },
     },
     {
@@ -56,7 +79,7 @@ export const Posts: CollectionConfig = {
       required: true,
       admin: {
         description:
-          'The date this post will show as published. You can set a future date to schedule it.',
+          'Defaults to today. You can set a future date to schedule the post — it will appear on your blog on that date.',
         date: {
           pickerAppearance: 'dayAndTime',
         },
@@ -82,7 +105,7 @@ export const Posts: CollectionConfig = {
       label: 'Short Summary',
       admin: {
         description:
-          'A 1–2 sentence summary shown on the blog listing page. Helps readers decide if they want to read more.',
+          'A 1-2 sentence summary shown on the blog listing page. Helps readers decide if they want to read more.',
         rows: 3,
       },
     },

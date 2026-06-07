@@ -82,10 +82,9 @@ export const Services: CollectionConfig = {
       name: 'displayOrder',
       type: 'number',
       label: 'Display Position',
-      required: true,
       admin: {
         description:
-          'The position of this service in the list. 1 appears first, 2 appears second, and so on.',
+          'The position of this service in the list. 1 appears first, 2 appears second, and so on. Leave blank and services display in the order they were added.',
       },
     },
   ],
