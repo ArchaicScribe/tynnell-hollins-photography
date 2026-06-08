@@ -60,6 +60,14 @@ const COLLECTIONS: Omit<CollectionStat, 'count'>[] = [
     addPath: '/admin/collections/services/create',
     listPath: '/admin/collections/services',
   },
+  {
+    slug: 'users',
+    label: 'Users',
+    singularLabel: 'User',
+    emoji: '👥',
+    addPath: '/admin/collections/users/create',
+    listPath: '/admin/collections/users',
+  },
 ]
 
 const GLOBALS: GlobalLink[] = [
