@@ -75,8 +75,11 @@ export default async function GalleryPage({ params, searchParams }: Props) {
     : null
   const coverUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
 
+  // gallery.photos is an ordered array of { photo: Photo | number } rows
   const photos: Photo[] = Array.isArray(gallery.photos)
-    ? gallery.photos.filter((p): p is Photo => typeof p === 'object' && p !== null)
+    ? gallery.photos
+        .map(item => item.photo)
+        .filter((p): p is Photo => typeof p === 'object' && p !== null)
     : []
 
   const pageUrl = `https://tynnellhollinsphotography.com/portfolio/${gallery.slug}`

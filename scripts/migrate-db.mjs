@@ -211,6 +211,35 @@ async function run() {
     `)
 
     console.log('✓ galleries_rels table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260608_200000: seed galleries_photos from galleries_rels
+    // Required by TYN-193: Gallery.photos switched back to array type so
+    // Payload's built-in drag handles work for reordering. galleries_photos
+    // already has the right schema (_order, _parent_id, photo_id) from
+    // TYN-139. This migration copies any rows from galleries_rels that
+    // haven't already been copied so existing gallery data is preserved.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      INSERT INTO "galleries_photos" ("_order", "_parent_id", "photo_id")
+      SELECT
+        (ROW_NUMBER() OVER (
+          PARTITION BY parent_id
+          ORDER BY COALESCE("order", 99999) ASC
+        ) - 1) AS "_order",
+        parent_id AS "_parent_id",
+        photos_id AS "photo_id"
+      FROM "galleries_rels"
+      WHERE path = 'photos'
+        AND photos_id IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM "galleries_photos" gp
+          WHERE gp."_parent_id" = "galleries_rels".parent_id
+        )
+    `)
+
+    console.log('✓ galleries_photos seeded from galleries_rels')
   } finally {
     client.release()
     await pool.end()

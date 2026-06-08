@@ -18,7 +18,7 @@ type GalleryDoc = {
   category?: string | null
   featured?: boolean | null
   coverPhoto?: CoverPhoto | number | null
-  photos?: (number | object)[] | null
+  photos?: { photo?: number | object | null; id?: string | null }[] | null
 }
 
 const CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands']

@@ -260,9 +260,14 @@ export interface Gallery {
    */
   coverPhoto: number | Photo;
   /**
-   * Type a filename or title to search, then click photos to select them. You can select as many as you need before saving.
+   * Add photos one at a time. Drag the handle on the left to reorder. Order here is exactly how photos appear on the site.
    */
-  photos?: (number | Photo)[] | null;
+  photos?:
+    | {
+        photo?: (number | Photo) | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Turn this on to feature this gallery on your homepage.
    */

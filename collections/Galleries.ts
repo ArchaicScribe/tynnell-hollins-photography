@@ -94,14 +94,24 @@ export const Galleries: CollectionConfig = {
     },
     {
       name: 'photos',
-      type: 'relationship',
+      type: 'array',
       label: 'Photos in This Gallery',
-      relationTo: 'photos',
-      hasMany: true,
       admin: {
         description:
-          'Type a filename or title to search, then click photos to select them. You can select as many as you need before saving — no need to add them one at a time.',
+          'Add photos one at a time using the picker in each row. Drag the handle on the left of any row to reorder. The order here is exactly how photos appear on the site.',
+        components: {
+          RowLabel: './components/admin/GalleryPhotoRowLabel#GalleryPhotoRowLabel',
+        },
       },
+      fields: [
+        {
+          name: 'photo',
+          type: 'relationship',
+          relationTo: 'photos',
+          required: true,
+          label: 'Photo',
+        },
+      ],
     },
     {
       name: 'featured',

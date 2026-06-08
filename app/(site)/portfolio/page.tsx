@@ -36,10 +36,16 @@ export default async function PortfolioPage() {
       ? g.coverPhoto as Photo
       : null
 
+    // gallery.photos is an ordered array of { photo: Photo | number } rows
     const previewUrls: string[] = Array.isArray(g.photos)
       ? g.photos
           .slice(0, 4)
-          .map(p => typeof p === 'object' && p !== null ? (p as Photo).sizes?.card?.url ?? (p as Photo).url ?? null : null)
+          .map(item => {
+            const p = item.photo
+            return typeof p === 'object' && p !== null
+              ? (p as Photo).sizes?.card?.url ?? (p as Photo).url ?? null
+              : null
+          })
           .filter((url): url is string => url !== null)
       : []
 
