@@ -6,6 +6,9 @@ import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import styles from './page.module.css'
 
+// Blog listing — posts are published infrequently, revalidate every 2 minutes
+export const revalidate = 120
+
 export const metadata: Metadata = {
   title: 'Blog | Tynnell Hollins Photography',
   description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',

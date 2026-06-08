@@ -7,6 +7,9 @@ import PortfolioGrid from './PortfolioGrid'
 import type { PortfolioPhoto, PortfolioGallery } from './PortfolioGrid'
 import styles from './page.module.css'
 
+// Portfolio updates occasionally as photos are added — revalidate every 2 minutes
+export const revalidate = 120
+
 export const metadata: Metadata = {
   title: 'Portfolio | Tynnell Hollins Photography',
   description: 'Browse the full portfolio: weddings, portraits, families, couples, and more.',

@@ -6,6 +6,9 @@ import styles from './page.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 
+// OOO banner is time-sensitive — shorter revalidate so it appears within 1 minute of being set
+export const revalidate = 60
+
 export const metadata: Metadata = {
   title: 'Contact | Tynnell Hollins Photography',
   description: 'Book a session with Tynnell Hollins Photography. Weddings, engagements, portraits, and more.',
