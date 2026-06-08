@@ -25,7 +25,7 @@ const COLLECTIONS: Omit<CollectionStat, 'count'>[] = [
     label: 'Photos',
     singularLabel: 'Photo',
     emoji: '📷',
-    addPath: '/admin/collections/photos/create',
+    addPath: '/admin/collections/photos',
     listPath: '/admin/collections/photos',
   },
   {
@@ -316,9 +316,9 @@ export function Dashboard() {
       <div style={css.quickUpload}>
         <div style={css.quickUploadText}>
           <p style={css.quickUploadHeading}>Ready to add new photos?</p>
-          <p style={css.quickUploadSub}>Upload images to start curating your portfolio.</p>
+          <p style={css.quickUploadSub}>Drag and drop images to bulk upload in one go.</p>
         </div>
-        <Link href="/admin/collections/photos/create" style={css.quickUploadBtn}>
+        <Link href="/admin/collections/photos" style={css.quickUploadBtn}>
           Upload Photos
         </Link>
       </div>
