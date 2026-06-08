@@ -156,6 +156,61 @@ async function run() {
     `)
 
     console.log('✓ availability tables ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260608_100000: add galleries_rels table
+    // Required by reverting TYN-139: Gallery.photos changed back from
+    // array type to hasMany relationship so the admin shows a multi-select
+    // search picker instead of one-at-a-time row additions.
+    // Payload postgres adapter stores hasMany relationships in a _rels table.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "galleries_rels" (
+        "id"        serial  PRIMARY KEY NOT NULL,
+        "order"     integer,
+        "parent_id" integer NOT NULL,
+        "path"      varchar NOT NULL,
+        "photos_id" integer
+      )
+    `)
+
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "galleries_rels"
+          ADD CONSTRAINT "galleries_rels_parent_id_fk"
+          FOREIGN KEY ("parent_id")
+          REFERENCES "galleries"("id")
+          ON DELETE CASCADE ON UPDATE NO ACTION;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "galleries_rels"
+          ADD CONSTRAINT "galleries_rels_photos_id_fk"
+          FOREIGN KEY ("photos_id")
+          REFERENCES "photos"("id")
+          ON DELETE SET NULL ON UPDATE NO ACTION;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "galleries_rels_order_idx"
+        ON "galleries_rels" USING btree ("order")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "galleries_rels_parent_id_idx"
+        ON "galleries_rels" USING btree ("parent_id")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "galleries_rels_photos_id_idx"
+        ON "galleries_rels" USING btree ("photos_id")
+    `)
+
+    console.log('✓ galleries_rels table ready')
   } finally {
     client.release()
     await pool.end()

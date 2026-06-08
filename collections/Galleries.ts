@@ -86,21 +86,14 @@ export const Galleries: CollectionConfig = {
     },
     {
       name: 'photos',
-      type: 'array',
+      type: 'relationship',
       label: 'Photos in This Gallery',
+      relationTo: 'photos',
+      hasMany: true,
       admin: {
         description:
-          'Select photos to include in this gallery. Click "Add Row" to add each photo. Drag the handle on the left of each row to reorder them.',
+          'Type a filename or title to search, then click photos to select them. You can select as many as you need before saving — no need to add them one at a time.',
       },
-      fields: [
-        {
-          name: 'photo',
-          type: 'relationship',
-          label: 'Photo',
-          relationTo: 'photos',
-          required: true,
-        },
-      ],
     },
     {
       name: 'featured',
