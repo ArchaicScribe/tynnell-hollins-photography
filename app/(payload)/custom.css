@@ -186,48 +186,13 @@ select,
   padding: 2.5rem 2rem;
 }
 
-/* Logo area: show "Tynnell Hollins" in Tangerine style */
+/* Logo area: AdminLogo component handles branding via React (payload.config.ts) */
 .login-logo,
-.login-logo img,
 .login__logo {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   margin-bottom: 2rem;
-}
-
-/* Replace or supplement the Payload logo with a text brand mark */
-.login-logo::before,
-.login__logo::before {
-  content: 'Tynnell Hollins';
-  display: block;
-  font-family: 'Tangerine', cursive;
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #D6D1CE;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  text-align: center;
-}
-
-.login-logo::after,
-.login__logo::after {
-  content: 'Photography';
-  display: block;
-  font-family: 'Archivo', sans-serif;
-  font-size: 0.55rem;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: #9B9A9A;
-  margin-top: 0.15rem;
-  text-align: center;
-}
-
-/* Hide Payload's default logo image so only the text shows */
-.login-logo img,
-.login__logo img {
-  display: none;
 }
 
 /* Section heading ("Log In") */
