@@ -91,20 +91,20 @@
 }
 
 .bodyText {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 300;
-  line-height: 1.85;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.8;
   color: var(--color-body);
   margin: 0;
 }
 
-/* Portable Text bio from Sanity */
+/* Rich text bio from Payload */
 .bioBody {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 300;
-  line-height: 1.85;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.8;
   color: var(--color-body);
 }
 
@@ -117,7 +117,7 @@
 }
 
 .bioBody strong {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-heading);
 }
 
@@ -151,10 +151,10 @@
 }
 
 .philosophyBody {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 300;
-  line-height: 1.85;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.8;
   color: var(--color-body);
   max-width: 540px;
   margin: 0;
@@ -249,10 +249,10 @@
 }
 
 .ctaBody {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 300;
-  line-height: 1.8;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.75;
   color: var(--color-body);
   max-width: 40ch;
   margin: 0;

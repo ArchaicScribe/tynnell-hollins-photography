@@ -32,9 +32,9 @@
 }
 
 .heroSub {
-  font-family: var(--font-body);
+  font-family: var(--font-prose);
   font-size: 1rem;
-  line-height: 1.8;
+  line-height: 1.75;
   color: var(--color-detail);
   max-width: 520px;
   margin: 0 auto;
@@ -131,9 +131,9 @@
 /* ── Description ──────────────────────────────────────────── */
 
 .cardDescription {
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  line-height: 1.8;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  line-height: 1.75;
   color: var(--color-body);
   margin-bottom: 1.75rem;
 }
@@ -231,9 +231,9 @@
 }
 
 .ctaBody {
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  line-height: 1.8;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  line-height: 1.75;
   color: var(--color-detail);
   max-width: 40ch;
 }
