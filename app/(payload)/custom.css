@@ -326,8 +326,29 @@ h1.login__heading {
 
 /* ── App header (top bar) ───────────────────────────────────── */
 
+/* Allow the header bar to grow so the AdminLogo script + subtitle both fit.
+   Payload defaults the header to a fixed ~52px; our logo needs ~72px. */
 .app-header {
   border-bottom: 1px solid rgba(214, 209, 206, 0.06);
+  height: auto !important;
+  min-height: 72px;
+}
+
+/* The step-nav home link is the container Payload renders the Logo into.
+   Give it auto height so it expands around the logo content. */
+.step-nav__home {
+  height: auto !important;
+  min-height: 64px;
+  padding: 0.5rem 1rem !important;
+  align-items: center;
+  overflow: visible;
+}
+
+/* Nav sidebar header also receives the logo in some Payload build states */
+.nav__header {
+  height: auto !important;
+  min-height: 72px;
+  overflow: visible;
 }
 
 /* ── Field labels ───────────────────────────────────────────── */

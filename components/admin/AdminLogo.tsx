@@ -36,12 +36,12 @@ export function AdminLogo() {
       <span
         style={{
           fontFamily: "'Archivo', sans-serif",
-          fontSize: '0.5rem',
+          fontSize: '0.6rem',
           fontWeight: 600,
-          letterSpacing: '0.38em',
+          letterSpacing: '0.32em',
           textTransform: 'uppercase',
           color: '#9B9A9A',
-          marginTop: '0.1rem',
+          marginTop: '0.15rem',
           whiteSpace: 'nowrap',
         }}
       >
