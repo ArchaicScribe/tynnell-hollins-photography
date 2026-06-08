@@ -52,9 +52,9 @@
 }
 
 .quote {
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  line-height: 1.85;
+  font-family: var(--font-prose);
+  font-size: 0.875rem;
+  line-height: 1.8;
   color: var(--color-body);
   font-style: italic;
   flex: 1;
