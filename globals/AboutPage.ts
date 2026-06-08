@@ -5,6 +5,7 @@ export const AboutPage: GlobalConfig = {
   slug: 'about-page',
   label: 'About Page',
   admin: {
+    group: 'Site Settings',
     description: 'Content for your About page and the about preview section on your homepage.',
   },
   fields: [

@@ -4,7 +4,7 @@ export const Availability: GlobalConfig = {
   slug: 'availability',
   label: 'Availability',
   admin: {
-    group: 'Availability',
+    group: 'Services & Booking',
     description:
       'Block out dates when you are unavailable — vacations, personal time, recovery periods. Clients requesting sessions during these windows will see your custom message.',
   },

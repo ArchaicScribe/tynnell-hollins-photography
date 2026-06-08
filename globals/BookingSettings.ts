@@ -4,7 +4,7 @@ export const BookingSettings: GlobalConfig = {
   slug: 'booking-settings',
   label: 'Booking Settings',
   admin: {
-    group: 'Availability',
+    group: 'Services & Booking',
     description:
       'Controls how far in advance clients can request sessions. Changes take effect immediately — no code change needed.',
   },

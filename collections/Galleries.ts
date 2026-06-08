@@ -27,6 +27,7 @@ export const Galleries: CollectionConfig = {
     beforeValidate: [autoSlugFromTitle],
   },
   admin: {
+    group: 'My Portfolio',
     useAsTitle: 'title',
     description:
       'Curated collections of photos shown on your Portfolio page. Each gallery has a category, a cover photo, and a set of photos.',

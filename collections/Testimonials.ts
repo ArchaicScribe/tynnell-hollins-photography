@@ -7,6 +7,7 @@ export const Testimonials: CollectionConfig = {
     plural: 'Testimonials',
   },
   admin: {
+    group: 'Content',
     useAsTitle: 'clientName',
     description:
       'Reviews and quotes from your clients, shown on your homepage and testimonials page.',

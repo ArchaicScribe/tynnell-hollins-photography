@@ -4,6 +4,7 @@ export const HeroSlides: GlobalConfig = {
   slug: 'hero-slides',
   label: 'Hero Slides',
   admin: {
+    group: 'Site Settings',
     description:
       'The full-screen photo carousel on your homepage. Add, remove, or reorder slides here.',
   },
