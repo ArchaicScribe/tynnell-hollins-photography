@@ -62,14 +62,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params
   const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'posts',
-    where: { slug: { equals: slug } },
-    depth: 1,
-    limit: 1,
-  })
-  const post = docs[0]
 
+  const [{ docs }, { docs: relatedDocs }] = await Promise.all([
+    payload.find({
+      collection: 'posts',
+      where: { slug: { equals: slug } },
+      depth: 1,
+      limit: 1,
+    }),
+    payload.find({
+      collection: 'posts',
+      where: {
+        and: [
+          { status: { equals: 'published' } },
+          { slug: { not_equals: slug } },
+        ],
+      },
+      sort: '-publishedAt',
+      depth: 1,
+      limit: 3,
+    }),
+  ])
+
+  const post = docs[0]
   if (!post) notFound()
 
   const cover = typeof post.coverImage === 'object' && post.coverImage !== null
@@ -142,8 +157,64 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Back link */}
       <div className={styles.footer}>
-        <Link href="/blog" className={styles.back}>← Back to Journal</Link>
+        <Link href="/blog" className={styles.back}>Back to Journal</Link>
       </div>
+
+      {/* Related posts */}
+      {relatedDocs.length > 0 && (
+        <section className={styles.related}>
+          <div className={styles.relatedInner}>
+            <p className={styles.relatedLabel}>More from the Journal</p>
+            <div className={styles.relatedGrid}>
+              {relatedDocs.map((rp) => {
+                const rpCover =
+                  typeof rp.coverImage === 'object' && rp.coverImage !== null
+                    ? (rp.coverImage as Photo)
+                    : null
+                const rpCoverUrl = rpCover?.sizes?.card?.url ?? rpCover?.url ?? null
+                const rpSlug = typeof rp.slug === 'string' ? rp.slug : ''
+
+                return (
+                  <article key={rp.id} className={styles.relatedCard}>
+                    {rpCoverUrl && (
+                      <Link
+                        href={`/blog/${rpSlug}`}
+                        className={styles.relatedImageLink}
+                        tabIndex={-1}
+                        aria-hidden="true"
+                      >
+                        <div className={styles.relatedImage}>
+                          <Image
+                            src={rpCoverUrl}
+                            alt={rpCover?.alt ?? rp.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className={styles.relatedPhoto}
+                          />
+                        </div>
+                      </Link>
+                    )}
+                    <div className={styles.relatedBody}>
+                      {rp.publishedAt && (
+                        <p className={styles.relatedDate}>
+                          {new Date(rp.publishedAt).toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric',
+                          })}
+                        </p>
+                      )}
+                      <h3 className={styles.relatedTitle}>
+                        <Link href={`/blog/${rpSlug}`} className={styles.relatedLink}>
+                          {rp.title}
+                        </Link>
+                      </h3>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
     </main>
   )
