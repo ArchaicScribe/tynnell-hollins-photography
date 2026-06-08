@@ -221,6 +221,22 @@ const css = {
   } as React.CSSProperties,
 }
 
+const CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands']
+
+const filterBtn = (active: boolean): React.CSSProperties => ({
+  padding: '0.3rem 0.7rem',
+  background: active ? 'var(--theme-elevation-500, #9B9A9A)' : 'var(--theme-elevation-100, #131313)',
+  border: `1px solid ${active ? 'transparent' : 'var(--theme-elevation-300, #2a2a2a)'}`,
+  borderRadius: '20px',
+  color: active ? '#fff' : 'var(--theme-text-dim, #9b9a9a)',
+  fontSize: '0.68rem',
+  letterSpacing: '0.08em',
+  textTransform: 'capitalize',
+  cursor: 'pointer',
+  fontWeight: active ? 600 : 400,
+  whiteSpace: 'nowrap',
+})
+
 const LIMIT = 48
 
 async function uploadFile(file: File): Promise<void> {
@@ -246,6 +262,7 @@ export function PhotoGridView() {
   const [loading, setLoading] = useState(true)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [category, setCategory] = useState<string | null>(null)
   const [uploadState, setUploadState] = useState<UploadState>({ status: 'idle' })
   const [dragging, setDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -262,6 +279,9 @@ export function PhotoGridView() {
       params.append('where[or][0][title][contains]', debouncedSearch)
       params.append('where[or][1][filename][contains]', debouncedSearch)
     }
+    if (category) {
+      params.append('where[category][equals]', category)
+    }
 
     fetch(`/api/photos?${params.toString()}`, { credentials: 'include' })
       .then(r => r.json())
@@ -272,7 +292,7 @@ export function PhotoGridView() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [debouncedSearch, page])
+  }, [debouncedSearch, category, page])
 
   // Keep a ref so upload callback can trigger a refresh without stale closure
   useEffect(() => {
@@ -401,6 +421,22 @@ export function PhotoGridView() {
         </button>
       </div>
 
+      {/* Category filter pills */}
+      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
+        <button style={filterBtn(category === null)} onClick={() => { setCategory(null); setPage(1) }}>
+          All
+        </button>
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat}
+            style={filterBtn(category === cat)}
+            onClick={() => { setCategory(cat); setPage(1) }}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       {/* Drop zone */}
       <div
         style={css.dropzone(dragging)}
@@ -481,8 +517,8 @@ export function PhotoGridView() {
         </div>
       ) : photos.length === 0 ? (
         <div style={css.empty}>
-          {debouncedSearch
-            ? `No photos matching "${debouncedSearch}"`
+          {debouncedSearch || category
+            ? 'No photos match your filters.'
             : 'No photos yet. Drag images onto the zone above to get started.'}
         </div>
       ) : (
