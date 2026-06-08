@@ -219,7 +219,7 @@ export function GalleryGridView() {
       limit: String(LIMIT),
       page: String(page),
       depth: '1',
-      sort: 'displayOrder',
+      sort: '-updatedAt',
     })
     if (debouncedSearch) {
       params.append('where[title][contains]', debouncedSearch)
