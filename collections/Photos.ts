@@ -60,6 +60,13 @@ export const Photos: CollectionConfig = {
     description:
       'Your photo library. Drop images here and they upload instantly — title and alt text are filled in automatically from the filename so you can bulk-upload without stopping. Edit any photo afterwards to update the details.',
     defaultColumns: ['filename', 'title', 'category', 'featured', 'updatedAt'],
+    components: {
+      views: {
+        list: {
+          Component: './components/admin/PhotoGridView#PhotoGridView',
+        },
+      },
+    },
   },
   fields: [
     {
