@@ -308,7 +308,7 @@ export function Dashboard() {
           const data = await res.json()
           const count: number = data.totalDocs ?? 0
 
-          // For posts, also fetch the published-only count so we can show the split
+          // For posts, also fetch the published count so we can show the published vs draft split
           if (col.slug === 'posts') {
             const pubRes = await fetch(
               '/api/posts?limit=0&depth=0&where[status][equals]=published',
