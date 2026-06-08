@@ -308,6 +308,7 @@ export function PostGridView() {
               >
                 <div style={css.imgWrap}>
                   {coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={coverUrl} alt={post.title} style={css.img} loading="lazy" />
                   ) : (
                     <div style={css.placeholder}>&#9998;</div>
