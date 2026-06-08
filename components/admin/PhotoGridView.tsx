@@ -274,6 +274,7 @@ export function PhotoGridView() {
       limit: String(LIMIT),
       page: String(page),
       depth: '0',
+      sort: '-createdAt',
     })
     if (debouncedSearch) {
       params.append('where[or][0][title][contains]', debouncedSearch)
