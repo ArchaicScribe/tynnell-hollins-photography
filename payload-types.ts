@@ -260,14 +260,9 @@ export interface Gallery {
    */
   coverPhoto: number | Photo;
   /**
-   * Select photos to include in this gallery. Drag the handle on the left of each row to reorder them.
+   * Type a filename or title to search, then click photos to select them. You can select as many as you need before saving.
    */
-  photos?:
-    | {
-        photo: number | Photo;
-        id?: string | null;
-      }[]
-    | null;
+  photos?: (number | Photo)[] | null;
   /**
    * Turn this on to feature this gallery on your homepage.
    */
@@ -582,12 +577,7 @@ export interface GalleriesSelect<T extends boolean = true> {
   slug?: T;
   category?: T;
   coverPhoto?: T;
-  photos?:
-    | T
-    | {
-        photo?: T;
-        id?: T;
-      };
+  photos?: T;
   featured?: T;
   displayOrder?: T;
   updatedAt?: T;
