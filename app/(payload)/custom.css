@@ -1,6 +1,6 @@
 /* Tynnell Hollins Photography — Payload admin brand theme */
 
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Roboto+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Roboto+Mono:ital,wght@0,400;0,500;1,400&family=Tangerine:wght@400;700&display=swap');
 
 /* Override Payload CSS variables — applied under both themes so the dark
    palette holds regardless of the user's system preference. */
@@ -163,27 +163,149 @@ select,
   text-transform: uppercase;
 }
 
-/* ── Login page ────────────────────────────────────────────── */
+/* ── Login page revamp (TYN-181) ────────────────────────────── */
 
-/* Give the login page a centred, spacious feel */
+/* Full-page dark canvas */
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0C0C0C;
+  padding: 2rem 1rem;
+}
+
+/* Card container */
+.login-wrap,
+.login__form-wrap {
+  width: 100%;
+  max-width: 400px;
+  background: #131313;
+  border: 1px solid rgba(214, 209, 206, 0.08);
+  border-radius: 8px;
+  padding: 2.5rem 2rem;
+}
+
+/* Logo area: show "Tynnell Hollins" in Tangerine style */
+.login-logo,
+.login-logo img,
+.login__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+/* Replace or supplement the Payload logo with a text brand mark */
+.login-logo::before,
+.login__logo::before {
+  content: 'Tynnell Hollins';
+  display: block;
+  font-family: 'Tangerine', cursive;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #D6D1CE;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.login-logo::after,
+.login__logo::after {
+  content: 'Photography';
+  display: block;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #9B9A9A;
+  margin-top: 0.15rem;
+  text-align: center;
+}
+
+/* Hide Payload's default logo image so only the text shows */
+.login-logo img,
+.login__logo img {
+  display: none;
+}
+
+/* Section heading ("Log In") */
+.login h1,
+.login__heading,
+h1.login__heading {
+  font-family: 'Archivo', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9B9A9A;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Fields stacked with good spacing */
 .login-fields {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
+/* Full-width inputs */
+.login-fields input[type='email'],
+.login-fields input[type='password'],
+.login-fields input[type='text'] {
+  width: 100%;
+  padding: 0.7rem 0.875rem;
+  background: #0C0C0C;
+  border: 1px solid rgba(214, 209, 206, 0.12);
+  border-radius: 4px;
+  color: #E6E1DE;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+  min-height: 44px;
+}
+
+.login-fields input[type='email']:focus,
+.login-fields input[type='password']:focus,
+.login-fields input[type='text']:focus {
+  border-color: rgba(214, 209, 206, 0.35);
+}
+
 /* Full-width, tall, prominent login button (TYN-180) */
 .login-fields .form-submit,
-.login-fields .btn--style-primary {
+.login-fields .btn--style-primary,
+.login-fields button[type='submit'] {
   width: 100%;
   min-height: 48px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-family: 'Archivo', sans-serif;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   border-radius: 4px;
   justify-content: center;
+  margin-top: 0.5rem;
+}
+
+/* Forgot password link */
+.login a,
+.login__link {
+  font-size: 0.72rem;
+  color: #9B9A9A;
+  text-align: center;
+  display: block;
+  margin-top: 1rem;
+  text-decoration: none;
+  font-family: 'Roboto Mono', monospace;
+  letter-spacing: 0.04em;
+}
+
+.login a:hover,
+.login__link:hover {
+  color: #D6D1CE;
 }
 
 /* ── Primary and secondary buttons ─────────────────────────── */
