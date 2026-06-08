@@ -125,8 +125,11 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `app/(payload)/admin/importMap.js` | Auto-generated component registry — must be committed |
 | `app/(payload)/admin/layout.tsx` | Admin layout — imports `custom.css` and `PayloadCssGuard` |
 | `app/(payload)/custom.css` | Admin brand theme overrides |
+| `components/admin/AdminLogo.tsx` | "Tynnell Hollins Photography" brand mark (login + nav) |
+| `components/admin/AdminIcon.tsx` | "TH" monogram icon (nav collapsed state) |
 | `components/admin/Dashboard.tsx` | Custom admin dashboard (client component) |
-| `components/admin/PhotoGridView.tsx` | Visual photo grid replaces default Photos list |
+| `components/admin/PhotoGridView.tsx` | Visual photo grid, drag-to-upload, category filters |
+| `components/admin/GalleryGridView.tsx` | Visual gallery card grid with category filter |
 | `components/admin/PayloadCssGuard.tsx` | Forces Payload CSS into static link tag |
 | `scripts/migrate-db.mjs` | DB migration runner (used by Vercel pre-build) |
 | `app/lib/constants.ts` | `CONTACT_EMAIL`, `EMAIL_FROM` (single source of truth) |
@@ -194,6 +197,19 @@ The Payload admin sidebar is organized into four groups:
 | Content | Blog Posts, Testimonials |
 | Services & Booking | Services, Booking Settings, Availability |
 | Site Settings | Site Config, Hero Slides, About Page |
+
+---
+
+## Admin custom components summary
+
+- `AdminLogo` / `AdminIcon`: registered in `payload.config.ts` under `admin.components.graphics`
+- `Dashboard`: registered under `admin.components.views.dashboard`
+- `PhotoGridView`: registered on `Photos` collection under `admin.components.views.list.Component`
+- `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
+- `PayloadCssGuard`: imported in `app/(payload)/admin/layout.tsx` to force CSS into client bundle
+- All custom components are `'use client'` with inline styles so they survive hydration failures
+
+**After adding any new admin component**, always regenerate importMap (see above) and commit the result.
 
 ---
 
