@@ -16,7 +16,7 @@
      Fallbacks here ensure nothing breaks if the variable is unset. */
   --font-display:      'Tangerine', cursive;
   --font-heading:      'Archivo', sans-serif;
-  --font-prose:        'Archivo', sans-serif; /* readable paragraphs and body copy */
+  --font-prose:        var(--font-heading); /* readable paragraphs and body copy — same Archivo family, inherits Next.js self-hosted font */
   --font-body:         'Roboto Mono', monospace;
   --font-mono:         var(--font-body); /* alias — resolves to Roboto Mono */
 
