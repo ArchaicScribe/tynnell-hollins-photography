@@ -8,7 +8,7 @@ interface CollectionStat {
   singularLabel: string
   emoji: string
   count: number | null
-  publishedCount?: number | null
+  publishedCount?: number
   addPath: string
   listPath: string
 }
