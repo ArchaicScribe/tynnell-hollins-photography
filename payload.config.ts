@@ -73,6 +73,7 @@ export default buildConfig({
     components: {
       graphics: {
         Logo: './components/admin/AdminLogo#AdminLogo',
+        Icon: './components/admin/AdminIcon#AdminIcon',
       },
       views: {
         dashboard: {
