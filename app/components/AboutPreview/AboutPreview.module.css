@@ -55,11 +55,11 @@
 }
 
 .body {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  line-height: 1.8;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  line-height: 1.75;
   color: var(--color-body);
-  font-weight: 300;
+  font-weight: 400;
   max-width: 480px;
 }
 
