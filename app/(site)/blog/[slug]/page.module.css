@@ -97,9 +97,9 @@
 }
 
 .excerpt {
-  font-family: var(--font-body);
-  font-size: 1.1rem;
-  line-height: 1.8;
+  font-family: var(--font-prose);
+  font-size: 1.125rem;
+  line-height: 1.75;
   color: var(--color-body);
   margin-bottom: 2.5rem;
   padding-bottom: 2.5rem;
@@ -107,12 +107,12 @@
   font-style: italic;
 }
 
-/* ── Portable Text styles ─────────────────────────────────── */
+/* ── Rich text styles ─────────────────────────────────────── */
 
 .body {
-  font-family: var(--font-body);
+  font-family: var(--font-prose);
   font-size: 1rem;
-  line-height: 1.9;
+  line-height: 1.85;
   color: var(--color-body);
 }
 
