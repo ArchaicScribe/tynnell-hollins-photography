@@ -13,6 +13,9 @@ import type { AboutData } from '@/app/components/AboutPreview/AboutPreview'
 import type { Testimonial } from '@/app/components/Testimonials/Testimonials'
 import type { Photo } from '@/payload-types'
 
+// Revalidate every 2 minutes — hero slides, photos, and testimonials change infrequently
+export const revalidate = 120
+
 export default async function Home() {
   const payload = await getPayload({ config })
 
