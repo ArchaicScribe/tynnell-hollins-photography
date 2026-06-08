@@ -8,6 +8,7 @@ interface CollectionStat {
   singularLabel: string
   emoji: string
   count: number | null
+  publishedCount?: number | null
   addPath: string
   listPath: string
 }
@@ -175,6 +176,13 @@ const css = {
     fontWeight: 300,
     lineHeight: 1,
   } as React.CSSProperties,
+  publishedSplit: {
+    fontSize: '0.62rem',
+    color: '#9B9A9A',
+    fontFamily: "'Roboto Mono', monospace",
+    letterSpacing: '0.03em',
+    marginTop: '-0.1rem',
+  } as React.CSSProperties,
   actions: {
     display: 'flex',
     gap: '0.5rem',
@@ -296,16 +304,30 @@ export function Dashboard() {
           const res = await fetch(`/api/${col.slug}?limit=0&depth=0`, {
             credentials: 'include',
           })
-          if (!res.ok) return { slug: col.slug, count: 0 }
+          if (!res.ok) return { slug: col.slug, count: 0, publishedCount: undefined }
           const data = await res.json()
-          return { slug: col.slug, count: data.totalDocs ?? 0 }
+          const count: number = data.totalDocs ?? 0
+
+          // For posts, also fetch the published-only count so we can show the split
+          if (col.slug === 'posts') {
+            const pubRes = await fetch(
+              '/api/posts?limit=0&depth=0&where[status][equals]=published',
+              { credentials: 'include' },
+            )
+            const publishedCount = pubRes.ok
+              ? ((await pubRes.json()).totalDocs ?? 0)
+              : undefined
+            return { slug: col.slug, count, publishedCount }
+          }
+
+          return { slug: col.slug, count, publishedCount: undefined }
         })
       )
       setStats((prev) =>
         prev.map((col, i) => {
           const result = results[i]
           if (result.status === 'fulfilled') {
-            return { ...col, count: result.value.count }
+            return { ...col, count: result.value.count, publishedCount: result.value.publishedCount }
           }
           return { ...col, count: 0 }
         })
@@ -345,7 +367,16 @@ export function Dashboard() {
             {col.count === null ? (
               <span style={css.countLoading}>...</span>
             ) : (
-              <span style={css.count}>{col.count}</span>
+              <>
+                <span style={css.count}>{col.count}</span>
+                {col.publishedCount !== undefined && col.count > 0 && (
+                  <span style={css.publishedSplit}>
+                    {col.publishedCount} published
+                    {' · '}
+                    {col.count - col.publishedCount} draft{col.count - col.publishedCount !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </>
             )}
             <div style={css.actions}>
               <Link href={col.addPath} style={css.btnPrimary}>
