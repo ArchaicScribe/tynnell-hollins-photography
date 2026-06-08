@@ -19,9 +19,7 @@ export function AdminLogo() {
         userSelect: 'none',
       }}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tangerine:wght@700&display=swap');
-      `}</style>
+      {/* Tangerine is loaded via custom.css — no inline <style> needed here */}
       <span
         style={{
           fontFamily: "'Tangerine', cursive",
