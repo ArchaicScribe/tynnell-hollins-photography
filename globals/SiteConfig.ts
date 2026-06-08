@@ -4,6 +4,7 @@ export const SiteConfig: GlobalConfig = {
   slug: 'site-config',
   label: 'Site Settings',
   admin: {
+    group: 'Site Settings',
     description:
       'Global settings for your website — business name, contact info, and social media links.',
   },

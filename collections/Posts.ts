@@ -31,6 +31,7 @@ export const Posts: CollectionConfig = {
     beforeValidate: [autoPopulate],
   },
   admin: {
+    group: 'Content',
     useAsTitle: 'title',
     description: 'Your blog posts, shown on the Blog page and individual post pages.',
     defaultColumns: ['coverImage', 'title', 'status', 'publishedAt', 'updatedAt'],

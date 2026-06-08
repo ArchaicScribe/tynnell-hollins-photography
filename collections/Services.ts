@@ -7,6 +7,7 @@ export const Services: CollectionConfig = {
     plural: 'Services',
   },
   admin: {
+    group: 'Services & Booking',
     useAsTitle: 'title',
     description:
       'Your photography services, shown on the Services page. Services with a booking deposit set also appear on the Book a Session page.',
