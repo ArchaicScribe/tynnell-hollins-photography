@@ -33,43 +33,61 @@ export default async function ServicesPage() {
       <section className={styles.grid} aria-label="Service packages">
         {services.length > 0 ? services.map((service) => (
           <article key={service.id} className={styles.card}>
-            {service.eyebrow && (
-              <p className={styles.cardEyebrow}>{service.eyebrow}</p>
-            )}
-            <h2 className={styles.cardTitle}>{service.title}</h2>
-            {service.price && (
-              <p className={styles.cardPrice}>{service.price}</p>
-            )}
+
+            <div className={styles.cardTop}>
+              {service.eyebrow && (
+                <p className={styles.cardEyebrow}>{service.eyebrow}</p>
+              )}
+              <h2 className={styles.cardTitle}>{service.title}</h2>
+
+              <div className={styles.priceRow}>
+                {service.price && (
+                  <p className={styles.cardPrice}>{service.price}</p>
+                )}
+                {service.depositAmount != null && (
+                  <p className={styles.depositBadge}>
+                    ${service.depositAmount.toLocaleString()} deposit to reserve
+                  </p>
+                )}
+              </div>
+            </div>
+
             {service.description && (
               <p className={styles.cardDescription}>{service.description}</p>
             )}
+
             {service.features && service.features.length > 0 && (
               <ul className={styles.featureList}>
                 {service.features.map((item, i) => (
                   <li key={i} className={styles.featureItem}>
-                    <span className={styles.featureDash} aria-hidden="true">{"—"}</span>
                     {item.feature}
                   </li>
                 ))}
               </ul>
             )}
+
             <Link
               href={`/book?package=${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
               className={styles.bookBtn}
             >
-              Book This Session
+              Reserve Your Date
             </Link>
+
           </article>
         )) : (
           <p className={styles.emptyState}>
-            Packages coming soon — reach out directly to discuss your vision.
+            Packages coming soon. Reach out directly to discuss your vision.
           </p>
         )}
       </section>
 
       {/* Bottom CTA */}
       <section className={styles.cta}>
-        <p className={styles.ctaText}>Ready to reserve your date?</p>
+        <p className={styles.ctaEyebrow}>Ready to begin?</p>
+        <h2 className={styles.ctaHeading}>{"Reserve your date"}<br />{"before it's gone."}</h2>
+        <p className={styles.ctaBody}>
+          Dates fill quickly. Securing yours takes only a deposit.
+        </p>
         <div className={styles.ctaActions}>
           <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
           <Link href="/contact" className={styles.ctaBtnSecondary}>Have questions?</Link>

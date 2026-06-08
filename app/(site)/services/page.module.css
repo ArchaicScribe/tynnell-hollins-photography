@@ -59,10 +59,34 @@
   flex-direction: column;
   gap: 0;
   transition: background 0.2s ease;
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 3rem;
+  right: 3rem;
+  height: 1px;
+  background: transparent;
+  transition: background 0.2s ease;
 }
 
 .card:hover {
   background: var(--color-bg-accent);
+}
+
+.card:hover::before {
+  background: var(--color-detail);
+}
+
+/* ── Card top block ──────────────────────────────────────── */
+
+.cardTop {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid #1a1a1a;
 }
 
 .cardEyebrow {
@@ -80,7 +104,13 @@
   font-weight: 400;
   color: var(--color-heading);
   line-height: 1.1;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.priceRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .cardPrice {
@@ -88,11 +118,17 @@
   font-size: 0.8rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--color-detail);
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #1a1a1a;
+  color: var(--color-body);
 }
+
+.depositBadge {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--color-detail);
+}
+
+/* ── Description ──────────────────────────────────────────── */
 
 .cardDescription {
   font-family: var(--font-body);
@@ -121,17 +157,22 @@
   color: var(--color-body);
   display: flex;
   gap: 0.75rem;
+  align-items: baseline;
 }
 
-.featureDash {
+.featureItem::before {
+  content: '+';
   color: var(--color-detail);
   flex-shrink: 0;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  letter-spacing: 0;
 }
 
 /* ── Book button ─────────────────────────────────────────── */
 
 .bookBtn {
-  display: inline-block;
+  display: block;
   margin-top: auto;
   font-family: var(--font-heading);
   font-size: 0.7rem;
@@ -139,7 +180,7 @@
   text-transform: uppercase;
   color: var(--color-btn-text);
   background: var(--color-btn-bg);
-  padding: 0.85rem 2rem;
+  padding: 0.9rem 2rem;
   text-decoration: none;
   text-align: center;
   transition: background 0.2s ease;
@@ -167,17 +208,42 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
-  padding: 6rem var(--padding-x);
+  gap: 1.25rem;
+  padding: 7rem var(--padding-x);
   text-align: center;
 }
 
-.ctaText {
+.ctaEyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+}
+
+.ctaHeading {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-size: clamp(2rem, 4vw, 3.5rem);
   font-weight: 400;
   color: var(--color-heading);
   line-height: 1.2;
+  margin: 0;
+}
+
+.ctaBody {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: var(--color-detail);
+  max-width: 40ch;
+}
+
+.ctaActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
 
 .ctaBtn {
@@ -194,13 +260,6 @@
 
 .ctaBtn:hover {
   background: var(--color-btn-hover);
-}
-
-.ctaActions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
 .ctaBtnSecondary {
@@ -234,5 +293,16 @@
 
   .card {
     padding: 2.5rem var(--padding-x);
+  }
+
+  .card::before {
+    left: var(--padding-x);
+    right: var(--padding-x);
+  }
+
+  .cta {
+    align-items: flex-start;
+    text-align: left;
+    padding: 5rem var(--padding-x);
   }
 }
