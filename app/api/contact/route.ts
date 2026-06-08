@@ -106,11 +106,19 @@ export async function POST(request: Request) {
   const safeHowHeard          = escapeHtml(howHeard)
   const safeMessage           = escapeHtml(message)
 
+  // Resend SDK returns { data, error } and does NOT throw on API failures.
+  // We must check the error property explicitly - a try/catch alone is not sufficient.
   try {
-    await Promise.all([
+    const contactTo = process.env.CONTACT_TO_EMAIL
+    if (!contactTo) {
+      console.error('[contact] CONTACT_TO_EMAIL env var is not set')
+      return NextResponse.json({ error: 'Failed to send message. Please try again.' }, { status: 500 })
+    }
+
+    const [inquiryResult, ackResult] = await Promise.all([
       resend.emails.send({
         from: EMAIL_FROM,
-        to: process.env.CONTACT_TO_EMAIL!,
+        to: contactTo,
         replyTo: email,
         subject: `New Inquiry: ${safeSessionType} - ${safeName}`,
         html: inquiryEmailHtml({
@@ -128,7 +136,7 @@ export async function POST(request: Request) {
       resend.emails.send({
         from: EMAIL_FROM,
         to: email,
-        replyTo: process.env.CONTACT_TO_EMAIL,
+        replyTo: contactTo,
         subject: `Got your inquiry, ${safeName}!`,
         html: clientAcknowledgmentEmailHtml({
           name: safeName,
@@ -139,8 +147,20 @@ export async function POST(request: Request) {
       }),
     ])
 
+    if (inquiryResult.error) {
+      console.error('[contact] inquiry email failed:', JSON.stringify(inquiryResult.error))
+      return NextResponse.json({ error: 'Failed to send message. Please try again.' }, { status: 500 })
+    }
+
+    if (ackResult.error) {
+      // Non-fatal: inquiry already delivered; log but still return success
+      console.error('[contact] acknowledgment email failed (non-fatal):', JSON.stringify(ackResult.error))
+    }
+
+    console.log('[contact] inquiry sent. ID:', inquiryResult.data?.id, '| ack sent:', !ackResult.error)
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (e) {
+    console.error('[contact] unexpected error:', e)
     return NextResponse.json({ error: 'Failed to send message. Please try again.' }, { status: 500 })
   }
 }
