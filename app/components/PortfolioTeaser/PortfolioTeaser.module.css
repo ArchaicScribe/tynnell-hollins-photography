@@ -102,14 +102,17 @@
 }
 
 .ctaButton {
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  letter-spacing: 0.2em;
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-btn-text);
   background: var(--color-btn-bg);
-  padding: 0.875rem 2.5rem;
+  padding: 0.9rem 2.75rem;
   transition: background 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .ctaButton:hover {
