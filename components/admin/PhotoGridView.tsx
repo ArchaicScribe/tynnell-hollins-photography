@@ -8,6 +8,7 @@ type PhotoDoc = {
   filename: string
   title?: string | null
   category?: string | null
+  featured?: boolean | null
   url?: string | null
   sizes?: {
     thumbnail?: { url?: string | null } | null
@@ -263,6 +264,7 @@ export function PhotoGridView() {
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [category, setCategory] = useState<string | null>(null)
+  const [featuredOnly, setFeaturedOnly] = useState(false)
   const [uploadState, setUploadState] = useState<UploadState>({ status: 'idle' })
   const [dragging, setDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -283,6 +285,9 @@ export function PhotoGridView() {
     if (category) {
       params.append('where[category][equals]', category)
     }
+    if (featuredOnly) {
+      params.append('where[featured][equals]', 'true')
+    }
 
     fetch(`/api/photos?${params.toString()}`, { credentials: 'include' })
       .then(r => r.json())
@@ -293,7 +298,7 @@ export function PhotoGridView() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [debouncedSearch, category, page])
+  }, [debouncedSearch, category, featuredOnly, page])
 
   // Keep a ref so upload callback can trigger a refresh without stale closure
   useEffect(() => {
@@ -422,20 +427,33 @@ export function PhotoGridView() {
         </button>
       </div>
 
-      {/* Category filter pills */}
-      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
-        <button style={filterBtn(category === null)} onClick={() => { setCategory(null); setPage(1) }}>
+      {/* Category + featured filter pills */}
+      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.875rem', alignItems: 'center' }}>
+        <button style={filterBtn(category === null && !featuredOnly)} onClick={() => { setCategory(null); setFeaturedOnly(false); setPage(1) }}>
           All
         </button>
         {CATEGORIES.map(cat => (
           <button
             key={cat}
             style={filterBtn(category === cat)}
-            onClick={() => { setCategory(cat); setPage(1) }}
+            onClick={() => { setCategory(cat); setFeaturedOnly(false); setPage(1) }}
           >
             {cat}
           </button>
         ))}
+        <span style={{ width: '1px', height: '16px', background: 'rgba(214,209,206,0.1)', margin: '0 0.25rem', display: 'inline-block', flexShrink: 0 }} />
+        <button
+          style={{
+            ...filterBtn(featuredOnly),
+            borderColor: featuredOnly ? 'transparent' : 'rgba(212,175,55,0.35)',
+            color: featuredOnly ? '#fff' : 'rgba(212,175,55,0.8)',
+            background: featuredOnly ? 'rgba(212,175,55,0.25)' : 'transparent',
+          }}
+          onClick={() => { setFeaturedOnly(f => !f); setPage(1) }}
+          title="Show only photos featured on the homepage"
+        >
+          Featured
+        </button>
       </div>
 
       {/* Drop zone */}
@@ -540,6 +558,11 @@ export function PhotoGridView() {
                     <img src={thumbUrl} alt={label} style={css.img} loading="lazy" />
                   ) : (
                     <div style={css.placeholder}>&#128247;</div>
+                  )}
+                  {photo.featured && (
+                    <div style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', padding: '0.15rem 0.4rem', background: 'rgba(212,175,55,0.85)', borderRadius: '3px', fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0c0c0c', fontWeight: 700 }}>
+                      Featured
+                    </div>
                   )}
                 </div>
                 <div style={css.cardBody}>
