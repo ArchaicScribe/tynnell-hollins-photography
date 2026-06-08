@@ -162,3 +162,183 @@ select,
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
+/* ── Login page ────────────────────────────────────────────── */
+
+/* Give the login page a centred, spacious feel */
+.login-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Full-width, tall, prominent login button (TYN-180) */
+.login-fields .form-submit,
+.login-fields .btn--style-primary {
+  width: 100%;
+  min-height: 48px;
+  font-size: 0.8rem;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  justify-content: center;
+}
+
+/* ── Primary and secondary buttons ─────────────────────────── */
+
+.btn--style-primary {
+  border-radius: 4px;
+  font-weight: 600;
+  min-height: 40px;
+}
+
+.btn--style-secondary {
+  border-radius: 4px;
+  min-height: 40px;
+}
+
+/* Save / create buttons in the document header */
+.form-submit .btn {
+  min-height: 40px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 600;
+  border-radius: 4px;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+/* ── Nav group headings ─────────────────────────────────────── */
+
+/* Space groups apart so sections feel distinct */
+.nav-group {
+  margin-top: 0.25rem;
+}
+
+/* Style the group label toggle */
+.nav-group__toggle {
+  font-family: 'Archivo', sans-serif !important;
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9B9A9A;
+  padding-top: 1.25rem;
+  padding-bottom: 0.35rem;
+  opacity: 0.7;
+}
+
+/* Indicator chevron — keep it subtle */
+.nav-group__indicator {
+  opacity: 0.5;
+  width: 10px;
+  height: 10px;
+}
+
+/* ── App header (top bar) ───────────────────────────────────── */
+
+.app-header {
+  border-bottom: 1px solid rgba(214, 209, 206, 0.06);
+}
+
+/* ── Field labels ───────────────────────────────────────────── */
+
+.field-label,
+label.field-label {
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9B9A9A;
+  margin-bottom: 0.3rem;
+}
+
+/* ── Text inputs and textareas ──────────────────────────────── */
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='number'],
+input[type='url'],
+input[type='search'],
+textarea {
+  min-height: 40px;
+  border-radius: 4px;
+}
+
+/* ── Field descriptions (helper text) ──────────────────────── */
+
+.field-description {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: #9B9A9A;
+  margin-top: 0.35rem;
+}
+
+/* ── Document fields layout ─────────────────────────────────── */
+
+/* Add a touch more breathing room between fields */
+.field-type {
+  margin-bottom: 0.25rem;
+}
+
+/* ── Collection list header ─────────────────────────────────── */
+
+.list-header {
+  border-bottom: 1px solid rgba(214, 209, 206, 0.06);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.list-header__title {
+  font-family: 'Archivo', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* ── Table body rows ────────────────────────────────────────── */
+
+/* Slightly tighten row borders */
+tbody tr td,
+.row--no-link td {
+  border-bottom: 1px solid rgba(214, 209, 206, 0.05);
+}
+
+/* ── Checkbox cells ─────────────────────────────────────────── */
+
+.checkbox-input__input {
+  border-radius: 3px;
+}
+
+/* ── Relationship / select dropdowns ───────────────────────── */
+
+.rs__control {
+  min-height: 40px !important;
+  border-radius: 4px !important;
+}
+
+.rs__menu {
+  border-radius: 4px !important;
+}
+
+/* ── Drawer / modal overlays ────────────────────────────────── */
+
+.drawer__content {
+  border-radius: 6px 0 0 6px;
+}
+
+/* ── Tab navigation (inside document edit views) ───────────── */
+
+.tabs-field__tabs-container {
+  border-bottom: 1px solid rgba(214, 209, 206, 0.08);
+}
+
+/* ── Error messages ─────────────────────────────────────────── */
+
+.field-error {
+  font-size: 0.7rem;
+  font-family: 'Roboto Mono', monospace;
+}
