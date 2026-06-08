@@ -35,6 +35,13 @@ export const Posts: CollectionConfig = {
     useAsTitle: 'title',
     description: 'Your blog posts, shown on the Blog page and individual post pages.',
     defaultColumns: ['coverImage', 'title', 'status', 'publishedAt', 'updatedAt'],
+    components: {
+      views: {
+        list: {
+          Component: './components/admin/PostGridView#PostGridView',
+        },
+      },
+    },
   },
   fields: [
     {
