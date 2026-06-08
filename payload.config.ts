@@ -71,6 +71,9 @@ export default buildConfig({
     theme: 'dark',
     suppressHydrationWarning: true,
     components: {
+      graphics: {
+        Logo: './components/admin/AdminLogo#AdminLogo',
+      },
       views: {
         dashboard: {
           Component: './components/admin/Dashboard#Dashboard',
