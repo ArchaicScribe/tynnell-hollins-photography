@@ -81,7 +81,8 @@ const css = {
     pointerEvents: 'none' as const,
     lineHeight: 1.6,
   } as React.CSSProperties,
-  progressBar: (pct: number): React.CSSProperties => ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  progressBar: (_pct: number): React.CSSProperties => ({
     height: '4px',
     borderRadius: '2px',
     background: 'var(--theme-elevation-300, #2a2a2a)',
@@ -555,6 +556,7 @@ export function PhotoGridView() {
               >
                 <div style={css.imgWrap}>
                   {thumbUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={thumbUrl} alt={label} style={css.img} loading="lazy" />
                   ) : (
                     <div style={css.placeholder}>&#128247;</div>
