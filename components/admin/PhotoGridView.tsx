@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 type PhotoDoc = {
@@ -15,6 +15,11 @@ type PhotoDoc = {
   } | null
 }
 
+type UploadState =
+  | { status: 'idle' }
+  | { status: 'uploading'; current: number; total: number; errors: string[] }
+  | { status: 'done'; uploaded: number; errors: string[] }
+
 const css = {
   root: {
     padding: '1.5rem',
@@ -26,7 +31,7 @@ const css = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
-    marginBottom: '1.5rem',
+    marginBottom: '1rem',
     flexWrap: 'wrap' as const,
   } as React.CSSProperties,
   search: {
@@ -50,7 +55,6 @@ const css = {
     borderRadius: '4px',
     fontSize: '0.875rem',
     fontWeight: 600,
-    textDecoration: 'none',
     whiteSpace: 'nowrap' as const,
     border: 'none',
     cursor: 'pointer',
@@ -59,6 +63,66 @@ const css = {
     fontSize: '0.8rem',
     color: 'var(--theme-text-dim, #9b9a9a)',
     whiteSpace: 'nowrap' as const,
+  } as React.CSSProperties,
+  dropzone: (dragging: boolean): React.CSSProperties => ({
+    border: `2px dashed ${dragging ? '#10B981' : 'rgba(214,209,206,0.15)'}`,
+    borderRadius: '6px',
+    padding: '1.5rem 1rem',
+    textAlign: 'center',
+    marginBottom: '1.25rem',
+    background: dragging ? 'rgba(16,185,129,0.05)' : 'transparent',
+    transition: 'border-color 0.15s, background 0.15s',
+    cursor: 'pointer',
+  }),
+  dropzoneText: {
+    fontSize: '0.8rem',
+    color: 'var(--theme-text-dim, #9b9a9a)',
+    pointerEvents: 'none' as const,
+    lineHeight: 1.6,
+  } as React.CSSProperties,
+  progressBar: (pct: number): React.CSSProperties => ({
+    height: '4px',
+    borderRadius: '2px',
+    background: 'var(--theme-elevation-300, #2a2a2a)',
+    overflow: 'hidden',
+    marginBottom: '0.5rem',
+    position: 'relative',
+  }),
+  progressFill: (pct: number): React.CSSProperties => ({
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    height: '100%',
+    width: `${pct}%`,
+    background: '#10B981',
+    borderRadius: '2px',
+    transition: 'width 0.2s',
+  }),
+  progressLabel: {
+    fontSize: '0.75rem',
+    color: 'var(--theme-text-dim, #9b9a9a)',
+    textAlign: 'center' as const,
+    marginBottom: '1rem',
+  } as React.CSSProperties,
+  doneBar: {
+    fontSize: '0.78rem',
+    color: '#10B981',
+    textAlign: 'center' as const,
+    marginBottom: '1rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+  } as React.CSSProperties,
+  errorList: {
+    marginBottom: '1rem',
+    padding: '0.75rem 1rem',
+    background: 'rgba(220,38,38,0.08)',
+    border: '1px solid rgba(220,38,38,0.25)',
+    borderRadius: '4px',
+    fontSize: '0.72rem',
+    color: '#f87171',
+    lineHeight: 1.7,
   } as React.CSSProperties,
   grid: {
     display: 'grid',
@@ -159,6 +223,20 @@ const css = {
 
 const LIMIT = 48
 
+async function uploadFile(file: File): Promise<void> {
+  const form = new FormData()
+  form.append('file', file)
+  const res = await fetch('/api/photos', {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText)
+    throw new Error(`${file.name}: ${text}`)
+  }
+}
+
 export function PhotoGridView() {
   const [photos, setPhotos] = useState<PhotoDoc[]>([])
   const [total, setTotal] = useState(0)
@@ -168,19 +246,12 @@ export function PhotoGridView() {
   const [loading, setLoading] = useState(true)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [uploadState, setUploadState] = useState<UploadState>({ status: 'idle' })
+  const [dragging, setDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const refreshRef = useRef<() => void>(() => {})
 
-  useEffect(() => {
-    if (searchTimeout.current) clearTimeout(searchTimeout.current)
-    searchTimeout.current = setTimeout(() => {
-      setDebouncedSearch(search)
-      setPage(1)
-    }, 300)
-    return () => {
-      if (searchTimeout.current) clearTimeout(searchTimeout.current)
-    }
-  }, [search])
-
-  useEffect(() => {
+  const fetchPhotos = useCallback(() => {
     setLoading(true)
     const params = new URLSearchParams({
       limit: String(LIMIT),
@@ -203,7 +274,80 @@ export function PhotoGridView() {
       .catch(() => setLoading(false))
   }, [debouncedSearch, page])
 
+  // Keep a ref so upload callback can trigger a refresh without stale closure
+  useEffect(() => {
+    refreshRef.current = fetchPhotos
+  }, [fetchPhotos])
+
+  useEffect(() => {
+    if (searchTimeout.current) clearTimeout(searchTimeout.current)
+    searchTimeout.current = setTimeout(() => {
+      setDebouncedSearch(search)
+      setPage(1)
+    }, 300)
+    return () => {
+      if (searchTimeout.current) clearTimeout(searchTimeout.current)
+    }
+  }, [search])
+
+  useEffect(() => {
+    fetchPhotos()
+  }, [fetchPhotos])
+
+  const handleFiles = useCallback(async (files: FileList | File[]) => {
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'))
+    if (imageFiles.length === 0) return
+
+    const errors: string[] = []
+    setUploadState({ status: 'uploading', current: 0, total: imageFiles.length, errors: [] })
+
+    for (let i = 0; i < imageFiles.length; i++) {
+      setUploadState({ status: 'uploading', current: i + 1, total: imageFiles.length, errors })
+      try {
+        await uploadFile(imageFiles[i])
+      } catch (err) {
+        errors.push(err instanceof Error ? err.message : String(err))
+      }
+    }
+
+    setUploadState({ status: 'done', uploaded: imageFiles.length - errors.length, errors })
+    refreshRef.current()
+
+    // Auto-dismiss the "done" banner after 4s if no errors
+    if (errors.length === 0) {
+      setTimeout(() => setUploadState({ status: 'idle' }), 4000)
+    }
+  }, [])
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragging(true)
+  }, [])
+
+  const onDragLeave = useCallback(() => {
+    setDragging(false)
+  }, [])
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragging(false)
+    if (e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files)
+    }
+  }, [handleFiles])
+
+  const onFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files)
+      e.target.value = ''
+    }
+  }, [handleFiles])
+
   const skeletonCount = 24
+  const uploadPct =
+    uploadState.status === 'uploading'
+      ? Math.round((uploadState.current / uploadState.total) * 100)
+      : 0
 
   return (
     <div style={css.root}>
@@ -217,6 +361,16 @@ export function PhotoGridView() {
           transform: translateY(-2px);
         }
       `}</style>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        style={{ display: 'none' }}
+        onChange={onFileInputChange}
+      />
 
       {/* Toolbar */}
       <div style={css.toolbar}>
@@ -232,10 +386,91 @@ export function PhotoGridView() {
             {total} photo{total !== 1 ? 's' : ''}
           </span>
         )}
-        <Link href="/admin/collections/photos/create" style={css.uploadBtn}>
-          + Upload Photos
-        </Link>
+        <button
+          style={{
+            ...css.uploadBtn,
+            opacity: uploadState.status === 'uploading' ? 0.6 : 1,
+            cursor: uploadState.status === 'uploading' ? 'not-allowed' : 'pointer',
+          }}
+          onClick={() => uploadState.status !== 'uploading' && fileInputRef.current?.click()}
+          disabled={uploadState.status === 'uploading'}
+        >
+          {uploadState.status === 'uploading'
+            ? `Uploading ${uploadState.current} / ${uploadState.total}...`
+            : '+ Upload Photos'}
+        </button>
       </div>
+
+      {/* Drop zone */}
+      <div
+        style={css.dropzone(dragging)}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        onClick={() => uploadState.status !== 'uploading' && fileInputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        aria-label="Upload photos by dragging or clicking"
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            fileInputRef.current?.click()
+          }
+        }}
+      >
+        <div style={css.dropzoneText}>
+          {dragging ? (
+            <strong style={{ color: '#10B981' }}>Drop to upload</strong>
+          ) : (
+            <>
+              <strong>Drag photos here</strong> to bulk upload, or click to browse.
+              <br />
+              <span style={{ fontSize: '0.72rem', opacity: 0.7 }}>
+                Select as many files as you like. Title and alt text are filled in automatically.
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Upload progress */}
+      {uploadState.status === 'uploading' && (
+        <>
+          <div style={css.progressBar(uploadPct)}>
+            <div style={css.progressFill(uploadPct)} />
+          </div>
+          <div style={css.progressLabel}>
+            Uploading {uploadState.current} of {uploadState.total}...
+          </div>
+        </>
+      )}
+
+      {/* Done banner */}
+      {uploadState.status === 'done' && (
+        <>
+          {uploadState.uploaded > 0 && (
+            <div style={css.doneBar}>
+              <span>&#10003;</span>
+              {uploadState.uploaded} photo{uploadState.uploaded !== 1 ? 's' : ''} uploaded
+              {uploadState.errors.length > 0 && ` (${uploadState.errors.length} failed)`}
+              <button
+                style={{ marginLeft: '0.5rem', fontSize: '0.72rem', color: '#9b9a9a', background: 'none', border: 'none', cursor: 'pointer' }}
+                onClick={() => setUploadState({ status: 'idle' })}
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+          {uploadState.errors.length > 0 && (
+            <div style={css.errorList}>
+              <strong>Upload errors:</strong>
+              {uploadState.errors.map((e, i) => (
+                <div key={i}>{e}</div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Grid */}
       {loading ? (
@@ -248,7 +483,7 @@ export function PhotoGridView() {
         <div style={css.empty}>
           {debouncedSearch
             ? `No photos matching "${debouncedSearch}"`
-            : 'No photos yet. Upload your first batch above.'}
+            : 'No photos yet. Drag images onto the zone above to get started.'}
         </div>
       ) : (
         <div style={css.grid}>
@@ -292,7 +527,7 @@ export function PhotoGridView() {
           >
             Prev
           </button>
-          {Array.from({ length: totalPages }).map((_, i) => (
+          {Array.from({ length: Math.min(totalPages, 10) }).map((_, i) => (
             <button
               key={i}
               style={{ ...css.pageBtn, ...(page === i + 1 ? css.pageBtnActive : {}) }}
@@ -301,6 +536,9 @@ export function PhotoGridView() {
               {i + 1}
             </button>
           ))}
+          {totalPages > 10 && page > 10 && (
+            <button style={{ ...css.pageBtn, ...css.pageBtnActive }}>{page}</button>
+          )}
           <button
             style={{ ...css.pageBtn, ...(page === totalPages ? css.pageBtnDisabled : {}) }}
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}

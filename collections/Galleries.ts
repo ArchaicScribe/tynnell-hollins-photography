@@ -32,6 +32,13 @@ export const Galleries: CollectionConfig = {
     description:
       'Curated collections of photos shown on your Portfolio page. Each gallery has a category, a cover photo, and a set of photos.',
     defaultColumns: ['coverPhoto', 'title', 'category', 'featured', 'updatedAt'],
+    components: {
+      views: {
+        list: {
+          Component: './components/admin/GalleryGridView#GalleryGridView',
+        },
+      },
+    },
   },
   fields: [
     {

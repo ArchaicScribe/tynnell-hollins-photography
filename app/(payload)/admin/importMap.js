@@ -1,5 +1,6 @@
 import { PhotoGridView as PhotoGridView_416d697f5d1039cfdf395a457f2fc19a } from '../../../components/admin/PhotoGridView'
 import { CoverPhotoCell as CoverPhotoCell_7b6c7b5fe42940c056316d08f8b58c3d } from '../../../components/admin/CoverPhotoCell'
+import { GalleryGridView as GalleryGridView_694fcc37683b7c53f35803e850250b41 } from '../../../components/admin/GalleryGridView'
 import { PostCoverCell as PostCoverCell_4b9dc1d31737dde9d4508c8875a9c5cd } from '../../../components/admin/PostCoverCell'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -33,6 +34,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 export const importMap = {
   "./components/admin/PhotoGridView#PhotoGridView": PhotoGridView_416d697f5d1039cfdf395a457f2fc19a,
   "./components/admin/CoverPhotoCell#CoverPhotoCell": CoverPhotoCell_7b6c7b5fe42940c056316d08f8b58c3d,
+  "./components/admin/GalleryGridView#GalleryGridView": GalleryGridView_694fcc37683b7c53f35803e850250b41,
   "./components/admin/PostCoverCell#PostCoverCell": PostCoverCell_4b9dc1d31737dde9d4508c8875a9c5cd,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
