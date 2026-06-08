@@ -9,17 +9,17 @@
 [data-theme="light"] {
   color-scheme: dark;
 
-  /* Backgrounds */
-  --theme-bg:             #0C0C0C;
-  --theme-elevation-0:    #0C0C0C;
-  --theme-elevation-50:   #0f0f0f;
-  --theme-elevation-100:  #131313;
-  --theme-elevation-150:  #161616;
-  --theme-elevation-200:  #1a1a1a;
-  --theme-elevation-250:  #1d1d1d;
-  --theme-elevation-500:  #131313;
-  --theme-elevation-800:  #222222;
-  --theme-elevation-1000: #2a2a2a;
+  /* Backgrounds — lifted from near-black to a readable dark grey (TYN-190) */
+  --theme-bg:             #1a1a1a;
+  --theme-elevation-0:    #1a1a1a;
+  --theme-elevation-50:   #1e1e1e;
+  --theme-elevation-100:  #232323;
+  --theme-elevation-150:  #272727;
+  --theme-elevation-200:  #2c2c2c;
+  --theme-elevation-250:  #303030;
+  --theme-elevation-500:  #232323;
+  --theme-elevation-800:  #383838;
+  --theme-elevation-1000: #424242;
 
   /* Text */
   --theme-text:     #E6E1DE;
@@ -38,7 +38,7 @@
 html,
 body {
   font-family: 'Roboto Mono', monospace;
-  background-color: #0C0C0C;
+  background-color: #1a1a1a;
   color: #E6E1DE;
 }
 
@@ -171,7 +171,7 @@ select,
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0C0C0C;
+  background: #1a1a1a;
   padding: 2rem 1rem;
 }
 
@@ -180,8 +180,8 @@ select,
 .login__form-wrap {
   width: 100%;
   max-width: 400px;
-  background: #131313;
-  border: 1px solid rgba(214, 209, 206, 0.08);
+  background: #232323;
+  border: 1px solid rgba(214, 209, 206, 0.12);
   border-radius: 8px;
   padding: 2.5rem 2rem;
 }
@@ -222,8 +222,8 @@ h1.login__heading {
 .login-fields input[type='text'] {
   width: 100%;
   padding: 0.7rem 0.875rem;
-  background: #0C0C0C;
-  border: 1px solid rgba(214, 209, 206, 0.12);
+  background: #1a1a1a;
+  border: 1px solid rgba(214, 209, 206, 0.18);
   border-radius: 4px;
   color: #E6E1DE;
   font-family: 'Roboto Mono', monospace;

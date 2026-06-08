@@ -130,8 +130,8 @@ const css = {
     gap: '1rem',
   } as React.CSSProperties,
   card: {
-    background: '#1a1a1a',
-    border: '1px solid rgba(155,154,154,0.12)',
+    background: '#2c2c2c',
+    border: '1px solid rgba(155,154,154,0.18)',
     borderRadius: '6px',
     padding: '1.25rem 1.5rem',
     display: 'flex',
@@ -214,8 +214,8 @@ const css = {
     gap: '0.75rem',
   } as React.CSSProperties,
   globalCard: {
-    background: '#131313',
-    border: '1px solid rgba(155,154,154,0.1)',
+    background: '#232323',
+    border: '1px solid rgba(155,154,154,0.15)',
     borderRadius: '6px',
     padding: '1rem 1.25rem',
     display: 'flex',
@@ -236,8 +236,8 @@ const css = {
   quickUpload: {
     marginTop: '2.5rem',
     padding: '1.5rem',
-    background: 'linear-gradient(135deg, #1a1a1a 0%, #131313 100%)',
-    border: '1px solid rgba(155,154,154,0.15)',
+    background: 'linear-gradient(135deg, #2c2c2c 0%, #232323 100%)',
+    border: '1px solid rgba(155,154,154,0.2)',
     borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
