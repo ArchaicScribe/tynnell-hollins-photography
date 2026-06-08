@@ -131,7 +131,8 @@ const css = {
     textTransform: 'uppercase' as const,
     color: 'var(--theme-elevation-400, #3a3a3a)',
   } as React.CSSProperties,
-  badge: (category: string): React.CSSProperties => ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  badge: (_category: string): React.CSSProperties => ({
     position: 'absolute',
     top: '0.5rem',
     left: '0.5rem',
@@ -319,6 +320,7 @@ export function GalleryGridView() {
               >
                 <div style={css.imgWrap}>
                   {coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={coverUrl} alt={gallery.title} style={css.img} loading="lazy" />
                   ) : (
                     <div style={css.placeholder}>
