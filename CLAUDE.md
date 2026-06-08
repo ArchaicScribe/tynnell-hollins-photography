@@ -130,6 +130,7 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `components/admin/Dashboard.tsx` | Custom admin dashboard (client component) |
 | `components/admin/PhotoGridView.tsx` | Visual photo grid, drag-to-upload, category filters |
 | `components/admin/GalleryGridView.tsx` | Visual gallery card grid with category filter |
+| `components/admin/PostGridView.tsx` | Visual blog post grid with status filter |
 | `components/admin/PayloadCssGuard.tsx` | Forces Payload CSS into static link tag |
 | `scripts/migrate-db.mjs` | DB migration runner (used by Vercel pre-build) |
 | `app/lib/constants.ts` | `CONTACT_EMAIL`, `EMAIL_FROM` (single source of truth) |
@@ -206,6 +207,7 @@ The Payload admin sidebar is organized into four groups:
 - `Dashboard`: registered under `admin.components.views.dashboard`
 - `PhotoGridView`: registered on `Photos` collection under `admin.components.views.list.Component`
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
+- `PostGridView`: registered on `Posts` collection under `admin.components.views.list.Component`
 - `PayloadCssGuard`: imported in `app/(payload)/admin/layout.tsx` to force CSS into client bundle
 - All custom components are `'use client'` with inline styles so they survive hydration failures
 
