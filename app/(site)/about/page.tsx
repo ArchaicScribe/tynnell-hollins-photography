@@ -8,6 +8,9 @@ import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import styles from './page.module.css'
 
+// About content rarely changes — revalidate every 2 minutes
+export const revalidate = 120
+
 export const metadata: Metadata = {
   title: 'About | Tynnell Hollins Photography',
   description: 'Meet Tynnell Hollins, New Mexico photographer specializing in weddings, engagements, portraits, and family sessions.',

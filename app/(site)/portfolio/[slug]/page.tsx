@@ -8,6 +8,9 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
+// Gallery content changes when photos are added — revalidate every 2 minutes
+export const revalidate = 120
+
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ from?: string }> }
 
 export async function generateStaticParams() {
