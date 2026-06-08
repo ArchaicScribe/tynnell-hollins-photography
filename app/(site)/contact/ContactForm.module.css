@@ -39,9 +39,9 @@
 .input,
 .select,
 .textarea {
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 300;
+  font-family: var(--font-prose);
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-body);
   background: var(--color-bg-accent);
   border: 1px solid rgba(214, 209, 206, 0.12);
@@ -113,8 +113,8 @@
 /* ── Error ───────────────────────────────────────────────── */
 
 .errorMsg {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-family: var(--font-prose);
+  font-size: 0.8125rem;
   line-height: 1.6;
   color: #c87171;
   margin: 0;
@@ -144,10 +144,10 @@
 }
 
 .successBody {
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 300;
-  line-height: 1.8;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.75;
   color: var(--color-body);
   margin: 0 0 2rem;
 }

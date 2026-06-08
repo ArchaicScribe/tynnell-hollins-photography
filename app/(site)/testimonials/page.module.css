@@ -32,10 +32,10 @@
 }
 
 .subheading {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 300;
-  line-height: 1.8;
+  font-family: var(--font-prose);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.75;
   color: var(--color-body);
   margin: 0;
 }
@@ -69,10 +69,10 @@
 }
 
 .quote {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 300;
-  line-height: 1.85;
+  font-family: var(--font-prose);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.8;
   color: var(--color-body);
   margin: 0;
   flex: 1;
