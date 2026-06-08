@@ -4,6 +4,9 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import styles from './page.module.css'
 
+// Service packages change rarely — revalidate every 2 minutes
+export const revalidate = 120
+
 export const metadata: Metadata = {
   title: 'Services | Tynnell Hollins Photography',
   description: "Photography packages for weddings, portraits, families, couples, and brands. View pricing and what's included.",
