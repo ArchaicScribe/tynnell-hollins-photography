@@ -231,6 +231,10 @@ The Payload admin sidebar is organized into four groups:
   - OOO status card fetches `/api/globals/availability` and shows: Out of Office (amber, with internal label + return date), Next Unavailable (grey, upcoming range), or Available (green). All states link to `/admin/globals/availability`.
 - `PhotoGridView`: registered on `Photos` collection under `admin.components.views.list.Component`
   - Shows gallery membership badges on each photo card: fetches all galleries once on mount (`/api/galleries?limit=300&depth=0`), builds a `Record<number, string[]>` map, renders up to 2 gallery name pills (+N overflow) below the category text (TYN-194)
+- `GalleryBulkPhotoPicker`: registered on `Galleries` as a `ui` field immediately before the `photos` array
+  - "Add Multiple Photos" button opens a fixed-position modal with the full photo library
+  - Category filter pills, multi-select via click (checkmark overlay), "Added" overlay for photos already in the gallery
+  - Confirm appends selected rows to the array via `useField({ path: 'photos' }).setValue` with `crypto.randomUUID()` IDs
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
 - `GalleryPhotoRowLabel`: registered on `Galleries.photos` array field as `admin.components.RowLabel`
   - Shows thumbnail + filename in each row header so Tynnell can see which photo is which
@@ -253,5 +257,5 @@ The Payload admin sidebar is organized into four groups:
 - **React hydration error #418** — text node mismatch (`args[]=text&args[]=`) in the admin, source not yet identified. The `PayloadCssGuard` component prevents CSS loss when it fires. Root cause is still open (TYN-179).
 - **R2 custom domain (TYN-144)** — media URLs still use `r2.dev`. Add CNAME `media` in Cloudflare, then update `R2_PUBLIC_URL` in Vercel env vars.
 - **Stripe webhook secret (TYN-182)** — Vercel flags "Needs Attention." Rotate secret in Stripe dashboard and update `STRIPE_WEBHOOK_SECRET` in Vercel env vars.
-- **Gallery bulk photo adding** — switching to array type for drag-to-reorder (TYN-193) means photos are added one at a time instead of via multi-select search. A custom bulk picker UI is planned but not yet built.
+- **Gallery bulk photo adding** — resolved (TYN-197). `GalleryBulkPhotoPicker` modal lets Tynnell multi-select photos. Single-row "Add Row" still works for one-off additions.
 - **`feature/page-sections`** exists at commit `eca87f8` — leave it alone.
