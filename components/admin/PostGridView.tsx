@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 type CoverImage = {
@@ -199,6 +199,7 @@ export function PostGridView() {
   const [loading, setLoading] = useState(true)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -234,6 +235,45 @@ export function PostGridView() {
       })
       .catch(() => setLoading(false))
   }, [debouncedSearch, statusFilter, page])
+
+  const toggleStatus = useCallback(async (e: React.MouseEvent, post: PostDoc) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (togglingIds.has(post.id)) return
+    setTogglingIds(prev => new Set([...prev, post.id]))
+    const newStatus = post.status === 'published' ? 'draft' : 'published'
+    const body: Record<string, unknown> = { status: newStatus }
+    // Set publishedAt on first publish if not already set
+    if (newStatus === 'published' && !post.publishedAt) {
+      body.publishedAt = new Date().toISOString()
+    }
+    try {
+      const res = await fetch(`/api/posts/${post.id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) {
+        setPosts(prev => prev.map(p =>
+          p.id === post.id
+            ? { ...p, status: newStatus, publishedAt: body.publishedAt as string | undefined ?? p.publishedAt }
+            : p
+        ))
+        // Remove from list if status filter is active and no longer matches
+        if (statusFilter !== 'all') {
+          setPosts(prev => prev.filter(p => p.id !== post.id || p.status === statusFilter))
+          setTotal(n => n - 1)
+        }
+      }
+    } finally {
+      setTogglingIds(prev => {
+        const next = new Set(prev)
+        next.delete(post.id)
+        return next
+      })
+    }
+  }, [togglingIds, statusFilter])
 
   const getCoverUrl = (post: PostDoc): string | null => {
     if (!post.coverImage || typeof post.coverImage === 'number') return null
@@ -313,9 +353,35 @@ export function PostGridView() {
                   ) : (
                     <div style={css.placeholder}>&#9998;</div>
                   )}
-                  <div style={css.statusBadge(post.status)}>
+                  {/* Publish/Draft quick-toggle */}
+                  <button
+                    type="button"
+                    onClick={(e) => { void toggleStatus(e, post) }}
+                    title={post.status === 'published' ? 'Published — click to revert to draft' : 'Draft — click to publish'}
+                    style={{
+                      position: 'absolute',
+                      top: '0.5rem',
+                      right: '0.5rem',
+                      padding: '0.18rem 0.5rem',
+                      background: post.status === 'published'
+                        ? 'rgba(16,185,129,0.85)'
+                        : 'rgba(100,100,100,0.75)',
+                      backdropFilter: 'blur(4px)',
+                      borderRadius: '3px',
+                      fontSize: '0.58rem',
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase' as const,
+                      color: '#fff',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: togglingIds.has(post.id) ? 'wait' : 'pointer',
+                      opacity: togglingIds.has(post.id) ? 0.5 : 1,
+                      fontFamily: 'inherit',
+                      transition: 'background 0.15s',
+                    }}
+                  >
                     {post.status ?? 'draft'}
-                  </div>
+                  </button>
                 </div>
                 <div style={css.cardBody}>
                   <div style={css.cardTitle}>{post.title}</div>
