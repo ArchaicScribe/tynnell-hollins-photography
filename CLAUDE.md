@@ -65,13 +65,25 @@ Dev server runs on **port 3000**. Secrets come from `op://Personal/Tynnell_Holli
 - **Naming format:** `feature/NNNNNNN-TYN-XX-short-slug` (7-digit zero-padded counter)
 - **Current next branch number:** see MEMORY.md
 
-After merging to main, always sync down:
+After merging to main, **push main alone first**, wait for the production build to start (confirm via `list_deployments`), then sync:
 ```powershell
 git checkout dev && git merge main && git push
 git checkout qa && git merge main && git push
 git checkout staging && git merge main && git push
 git checkout main
 ```
+
+See Vercel webhook rules below — simultaneous multi-branch pushes drop the production build.
+
+---
+
+## Vercel webhook rules
+
+Two confirmed rules for reliable production deploys:
+
+1. **Real file change required.** Empty commits to main get silently dropped (Vercel detects no deployable content changed). Always make a 1-line comment tweak (e.g. in `Dashboard.tsx`) rather than an empty commit.
+
+2. **Push main alone.** Pushing main simultaneously with dev/qa/staging causes the main webhook to be dropped. Correct sequence: push main first, confirm the build starts in Vercel, THEN sync dev/qa/staging separately.
 
 ---
 
@@ -95,8 +107,15 @@ git checkout main
 - This script runs as a Vercel pre-build step (`vercel.json` buildCommand)
 - Every schema change (new table, new column, new index) must have a migration block in this file
 
+### Gallery photos field
+- `Gallery.photos` is `type: 'array'` with a `photo` relationship sub-field — **not** `hasMany relationship`
+- This gives Payload's built-in drag handles for reordering (TYN-193)
+- Data stored in `galleries_photos` table (`_order`, `_parent_id`, `photo_id`)
+- `galleries_rels` table also exists (from an earlier revert) — Payload no longer writes to it
+- Site reads `gallery.photos[].photo` — the Photo object is nested one level deep
+
 ### Payload admin components
-Any time a custom component is added to a collection or global config (Cell, Field, custom view, etc.):
+Any time a custom component is added to a collection or global config (Cell, Field, custom view, RowLabel, etc.):
 1. Add the component path to the collection/global config
 2. Regenerate `app/(payload)/admin/importMap.js`:
    ```powershell
@@ -130,6 +149,7 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `components/admin/Dashboard.tsx` | Custom admin dashboard (client component) |
 | `components/admin/PhotoGridView.tsx` | Visual photo grid, drag-to-upload, category filters |
 | `components/admin/GalleryGridView.tsx` | Visual gallery card grid with category filter |
+| `components/admin/GalleryPhotoRowLabel.tsx` | Row label for gallery photo array (thumbnail + filename) |
 | `components/admin/PostGridView.tsx` | Visual blog post grid with status filter |
 | `components/admin/PayloadCssGuard.tsx` | Forces Payload CSS into static link tag |
 | `scripts/migrate-db.mjs` | DB migration runner (used by Vercel pre-build) |
@@ -164,11 +184,11 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 |---|---|
 | `/` | Home: Hero, PortfolioTeaser, AboutPreview, Testimonials, Contact |
 | `/portfolio` | Masonry grid with category filter |
-| `/portfolio/[slug]` | Gallery hero + photo grid |
+| `/portfolio/[slug]` | Gallery hero + photo grid (photos in Tynnell's sorted order) |
 | `/about` | Headshot, bio, tagline, values |
 | `/services` | Service cards with features and CTA |
-| `/blog` | Post cards with cover image, date, excerpt |
-| `/blog/[slug]` | Full post with BlogPosting JSON-LD |
+| `/blog` | Featured post hero (most recent, full-width) + remaining posts grid |
+| `/blog/[slug]` | Full post with BlogPosting JSON-LD + "More from the Journal" related posts |
 | `/contact` | 9-field form wired to `/api/contact` |
 | `/book` | Stripe Checkout integration |
 | `/book/success`, `/book/cancel` | Post-payment pages |
@@ -205,8 +225,12 @@ The Payload admin sidebar is organized into four groups:
 
 - `AdminLogo` / `AdminIcon`: registered in `payload.config.ts` under `admin.components.graphics`
 - `Dashboard`: registered under `admin.components.views.dashboard`
+  - Shows count cards for all collections including Users
+  - Posts card shows published vs. draft split beneath total count
 - `PhotoGridView`: registered on `Photos` collection under `admin.components.views.list.Component`
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
+- `GalleryPhotoRowLabel`: registered on `Galleries.photos` array field as `admin.components.RowLabel`
+  - Shows thumbnail + filename in each row header so Tynnell can see which photo is which
 - `PostGridView`: registered on `Posts` collection under `admin.components.views.list.Component`
 - `PayloadCssGuard`: imported in `app/(payload)/admin/layout.tsx` to force CSS into client bundle
 - All custom components are `'use client'` with inline styles so they survive hydration failures
@@ -218,6 +242,7 @@ The Payload admin sidebar is organized into four groups:
 ## Known issues / watch-outs
 
 - **React hydration error #418** — text node mismatch (`args[]=text&args[]=`) in the admin, source not yet identified. The `PayloadCssGuard` component prevents CSS loss when it fires. Root cause is still open (TYN-179).
-- **Resend domain verification** — DKIM/SPF for `tynnellhollinsphotography.com` needed before forgot-password emails deliver. Check Resend dashboard.
 - **R2 custom domain (TYN-144)** — media URLs still use `r2.dev`. Add CNAME `media` in Cloudflare, then update `R2_PUBLIC_URL` in Vercel env vars.
+- **Stripe webhook secret (TYN-182)** — Vercel flags "Needs Attention." Rotate secret in Stripe dashboard and update `STRIPE_WEBHOOK_SECRET` in Vercel env vars.
+- **Gallery bulk photo adding** — switching to array type for drag-to-reorder (TYN-193) means photos are added one at a time instead of via multi-select search. A custom bulk picker UI is planned but not yet built.
 - **`feature/page-sections`** exists at commit `eca87f8` — leave it alone.
