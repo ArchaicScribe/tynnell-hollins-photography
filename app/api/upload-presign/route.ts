@@ -7,16 +7,20 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 export const dynamic = 'force-dynamic'
 
-// Only image MIME types are permitted for presigned upload
+// MIME types accepted for presigned upload.
+// HEIC/HEIF are excluded: sharp on Vercel does not support them without
+// native libheif, so the ingest step would crash with a 500. Tynnell
+// should export/convert iPhone photos to JPEG before uploading.
 const ALLOWED_TYPES = new Set([
   'image/jpeg',
   'image/jpg',
   'image/png',
   'image/webp',
   'image/gif',
-  'image/heic',
-  'image/heif',
 ])
+
+// Extensions that map to unsupported formats, for a clear rejection message
+const UNSUPPORTED_EXTENSIONS = new Set(['heic', 'heif', 'avif', 'tiff', 'tif', 'bmp'])
 
 function buildS3Client(): S3Client {
   return new S3Client({
@@ -52,13 +56,25 @@ export async function POST(request: Request) {
   if (!filename || typeof filename !== 'string') {
     return NextResponse.json({ error: 'filename is required' }, { status: 400 })
   }
+
+  // Check extension first so we can give a helpful message for HEIC files
+  const ext = (filename.split('.').pop() ?? '').toLowerCase()
+  if (UNSUPPORTED_EXTENSIONS.has(ext)) {
+    return NextResponse.json(
+      { error: `${ext.toUpperCase()} files are not supported. Please export as JPEG or PNG before uploading.` },
+      { status: 415 }
+    )
+  }
+
   if (!contentType || !ALLOWED_TYPES.has(contentType)) {
-    return NextResponse.json({ error: 'Unsupported content type' }, { status: 400 })
+    return NextResponse.json(
+      { error: `File type "${contentType}" is not supported. Please upload JPEG, PNG, WebP, or GIF files.` },
+      { status: 415 }
+    )
   }
 
   // Use a temp/ prefix with a UUID so the key is unguessable and easy to clean up
-  const ext = filename.split('.').pop() ?? 'jpg'
-  const key = `temp/${crypto.randomUUID()}-${Date.now()}.${ext}`
+  const key = `temp/${crypto.randomUUID()}-${Date.now()}.${ext || 'jpg'}`
 
   try {
     const s3 = buildS3Client()

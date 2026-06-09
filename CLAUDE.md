@@ -269,8 +269,9 @@ The Payload admin sidebar is organized into four groups:
 
 ## Known issues / watch-outs
 
+- **Photo upload 413 + 500 errors (open, post-TYN-199)** — Both HTTP 413 and HTTP 500 errors observed in production after the presigned R2 upload fix was deployed (branch 0000113). The 413 should no longer occur against Vercel (the presigned flow bypasses it), so any 413 now is likely a browser cache issue (hard refresh: Ctrl+Shift+R). The 500 on `/api/photos/ingest` is a separate problem: likely sharp processing failure on certain file types or sizes, or a memory/timeout issue under load. Needs Vercel runtime log investigation to identify the exact failure path.
 - **React hydration error #418** — text node mismatch (`args[]=text&args[]=`) in the admin, source not yet identified. The `PayloadCssGuard` component prevents CSS loss when it fires. Root cause is still open (TYN-179).
-- **R2 custom domain (TYN-144)** — media URLs still use `r2.dev`. Add CNAME `media` in Cloudflare, then update `R2_PUBLIC_URL` in Vercel env vars.
+- **R2 custom domain (TYN-144)** — media URLs still use `r2.dev`. CNAME `media` is Active in Cloudflare. Remaining step: update `R2_PUBLIC_URL` in Vercel env vars to `https://media.tynnellhollinsphotography.com`. No code change needed.
 - **Stripe webhook secret (TYN-182)** — Vercel flags "Needs Attention." Rotate secret in Stripe dashboard and update `STRIPE_WEBHOOK_SECRET` in Vercel env vars.
 - **Gallery bulk photo adding** — resolved (TYN-197). `GalleryBulkPhotoPicker` modal lets Tynnell multi-select photos. Single-row "Add Row" still works for one-off additions.
 - **`feature/page-sections`** exists at commit `eca87f8` — leave it alone.
