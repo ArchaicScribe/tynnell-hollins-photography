@@ -93,12 +93,21 @@ export const Galleries: CollectionConfig = {
       },
     },
     {
+      name: 'bulkPhotoPicker',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/GalleryBulkPhotoPicker#GalleryBulkPhotoPicker',
+        },
+      },
+    },
+    {
       name: 'photos',
       type: 'array',
       label: 'Photos in This Gallery',
       admin: {
         description:
-          'Add photos one at a time using the picker in each row. Drag the handle on the left of any row to reorder. The order here is exactly how photos appear on the site.',
+          'Use the button above to add multiple photos at once, or add one at a time with the row picker below. Drag the handle on the left to reorder. The order here is exactly how photos appear on the site.',
         components: {
           RowLabel: './components/admin/GalleryPhotoRowLabel#GalleryPhotoRowLabel',
         },
