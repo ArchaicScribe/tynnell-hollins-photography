@@ -303,6 +303,32 @@ export function PhotoGridView() {
   const refreshRef = useRef<() => void>(() => {})
   // Map of photoId -> gallery title array, built once on mount
   const [galleryMap, setGalleryMap] = useState<Record<number, string[]>>({})
+  // IDs currently being toggled (prevents double-clicks and shows wait cursor)
+  const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
+
+  const toggleFeatured = useCallback(async (e: React.MouseEvent, photo: PhotoDoc) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (togglingIds.has(photo.id)) return
+    setTogglingIds(prev => new Set([...prev, photo.id]))
+    try {
+      const res = await fetch(`/api/photos/${photo.id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured: !photo.featured }),
+      })
+      if (res.ok) {
+        setPhotos(prev => prev.map(p => p.id === photo.id ? { ...p, featured: !p.featured } : p))
+      }
+    } finally {
+      setTogglingIds(prev => {
+        const next = new Set(prev)
+        next.delete(photo.id)
+        return next
+      })
+    }
+  }, [togglingIds])
 
   const fetchPhotos = useCallback(() => {
     setLoading(true)
@@ -615,11 +641,34 @@ export function PhotoGridView() {
                   ) : (
                     <div style={css.placeholder}>&#128247;</div>
                   )}
-                  {photo.featured && (
-                    <div style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', padding: '0.15rem 0.4rem', background: 'rgba(212,175,55,0.85)', borderRadius: '3px', fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0c0c0c', fontWeight: 700 }}>
-                      Featured
-                    </div>
-                  )}
+                  {/* Featured quick-toggle star button */}
+                  <button
+                    type="button"
+                    onClick={(e) => { void toggleFeatured(e, photo) }}
+                    title={photo.featured ? 'Featured — click to unfeature' : 'Click to feature this photo'}
+                    style={{
+                      position: 'absolute',
+                      top: '0.35rem',
+                      right: '0.35rem',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: photo.featured ? 'rgba(212,175,55,0.88)' : 'rgba(0,0,0,0.45)',
+                      color: photo.featured ? '#0c0c0c' : 'rgba(255,255,255,0.45)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: togglingIds.has(photo.id) ? 'wait' : 'pointer',
+                      fontSize: '0.72rem',
+                      opacity: togglingIds.has(photo.id) ? 0.5 : 1,
+                      transition: 'background 0.15s, color 0.15s',
+                      lineHeight: 1,
+                      padding: 0,
+                    }}
+                  >
+                    &#9733;
+                  </button>
                 </div>
                 <div style={css.cardBody}>
                   <div style={css.cardTitle}>{label}</div>
