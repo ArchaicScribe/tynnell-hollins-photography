@@ -272,23 +272,50 @@ const filterBtn = (active: boolean): React.CSSProperties => ({
 
 const LIMIT = 48
 
+// Three-step upload to bypass Vercel's 4.5 MB serverless request body limit:
+//   1. Get a presigned R2 PUT URL from our API (tiny JSON request)
+//   2. PUT the file directly to R2 from the browser (no Vercel in the path)
+//   3. Call /api/photos/ingest so the server downloads, runs sharp, and
+//      creates the Payload record (no large request body - key only)
 async function uploadFile(file: File, category: string | null): Promise<void> {
-  const form = new FormData()
-  form.append('file', file)
-  // Pass the active category filter so uploaded photos are tagged correctly.
-  // Without this, photos uploaded while on the "Weddings" tab would have no
-  // category set and would disappear from the filtered view after upload.
-  if (category) {
-    form.append('_payload', JSON.stringify({ category }))
-  }
-  const res = await fetch('/api/photos', {
+  // Step 1: request a presigned URL
+  const presignRes = await fetch('/api/upload-presign', {
     method: 'POST',
     credentials: 'include',
-    body: form,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filename: file.name,
+      contentType: file.type || 'image/jpeg',
+    }),
   })
-  if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText)
-    throw new Error(`${file.name} (HTTP ${res.status}): ${text}`)
+  if (!presignRes.ok) {
+    const text = await presignRes.text().catch(() => presignRes.statusText)
+    throw new Error(`${file.name} - could not get upload URL (HTTP ${presignRes.status}): ${text}`)
+  }
+  const { uploadUrl, key } = (await presignRes.json()) as { uploadUrl: string; key: string }
+
+  // Step 2: PUT directly to R2 (browser talks to Cloudflare, skips Vercel entirely)
+  const putRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: file,
+    headers: { 'Content-Type': file.type || 'image/jpeg' },
+  })
+  if (!putRes.ok) {
+    throw new Error(`${file.name} - R2 upload failed (HTTP ${putRes.status})`)
+  }
+
+  // Step 3: ingest - server downloads the file, runs sharp, creates Payload record
+  // The active category filter is passed here so the photo is tagged correctly;
+  // without this, photos dragged in on the Weddings tab would have no category set.
+  const ingestRes = await fetch('/api/photos/ingest', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, filename: file.name, category: category ?? null }),
+  })
+  if (!ingestRes.ok) {
+    const text = await ingestRes.text().catch(() => ingestRes.statusText)
+    throw new Error(`${file.name} (HTTP ${ingestRes.status}): ${text}`)
   }
 }
 
