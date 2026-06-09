@@ -229,16 +229,26 @@ The Payload admin sidebar is organized into four groups:
   - Shows count cards for all collections including Users
   - Posts card shows published vs. draft split beneath total count
   - OOO status card fetches `/api/globals/availability` and shows: Out of Office (amber, with internal label + return date), Next Unavailable (grey, upcoming range), or Available (green). All states link to `/admin/globals/availability`.
+  - Recent Activity section (TYN-200): 8 most recently updated photos as a thumbnail strip + 5 most recently updated posts as a list with status + date. Only renders when data exists.
 - `PhotoGridView`: registered on `Photos` collection under `admin.components.views.list.Component`
   - Shows gallery membership badges on each photo card: fetches all galleries once on mount (`/api/galleries?limit=300&depth=0`), builds a `Record<number, string[]>` map, renders up to 2 gallery name pills (+N overflow) below the category text (TYN-194)
 - `GalleryBulkPhotoPicker`: registered on `Galleries` as a `ui` field immediately before the `photos` array
   - "Add Multiple Photos" button opens a fixed-position modal with the full photo library
   - Category filter pills, multi-select via click (checkmark overlay), "Added" overlay for photos already in the gallery
   - Confirm appends selected rows to the array via `useField({ path: 'photos' }).setValue` with `crypto.randomUUID()` IDs
+- `CoverPhotoPicker`: registered on `Galleries.coverPhoto` relationship field as `admin.components.Field` (TYN-201)
+  - Replaces the default text-search relationship input with a thumbnail preview (96x72) + filename + "Choose/Change Cover Photo" button
+  - Opens the same photo grid modal (single-select): category filter, click to select, checkmark on current cover
+  - Uses `useField({ path: 'coverPhoto' }).setValue` with the full photo object
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
 - `GalleryPhotoRowLabel`: registered on `Galleries.photos` array field as `admin.components.RowLabel`
   - Shows thumbnail + filename in each row header so Tynnell can see which photo is which
 - Testimonials collection: `featured` checkbox (sidebar, default false) -- when checked, testimonial appears on the homepage; the dedicated `/testimonials` page shows all regardless
+- `TestimonialsGridView`: registered on `Testimonials` collection under `admin.components.views.list.Component` (TYN-198)
+  - Card grid: client name (heading), italic quote excerpt (3-line clamp), session type badge, "Homepage" badge when featured, display order number
+  - Filters: session type pills (Wedding/Engagement/Portrait/Family/Maternity/Event) + "Homepage only" toggle + client name search
+- `ServicesGridView`: registered on `Services` collection under `admin.components.views.list.Component` (TYN-199)
+  - Card: eyebrow category, service name, description excerpt (2-line clamp), price badge, bookable deposit badge (green), included item count, display order
 - `PostGridView`: registered on `Posts` collection under `admin.components.views.list.Component`
 - `PostViewOnSiteButton`: registered on `Posts.viewOnSite` ui field as `admin.components.Field` (sidebar position)
   - Uses `useFormFields` to read the current `slug` and `status` values
