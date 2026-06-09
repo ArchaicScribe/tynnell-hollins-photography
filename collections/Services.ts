@@ -12,6 +12,13 @@ export const Services: CollectionConfig = {
     description:
       'Your photography services, shown on the Services page. Services with a booking deposit set also appear on the Book a Session page.',
     defaultColumns: ['title', 'eyebrow', 'depositAmount', 'displayOrder', 'updatedAt'],
+    components: {
+      views: {
+        list: {
+          Component: './components/admin/ServicesGridView#ServicesGridView',
+        },
+      },
+    },
   },
   fields: [
     {

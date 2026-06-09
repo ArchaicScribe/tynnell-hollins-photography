@@ -4,6 +4,7 @@ import { GalleryBulkPhotoPicker as GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a
 import { GalleryPhotoRowLabel as GalleryPhotoRowLabel_a629264ac74e3eb4c2c5abbb6b349c3c } from '../../../components/admin/GalleryPhotoRowLabel'
 import { GalleryGridView as GalleryGridView_694fcc37683b7c53f35803e850250b41 } from '../../../components/admin/GalleryGridView'
 import { TestimonialsGridView as TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3 } from '../../../components/admin/TestimonialsGridView'
+import { ServicesGridView as ServicesGridView_f8436fdecdb227662e953e6db61537d6 } from '../../../components/admin/ServicesGridView'
 import { PostViewOnSiteButton as PostViewOnSiteButton_1ab6c780b568dfb07e054eff657fabe1 } from '../../../components/admin/PostViewOnSiteButton'
 import { PostCoverCell as PostCoverCell_4b9dc1d31737dde9d4508c8875a9c5cd } from '../../../components/admin/PostCoverCell'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -45,6 +46,7 @@ export const importMap = {
   "./components/admin/GalleryPhotoRowLabel#GalleryPhotoRowLabel": GalleryPhotoRowLabel_a629264ac74e3eb4c2c5abbb6b349c3c,
   "./components/admin/GalleryGridView#GalleryGridView": GalleryGridView_694fcc37683b7c53f35803e850250b41,
   "./components/admin/TestimonialsGridView#TestimonialsGridView": TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3,
+  "./components/admin/ServicesGridView#ServicesGridView": ServicesGridView_f8436fdecdb227662e953e6db61537d6,
   "./components/admin/PostViewOnSiteButton#PostViewOnSiteButton": PostViewOnSiteButton_1ab6c780b568dfb07e054eff657fabe1,
   "./components/admin/PostCoverCell#PostCoverCell": PostCoverCell_4b9dc1d31737dde9d4508c8875a9c5cd,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
