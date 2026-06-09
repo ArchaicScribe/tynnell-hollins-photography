@@ -29,6 +29,15 @@ type UploadState =
   | { status: 'uploading'; current: number; total: number; errors: string[] }
   | { status: 'done'; uploaded: number; errors: string[] }
 
+// Trash icon SVG (16x16, inline so no external dependency)
+function TrashIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <path d="M2 4h12M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4H5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
 const css = {
   root: {
     padding: '1.5rem',
@@ -338,6 +347,27 @@ export function PhotoGridView() {
   const [galleryMap, setGalleryMap] = useState<Record<number, string[]>>({})
   // IDs currently being toggled (prevents double-clicks and shows wait cursor)
   const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
+  // ID showing the inline delete confirmation overlay (null = none)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  // IDs currently being deleted (shows loading state)
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set())
+
+  const deletePhoto = useCallback(async (id: number) => {
+    setDeletingIds(prev => new Set([...prev, id]))
+    try {
+      const res = await fetch(`/api/photos/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      if (res.ok) {
+        setPhotos(prev => prev.filter(p => p.id !== id))
+        setTotal(n => n - 1)
+      }
+    } finally {
+      setDeletingIds(prev => { const next = new Set(prev); next.delete(id); return next })
+      setConfirmDeleteId(null)
+    }
+  }, [])
 
   const toggleFeatured = useCallback(async (e: React.MouseEvent, photo: PhotoDoc) => {
     e.preventDefault()
@@ -678,7 +708,7 @@ export function PhotoGridView() {
                   <button
                     type="button"
                     onClick={(e) => { void toggleFeatured(e, photo) }}
-                    title={photo.featured ? 'Featured — click to unfeature' : 'Click to feature this photo'}
+                    title={photo.featured ? 'Featured - click to unfeature' : 'Click to feature this photo'}
                     style={{
                       position: 'absolute',
                       top: '0.35rem',
@@ -702,6 +732,92 @@ export function PhotoGridView() {
                   >
                     &#9733;
                   </button>
+                  {/* Trash / delete button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setConfirmDeleteId(photo.id)
+                    }}
+                    title="Delete this photo"
+                    style={{
+                      position: 'absolute',
+                      top: '0.35rem',
+                      left: '0.35rem',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: 'rgba(0,0,0,0.45)',
+                      color: 'rgba(255,255,255,0.55)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s, color 0.15s',
+                      padding: 0,
+                    }}
+                  >
+                    <TrashIcon />
+                  </button>
+                  {/* Inline delete confirmation overlay */}
+                  {confirmDeleteId === photo.id && (
+                    <div
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'rgba(12,12,12,0.88)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        zIndex: 10,
+                        padding: '0.5rem',
+                      }}
+                    >
+                      <span style={{ fontSize: '0.72rem', color: '#E6E1DE', textAlign: 'center', lineHeight: 1.4 }}>
+                        Delete this photo?
+                      </span>
+                      <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); void deletePhoto(photo.id) }}
+                          disabled={deletingIds.has(photo.id)}
+                          style={{
+                            padding: '0.25rem 0.6rem',
+                            background: deletingIds.has(photo.id) ? 'rgba(220,38,38,0.4)' : 'rgba(220,38,38,0.8)',
+                            border: 'none',
+                            borderRadius: '3px',
+                            color: '#fff',
+                            fontSize: '0.68rem',
+                            fontWeight: 600,
+                            cursor: deletingIds.has(photo.id) ? 'wait' : 'pointer',
+                          }}
+                        >
+                          {deletingIds.has(photo.id) ? 'Deleting...' : 'Delete'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteId(null) }}
+                          disabled={deletingIds.has(photo.id)}
+                          style={{
+                            padding: '0.25rem 0.6rem',
+                            background: 'rgba(155,154,154,0.2)',
+                            border: '1px solid rgba(155,154,154,0.3)',
+                            borderRadius: '3px',
+                            color: '#9B9A9A',
+                            fontSize: '0.68rem',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div style={css.cardBody}>
                   <div style={css.cardTitle}>{label}</div>

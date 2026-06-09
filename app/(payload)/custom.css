@@ -359,7 +359,7 @@ label.field-label {
   font-size: 0.68rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #9B9A9A;
+  color: #B8B4B1;
   margin-bottom: 0.3rem;
 }
 
@@ -449,4 +449,101 @@ tbody tr td,
 .field-error {
   font-size: 0.7rem;
   font-family: 'Roboto Mono', monospace;
+}
+
+/* ── Document edit page readability (TYN-202) ───────────────── */
+
+/* Document header and controls bar: keep dark, prevent Payload from
+   applying a white or near-white surface behind the title and tabs. */
+.doc-header,
+.doc-header__content,
+.doc-controls,
+.doc-controls__controls-wrap {
+  background-color: #1a1a1a !important;
+}
+
+/* Top border that separates the header from the edit area */
+.doc-header {
+  border-bottom: 1px solid rgba(214, 209, 206, 0.07) !important;
+}
+
+/* "Edit" / "API" / other doc-level tab buttons */
+.doc-tab,
+.doc-tab__list,
+.doc-tab__list-item,
+.doc-tab__list-item button {
+  background: transparent !important;
+  color: #9B9A9A !important;
+}
+
+.doc-tab__list-item--active button,
+.doc-tab__list-item button:hover {
+  color: #D6D1CE !important;
+}
+
+/* Edit content area: force the main panel background so it does not
+   inherit a white fill from Payload's internal component styles. */
+.doc-fields,
+.doc-content,
+.document__fields,
+.render-fields,
+.form-field-wrap {
+  background-color: transparent !important;
+}
+
+/* The document-level content wrapper */
+.doc {
+  background-color: #1a1a1a !important;
+}
+
+/* Input fields: slightly lighter well so text reads without eye strain.
+   Payload's default inputs can be near-pitch-black on our dark theme. */
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='number'],
+input[type='url'],
+input[type='search'],
+textarea,
+.textarea__wrap textarea,
+.rs__control {
+  background-color: #262626 !important;
+  color: #D6D1CE !important;
+  border-color: rgba(214, 209, 206, 0.14) !important;
+}
+
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='password']:focus,
+input[type='number']:focus,
+input[type='url']:focus,
+input[type='search']:focus,
+textarea:focus,
+.textarea__wrap textarea:focus,
+.rs__control--is-focused {
+  border-color: rgba(214, 209, 206, 0.30) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Placeholder text: keep it clearly dimmer than field value text */
+input::placeholder,
+textarea::placeholder {
+  color: #6b6a6a !important;
+  opacity: 1;
+}
+
+/* Rich-text (Lexical) editor canvas: same treatment */
+.rich-text-lexical .editor-container,
+.rich-text-lexical .editor-input,
+[contenteditable='true'] {
+  background-color: #262626 !important;
+  color: #D6D1CE !important;
+}
+
+/* Code editor (JSON field, code field) */
+.code-editor .cm-editor,
+.code-editor .cm-content {
+  background-color: #1f1f1f !important;
+  color: #D6D1CE !important;
 }
