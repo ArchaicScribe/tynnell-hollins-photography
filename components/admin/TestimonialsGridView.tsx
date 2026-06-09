@@ -181,6 +181,7 @@ export function TestimonialsGridView() {
   const [loading, setLoading] = useState(true)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -221,6 +222,37 @@ export function TestimonialsGridView() {
       })
       .catch(() => setLoading(false))
   }, [debouncedSearch, typeFilter, featuredOnly, page])
+
+  const toggleHomepage = async (e: React.MouseEvent, t: TestimonialDoc) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (togglingIds.has(t.id)) return
+    setTogglingIds(prev => new Set([...prev, t.id]))
+    try {
+      const res = await fetch(`/api/testimonials/${t.id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured: !t.featured }),
+      })
+      if (res.ok) {
+        setTestimonials(prev => prev.map(item =>
+          item.id === t.id ? { ...item, featured: !item.featured } : item
+        ))
+        // If "Homepage only" filter is active and we just un-featured, remove from list
+        if (featuredOnly && t.featured) {
+          setTestimonials(prev => prev.filter(item => item.id !== t.id))
+          setTotal(n => n - 1)
+        }
+      }
+    } finally {
+      setTogglingIds(prev => {
+        const next = new Set(prev)
+        next.delete(t.id)
+        return next
+      })
+    }
+  }
 
   return (
     <div style={css.root}>
@@ -302,9 +334,32 @@ export function TestimonialsGridView() {
             >
               <div style={css.cardTop}>
                 <div style={css.clientName}>{t.clientName ?? 'Unnamed'}</div>
-                {t.featured && (
-                  <span style={css.featuredBadge}>Homepage</span>
-                )}
+                <button
+                  type="button"
+                  onClick={(e) => { void toggleHomepage(e, t) }}
+                  title={t.featured ? 'On homepage — click to remove' : 'Click to show on homepage'}
+                  style={{
+                    flexShrink: 0,
+                    padding: '0.14rem 0.45rem',
+                    background: t.featured ? 'rgba(155,154,154,0.14)' : 'transparent',
+                    border: t.featured
+                      ? '1px solid rgba(155,154,154,0.25)'
+                      : '1px dashed rgba(155,154,154,0.2)',
+                    borderRadius: '3px',
+                    fontSize: '0.58rem',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase' as const,
+                    color: t.featured ? '#d6d1ce' : 'rgba(155,154,154,0.4)',
+                    fontWeight: t.featured ? 500 : 400,
+                    whiteSpace: 'nowrap' as const,
+                    cursor: togglingIds.has(t.id) ? 'wait' : 'pointer',
+                    opacity: togglingIds.has(t.id) ? 0.5 : 1,
+                    fontFamily: 'inherit',
+                    transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+                  }}
+                >
+                  Homepage
+                </button>
               </div>
               {t.quote && (
                 <div style={css.quoteText}>&ldquo;{t.quote}&rdquo;</div>
