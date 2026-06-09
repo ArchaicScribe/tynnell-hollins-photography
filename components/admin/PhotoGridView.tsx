@@ -16,6 +16,14 @@ type PhotoDoc = {
   } | null
 }
 
+// Gallery membership lookup: photoId -> array of gallery titles
+// Fetched once on mount from /api/galleries (depth=0 so photo is just an ID)
+type GalleryDoc = {
+  id: number
+  title: string
+  photos?: { photo?: number | null; id?: string | null }[] | null
+}
+
 type UploadState =
   | { status: 'idle' }
   | { status: 'uploading'; current: number; total: number; errors: string[] }
@@ -214,6 +222,29 @@ const css = {
     color: 'var(--theme-text-dim, #9b9a9a)',
     fontSize: '0.9rem',
   } as React.CSSProperties,
+  galleryBadges: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: '0.2rem',
+    marginTop: '0.3rem',
+  } as React.CSSProperties,
+  galleryBadge: {
+    padding: '0.1rem 0.35rem',
+    background: 'rgba(155,154,154,0.12)',
+    border: '1px solid rgba(155,154,154,0.2)',
+    borderRadius: '3px',
+    fontSize: '0.58rem',
+    letterSpacing: '0.04em',
+    color: 'var(--theme-text-dim, #9b9a9a)',
+    whiteSpace: 'nowrap' as const,
+    lineHeight: 1.5,
+  } as React.CSSProperties,
+  galleryBadgeMore: {
+    padding: '0.1rem 0.35rem',
+    fontSize: '0.58rem',
+    color: 'rgba(155,154,154,0.6)',
+    lineHeight: 1.5,
+  } as React.CSSProperties,
   skeleton: {
     background: 'var(--theme-elevation-200, #1a1a1a)',
     borderRadius: '6px',
@@ -270,6 +301,8 @@ export function PhotoGridView() {
   const [dragging, setDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const refreshRef = useRef<() => void>(() => {})
+  // Map of photoId -> gallery title array, built once on mount
+  const [galleryMap, setGalleryMap] = useState<Record<number, string[]>>({})
 
   const fetchPhotos = useCallback(() => {
     setLoading(true)
@@ -305,6 +338,27 @@ export function PhotoGridView() {
   useEffect(() => {
     refreshRef.current = fetchPhotos
   }, [fetchPhotos])
+
+  // Fetch all galleries once on mount to build photo-to-gallery membership map.
+  // Uses depth=0 so each photo row's .photo field is just the numeric ID.
+  useEffect(() => {
+    fetch('/api/galleries?limit=300&depth=0', { credentials: 'include' })
+      .then(r => r.json())
+      .then((data: { docs?: GalleryDoc[] }) => {
+        const map: Record<number, string[]> = {}
+        for (const gallery of data.docs ?? []) {
+          for (const row of gallery.photos ?? []) {
+            const pid = typeof row.photo === 'number' ? row.photo : null
+            if (pid !== null) {
+              if (!map[pid]) map[pid] = []
+              map[pid].push(gallery.title)
+            }
+          }
+        }
+        setGalleryMap(map)
+      })
+      .catch(() => { /* non-critical -- badges just won't show */ })
+  }, [])
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -572,6 +626,22 @@ export function PhotoGridView() {
                   {photo.category && (
                     <div style={css.cardMeta}>{photo.category}</div>
                   )}
+                  {(() => {
+                    const galleries = galleryMap[photo.id]
+                    if (!galleries || galleries.length === 0) return null
+                    const visible = galleries.slice(0, 2)
+                    const extra = galleries.length - visible.length
+                    return (
+                      <div style={css.galleryBadges}>
+                        {visible.map(name => (
+                          <span key={name} style={css.galleryBadge}>{name}</span>
+                        ))}
+                        {extra > 0 && (
+                          <span style={css.galleryBadgeMore}>+{extra}</span>
+                        )}
+                      </div>
+                    )
+                  })()}
                 </div>
               </Link>
             )
