@@ -11,7 +11,7 @@ export const Testimonials: CollectionConfig = {
     useAsTitle: 'clientName',
     description:
       'Reviews and quotes from your clients, shown on your homepage and testimonials page.',
-    defaultColumns: ['clientName', 'sessionType', 'displayOrder', 'updatedAt'],
+    defaultColumns: ['clientName', 'sessionType', 'featured', 'displayOrder', 'updatedAt'],
   },
   fields: [
     {
@@ -53,12 +53,23 @@ export const Testimonials: CollectionConfig = {
       ],
     },
     {
+      name: 'featured',
+      type: 'checkbox',
+      label: 'Show on Homepage',
+      defaultValue: false,
+      admin: {
+        description:
+          'When checked, this testimonial appears in the Testimonials section on your homepage. Uncheck to keep it off the homepage (it will still appear on your full Testimonials page).',
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'displayOrder',
       type: 'number',
       label: 'Display Order',
       admin: {
         description:
-          'Controls which testimonial appears first on your homepage. 1 shows first, 2 shows second, and so on. Leave blank and testimonials will display in the order they were added.',
+          'Controls the order testimonials appear, both on the homepage and the full Testimonials page. 1 shows first, 2 shows second, and so on. Leave blank and they display in the order they were added.',
       },
     },
   ],

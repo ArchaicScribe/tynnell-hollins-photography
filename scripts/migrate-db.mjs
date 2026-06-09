@@ -240,6 +240,20 @@ async function run() {
     `)
 
     console.log('✓ galleries_photos seeded from galleries_rels')
+
+    // ------------------------------------------------------------------
+    // Migration 20260609_100000: add featured column to testimonials
+    // Required by TYN-191: featured checkbox for homepage curation.
+    // Only testimonials with featured=true appear on the homepage;
+    // all testimonials still appear on /testimonials.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "testimonials"
+        ADD COLUMN IF NOT EXISTS "featured" boolean DEFAULT false
+    `)
+
+    console.log('✓ testimonials.featured column ready')
   } finally {
     client.release()
     await pool.end()

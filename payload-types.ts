@@ -300,7 +300,11 @@ export interface Testimonial {
    */
   sessionType?: ('Wedding' | 'Engagement' | 'Portrait' | 'Family' | 'Maternity' | 'Event') | null;
   /**
-   * Controls which testimonial appears first on your homepage. 1 shows first, 2 shows second, and so on. Leave blank and testimonials will display in the order they were added.
+   * When checked, this testimonial appears in the Testimonials section on your homepage.
+   */
+  featured?: boolean | null;
+  /**
+   * Controls the order testimonials appear, both on the homepage and the full Testimonials page. 1 shows first, 2 shows second, and so on. Leave blank and they display in the order they were added.
    */
   displayOrder?: number | null;
   updatedAt: string;
@@ -596,6 +600,7 @@ export interface TestimonialsSelect<T extends boolean = true> {
   clientName?: T;
   quote?: T;
   sessionType?: T;
+  featured?: T;
   displayOrder?: T;
   updatedAt?: T;
   createdAt?: T;

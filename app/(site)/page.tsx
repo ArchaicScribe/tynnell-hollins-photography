@@ -23,7 +23,7 @@ export default async function Home() {
     await Promise.all([
       payload.findGlobal({ slug: 'hero-slides', depth: 1 }),
       payload.find({ collection: 'photos', where: { featured: { equals: true } }, sort: 'displayOrder', depth: 0 }),
-      payload.find({ collection: 'testimonials', sort: 'displayOrder', depth: 0 }),
+      payload.find({ collection: 'testimonials', where: { featured: { equals: true } }, sort: 'displayOrder', depth: 0 }),
       payload.findGlobal({ slug: 'about-page', depth: 1 }),
     ])
 
