@@ -151,6 +151,7 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `components/admin/GalleryGridView.tsx` | Visual gallery card grid with category filter |
 | `components/admin/GalleryPhotoRowLabel.tsx` | Row label for gallery photo array (thumbnail + filename) |
 | `components/admin/PostGridView.tsx` | Visual blog post grid with status filter |
+| `components/admin/PostViewOnSiteButton.tsx` | "View on Site" link in post edit sidebar (dimmed when draft) |
 | `components/admin/PayloadCssGuard.tsx` | Forces Payload CSS into static link tag |
 | `scripts/migrate-db.mjs` | DB migration runner (used by Vercel pre-build) |
 | `app/lib/constants.ts` | `CONTACT_EMAIL`, `EMAIL_FROM` (single source of truth) |
@@ -227,11 +228,17 @@ The Payload admin sidebar is organized into four groups:
 - `Dashboard`: registered under `admin.components.views.dashboard`
   - Shows count cards for all collections including Users
   - Posts card shows published vs. draft split beneath total count
+  - OOO status card fetches `/api/globals/availability` and shows: Out of Office (amber, with internal label + return date), Next Unavailable (grey, upcoming range), or Available (green). All states link to `/admin/globals/availability`.
 - `PhotoGridView`: registered on `Photos` collection under `admin.components.views.list.Component`
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
 - `GalleryPhotoRowLabel`: registered on `Galleries.photos` array field as `admin.components.RowLabel`
   - Shows thumbnail + filename in each row header so Tynnell can see which photo is which
 - `PostGridView`: registered on `Posts` collection under `admin.components.views.list.Component`
+- `PostViewOnSiteButton`: registered on `Posts.viewOnSite` ui field as `admin.components.Field` (sidebar position)
+  - Uses `useFormFields` to read the current `slug` and `status` values
+  - Renders a "View on Site" link to `tynnellhollinsphotography.com/blog/[slug]`
+  - Dimmed with "Draft - not visible to visitors yet" note when status is draft
+  - Hides entirely on a new unsaved post (no slug yet)
 - `PayloadCssGuard`: imported in `app/(payload)/admin/layout.tsx` to force CSS into client bundle
 - All custom components are `'use client'` with inline styles so they survive hydration failures
 
