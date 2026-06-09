@@ -233,6 +233,7 @@ The Payload admin sidebar is organized into four groups:
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
 - `GalleryPhotoRowLabel`: registered on `Galleries.photos` array field as `admin.components.RowLabel`
   - Shows thumbnail + filename in each row header so Tynnell can see which photo is which
+- Testimonials collection: `featured` checkbox (sidebar, default false) -- when checked, testimonial appears on the homepage; the dedicated `/testimonials` page shows all regardless
 - `PostGridView`: registered on `Posts` collection under `admin.components.views.list.Component`
 - `PostViewOnSiteButton`: registered on `Posts.viewOnSite` ui field as `admin.components.Field` (sidebar position)
   - Uses `useFormFields` to read the current `slug` and `status` values
