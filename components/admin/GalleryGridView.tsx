@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 type CoverPhoto = {
@@ -204,6 +204,7 @@ export function GalleryGridView() {
   const [loading, setLoading] = useState(true)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -239,6 +240,32 @@ export function GalleryGridView() {
       })
       .catch(() => setLoading(false))
   }, [debouncedSearch, category, page])
+
+  const toggleFeatured = useCallback(async (e: React.MouseEvent, gallery: GalleryDoc) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (togglingIds.has(gallery.id)) return
+    setTogglingIds(prev => new Set([...prev, gallery.id]))
+    try {
+      const res = await fetch(`/api/galleries/${gallery.id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured: !gallery.featured }),
+      })
+      if (res.ok) {
+        setGalleries(prev => prev.map(g =>
+          g.id === gallery.id ? { ...g, featured: !g.featured } : g
+        ))
+      }
+    } finally {
+      setTogglingIds(prev => {
+        const next = new Set(prev)
+        next.delete(gallery.id)
+        return next
+      })
+    }
+  }, [togglingIds])
 
   const getCoverUrl = (g: GalleryDoc): string | null => {
     if (!g.coverPhoto || typeof g.coverPhoto === 'number') return null
@@ -331,9 +358,32 @@ export function GalleryGridView() {
                   {gallery.category && (
                     <div style={css.badge(gallery.category)}>{gallery.category}</div>
                   )}
-                  {gallery.featured && (
-                    <div style={css.featuredBadge}>Featured</div>
-                  )}
+                  {/* Featured quick-toggle */}
+                  <button
+                    type="button"
+                    onClick={(e) => { void toggleFeatured(e, gallery) }}
+                    title={gallery.featured ? 'Featured on homepage — click to remove' : 'Click to feature on homepage'}
+                    style={{
+                      position: 'absolute',
+                      top: '0.5rem',
+                      right: '0.5rem',
+                      padding: '0.18rem 0.45rem',
+                      background: gallery.featured ? 'rgba(212,175,55,0.85)' : 'rgba(0,0,0,0.45)',
+                      borderRadius: '3px',
+                      fontSize: '0.58rem',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase' as const,
+                      color: gallery.featured ? '#0c0c0c' : 'rgba(255,255,255,0.35)',
+                      fontWeight: gallery.featured ? 700 : 400,
+                      cursor: togglingIds.has(gallery.id) ? 'wait' : 'pointer',
+                      opacity: togglingIds.has(gallery.id) ? 0.5 : 1,
+                      border: 'none',
+                      fontFamily: 'inherit',
+                      transition: 'background 0.15s, color 0.15s',
+                    }}
+                  >
+                    Featured
+                  </button>
                 </div>
                 <div style={css.cardBody}>
                   <div style={css.cardTitle}>{gallery.title}</div>
