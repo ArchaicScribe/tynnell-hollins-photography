@@ -89,6 +89,7 @@ export const Galleries: CollectionConfig = {
           'The photo shown as the preview for this gallery on your portfolio page. Must be a photo already uploaded to All Photos.',
         components: {
           Cell: './components/admin/CoverPhotoCell#CoverPhotoCell',
+          Field: './components/admin/CoverPhotoPicker#CoverPhotoPicker',
         },
       },
     },

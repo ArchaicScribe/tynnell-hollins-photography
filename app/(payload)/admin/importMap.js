@@ -1,5 +1,6 @@
 import { PhotoGridView as PhotoGridView_416d697f5d1039cfdf395a457f2fc19a } from '../../../components/admin/PhotoGridView'
 import { CoverPhotoCell as CoverPhotoCell_7b6c7b5fe42940c056316d08f8b58c3d } from '../../../components/admin/CoverPhotoCell'
+import { CoverPhotoPicker as CoverPhotoPicker_3b28ab93a98ad4c3c31c60877ff3dab4 } from '../../../components/admin/CoverPhotoPicker'
 import { GalleryBulkPhotoPicker as GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a007c60f35b } from '../../../components/admin/GalleryBulkPhotoPicker'
 import { GalleryPhotoRowLabel as GalleryPhotoRowLabel_a629264ac74e3eb4c2c5abbb6b349c3c } from '../../../components/admin/GalleryPhotoRowLabel'
 import { GalleryGridView as GalleryGridView_694fcc37683b7c53f35803e850250b41 } from '../../../components/admin/GalleryGridView'
@@ -42,6 +43,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 export const importMap = {
   "./components/admin/PhotoGridView#PhotoGridView": PhotoGridView_416d697f5d1039cfdf395a457f2fc19a,
   "./components/admin/CoverPhotoCell#CoverPhotoCell": CoverPhotoCell_7b6c7b5fe42940c056316d08f8b58c3d,
+  "./components/admin/CoverPhotoPicker#CoverPhotoPicker": CoverPhotoPicker_3b28ab93a98ad4c3c31c60877ff3dab4,
   "./components/admin/GalleryBulkPhotoPicker#GalleryBulkPhotoPicker": GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a007c60f35b,
   "./components/admin/GalleryPhotoRowLabel#GalleryPhotoRowLabel": GalleryPhotoRowLabel_a629264ac74e3eb4c2c5abbb6b349c3c,
   "./components/admin/GalleryGridView#GalleryGridView": GalleryGridView_694fcc37683b7c53f35803e850250b41,
