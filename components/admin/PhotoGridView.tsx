@@ -272,9 +272,15 @@ const filterBtn = (active: boolean): React.CSSProperties => ({
 
 const LIMIT = 48
 
-async function uploadFile(file: File): Promise<void> {
+async function uploadFile(file: File, category: string | null): Promise<void> {
   const form = new FormData()
   form.append('file', file)
+  // Pass the active category filter so uploaded photos are tagged correctly.
+  // Without this, photos uploaded while on the "Weddings" tab would have no
+  // category set and would disappear from the filtered view after upload.
+  if (category) {
+    form.append('_payload', JSON.stringify({ category }))
+  }
   const res = await fetch('/api/photos', {
     method: 'POST',
     credentials: 'include',
@@ -282,7 +288,7 @@ async function uploadFile(file: File): Promise<void> {
   })
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
-    throw new Error(`${file.name}: ${text}`)
+    throw new Error(`${file.name} (HTTP ${res.status}): ${text}`)
   }
 }
 
@@ -411,7 +417,7 @@ export function PhotoGridView() {
     for (let i = 0; i < imageFiles.length; i++) {
       setUploadState({ status: 'uploading', current: i + 1, total: imageFiles.length, errors })
       try {
-        await uploadFile(imageFiles[i])
+        await uploadFile(imageFiles[i], category)
       } catch (err) {
         errors.push(err instanceof Error ? err.message : String(err))
       }
@@ -424,7 +430,7 @@ export function PhotoGridView() {
     if (errors.length === 0) {
       setTimeout(() => setUploadState({ status: 'idle' }), 4000)
     }
-  }, [])
+  }, [category])
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()

@@ -11,5 +11,11 @@
       "path": "/api/cron/ooo-return-notify",
       "schedule": "0 9 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "app/(payload)/api/[...slug]/route.ts": {
+      "maxDuration": 60,
+      "memory": 3008
+    }
+  }
 }
