@@ -12,6 +12,13 @@ export const Testimonials: CollectionConfig = {
     description:
       'Reviews and quotes from your clients, shown on your homepage and testimonials page.',
     defaultColumns: ['clientName', 'sessionType', 'featured', 'displayOrder', 'updatedAt'],
+    components: {
+      views: {
+        list: {
+          Component: './components/admin/TestimonialsGridView#TestimonialsGridView',
+        },
+      },
+    },
   },
   fields: [
     {
