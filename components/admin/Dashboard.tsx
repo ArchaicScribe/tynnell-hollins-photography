@@ -511,14 +511,27 @@ export function Dashboard() {
           const data = await res.json()
           const count: number = data.totalDocs ?? 0
 
-          // Fetch published count separately for posts so the card can show the published vs draft split
+          // Fetch a sub-count for certain collections to surface on the dashboard card
           if (col.slug === 'posts') {
+            // Posts: published vs. draft split
             const pubRes = await fetch(
               '/api/posts?limit=0&depth=0&where[status][equals]=published',
               { credentials: 'include' },
             )
             const publishedCount = pubRes.ok
               ? ((await pubRes.json()).totalDocs ?? 0)
+              : undefined
+            return { slug: col.slug, count, publishedCount }
+          }
+
+          if (col.slug === 'photos' || col.slug === 'galleries' || col.slug === 'testimonials') {
+            // Featured (or on-homepage) count
+            const featRes = await fetch(
+              `/api/${col.slug}?limit=0&depth=0&where[featured][equals]=true`,
+              { credentials: 'include' },
+            )
+            const publishedCount = featRes.ok
+              ? ((await featRes.json()).totalDocs ?? 0)
               : undefined
             return { slug: col.slug, count, publishedCount }
           }
@@ -615,9 +628,11 @@ export function Dashboard() {
                 <span style={css.count}>{col.count}</span>
                 {col.publishedCount !== undefined && col.count > 0 && (
                   <span style={css.publishedSplit}>
-                    {col.publishedCount} published
-                    {' · '}
-                    {col.count - col.publishedCount} draft{col.count - col.publishedCount !== 1 ? 's' : ''}
+                    {col.slug === 'posts'
+                      ? `${col.publishedCount} published · ${col.count - col.publishedCount} draft${col.count - col.publishedCount !== 1 ? 's' : ''}`
+                      : col.slug === 'testimonials'
+                        ? `${col.publishedCount} on homepage`
+                        : `${col.publishedCount} featured`}
                   </span>
                 )}
               </>
