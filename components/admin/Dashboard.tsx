@@ -20,6 +20,64 @@ interface GlobalLink {
   path: string
 }
 
+interface BlockedRange {
+  internalLabel?: string | null
+  startDate?: string | null
+  endDate?: string | null
+  applyReturnBuffer?: boolean | null
+  returnBufferDays?: number | null
+}
+
+interface OooState {
+  status: 'ooo' | 'upcoming' | 'available'
+  activeRange?: { label: string; start: Date; end: Date; effectiveEnd: Date }
+  nextRange?: { label: string; start: Date; end: Date; effectiveEnd: Date }
+}
+
+function getEffectiveEnd(range: BlockedRange): Date {
+  if (!range.endDate) return new Date(0)
+  const end = new Date(range.endDate)
+  const bufferDays = range.applyReturnBuffer ? (range.returnBufferDays ?? 0) : 0
+  // Add buffer in UTC millis to avoid local-timezone day-boundary issues
+  return new Date(end.getTime() + bufferDays * 24 * 60 * 60 * 1000)
+}
+
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+}
+
+function computeOooState(ranges: BlockedRange[]): OooState {
+  const now = new Date()
+  // Normalize to start of today in UTC
+  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+
+  let activeRange: OooState['activeRange'] | undefined
+  let nextRange: OooState['nextRange'] | undefined
+
+  for (const r of ranges) {
+    if (!r.startDate || !r.endDate) continue
+    const start = new Date(r.startDate)
+    const end = new Date(r.endDate)
+    const effectiveEnd = getEffectiveEnd(r)
+    // End of the effective end day
+    const effectiveEndDay = new Date(Date.UTC(effectiveEnd.getUTCFullYear(), effectiveEnd.getUTCMonth(), effectiveEnd.getUTCDate() + 1))
+
+    if (todayStart >= new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())) && todayStart < effectiveEndDay) {
+      // Currently in this blocked range
+      activeRange = { label: r.internalLabel ?? '', start, end, effectiveEnd }
+    } else if (start > todayStart) {
+      // Future range -- track the soonest upcoming
+      if (!nextRange || start < nextRange.start) {
+        nextRange = { label: r.internalLabel ?? '', start, end, effectiveEnd }
+      }
+    }
+  }
+
+  if (activeRange) return { status: 'ooo', activeRange, nextRange }
+  if (nextRange) return { status: 'upcoming', nextRange }
+  return { status: 'available' }
+}
+
 const COLLECTIONS: Omit<CollectionStat, 'count'>[] = [
   {
     slug: 'photos',
@@ -249,6 +307,56 @@ const css = {
     background: 'rgba(155,154,154,0.1)',
     margin: '2.5rem 0 0',
   } as React.CSSProperties,
+  oooCard: (status: string) => ({
+    padding: '1rem 1.25rem',
+    borderRadius: '6px',
+    border: `1px solid ${status === 'ooo' ? 'rgba(251,146,60,0.35)' : status === 'upcoming' ? 'rgba(155,154,154,0.25)' : 'rgba(74,222,128,0.25)'}`,
+    background: status === 'ooo' ? 'rgba(251,146,60,0.06)' : status === 'upcoming' ? 'rgba(155,154,154,0.05)' : 'rgba(74,222,128,0.04)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '1rem',
+    flexWrap: 'wrap' as const,
+    marginBottom: '2rem',
+  }),
+  oooLeft: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.25rem',
+  } as React.CSSProperties,
+  oooStatus: (status: string) => ({
+    fontSize: '0.7rem',
+    letterSpacing: '0.16em',
+    textTransform: 'uppercase' as const,
+    fontFamily: "'Roboto Mono', monospace",
+    color: status === 'ooo' ? '#fb923c' : status === 'upcoming' ? '#9B9A9A' : '#4ade80',
+    fontWeight: 600,
+  }),
+  oooDetail: {
+    fontSize: '0.78rem',
+    color: '#D6D1CE',
+    fontFamily: "'Archivo', sans-serif",
+    fontWeight: 400,
+  } as React.CSSProperties,
+  oooSub: {
+    fontSize: '0.67rem',
+    color: '#9B9A9A',
+    fontFamily: "'Roboto Mono', monospace",
+    letterSpacing: '0.03em',
+  } as React.CSSProperties,
+  oooLink: {
+    padding: '0.45rem 0.9rem',
+    border: '1px solid rgba(155,154,154,0.3)',
+    borderRadius: '4px',
+    fontSize: '0.68rem',
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase' as const,
+    color: '#9B9A9A',
+    textDecoration: 'none',
+    fontFamily: "'Roboto Mono', monospace",
+    whiteSpace: 'nowrap' as const,
+    flexShrink: 0,
+  } as React.CSSProperties,
   quickUpload: {
     marginTop: '2.5rem',
     padding: '1.5rem',
@@ -296,6 +404,22 @@ export function Dashboard() {
   const [stats, setStats] = useState<CollectionStat[]>(
     COLLECTIONS.map((c) => ({ ...c, count: null }))
   )
+  const [oooState, setOooState] = useState<OooState | null>(null)
+
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        const res = await fetch('/api/globals/availability?depth=0', { credentials: 'include' })
+        if (!res.ok) return
+        const data = await res.json()
+        const ranges: BlockedRange[] = Array.isArray(data.blockedRanges) ? data.blockedRanges : []
+        setOooState(computeOooState(ranges))
+      } catch {
+        // Silently ignore -- OOO card is non-critical
+      }
+    }
+    fetchAvailability()
+  }, [])
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -343,6 +467,47 @@ export function Dashboard() {
         <h1 style={css.welcomeHeading}>Tynnell Hollins Photography</h1>
         <p style={css.welcomeSub}>Studio Dashboard</p>
       </div>
+
+      {/* OOO Status Card */}
+      {oooState && (() => {
+        const { status, activeRange, nextRange } = oooState
+        if (status === 'ooo' && activeRange) {
+          const returnsLabel = `Returns ${fmtDate(activeRange.effectiveEnd)}`
+          const rangeLabel = `${fmtDate(activeRange.start)} - ${fmtDate(activeRange.end)}`
+          return (
+            <div style={css.oooCard(status)}>
+              <div style={css.oooLeft}>
+                <span style={css.oooStatus(status)}>Out of Office</span>
+                <span style={css.oooDetail}>{activeRange.label || rangeLabel}</span>
+                <span style={css.oooSub}>{activeRange.label ? rangeLabel + ' ' : ''}{returnsLabel}</span>
+              </div>
+              <Link href="/admin/globals/availability" style={css.oooLink}>Edit Availability</Link>
+            </div>
+          )
+        }
+        if (status === 'upcoming' && nextRange) {
+          const rangeLabel = `${fmtDate(nextRange.start)} - ${fmtDate(nextRange.effectiveEnd)}`
+          return (
+            <div style={css.oooCard(status)}>
+              <div style={css.oooLeft}>
+                <span style={css.oooStatus(status)}>Next Unavailable</span>
+                <span style={css.oooDetail}>{rangeLabel}{nextRange.label ? ` (${nextRange.label})` : ''}</span>
+              </div>
+              <Link href="/admin/globals/availability" style={css.oooLink}>Edit Availability</Link>
+            </div>
+          )
+        }
+        // Available
+        return (
+          <div style={css.oooCard(status)}>
+            <div style={css.oooLeft}>
+              <span style={css.oooStatus(status)}>Available for Bookings</span>
+              <span style={css.oooSub}>No blocked dates set.</span>
+            </div>
+            <Link href="/admin/globals/availability" style={css.oooLink}>Edit Availability</Link>
+          </div>
+        )
+      })()}
 
       {/* Quick Upload CTA */}
       <div style={css.quickUpload}>
