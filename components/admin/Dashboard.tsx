@@ -13,6 +13,20 @@ interface CollectionStat {
   listPath: string
 }
 
+interface RecentPhoto {
+  id: number
+  url?: string | null
+  alt?: string | null
+  filename?: string | null
+}
+
+interface RecentPost {
+  id: number
+  title?: string | null
+  status?: string | null
+  updatedAt?: string | null
+}
+
 interface GlobalLink {
   slug: string
   label: string
@@ -307,6 +321,55 @@ const css = {
     background: 'rgba(155,154,154,0.1)',
     margin: '2.5rem 0 0',
   } as React.CSSProperties,
+  recentSubLabel: {
+    fontSize: '0.62rem',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase' as const,
+    color: 'rgba(155,154,154,0.55)',
+    marginBottom: '0.65rem',
+    fontFamily: "'Roboto Mono', monospace",
+  } as React.CSSProperties,
+  photoStrip: {
+    display: 'flex',
+    gap: '0.4rem',
+    overflowX: 'auto' as const,
+    paddingBottom: '0.25rem',
+  } as React.CSSProperties,
+  photoThumb: {
+    flexShrink: 0,
+    width: '72px',
+    height: '72px',
+    borderRadius: '4px',
+    overflow: 'hidden',
+    display: 'block',
+    border: '1px solid rgba(155,154,154,0.12)',
+    background: '#232323',
+  } as React.CSSProperties,
+  recentPostRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0.55rem 0',
+    borderBottom: '1px solid rgba(155,154,154,0.07)',
+    textDecoration: 'none',
+    color: '#D6D1CE',
+    gap: '1rem',
+  } as React.CSSProperties,
+  recentPostTitle: {
+    fontSize: '0.78rem',
+    fontFamily: "'Archivo', sans-serif",
+    flex: 1,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap' as const,
+  } as React.CSSProperties,
+  recentPostMeta: {
+    fontSize: '0.65rem',
+    color: '#9B9A9A',
+    fontFamily: "'Roboto Mono', monospace",
+    whiteSpace: 'nowrap' as const,
+    flexShrink: 0,
+  } as React.CSSProperties,
   oooCard: (status: string) => ({
     padding: '1rem 1.25rem',
     borderRadius: '6px',
@@ -405,6 +468,8 @@ export function Dashboard() {
     COLLECTIONS.map((c) => ({ ...c, count: null }))
   )
   const [oooState, setOooState] = useState<OooState | null>(null)
+  const [recentPhotos, setRecentPhotos] = useState<RecentPhoto[]>([])
+  const [recentPosts, setRecentPosts] = useState<RecentPost[]>([])
 
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -419,6 +484,20 @@ export function Dashboard() {
       }
     }
     fetchAvailability()
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/photos?limit=8&depth=0&sort=-updatedAt', { credentials: 'include' })
+      .then(r => r.json())
+      .then((data: { docs?: RecentPhoto[] }) => setRecentPhotos(data.docs ?? []))
+      .catch(() => { /* non-critical */ })
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/posts?limit=5&depth=0&sort=-updatedAt', { credentials: 'include' })
+      .then(r => r.json())
+      .then((data: { docs?: RecentPost[] }) => setRecentPosts(data.docs ?? []))
+      .catch(() => { /* non-critical */ })
   }, [])
 
   useEffect(() => {
@@ -565,6 +644,63 @@ export function Dashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Recent Activity */}
+      {(recentPhotos.length > 0 || recentPosts.length > 0) && (
+        <>
+          <p style={css.sectionLabel}>Recent Activity</p>
+
+          {recentPhotos.length > 0 && (
+            <div style={{ marginBottom: '1.75rem' }}>
+              <div style={css.recentSubLabel}>Recent Photos</div>
+              <div style={css.photoStrip}>
+                {recentPhotos.map(photo => (
+                  <Link
+                    key={photo.id}
+                    href={`/admin/collections/photos/${photo.id}`}
+                    style={css.photoThumb}
+                    title={photo.alt ?? photo.filename ?? `Photo ${photo.id}`}
+                  >
+                    {photo.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={photo.url}
+                        alt={photo.alt ?? photo.filename ?? ''}
+                        loading="lazy"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: '#444' }}>
+                        &#128247;
+                      </div>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {recentPosts.length > 0 && (
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={css.recentSubLabel}>Recent Posts</div>
+              {recentPosts.map(post => (
+                <Link
+                  key={post.id}
+                  href={`/admin/collections/posts/${post.id}`}
+                  style={css.recentPostRow}
+                  className="recent-post-row"
+                >
+                  <span style={css.recentPostTitle}>{post.title ?? 'Untitled'}</span>
+                  <span style={css.recentPostMeta}>
+                    {post.status ?? 'draft'}
+                    {post.updatedAt ? ` · ${fmtDate(new Date(post.updatedAt))}` : ''}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       <div style={css.divider} />
     </div>
