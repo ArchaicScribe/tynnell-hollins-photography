@@ -1,4 +1,5 @@
 'use client'
+// Dashboard: collection counts, recent activity, OOO status
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 
