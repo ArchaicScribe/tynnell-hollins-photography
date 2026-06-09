@@ -281,12 +281,29 @@ const filterBtn = (active: boolean): React.CSSProperties => ({
 
 const LIMIT = 48
 
+// Extensions that sharp cannot process on Vercel (no native libheif/libbmp).
+// Caught before the first network request so the error message is instant and clear.
+const UNSUPPORTED_EXTS = new Set(['heic', 'heif', 'avif', 'tiff', 'tif', 'bmp'])
+
+function getFileExt(filename: string): string {
+  return (filename.split('.').pop() ?? '').toLowerCase()
+}
+
 // Three-step upload to bypass Vercel's 4.5 MB serverless request body limit:
 //   1. Get a presigned R2 PUT URL from our API (tiny JSON request)
 //   2. PUT the file directly to R2 from the browser (no Vercel in the path)
 //   3. Call /api/photos/ingest so the server downloads, runs sharp, and
 //      creates the Payload record (no large request body - key only)
 async function uploadFile(file: File, category: string | null): Promise<void> {
+  // Pre-flight: reject unsupported formats before any network traffic.
+  // HEIC (iPhone default) and HEIF require native libheif which Vercel does not provide.
+  const ext = getFileExt(file.name)
+  if (UNSUPPORTED_EXTS.has(ext)) {
+    throw new Error(
+      `${file.name} - ${ext.toUpperCase()} files are not supported. Open the photo on your phone, export or share it as JPEG, then upload the JPEG version.`
+    )
+  }
+
   // Step 1: request a presigned URL
   const presignRes = await fetch('/api/upload-presign', {
     method: 'POST',
@@ -298,8 +315,12 @@ async function uploadFile(file: File, category: string | null): Promise<void> {
     }),
   })
   if (!presignRes.ok) {
-    const text = await presignRes.text().catch(() => presignRes.statusText)
-    throw new Error(`${file.name} - could not get upload URL (HTTP ${presignRes.status}): ${text}`)
+    let errMsg = presignRes.statusText
+    try {
+      const json = await presignRes.json()
+      if (json?.error) errMsg = json.error
+    } catch { /* fall through to statusText */ }
+    throw new Error(`${file.name} - ${errMsg}`)
   }
   const { uploadUrl, key } = (await presignRes.json()) as { uploadUrl: string; key: string }
 
@@ -310,10 +331,10 @@ async function uploadFile(file: File, category: string | null): Promise<void> {
     headers: { 'Content-Type': file.type || 'image/jpeg' },
   })
   if (!putRes.ok) {
-    throw new Error(`${file.name} - R2 upload failed (HTTP ${putRes.status})`)
+    throw new Error(`${file.name} - upload to storage failed (HTTP ${putRes.status}). Check your connection and try again.`)
   }
 
-  // Step 3: ingest - server downloads the file, runs sharp, creates Payload record
+  // Step 3: ingest - server downloads the file, runs sharp, creates Payload record.
   // The active category filter is passed here so the photo is tagged correctly;
   // without this, photos dragged in on the Weddings tab would have no category set.
   const ingestRes = await fetch('/api/photos/ingest', {
@@ -323,8 +344,12 @@ async function uploadFile(file: File, category: string | null): Promise<void> {
     body: JSON.stringify({ key, filename: file.name, category: category ?? null }),
   })
   if (!ingestRes.ok) {
-    const text = await ingestRes.text().catch(() => ingestRes.statusText)
-    throw new Error(`${file.name} (HTTP ${ingestRes.status}): ${text}`)
+    let errMsg = `HTTP ${ingestRes.status}`
+    try {
+      const json = await ingestRes.json()
+      if (json?.error) errMsg = json.error
+    } catch { /* fall through to status code */ }
+    throw new Error(`${file.name} - ${errMsg}`)
   }
 }
 
