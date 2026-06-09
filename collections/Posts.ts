@@ -66,6 +66,16 @@ export const Posts: CollectionConfig = {
       },
     },
     {
+      name: 'viewOnSite',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: './components/admin/PostViewOnSiteButton#PostViewOnSiteButton',
+        },
+      },
+    },
+    {
       name: 'status',
       type: 'select',
       label: 'Status',
