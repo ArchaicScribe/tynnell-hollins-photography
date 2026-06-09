@@ -230,6 +230,7 @@ The Payload admin sidebar is organized into four groups:
   - Posts card shows published vs. draft split beneath total count
   - OOO status card fetches `/api/globals/availability` and shows: Out of Office (amber, with internal label + return date), Next Unavailable (grey, upcoming range), or Available (green). All states link to `/admin/globals/availability`.
 - `PhotoGridView`: registered on `Photos` collection under `admin.components.views.list.Component`
+  - Shows gallery membership badges on each photo card: fetches all galleries once on mount (`/api/galleries?limit=300&depth=0`), builds a `Record<number, string[]>` map, renders up to 2 gallery name pills (+N overflow) below the category text (TYN-194)
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
 - `GalleryPhotoRowLabel`: registered on `Galleries.photos` array field as `admin.components.RowLabel`
   - Shows thumbnail + filename in each row header so Tynnell can see which photo is which
