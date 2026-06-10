@@ -10,8 +10,17 @@ export const dynamic = 'force-dynamic'
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function GET(request: Request) {
+  // Guard against a missing CRON_SECRET: without this check, an unset secret
+  // would make the expected header the literal string "Bearer undefined",
+  // which a caller could trivially supply to bypass auth.
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret) {
+    console.error('[cron/ooo-return-notify] CRON_SECRET is not set; refusing request')
+    return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
+  }
+
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

@@ -7,10 +7,11 @@ import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { RATE_LIMIT_ERROR, CONTACT_EMAIL } from '@/app/lib/constants'
 import { getBlockedDateResult } from '@/app/lib/availability'
+import { requireEnv } from '@/app/lib/env'
 
 export const dynamic = 'force-dynamic'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'))
 
 const SITE_ORIGIN = 'https://tynnellhollinsphotography.com'
 

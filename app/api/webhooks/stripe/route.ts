@@ -7,10 +7,11 @@ import { escapeHtml } from '@/app/lib/validation'
 import { bookingConfirmEmailHtml, clientReceiptEmailHtml } from '@/app/lib/emails'
 import { EMAIL_FROM } from '@/app/lib/constants'
 import { getActiveOoo } from '@/app/lib/availability'
+import { requireEnv } from '@/app/lib/env'
 
 export const dynamic = 'force-dynamic'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'))
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Stripe requires the raw request body for signature verification —
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      requireEnv('STRIPE_WEBHOOK_SECRET')
     )
   } catch (err) {
     console.error('[stripe-webhook] Signature verification failed:', err)
