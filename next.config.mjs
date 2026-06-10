@@ -2,6 +2,23 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    // Photos are served from Cloudflare R2. next/image rejects any remote host
+    // not listed here. This block was lost when Sanity (cdn.sanity.io) was
+    // removed and must cover the R2 host that now serves every image.
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'pub-db2dd9a6665142e4adcd4f822fbe2683.r2.dev',
+      },
+      {
+        // Pending R2 custom-domain cutover (TYN-144) — allow it now so the
+        // migration does not reintroduce the "unconfigured host" break.
+        protocol: 'https',
+        hostname: 'media.tynnellhollinsphotography.com',
+      },
+    ],
+  },
   async headers() {
     return [
       {
