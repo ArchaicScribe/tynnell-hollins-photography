@@ -58,26 +58,36 @@ export async function POST(request: Request) {
       // Non-fatal: send standard receipt if globals are unavailable
     }
 
-    // Email to Tynnell
-    await resend.emails.send({
+    // Email to Tynnell.
+    // The Resend SDK returns { data, error } and does NOT throw on API failures,
+    // so we must inspect .error explicitly or a failed send is silently lost.
+    const notifyResult = await resend.emails.send({
       from: EMAIL_FROM,
       to: process.env.CONTACT_TO_EMAIL!,
       subject: `New Booking Deposit: ${packageName} - ${clientName}`,
       html: bookingConfirmEmailHtml({ clientName, clientEmail, packageName, amountPaid }),
     })
+    if (notifyResult.error) {
+      console.error('[stripe-webhook] booking notification email failed:', JSON.stringify(notifyResult.error))
+    }
 
     // Confirmation email to client
     const rawClientEmail = session.metadata?.clientEmail ?? session.customer_email ?? ''
     if (rawClientEmail) {
-      await resend.emails.send({
+      const receiptResult = await resend.emails.send({
         from: EMAIL_FROM,
         to: rawClientEmail,
         replyTo: process.env.CONTACT_TO_EMAIL,
         subject: `Your deposit is confirmed - ${packageName}`,
         html: clientReceiptEmailHtml({ clientName, packageName, amountPaid, oooMessage }),
       })
+      if (receiptResult.error) {
+        console.error('[stripe-webhook] client receipt email failed:', JSON.stringify(receiptResult.error))
+      }
     }
   }
 
+  // Always return 200 so Stripe does not retry the whole event over an email
+  // hiccup -- the payment itself already succeeded. Email failures are logged above.
   return NextResponse.json({ received: true })
 }
