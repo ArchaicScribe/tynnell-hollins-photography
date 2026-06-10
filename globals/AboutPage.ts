@@ -10,6 +10,16 @@ export const AboutPage: GlobalConfig = {
   },
   fields: [
     {
+      name: 'viewOnSite',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: './components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton',
+        },
+      },
+    },
+    {
       name: 'headshot',
       type: 'upload',
       label: 'Your Photo',

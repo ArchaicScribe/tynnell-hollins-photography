@@ -103,6 +103,16 @@ export const Photos: CollectionConfig = {
       ],
     },
     {
+      name: 'viewInPortfolio',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: './components/admin/PhotoViewInPortfolioButton#PhotoViewInPortfolioButton',
+        },
+      },
+    },
+    {
       name: 'caption',
       type: 'text',
       label: 'Caption',

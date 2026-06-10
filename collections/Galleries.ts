@@ -63,6 +63,16 @@ export const Galleries: CollectionConfig = {
       },
     },
     {
+      name: 'viewOnSite',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: './components/admin/GalleryViewOnSiteButton#GalleryViewOnSiteButton',
+        },
+      },
+    },
+    {
       name: 'category',
       type: 'select',
       label: 'Category',

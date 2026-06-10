@@ -1,4 +1,6 @@
+import { PhotoViewInPortfolioButton as PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93 } from '../../../components/admin/PhotoViewInPortfolioButton'
 import { PhotoGridView as PhotoGridView_416d697f5d1039cfdf395a457f2fc19a } from '../../../components/admin/PhotoGridView'
+import { GalleryViewOnSiteButton as GalleryViewOnSiteButton_ff74c64f710c29e33810b93734c4bd9e } from '../../../components/admin/GalleryViewOnSiteButton'
 import { CoverPhotoCell as CoverPhotoCell_7b6c7b5fe42940c056316d08f8b58c3d } from '../../../components/admin/CoverPhotoCell'
 import { CoverPhotoPicker as CoverPhotoPicker_3b28ab93a98ad4c3c31c60877ff3dab4 } from '../../../components/admin/CoverPhotoPicker'
 import { GalleryBulkPhotoPicker as GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a007c60f35b } from '../../../components/admin/GalleryBulkPhotoPicker'
@@ -32,6 +34,7 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { PostGridView as PostGridView_14ec513780a751f079162e3480e8024b } from '../../../components/admin/PostGridView'
+import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe } from '../../../components/admin/AboutViewOnSiteButton'
 import { OooWarnings as OooWarnings_24882b9d221e8df452e06e4f5a939af9 } from '../../../components/admin/OooWarnings'
 import { AdminIcon as AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c } from '../../../components/admin/AdminIcon'
 import { AdminLogo as AdminLogo_56b58cfdfd9d12efeac26d6201d62c94 } from '../../../components/admin/AdminLogo'
@@ -41,7 +44,9 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "./components/admin/PhotoViewInPortfolioButton#PhotoViewInPortfolioButton": PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93,
   "./components/admin/PhotoGridView#PhotoGridView": PhotoGridView_416d697f5d1039cfdf395a457f2fc19a,
+  "./components/admin/GalleryViewOnSiteButton#GalleryViewOnSiteButton": GalleryViewOnSiteButton_ff74c64f710c29e33810b93734c4bd9e,
   "./components/admin/CoverPhotoCell#CoverPhotoCell": CoverPhotoCell_7b6c7b5fe42940c056316d08f8b58c3d,
   "./components/admin/CoverPhotoPicker#CoverPhotoPicker": CoverPhotoPicker_3b28ab93a98ad4c3c31c60877ff3dab4,
   "./components/admin/GalleryBulkPhotoPicker#GalleryBulkPhotoPicker": GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a007c60f35b,
@@ -75,6 +80,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "./components/admin/PostGridView#PostGridView": PostGridView_14ec513780a751f079162e3480e8024b,
+  "./components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton": AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe,
   "./components/admin/OooWarnings#OooWarnings": OooWarnings_24882b9d221e8df452e06e4f5a939af9,
   "./components/admin/AdminIcon#AdminIcon": AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c,
   "./components/admin/AdminLogo#AdminLogo": AdminLogo_56b58cfdfd9d12efeac26d6201d62c94,
