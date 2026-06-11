@@ -23,7 +23,11 @@ const CAT_LABELS: Record<string, string> = {
 
 export function GalleryBulkPhotoPicker() {
   const { value: rawPhotos, setValue: setPhotos } = useField<PhotoRow[]>({ path: 'photos' })
-  const photos = rawPhotos ?? []
+  // On a brand-new (unsaved) gallery, Payload reports an array field's value as
+  // its row count (the number 0), not an empty array. `?? []` does not catch 0,
+  // so guard with Array.isArray to avoid `photos.map is not a function` on the
+  // Create page. On a saved gallery the value is the real array of rows.
+  const photos: PhotoRow[] = Array.isArray(rawPhotos) ? rawPhotos : []
 
   const [open, setOpen] = useState(false)
   const [allPhotos, setAllPhotos] = useState<PhotoDoc[]>([])
