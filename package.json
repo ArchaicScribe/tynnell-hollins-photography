@@ -13,6 +13,7 @@
   "dependencies": {
     "@aws-sdk/s3-request-presigner": "^3.1064.0",
     "@googlemaps/js-api-loader": "^2.1.0",
+    "@measured/puck": "^0.20.2",
     "@payloadcms/db-postgres": "^3.84.1",
     "@payloadcms/next": "^3.84.1",
     "@payloadcms/richtext-lexical": "^3.84.1",

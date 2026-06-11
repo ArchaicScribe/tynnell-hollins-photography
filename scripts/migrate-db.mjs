@@ -254,6 +254,23 @@ async function run() {
     `)
 
     console.log('✓ testimonials.featured column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260611_100000: add builder global table
+    // Required by TYN-214: Puck visual-builder POC stores the whole page
+    // document as a single JSON blob in the `builder` global.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "builder" (
+        "id"          serial  PRIMARY KEY NOT NULL,
+        "data"        jsonb,
+        "updated_at"  timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"  timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    console.log('✓ builder table ready')
   } finally {
     client.release()
     await pool.end()
