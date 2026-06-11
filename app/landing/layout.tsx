@@ -10,7 +10,7 @@ export const metadata = { title: 'Landing' }
 export default function LandingLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${archivo.variable} ${robotoMono.variable}`}>
-      <body style={{ margin: 0 }}>{children}</body>
+      <body style={{ margin: 0 }} suppressHydrationWarning>{children}</body>
     </html>
   )
 }

@@ -12,7 +12,7 @@ export const metadata = { title: 'Page Builder' }
 export default function BuilderLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${archivo.variable} ${robotoMono.variable}`}>
-      <body style={{ margin: 0 }}>{children}</body>
+      <body style={{ margin: 0 }} suppressHydrationWarning>{children}</body>
     </html>
   )
 }
