@@ -271,6 +271,30 @@ async function run() {
     `)
 
     console.log('✓ builder table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260611_110000: add pages collection table
+    // Required by TYN-216: multi-page visual builder. Each row is one page
+    // composed in /builder; `content` is the Puck document JSON.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "pages" (
+        "id"          serial  PRIMARY KEY NOT NULL,
+        "title"       varchar,
+        "slug"        varchar,
+        "content"     jsonb,
+        "published"   boolean DEFAULT false,
+        "updated_at"  timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"  timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS "pages_slug_idx" ON "pages" USING btree ("slug")
+    `)
+
+    console.log('✓ pages table ready')
   } finally {
     client.release()
     await pool.end()

@@ -3,15 +3,24 @@
 import { Puck, type Data } from '@measured/puck'
 import '@measured/puck/puck.css'
 import { useState } from 'react'
-import { config } from './puck.config'
+import Link from 'next/link'
+import { config } from '../puck.config'
 
-// Client editor for the Puck POC (TYN-214). Renders the full drag-drop canvas.
-// Puck's preview iframe is disabled so the Publish fetch keeps the session
-// cookie (an opaque-origin iframe drops it). Publish persists the document to
-// the `builder` global via the save API; a "View Page" header action opens the
-// published page so Tynnell never has to type a URL.
-export function Editor({ initialData }: { initialData: Partial<Data> }) {
-  const [status, setStatus] = useState<string>('')
+// Per-page Puck editor (TYN-216). Saves the document for `slug` via the save
+// API; Publish marks the page published so it renders at /{slug}. Puck's
+// preview iframe is disabled so the save fetch keeps the session cookie.
+export function EditorClient({
+  slug,
+  title,
+  published,
+  initialData,
+}: {
+  slug: string
+  title: string
+  published: boolean
+  initialData: Data
+}) {
+  const [status, setStatus] = useState<string>(published ? '' : 'Draft')
 
   const onPublish = async (data: Data) => {
     setStatus('Saving...')
@@ -20,7 +29,7 @@ export function Editor({ initialData }: { initialData: Partial<Data> }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ data }),
+        body: JSON.stringify({ slug, data }),
       })
       setStatus(res.ok ? 'Published' : 'Save failed')
     } catch {
@@ -32,16 +41,33 @@ export function Editor({ initialData }: { initialData: Partial<Data> }) {
     <div style={{ height: '100vh' }}>
       <Puck
         config={config}
-        data={initialData as Data}
+        data={initialData}
         onPublish={onPublish}
         iframe={{ enabled: false }}
-        headerTitle="Page Builder"
+        headerTitle={title}
         headerPath={status || undefined}
         overrides={{
           headerActions: ({ children }) => (
             <>
-              <a
-                href="/landing"
+              <Link
+                href="/builder"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '0 0.85rem',
+                  height: '34px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--puck-color-grey-09, #d4d4d4)',
+                  color: 'inherit',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                &#8592; Pages
+              </Link>
+              <Link
+                href={`/${slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -58,8 +84,8 @@ export function Editor({ initialData }: { initialData: Partial<Data> }) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                View Page ↗
-              </a>
+                View Page &#8599;
+              </Link>
               {children}
             </>
           ),

@@ -73,6 +73,7 @@ export interface Config {
     testimonials: Testimonial;
     services: Service;
     posts: Post;
+    pages: Page;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -101,7 +103,6 @@ export interface Config {
     'site-config': SiteConfig;
     'booking-settings': BookingSetting;
     availability: Availability;
-    builder: Builder;
   };
   globalsSelect: {
     'hero-slides': HeroSlidesSelect<false> | HeroSlidesSelect<true>;
@@ -109,7 +110,6 @@ export interface Config {
     'site-config': SiteConfigSelect<false> | SiteConfigSelect<true>;
     'booking-settings': BookingSettingsSelect<false> | BookingSettingsSelect<true>;
     availability: AvailabilitySelect<false> | AvailabilitySelect<true>;
-    builder: BuilderSelect<false> | BuilderSelect<true>;
   };
   locale: null;
   widgets: {
@@ -411,6 +411,27 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  slug: string;
+  content?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  published?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -456,6 +477,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -644,6 +669,18 @@ export interface PostsSelect<T extends boolean = true> {
   coverImage?: T;
   excerpt?: T;
   body?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  content?: T;
+  published?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -887,24 +924,6 @@ export interface Availability {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "builder".
- */
-export interface Builder {
-  id: number;
-  data?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hero-slides_select".
  */
 export interface HeroSlidesSelect<T extends boolean = true> {
@@ -986,16 +1005,6 @@ export interface AvailabilitySelect<T extends boolean = true> {
         notificationSent?: T;
         id?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "builder_select".
- */
-export interface BuilderSelect<T extends boolean = true> {
-  data?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
