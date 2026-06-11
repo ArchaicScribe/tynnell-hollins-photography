@@ -261,16 +261,12 @@ async function run() {
     // document as a single JSON blob in the `builder` global.
     // ------------------------------------------------------------------
 
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS "builder" (
-        "id"          serial  PRIMARY KEY NOT NULL,
-        "data"        jsonb,
-        "updated_at"  timestamp(3) with time zone DEFAULT now() NOT NULL,
-        "created_at"  timestamp(3) with time zone DEFAULT now() NOT NULL
-      )
-    `)
+    // The `builder` global was a single-page POC store; it was replaced by the
+    // `pages` collection (TYN-216). Drop the orphaned table so dev schema-push
+    // does not prompt and prod stays clean. (POC data is disposable.)
+    await client.query(`DROP TABLE IF EXISTS "builder"`)
 
-    console.log('✓ builder table ready')
+    console.log('✓ builder table dropped (replaced by pages collection)')
 
     // ------------------------------------------------------------------
     // Migration 20260611_110000: add pages collection table
