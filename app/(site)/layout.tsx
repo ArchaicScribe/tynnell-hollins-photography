@@ -56,7 +56,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${tangerine.variable} ${archivo.variable} ${robotoMono.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <Navbar />
         {children}
         <Analytics />
