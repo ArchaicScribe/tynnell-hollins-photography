@@ -3,6 +3,7 @@
 // props are typed `any`; each block's shape is pinned by its fields/defaultProps.
 import type { ReactNode } from 'react'
 import type { Config } from '@measured/puck'
+import { ImagePickerField } from './ImagePickerField'
 
 // On-brand section-block library for the visual builder (TYN-217).
 //
@@ -69,6 +70,13 @@ const alignField = {
   ],
 }
 
+// Custom field: pick an image from the photo library (TYN-220).
+const imageField = (label: string) => ({
+  type: 'custom' as const,
+  label,
+  render: ({ value, onChange }: any) => <ImagePickerField value={value} onChange={onChange} />,
+})
+
 export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
@@ -92,7 +100,7 @@ export const config: Config = {
         eyebrow: { type: 'text', label: 'Eyebrow (small label)' },
         heading: { type: 'text', label: 'Heading' },
         subheading: { type: 'textarea', label: 'Subheading' },
-        imageUrl: { type: 'text', label: 'Background image URL' },
+        imageUrl: imageField('Background image'),
         height: {
           type: 'select',
           label: 'Height',
@@ -173,7 +181,7 @@ export const config: Config = {
     SplitImageText: {
       label: 'Split Image + Text',
       fields: {
-        imageUrl: { type: 'text', label: 'Image URL' },
+        imageUrl: imageField('Image'),
         imagePosition: {
           type: 'radio',
           label: 'Image position',
@@ -339,7 +347,7 @@ export const config: Config = {
         images: {
           type: 'array',
           label: 'Photos',
-          arrayFields: { url: { type: 'text', label: 'Image URL' } },
+          arrayFields: { url: imageField('Image') },
           defaultItemProps: { url: '' },
           getItemSummary: (item: any) => item?.url || 'Photo',
         },
@@ -386,7 +394,7 @@ export const config: Config = {
     FullWidthImage: {
       label: 'Full-Width Image',
       fields: {
-        imageUrl: { type: 'text', label: 'Image URL' },
+        imageUrl: imageField('Image'),
         height: {
           type: 'select',
           label: 'Height',
