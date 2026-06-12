@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import payloadConfig from '@payload-config'
+import { DeletePageButton } from './DeletePageButton'
 
 // Builder home (TYN-216): list pages + create a new one. Auth-gated.
 export const dynamic = 'force-dynamic'
@@ -73,6 +74,7 @@ export default async function BuilderHome() {
                   <Link href={`/builder/${p.slug}`} style={{ color: '#0c0c0c', background: '#d6d1ce', textDecoration: 'none', fontSize: '0.78rem', padding: '0.35rem 0.7rem', borderRadius: 4 }}>
                     Edit
                   </Link>
+                  <DeletePageButton id={p.id} />
                 </div>
               </div>
             ))}
