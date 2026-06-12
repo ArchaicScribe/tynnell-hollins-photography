@@ -291,6 +291,21 @@ async function run() {
     `)
 
     console.log('✓ pages table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260612_100000: add display_order to pages (TYN-225)
+    // Builder page-list manual reordering. Backfill existing rows with their
+    // id so every page has a stable distinct order.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "display_order" numeric
+    `)
+    await client.query(`
+      UPDATE "pages" SET "display_order" = "id" WHERE "display_order" IS NULL
+    `)
+
+    console.log('✓ pages.display_order ready')
   } finally {
     client.release()
     await pool.end()

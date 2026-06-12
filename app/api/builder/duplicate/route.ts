@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       slug,
       content: src.content ?? { content: [], root: {} },
       published: false,
+      displayOrder: Date.now(),
     },
   })
 

@@ -15,5 +15,6 @@ export const Pages: CollectionConfig = {
     { name: 'slug', type: 'text', required: true, unique: true },
     { name: 'content', type: 'json' },
     { name: 'published', type: 'checkbox', defaultValue: false },
+    { name: 'displayOrder', type: 'number' },
   ],
 }

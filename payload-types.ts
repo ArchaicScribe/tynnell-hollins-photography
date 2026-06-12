@@ -427,6 +427,7 @@ export interface Page {
     | boolean
     | null;
   published?: boolean | null;
+  displayOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -681,6 +682,7 @@ export interface PagesSelect<T extends boolean = true> {
   slug?: T;
   content?: T;
   published?: T;
+  displayOrder?: T;
   updatedAt?: T;
   createdAt?: T;
 }

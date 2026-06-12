@@ -7,6 +7,7 @@ import { DeletePageButton } from './DeletePageButton'
 import { PageTitleEditor } from './PageTitleEditor'
 import { DuplicatePageButton } from './DuplicatePageButton'
 import { NewPageForm } from './NewPageForm'
+import { ReorderButtons } from './ReorderButtons'
 
 // Builder home (TYN-216): list pages + create a new one. Auth-gated.
 export const dynamic = 'force-dynamic'
@@ -28,7 +29,7 @@ async function createPage(formData: FormData): Promise<void> {
 
   await payload.create({
     collection: 'pages',
-    data: { title, slug, published: false, content: { content: [], root: {} } },
+    data: { title, slug, published: false, content: { content: [], root: {} }, displayOrder: Date.now() },
   })
   redirect(`/builder/${slug}`)
 }
@@ -38,7 +39,7 @@ export default async function BuilderHome() {
   const { user } = await payload.auth({ headers: await headers() })
   if (!user) redirect('/admin/login')
 
-  const { docs: pages } = await payload.find({ collection: 'pages', sort: '-updatedAt', limit: 100, depth: 0 })
+  const { docs: pages } = await payload.find({ collection: 'pages', sort: 'displayOrder', limit: 100, depth: 0 })
 
   return (
     <main style={{ minHeight: '100vh', background: '#0c0c0c', color: '#e6e1de', fontFamily: "var(--font-body, 'Roboto Mono', monospace)", padding: '2.5rem clamp(1.25rem,4vw,4rem)' }}>
@@ -54,13 +55,16 @@ export default async function BuilderHome() {
           <p style={{ color: '#9b9a9a' }}>No pages yet. Create your first one above.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {pages.map((p) => (
+            {pages.map((p, i) => (
               <div key={String(p.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#131313', border: '1px solid rgba(155,154,154,0.15)', borderRadius: 4, padding: '0.85rem 1rem' }}>
-                <div>
-                  <PageTitleEditor id={p.id} title={p.title} />
-                  <div style={{ color: '#6b6a6a', fontSize: '0.72rem' }}>
-                    /{p.slug} &middot; {p.published ? 'Published' : 'Draft'}
-                    {p.updatedAt && ` · Updated ${new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                  <ReorderButtons id={p.id} isFirst={i === 0} isLast={i === pages.length - 1} />
+                  <div>
+                    <PageTitleEditor id={p.id} title={p.title} />
+                    <div style={{ color: '#6b6a6a', fontSize: '0.72rem' }}>
+                      /{p.slug} &middot; {p.published ? 'Published' : 'Draft'}
+                      {p.updatedAt && ` · Updated ${new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                    </div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
