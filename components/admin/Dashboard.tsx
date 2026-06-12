@@ -613,6 +613,17 @@ export function Dashboard() {
         </Link>
       </div>
 
+      {/* Page Builder CTA */}
+      <div style={css.quickUpload}>
+        <div style={css.quickUploadText}>
+          <p style={css.quickUploadHeading}>Build a page</p>
+          <p style={css.quickUploadSub}>Design pages visually with drag-and-drop sections.</p>
+        </div>
+        <Link href="/builder" style={css.quickUploadBtn}>
+          Open Page Builder
+        </Link>
+      </div>
+
       {/* Collections */}
       <p style={css.sectionLabel}>Collections</p>
       <div style={css.grid}>
