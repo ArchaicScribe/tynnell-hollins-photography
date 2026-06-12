@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
 import payloadConfig from '@payload-config'
 import type { Data } from '@measured/puck'
-import { EditorClient } from './EditorClient'
+import { EditorLoader } from './EditorLoader'
 
 // Visual editor for a single builder page (TYN-216). Auth-gated.
 export const dynamic = 'force-dynamic'
@@ -22,5 +22,5 @@ export default async function EditPage({ params }: { params: Promise<{ slug: str
 
   const data = (page.content as Data | undefined) ?? EMPTY
 
-  return <EditorClient slug={slug} title={page.title} published={Boolean(page.published)} initialData={data} />
+  return <EditorLoader slug={slug} title={page.title} published={Boolean(page.published)} initialData={data} />
 }
