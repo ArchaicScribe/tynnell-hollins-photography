@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import BookClient, { type BookingPackage } from './BookClient'
@@ -49,7 +50,7 @@ export default async function BookPage() {
         <p className={styles.subheading}>
           A deposit secures your date. The remaining balance is due before your session.
           Have questions first?{' '}
-          <a href="/contact" className={styles.subheadingLink}>Send an inquiry.</a>
+          <Link href="/contact" className={styles.subheadingLink}>Send an inquiry.</Link>
         </p>
       </div>
 
