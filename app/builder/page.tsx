@@ -5,6 +5,8 @@ import Link from 'next/link'
 import payloadConfig from '@payload-config'
 import { DeletePageButton } from './DeletePageButton'
 import { PageTitleEditor } from './PageTitleEditor'
+import { DuplicatePageButton } from './DuplicatePageButton'
+import { NewPageForm } from './NewPageForm'
 
 // Builder home (TYN-216): list pages + create a new one. Auth-gated.
 export const dynamic = 'force-dynamic'
@@ -46,17 +48,7 @@ export default async function BuilderHome() {
         <h1 style={{ fontFamily: "var(--font-heading, Archivo, sans-serif)", color: '#d6d1ce', fontSize: '1.75rem', margin: '1.25rem 0 0' }}>Pages</h1>
         <p style={{ color: '#9b9a9a', marginTop: '0.5rem' }}>Build and manage your site pages.</p>
 
-        <form action={createPage} style={{ display: 'flex', gap: '0.5rem', margin: '1.5rem 0 2rem' }}>
-          <input
-            name="title"
-            placeholder="New page title"
-            required
-            style={{ flex: 1, background: '#1a1a1a', border: '1px solid rgba(155,154,154,0.25)', color: '#e6e1de', padding: '0.6rem 0.8rem', borderRadius: 4, fontFamily: 'inherit' }}
-          />
-          <button type="submit" style={{ background: '#9b9a9a', color: '#0c0c0c', border: 'none', padding: '0.6rem 1.25rem', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-            + New Page
-          </button>
-        </form>
+        <NewPageForm action={createPage} />
 
         {pages.length === 0 ? (
           <p style={{ color: '#9b9a9a' }}>No pages yet. Create your first one above.</p>
@@ -80,6 +72,7 @@ export default async function BuilderHome() {
                   <Link href={`/builder/${p.slug}`} style={{ color: '#0c0c0c', background: '#d6d1ce', textDecoration: 'none', fontSize: '0.78rem', padding: '0.35rem 0.7rem', borderRadius: 4 }}>
                     Edit
                   </Link>
+                  <DuplicatePageButton id={p.id} />
                   <DeletePageButton id={p.id} />
                 </div>
               </div>
