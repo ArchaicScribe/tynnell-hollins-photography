@@ -36,12 +36,37 @@ const SPACING: Record<string, string> = {
   spacious: 'clamp(4.5rem, 9vw, 8.5rem)',
 }
 
+// Responsive visibility (TYN-229). Blocks already reflow (flex-wrap + grid
+// auto-fit), so the missing per-breakpoint capability is showing/hiding a
+// section per device. Two utility classes injected once at the root drive it;
+// the breakpoint is 640px (phones). Using classes (not inline styles) is the
+// only way to attach a media query, and it renders identically in the editor
+// and on the public page.
+const MOBILE_MAX = 640
+const RESPONSIVE_CSS = `
+@media (max-width:${MOBILE_MAX}px){.pk-hide-mobile{display:none !important}}
+@media (min-width:${MOBILE_MAX + 1}px){.pk-hide-desktop{display:none !important}}
+`
+function visClass(hideOnMobile?: boolean, hideOnDesktop?: boolean): string | undefined {
+  const c = []
+  if (hideOnMobile) c.push('pk-hide-mobile')
+  if (hideOnDesktop) c.push('pk-hide-desktop')
+  return c.length ? c.join(' ') : undefined
+}
+
+// Per-block device-visibility controls, spread into every block's fields.
+const responsiveFields = {
+  hideOnMobile: { type: 'radio' as const, label: 'Show on phones', options: [ { label: 'Show', value: false }, { label: 'Hide', value: true } ] },
+  hideOnDesktop: { type: 'radio' as const, label: 'Show on desktop', options: [ { label: 'Show', value: false }, { label: 'Hide', value: true } ] },
+}
+const responsiveDefaults = { hideOnMobile: false, hideOnDesktop: false }
+
 // Shared section wrapper: applies the per-section Background + Spacing controls
 // so every content block has consistent, Pixieset-style design options.
-function Section({ background, spacing, children }: { background?: string; spacing?: string; children?: ReactNode }) {
+function Section({ background, spacing, className, children }: { background?: string; spacing?: string; className?: string; children?: ReactNode }) {
   const padY = SPACING[spacing ?? 'normal'] ?? SPACING.normal
   const bg = background && background !== 'transparent' ? background : undefined
-  return <section style={{ background: bg, padding: `${padY} ${PAD_X}` }}>{children}</section>
+  return <section className={className} style={{ background: bg, padding: `${padY} ${PAD_X}` }}>{children}</section>
 }
 
 const eyebrowStyle: React.CSSProperties = {
@@ -119,6 +144,7 @@ export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
       <div style={{ background: C.bg, color: C.body, minHeight: '100%', fontFamily: BODY_FONT }}>
+        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS }} />
         {children}
       </div>
     ),
@@ -151,6 +177,7 @@ export const config: Config = {
         align: alignField,
         buttonText: { type: 'text', label: 'Button text (optional)' },
         buttonHref: { type: 'text', label: 'Button link' },
+        ...responsiveFields,
       },
       defaultProps: {
         eyebrow: '',
@@ -161,9 +188,10 @@ export const config: Config = {
         align: 'left',
         buttonText: '',
         buttonHref: '',
+        ...responsiveDefaults,
       },
-      render: ({ eyebrow, heading, subheading, imageUrl, height, align, buttonText, buttonHref }: any) => (
-        <section style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: 'flex-end', justifyContent: align === 'center' ? 'center' : 'flex-start', overflow: 'hidden' }}>
+      render: ({ eyebrow, heading, subheading, imageUrl, height, align, buttonText, buttonHref, hideOnMobile, hideOnDesktop }: any) => (
+        <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: 'flex-end', justifyContent: align === 'center' ? 'center' : 'flex-start', overflow: 'hidden' }}>
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -190,10 +218,11 @@ export const config: Config = {
         subtext: { type: 'textarea', label: 'Subtext (optional)' },
         align: alignField,
         ...styleFields,
+        ...responsiveFields,
       },
-      defaultProps: { eyebrow: 'My Work', heading: 'A Section Heading', subtext: '', align: 'center', ...styleDefaults },
-      render: ({ eyebrow, heading, subtext, align, background, spacing }: any) => (
-        <Section background={background} spacing={spacing}>
+      defaultProps: { eyebrow: 'My Work', heading: 'A Section Heading', subtext: '', align: 'center', ...styleDefaults, ...responsiveDefaults },
+      render: ({ eyebrow, heading, subtext, align, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: align, maxWidth: align === 'center' ? '70ch' : undefined, margin: align === 'center' ? '0 auto' : undefined }}>
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle()}>{heading}</h2>
@@ -210,10 +239,11 @@ export const config: Config = {
         text: { type: 'textarea', label: 'Text' },
         align: alignField,
         ...styleFields,
+        ...responsiveFields,
       },
-      defaultProps: { text: 'Tell your story here.', align: 'left', ...styleDefaults },
-      render: ({ text, align, background, spacing }: any) => (
-        <Section background={background} spacing={spacing}>
+      defaultProps: { text: 'Tell your story here.', align: 'left', ...styleDefaults, ...responsiveDefaults },
+      render: ({ text, align, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ maxWidth: '70ch', margin: align === 'center' ? '0 auto' : undefined, textAlign: align }}>
             <p style={{ color: C.body, fontSize: '1.05rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
           </div>
@@ -240,6 +270,7 @@ export const config: Config = {
         buttonText: { type: 'text', label: 'Button text (optional)' },
         buttonHref: { type: 'text', label: 'Button link' },
         background: bgField,
+        ...responsiveFields,
       },
       defaultProps: {
         imageUrl: '',
@@ -250,8 +281,9 @@ export const config: Config = {
         buttonText: '',
         buttonHref: '',
         background: 'transparent',
+        ...responsiveDefaults,
       },
-      render: ({ imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, background }: any) => {
+      render: ({ imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, background, hideOnMobile, hideOnDesktop }: any) => {
         const bg = background && background !== 'transparent' ? background : undefined
         const img = (
           <div style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', background: C.accent }}>
@@ -270,7 +302,7 @@ export const config: Config = {
           </div>
         )
         return (
-          <section style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
+          <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
             {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
           </section>
         )
@@ -294,6 +326,7 @@ export const config: Config = {
           getItemSummary: (item: any) => item?.name || 'Card',
         },
         ...styleFields,
+        ...responsiveFields,
       },
       defaultProps: {
         heading: 'Services',
@@ -302,9 +335,10 @@ export const config: Config = {
           { name: 'Wedding Collection', price: 'From $2,800', description: 'Full-day coverage with a second shooter.' },
         ],
         ...styleDefaults,
+        ...responsiveDefaults,
       },
-      render: ({ heading, items, background, spacing }: any) => (
-        <Section background={background} spacing={spacing}>
+      render: ({ heading, items, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
@@ -335,6 +369,7 @@ export const config: Config = {
           getItemSummary: (item: any) => item?.name || 'Quote',
         },
         ...styleFields,
+        ...responsiveFields,
       },
       defaultProps: {
         heading: 'Kind Words',
@@ -343,9 +378,10 @@ export const config: Config = {
         ],
         background: '#131313',
         spacing: 'normal',
+        ...responsiveDefaults,
       },
-      render: ({ heading, items, background, spacing }: any) => (
-        <Section background={background} spacing={spacing}>
+      render: ({ heading, items, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
@@ -368,6 +404,7 @@ export const config: Config = {
         buttonText: { type: 'text', label: 'Button text' },
         buttonHref: { type: 'text', label: 'Button link' },
         ...styleFields,
+        ...responsiveFields,
       },
       defaultProps: {
         heading: 'Ready to create something beautiful?',
@@ -376,9 +413,10 @@ export const config: Config = {
         buttonHref: '/contact',
         background: '#131313',
         spacing: 'spacious',
+        ...responsiveDefaults,
       },
-      render: ({ heading, subtext, buttonText, buttonHref, background, spacing }: any) => (
-        <Section background={background} spacing={spacing}>
+      render: ({ heading, subtext, buttonText, buttonHref, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: 'center' }}>
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
             {subtext && <p style={{ marginTop: '0.85rem', color: C.detail, maxWidth: '60ch', margin: '0.85rem auto 0' }}>{subtext}</p>}
@@ -417,12 +455,13 @@ export const config: Config = {
             { label: 'Landscape', value: '3 / 2' },
           ],
         },
+        ...responsiveFields,
       },
-      defaultProps: { images: [], size: '300px', aspect: '4 / 5' },
-      render: ({ images, size, aspect }: any) => {
+      defaultProps: { images: [], size: '300px', aspect: '4 / 5', ...responsiveDefaults },
+      render: ({ images, size, aspect, hideOnMobile, hideOnDesktop }: any) => {
         const valid = (images ?? []).filter((i: any) => i?.url)
         return (
-          <section style={{ padding: 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
+          <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
             {valid.length === 0 ? (
               <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the gallery.</p>
             ) : (
@@ -453,10 +492,11 @@ export const config: Config = {
           ],
         },
         caption: { type: 'text', label: 'Caption (optional)' },
+        ...responsiveFields,
       },
-      defaultProps: { imageUrl: '', height: '55vh', caption: '' },
-      render: ({ imageUrl, height, caption }: any) => (
-        <section>
+      defaultProps: { imageUrl: '', height: '55vh', caption: '', ...responsiveDefaults },
+      render: ({ imageUrl, height, caption, hideOnMobile, hideOnDesktop }: any) => (
+        <section className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ position: 'relative', width: '100%', height, background: C.accent }}>
             {imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -482,9 +522,10 @@ export const config: Config = {
             { label: 'Extra Large', value: '11rem' },
           ],
         },
+        ...responsiveFields,
       },
-      defaultProps: { size: '4rem' },
-      render: ({ size }: any) => <div style={{ height: size }} aria-hidden="true" />,
+      defaultProps: { size: '4rem', ...responsiveDefaults },
+      render: ({ size, hideOnMobile, hideOnDesktop }: any) => <div className={visClass(hideOnMobile, hideOnDesktop)} style={{ height: size }} aria-hidden="true" />,
     },
   },
 }

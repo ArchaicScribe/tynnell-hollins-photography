@@ -220,10 +220,13 @@ function HelpPanel({ onClose, isPublished }: { onClose: () => void; isPublished:
         <Tip n="4" title="Reorder or remove">
           Use the arrows on a selected section to move it, or the trash icon to delete it.
         </Tip>
-        <Tip n="5" title="Publish">
+        <Tip n="5" title="Phone vs desktop">
+          Sections resize for phones automatically. To hide one on a device, use the section&apos;s <strong>Show on phones</strong> / <strong>Show on desktop</strong> setting.
+        </Tip>
+        <Tip n="6" title="Publish">
           Click <strong>Publish</strong> (top right) to save and put your changes live. The status pill turns green when the page is live.
         </Tip>
-        <Tip n="6" title="Put it in your menu or make it home">
+        <Tip n="7" title="Put it in your menu or make it home">
           Back on the Pages list, use the <strong>In menu</strong> and <strong>Homepage</strong> toggles on each page.
         </Tip>
 
