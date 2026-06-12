@@ -1,10 +1,10 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-// Puck custom-field UI: pick an image from the photo library (TYN-220).
-// Stores the selected photo's R2 URL. Keeps a manual-URL input as a fallback
-// for external images. Mirrors the admin CoverPhotoPicker modal pattern.
+// Puck custom-field UI: pick an image from the photo library, OR upload a new
+// one right here (TYN-220 + TYN-222). Stores the selected photo's R2 URL.
+// Manual-URL input kept as a fallback for external images.
 
 type PhotoDoc = {
   id: number
@@ -19,6 +19,8 @@ const CATEGORIES = ['all', 'weddings', 'portraits', 'families', 'couples', 'bran
 const CAT_LABELS: Record<string, string> = {
   all: 'All', weddings: 'Weddings', portraits: 'Portraits', families: 'Families', couples: 'Couples', brands: 'Brands',
 }
+// Formats sharp can't process on Vercel (no native libheif) - reject up front.
+const UNSUPPORTED_EXTS = new Set(['heic', 'heif', 'avif', 'tiff', 'tif', 'bmp'])
 
 const thumbOf = (p: PhotoDoc) => p.sizes?.thumbnail?.url ?? p.url ?? ''
 const valueOf = (p: PhotoDoc) => p.sizes?.card?.url ?? p.url ?? ''
@@ -28,10 +30,14 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
   const [photos, setPhotos] = useState<PhotoDoc[]>([])
   const [loading, setLoading] = useState(false)
   const [cat, setCat] = useState('all')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const openModal = useCallback(() => {
     setOpen(true)
     setCat('all')
+    setUploadError('')
     setLoading(true)
     fetch('/api/photos?limit=500&depth=0', { credentials: 'include' })
       .then((r) => r.json())
@@ -41,6 +47,56 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
       })
       .catch(() => setLoading(false))
   }, [])
+
+  const handleUpload = async (file: File) => {
+    setUploadError('')
+    const ext = (file.name.split('.').pop() ?? '').toLowerCase()
+    if (UNSUPPORTED_EXTS.has(ext)) {
+      setUploadError(`${ext.toUpperCase()} files are not supported. Export the photo as JPEG and upload that.`)
+      return
+    }
+    setUploading(true)
+    try {
+      // 1. presigned PUT URL
+      const pre = await fetch('/api/upload-presign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      })
+      if (!pre.ok) {
+        const j = await pre.json().catch(() => ({}))
+        throw new Error(j.error || 'Could not start the upload.')
+      }
+      const { uploadUrl, key } = await pre.json()
+
+      // 2. PUT the file straight to R2
+      const put = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+      if (!put.ok) throw new Error('Upload to storage failed.')
+
+      // 3. ingest -> creates the Photo record (sharp resize)
+      const ing = await fetch('/api/photos/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ key, filename: file.name, category: null }),
+      })
+      if (!ing.ok) {
+        const j = await ing.json().catch(() => ({}))
+        throw new Error(j.error || 'Could not process the photo.')
+      }
+      const doc: PhotoDoc = await ing.json()
+
+      // 4. add to grid + select
+      setPhotos((prev) => [doc, ...prev])
+      onChange(valueOf(doc))
+      setOpen(false)
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : 'Upload failed.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const filtered = cat === 'all' ? photos : photos.filter((p) => p.category === cat)
 
@@ -86,8 +142,30 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1.2rem', borderBottom: '1px solid rgba(155,154,154,0.12)' }}>
               <span style={{ color: '#d6d1ce', fontWeight: 600 }}>Choose a Photo</span>
-              <button type="button" onClick={() => setOpen(false)} style={{ ...btn, background: 'transparent' }}>Cancel</button>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) handleUpload(f)
+                    e.target.value = ''
+                  }}
+                />
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} style={{ ...btn, background: '#9b9a9a', color: '#0c0c0c', opacity: uploading ? 0.6 : 1 }}>
+                  {uploading ? 'Uploading...' : '+ Upload Photo'}
+                </button>
+                <button type="button" onClick={() => setOpen(false)} style={{ ...btn, background: 'transparent' }}>Cancel</button>
+              </div>
             </div>
+
+            {uploadError && (
+              <div style={{ padding: '0.6rem 1.2rem', color: '#f87171', fontSize: '0.78rem', borderBottom: '1px solid rgba(155,154,154,0.08)' }}>
+                {uploadError}
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', padding: '0.55rem 1.2rem', borderBottom: '1px solid rgba(155,154,154,0.08)' }}>
               {CATEGORIES.map((c) => (
@@ -106,7 +184,7 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
               {loading ? (
                 <p style={{ textAlign: 'center', color: '#9b9a9a', padding: '2.5rem' }}>Loading photos...</p>
               ) : filtered.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#9b9a9a', padding: '2.5rem' }}>No photos in this category.</p>
+                <p style={{ textAlign: 'center', color: '#9b9a9a', padding: '2.5rem' }}>No photos here yet. Use Upload Photo to add one.</p>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '0.5rem' }}>
                   {filtered.map((p) => {
