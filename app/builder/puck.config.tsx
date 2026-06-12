@@ -1,22 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Puck's generic Config does not carry per-block prop types, so block render
-// props are typed `any`; each block's shape is pinned by its fields/defaultProps.
-import type { ReactNode } from 'react'
-import type { Config } from '@measured/puck'
-import { ImagePickerField } from './ImagePickerField'
-
-// On-brand section-block library for the visual builder (TYN-217).
+// On-brand section-block library for the visual builder (TYN-217 + TYN-220 image
+// picker + TYN-221 style controls).
 //
 // Plain <img> is used (not next/image) so the same config renders identically
 // in the client editor and on the server (/[slug]). Layout is responsive via
 // flexbox wrap + grid auto-fit (no media queries needed in inline styles).
 //
 // Render props are typed `any`: Puck's generic Config doesn't carry per-block
-// prop types, and each block's shape is already pinned by its `fields` and
-// `defaultProps`.
+// prop types, and each block's shape is pinned by its fields/defaultProps.
 //
 // Brand tokens: bg #0C0C0C, accent #131313, heading #D6D1CE, body #E6E1DE,
 // detail #9B9A9A. Fonts come from the site layout CSS vars (with fallbacks).
+import type { ReactNode } from 'react'
+import type { Config } from '@measured/puck'
+import { ImagePickerField } from './ImagePickerField'
 
 const C = {
   bg: '#0C0C0C',
@@ -29,7 +26,23 @@ const C = {
 }
 const HEADING_FONT = "var(--font-heading, Archivo, sans-serif)"
 const BODY_FONT = "var(--font-body, 'Roboto Mono', monospace)"
-const SECTION_PAD = 'clamp(2.5rem, 6vw, 6rem) clamp(1.25rem, 5vw, 5rem)'
+const PAD_X = 'clamp(1.25rem, 5vw, 5rem)'
+
+// Vertical spacing presets for the shared Section wrapper.
+const SPACING: Record<string, string> = {
+  none: '0',
+  compact: 'clamp(1.5rem, 3vw, 2.75rem)',
+  normal: 'clamp(2.75rem, 6vw, 5.5rem)',
+  spacious: 'clamp(4.5rem, 9vw, 8.5rem)',
+}
+
+// Shared section wrapper: applies the per-section Background + Spacing controls
+// so every content block has consistent, Pixieset-style design options.
+function Section({ background, spacing, children }: { background?: string; spacing?: string; children?: ReactNode }) {
+  const padY = SPACING[spacing ?? 'normal'] ?? SPACING.normal
+  const bg = background && background !== 'transparent' ? background : undefined
+  return <section style={{ background: bg, padding: `${padY} ${PAD_X}` }}>{children}</section>
+}
 
 const eyebrowStyle: React.CSSProperties = {
   fontFamily: BODY_FONT,
@@ -76,6 +89,31 @@ const imageField = (label: string) => ({
   label,
   render: ({ value, onChange }: any) => <ImagePickerField value={value} onChange={onChange} />,
 })
+
+// Per-section style controls (TYN-221), spread into each content block's fields.
+const bgField = {
+  type: 'select' as const,
+  label: 'Background',
+  options: [
+    { label: 'None', value: 'transparent' },
+    { label: 'Dark', value: '#0C0C0C' },
+    { label: 'Accent', value: '#131313' },
+  ],
+}
+const styleFields = {
+  background: bgField,
+  spacing: {
+    type: 'select' as const,
+    label: 'Spacing',
+    options: [
+      { label: 'Compact', value: 'compact' },
+      { label: 'Normal', value: 'normal' },
+      { label: 'Spacious', value: 'spacious' },
+      { label: 'None', value: 'none' },
+    ],
+  },
+}
+const styleDefaults = { background: 'transparent', spacing: 'normal' }
 
 export const config: Config = {
   root: {
@@ -151,14 +189,17 @@ export const config: Config = {
         heading: { type: 'text', label: 'Heading' },
         subtext: { type: 'textarea', label: 'Subtext (optional)' },
         align: alignField,
+        ...styleFields,
       },
-      defaultProps: { eyebrow: 'My Work', heading: 'A Section Heading', subtext: '', align: 'center' },
-      render: ({ eyebrow, heading, subtext, align }: any) => (
-        <section style={{ padding: 'clamp(2.5rem,5vw,4.5rem) clamp(1.25rem,5vw,5rem)', textAlign: align, maxWidth: align === 'center' ? '70ch' : undefined, margin: align === 'center' ? '0 auto' : undefined }}>
-          {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-          <h2 style={headingStyle()}>{heading}</h2>
-          {subtext && <p style={{ marginTop: '1rem', color: C.detail, lineHeight: 1.7 }}>{subtext}</p>}
-        </section>
+      defaultProps: { eyebrow: 'My Work', heading: 'A Section Heading', subtext: '', align: 'center', ...styleDefaults },
+      render: ({ eyebrow, heading, subtext, align, background, spacing }: any) => (
+        <Section background={background} spacing={spacing}>
+          <div style={{ textAlign: align, maxWidth: align === 'center' ? '70ch' : undefined, margin: align === 'center' ? '0 auto' : undefined }}>
+            {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+            <h2 style={headingStyle()}>{heading}</h2>
+            {subtext && <p style={{ marginTop: '1rem', color: C.detail, lineHeight: 1.7 }}>{subtext}</p>}
+          </div>
+        </Section>
       ),
     },
 
@@ -168,12 +209,15 @@ export const config: Config = {
       fields: {
         text: { type: 'textarea', label: 'Text' },
         align: alignField,
+        ...styleFields,
       },
-      defaultProps: { text: 'Tell your story here.', align: 'left' },
-      render: ({ text, align }: any) => (
-        <section style={{ padding: SECTION_PAD, maxWidth: '70ch', margin: align === 'center' ? '0 auto' : undefined, textAlign: align }}>
-          <p style={{ color: C.body, fontSize: '1.05rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
-        </section>
+      defaultProps: { text: 'Tell your story here.', align: 'left', ...styleDefaults },
+      render: ({ text, align, background, spacing }: any) => (
+        <Section background={background} spacing={spacing}>
+          <div style={{ maxWidth: '70ch', margin: align === 'center' ? '0 auto' : undefined, textAlign: align }}>
+            <p style={{ color: C.body, fontSize: '1.05rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
+          </div>
+        </Section>
       ),
     },
 
@@ -195,6 +239,7 @@ export const config: Config = {
         body: { type: 'textarea', label: 'Body text' },
         buttonText: { type: 'text', label: 'Button text (optional)' },
         buttonHref: { type: 'text', label: 'Button link' },
+        background: bgField,
       },
       defaultProps: {
         imageUrl: '',
@@ -204,8 +249,10 @@ export const config: Config = {
         body: 'Share the story behind your work. A sentence or two that gives visitors a sense of who you are.',
         buttonText: '',
         buttonHref: '',
+        background: 'transparent',
       },
-      render: ({ imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref }: any) => {
+      render: ({ imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, background }: any) => {
+        const bg = background && background !== 'transparent' ? background : undefined
         const img = (
           <div style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', background: C.accent }}>
             {imageUrl && (
@@ -223,7 +270,7 @@ export const config: Config = {
           </div>
         )
         return (
-          <section style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch' }}>
+          <section style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
             {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
           </section>
         )
@@ -246,6 +293,7 @@ export const config: Config = {
           defaultItemProps: { name: 'Session', price: '$350', description: 'What this session includes.' },
           getItemSummary: (item: any) => item?.name || 'Card',
         },
+        ...styleFields,
       },
       defaultProps: {
         heading: 'Services',
@@ -253,9 +301,10 @@ export const config: Config = {
           { name: 'Portrait Session', price: '$350', description: 'A 1-hour session at the location of your choice.' },
           { name: 'Wedding Collection', price: 'From $2,800', description: 'Full-day coverage with a second shooter.' },
         ],
+        ...styleDefaults,
       },
-      render: ({ heading, items }: any) => (
-        <section style={{ padding: SECTION_PAD }}>
+      render: ({ heading, items, background, spacing }: any) => (
+        <Section background={background} spacing={spacing}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
@@ -266,7 +315,7 @@ export const config: Config = {
               </div>
             ))}
           </div>
-        </section>
+        </Section>
       ),
     },
 
@@ -285,15 +334,18 @@ export const config: Config = {
           defaultItemProps: { quote: 'Tynnell captured our day perfectly.', name: 'A Happy Client' },
           getItemSummary: (item: any) => item?.name || 'Quote',
         },
+        ...styleFields,
       },
       defaultProps: {
         heading: 'Kind Words',
         items: [
           { quote: 'Working with Tynnell was effortless. The photos feel like us.', name: 'Sarah & James' },
         ],
+        background: '#131313',
+        spacing: 'normal',
       },
-      render: ({ heading, items }: any) => (
-        <section style={{ padding: SECTION_PAD, background: C.accent }}>
+      render: ({ heading, items, background, spacing }: any) => (
+        <Section background={background} spacing={spacing}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
@@ -303,7 +355,7 @@ export const config: Config = {
               </figure>
             ))}
           </div>
-        </section>
+        </Section>
       ),
     },
 
@@ -315,28 +367,24 @@ export const config: Config = {
         subtext: { type: 'textarea', label: 'Subtext (optional)' },
         buttonText: { type: 'text', label: 'Button text' },
         buttonHref: { type: 'text', label: 'Button link' },
-        background: {
-          type: 'select',
-          label: 'Background',
-          options: [
-            { label: 'Dark', value: C.bg },
-            { label: 'Accent', value: C.accent },
-          ],
-        },
+        ...styleFields,
       },
       defaultProps: {
         heading: 'Ready to create something beautiful?',
         subtext: '',
         buttonText: 'Book a Session',
         buttonHref: '/contact',
-        background: C.accent,
+        background: '#131313',
+        spacing: 'spacious',
       },
-      render: ({ heading, subtext, buttonText, buttonHref, background }: any) => (
-        <section style={{ padding: 'clamp(3rem,6vw,5rem) clamp(1.25rem,5vw,5rem)', textAlign: 'center', background }}>
-          <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
-          {subtext && <p style={{ marginTop: '0.85rem', color: C.detail, maxWidth: '60ch', margin: '0.85rem auto 0' }}>{subtext}</p>}
-          {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
-        </section>
+      render: ({ heading, subtext, buttonText, buttonHref, background, spacing }: any) => (
+        <Section background={background} spacing={spacing}>
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
+            {subtext && <p style={{ marginTop: '0.85rem', color: C.detail, maxWidth: '60ch', margin: '0.85rem auto 0' }}>{subtext}</p>}
+            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+          </div>
+        </Section>
       ),
     },
 
@@ -376,7 +424,7 @@ export const config: Config = {
         return (
           <section style={{ padding: 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
             {valid.length === 0 ? (
-              <p style={{ color: C.detail, textAlign: 'center' }}>Add photo URLs to populate the gallery.</p>
+              <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the gallery.</p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${size}, 1fr))`, gap: '0.75rem' }}>
                 {valid.map((img: any, i: number) => (
