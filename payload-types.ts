@@ -428,6 +428,8 @@ export interface Page {
     | null;
   published?: boolean | null;
   displayOrder?: number | null;
+  showInNav?: boolean | null;
+  isHomepage?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }

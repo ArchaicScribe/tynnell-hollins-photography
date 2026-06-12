@@ -1,5 +1,8 @@
 import { getPayload } from 'payload'
+import { Render } from '@measured/puck/rsc'
+import type { Data } from '@measured/puck'
 import config from '@payload-config'
+import { config as puckConfig } from '@/app/builder/puck.config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import Hero from '@/app/components/Hero/Hero'
@@ -18,6 +21,20 @@ export const revalidate = 120
 
 export default async function Home() {
   const payload = await getPayload({ config })
+
+  // A builder page can be promoted to the site homepage (TYN-227). When one is
+  // flagged + published it renders at "/" in place of the built-in home below.
+  const { docs: homepageDocs } = await payload.find({
+    collection: 'pages',
+    where: { and: [{ isHomepage: { equals: true } }, { published: { equals: true } }] },
+    limit: 1,
+    depth: 0,
+  })
+  const homepage = homepageDocs[0]
+  if (homepage) {
+    const data = (homepage.content as Data | undefined) ?? { content: [], root: {} }
+    return <Render config={puckConfig} data={data} />
+  }
 
   const [heroData, { docs: featuredPhotos }, { docs: testimonials }, aboutData] =
     await Promise.all([

@@ -306,6 +306,22 @@ async function run() {
     `)
 
     console.log('✓ pages.display_order ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260612_120000: page placement flags (TYN-226 / TYN-227)
+    // `show_in_nav` lets a builder page appear in the public site menu.
+    // `is_homepage` lets a builder page render at "/" as the site homepage.
+    // Both default false so existing pages are untouched (URL-only, as before).
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "show_in_nav" boolean DEFAULT false
+    `)
+    await client.query(`
+      ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "is_homepage" boolean DEFAULT false
+    `)
+
+    console.log('✓ pages placement flags ready')
   } finally {
     client.release()
     await pool.end()

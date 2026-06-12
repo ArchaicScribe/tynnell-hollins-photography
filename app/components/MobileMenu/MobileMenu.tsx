@@ -1,14 +1,15 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import { navLinks } from '@/app/constants/nav'
+import { navLinks, type NavLink } from '@/app/constants/nav'
 import styles from './MobileMenu.module.css'
 
 interface MobileMenuProps {
   isOpen: boolean
   onClose: () => void
+  links?: NavLink[]
 }
 
-export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, onClose, links = navLinks }: MobileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -69,7 +70,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     >
       <nav>
         <ul className={styles.links}>
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <li key={link.href} className={styles.item}>
               <a
                 href={link.href}

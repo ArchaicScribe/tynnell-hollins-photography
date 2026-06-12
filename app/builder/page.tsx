@@ -8,6 +8,7 @@ import { PageTitleEditor } from './PageTitleEditor'
 import { DuplicatePageButton } from './DuplicatePageButton'
 import { NewPageForm } from './NewPageForm'
 import { ReorderButtons } from './ReorderButtons'
+import { PagePlacementToggles } from './PagePlacementToggles'
 
 // Builder home (TYN-216): list pages + create a new one. Auth-gated.
 export const dynamic = 'force-dynamic'
@@ -64,6 +65,14 @@ export default async function BuilderHome() {
                     <div style={{ color: '#6b6a6a', fontSize: '0.72rem' }}>
                       /{p.slug} &middot; {p.published ? 'Published' : 'Draft'}
                       {p.updatedAt && ` · Updated ${new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                    </div>
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <PagePlacementToggles
+                        id={p.id}
+                        showInNav={Boolean(p.showInNav)}
+                        isHomepage={Boolean(p.isHomepage)}
+                        published={Boolean(p.published)}
+                      />
                     </div>
                   </div>
                 </div>
