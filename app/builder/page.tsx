@@ -40,7 +40,8 @@ export default async function BuilderHome() {
   return (
     <main style={{ minHeight: '100vh', background: '#0c0c0c', color: '#e6e1de', fontFamily: "var(--font-body, 'Roboto Mono', monospace)", padding: '2.5rem clamp(1.25rem,4vw,4rem)' }}>
       <div style={{ maxWidth: 920, margin: '0 auto' }}>
-        <h1 style={{ fontFamily: "var(--font-heading, Archivo, sans-serif)", color: '#d6d1ce', fontSize: '1.75rem', margin: 0 }}>Pages</h1>
+        <Link href="/admin" style={{ color: '#9b9a9a', textDecoration: 'none', fontSize: '0.78rem', letterSpacing: '0.04em' }}>&#8592; Back to Admin</Link>
+        <h1 style={{ fontFamily: "var(--font-heading, Archivo, sans-serif)", color: '#d6d1ce', fontSize: '1.75rem', margin: '1.25rem 0 0' }}>Pages</h1>
         <p style={{ color: '#9b9a9a', marginTop: '0.5rem' }}>Build and manage your site pages.</p>
 
         <form action={createPage} style={{ display: 'flex', gap: '0.5rem', margin: '1.5rem 0 2rem' }}>
@@ -63,7 +64,10 @@ export default async function BuilderHome() {
               <div key={String(p.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#131313', border: '1px solid rgba(155,154,154,0.15)', borderRadius: 4, padding: '0.85rem 1rem' }}>
                 <div>
                   <div style={{ color: '#d6d1ce', fontFamily: "var(--font-heading, Archivo, sans-serif)" }}>{p.title}</div>
-                  <div style={{ color: '#6b6a6a', fontSize: '0.72rem' }}>/{p.slug} &middot; {p.published ? 'Published' : 'Draft'}</div>
+                  <div style={{ color: '#6b6a6a', fontSize: '0.72rem' }}>
+                    /{p.slug} &middot; {p.published ? 'Published' : 'Draft'}
+                    {p.updatedAt && ` · Updated ${new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {p.published && (
