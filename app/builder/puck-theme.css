@@ -1,0 +1,45 @@
+/* Dark theme for the Puck editor chrome (TYN-215).
+ *
+ * Puck builds its UI from a set of CSS color tokens. Setting them on a wrapper
+ * element cascades the overrides into every Puck panel/field/button, so the
+ * builder matches the brand admin instead of the default light UI. The canvas
+ * itself is already dark (the block root render uses #0C0C0C).
+ *
+ * Puck's default ramp is grey-01 (#181818, darkest) -> grey-12 (#fafafa,
+ * lightest). We invert it (backgrounds dark, text light) and tune toward the
+ * brand greys.
+ */
+.puck-dark {
+  --puck-color-white: #1a1a1a;
+  --puck-color-black: #e6e1de;
+
+  --puck-color-grey-01: #f5f5f5;
+  --puck-color-grey-02: #e6e1de;
+  --puck-color-grey-03: #d6d1ce;
+  --puck-color-grey-04: #b8b4b1;
+  --puck-color-grey-05: #9b9a9a;
+  --puck-color-grey-06: #7c7b7b;
+  --puck-color-grey-07: #5a5a5a;
+  --puck-color-grey-08: #424242;
+  --puck-color-grey-09: #2e2e2e;
+  --puck-color-grey-10: #242424;
+  --puck-color-grey-11: #1c1c1c;
+  --puck-color-grey-12: #141414;
+
+  background: #131313;
+  color: #e6e1de;
+}
+
+/* Inputs/selects sometimes hardcode a white surface - force them dark too. */
+.puck-dark input,
+.puck-dark textarea,
+.puck-dark select {
+  background: #232323;
+  color: #e6e1de;
+  border-color: rgba(155, 154, 154, 0.25);
+}
+
+.puck-dark input::placeholder,
+.puck-dark textarea::placeholder {
+  color: #6b6a6a;
+}

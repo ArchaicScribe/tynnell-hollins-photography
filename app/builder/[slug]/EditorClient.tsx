@@ -2,6 +2,7 @@
 
 import { Puck, type Data } from '@measured/puck'
 import '@measured/puck/puck.css'
+import '../puck-theme.css'
 import { useState } from 'react'
 import Link from 'next/link'
 import { config } from '../puck.config'
@@ -38,7 +39,7 @@ export function EditorClient({
   }
 
   return (
-    <div style={{ height: '100vh' }}>
+    <div className="puck-dark" style={{ height: '100vh' }}>
       <Puck
         config={config}
         data={initialData}
