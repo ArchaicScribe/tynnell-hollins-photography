@@ -144,14 +144,17 @@ export function EditorClient({
               <Link href="/builder" style={headerBtn} onClick={guardLeave}>
                 &#8592; Pages
               </Link>
-              <Link
-                href={`/${slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={headerBtn}
-              >
-                View Page &#8599;
-              </Link>
+              {isPublished && (
+                <Link
+                  href={`/${slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={headerBtn}
+                  title={`Open the live page at /${slug}`}
+                >
+                  View Page &#8599;
+                </Link>
+              )}
               {children}
             </>
           ),
