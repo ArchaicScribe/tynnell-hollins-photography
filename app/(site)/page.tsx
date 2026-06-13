@@ -63,6 +63,13 @@ export default async function Home() {
     previewBio: aboutData?.previewBio ?? undefined,
   }
 
+  // Revamp background (temporary): show this single photo as the homepage hero
+  // while the site is being rebuilt. To restore Hero Slides management, pass
+  // `slides` to <Hero/> again and delete this constant.
+  const revampHero: HeroSlide[] = [
+    { id: 'revamp-bg', imageUrl: '/hero-background.jpg', alt: 'Tynnell Hollins Photography' },
+  ]
+
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -85,7 +92,7 @@ export default async function Home() {
   return (
     <main>
       <JsonLd data={localBusinessSchema} />
-      <Hero slides={slides} />
+      <Hero slides={revampHero.length ? revampHero : slides} />
       <PortfolioTeaser photos={photos} />
       <AboutPreview about={about} />
       <Testimonials testimonials={testimonialItems} />
