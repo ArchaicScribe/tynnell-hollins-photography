@@ -118,9 +118,10 @@ export const Galleries: CollectionConfig = {
       label: 'Photos in This Gallery',
       admin: {
         description:
-          'Use the button above to add multiple photos at once, or add one at a time with the row picker below. Drag the handle on the left to reorder. The order here is exactly how photos appear on the site.',
+          'Use the button above to add photos. Drag the thumbnails to reorder them - the order here is exactly how they appear on your site. Hover a photo to set it as the cover or remove it.',
         components: {
-          RowLabel: './components/admin/GalleryPhotoRowLabel#GalleryPhotoRowLabel',
+          // Visual grid arranger replaces Payload's default vertical row list.
+          Field: './components/admin/GalleryPhotoArranger#GalleryPhotoArranger',
         },
       },
       fields: [
