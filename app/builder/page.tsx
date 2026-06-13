@@ -9,6 +9,7 @@ import { DuplicatePageButton } from './DuplicatePageButton'
 import { NewPageForm } from './NewPageForm'
 import { ReorderButtons } from './ReorderButtons'
 import { PagePlacementToggles } from './PagePlacementToggles'
+import { getTemplateContent } from './templates'
 
 // Builder home (TYN-216): list pages + create a new one. Auth-gated.
 export const dynamic = 'force-dynamic'
@@ -24,13 +25,14 @@ async function createPage(formData: FormData): Promise<void> {
   if (!user) redirect('/admin/login')
 
   const title = String(formData.get('title') ?? '').trim() || 'Untitled Page'
+  const template = String(formData.get('template') ?? 'blank')
   let slug = toSlug(title) || `page-${Date.now()}`
   const existing = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, depth: 0 })
   if (existing.docs.length > 0) slug = `${slug}-${String(Date.now()).slice(-5)}`
 
   await payload.create({
     collection: 'pages',
-    data: { title, slug, published: false, content: { content: [], root: {} }, displayOrder: Date.now() },
+    data: { title, slug, published: false, content: getTemplateContent(template), displayOrder: Date.now() },
   })
   redirect(`/builder/${slug}`)
 }
