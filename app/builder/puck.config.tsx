@@ -47,6 +47,20 @@ const RESPONSIVE_CSS = `
 @media (max-width:${MOBILE_MAX}px){.pk-hide-mobile{display:none !important}}
 @media (min-width:${MOBILE_MAX + 1}px){.pk-hide-desktop{display:none !important}}
 `
+
+// Taped-photo treatment (TYN-233): an editorial "scrapbook" look where each
+// photo sits on a cream mat with a strip of translucent washi tape at the top.
+// Tape strips are pseudo-elements, which inline styles can't express, so the
+// rules live in the root-injected stylesheet. Per-photo rotation is applied
+// inline (alternating) so the grid feels hand-placed, not mechanical.
+const TAPE_CSS = `
+.pk-taped{position:relative;background:#f4efe8;padding:0.7rem 0.7rem 1.1rem;box-shadow:0 10px 26px rgba(0,0,0,0.45);transition:transform .25s ease}
+.pk-taped:hover{transform:rotate(0deg) scale(1.015) !important;z-index:2}
+.pk-taped img{display:block;width:100%;height:auto}
+.pk-taped::before,.pk-taped::after{content:'';position:absolute;top:-0.55rem;width:4.5rem;height:1.4rem;background:rgba(214,209,206,0.42);box-shadow:0 1px 2px rgba(0,0,0,0.18);backdrop-filter:blur(1px)}
+.pk-taped::before{left:0.6rem;transform:rotate(-32deg)}
+.pk-taped::after{right:0.6rem;transform:rotate(32deg)}
+`
 function visClass(hideOnMobile?: boolean, hideOnDesktop?: boolean): string | undefined {
   const c = []
   if (hideOnMobile) c.push('pk-hide-mobile')
@@ -144,7 +158,7 @@ export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
       <div style={{ background: C.bg, color: C.body, minHeight: '100%', fontFamily: BODY_FONT }}>
-        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + TAPE_CSS }} />
         {children}
       </div>
     ),
@@ -455,21 +469,37 @@ export const config: Config = {
             { label: 'Landscape', value: '3 / 2' },
           ],
         },
+        frame: {
+          type: 'radio',
+          label: 'Photo style',
+          options: [
+            { label: 'Clean', value: 'plain' },
+            { label: 'Taped', value: 'taped' },
+          ],
+        },
         ...responsiveFields,
       },
-      defaultProps: { images: [], size: '300px', aspect: '4 / 5', ...responsiveDefaults },
-      render: ({ images, size, aspect, hideOnMobile, hideOnDesktop }: any) => {
+      defaultProps: { images: [], size: '300px', aspect: '4 / 5', frame: 'plain', ...responsiveDefaults },
+      render: ({ images, size, aspect, frame, hideOnMobile, hideOnDesktop }: any) => {
         const valid = (images ?? []).filter((i: any) => i?.url)
+        const taped = frame === 'taped'
         return (
-          <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
+          <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: taped ? 'clamp(2rem,5vw,3.75rem) clamp(1.25rem,3vw,3rem)' : 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
             {valid.length === 0 ? (
               <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the gallery.</p>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${size}, 1fr))`, gap: '0.75rem' }}>
-                {valid.map((img: any, i: number) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover', borderRadius: '2px' }} />
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${size}, 1fr))`, gap: taped ? 'clamp(1.5rem,3vw,2.75rem)' : '0.75rem', alignItems: 'start' }}>
+                {valid.map((img: any, i: number) =>
+                  taped ? (
+                    <div key={i} className="pk-taped" style={{ transform: `rotate(${(i % 2 === 0 ? -1 : 1) * (1.2 + (i % 3) * 0.6)}deg)` }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover' }} />
+                    </div>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={i} src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover', borderRadius: '2px' }} />
+                  )
+                )}
               </div>
             )}
           </section>
