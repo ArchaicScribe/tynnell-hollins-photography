@@ -4,6 +4,10 @@
   align-items: center;
   justify-content: center;
   background-color: var(--color-bg);
+  /* Revamp background: the photo, darkened so the text stays readable. */
+  background-image: linear-gradient(rgba(12, 12, 12, 0.6), rgba(12, 12, 12, 0.72)), url('/hero-background.jpg');
+  background-size: cover;
+  background-position: center;
   padding: var(--padding-x);
 }
 
