@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import { Render } from '@measured/puck/rsc'
 import type { Data } from '@measured/puck'
@@ -12,10 +13,7 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 // fall through to notFound().
 export const dynamic = 'force-dynamic'
 
-export default async function BuilderPublicPage({ params }: { params: Promise<{ slug: string[] }> }) {
-  const { slug } = await params
-  const path = slug.join('/')
-
+async function findPublishedPage(path: string) {
   const payload = await getPayload({ config: payloadConfig })
   const { docs } = await payload.find({
     collection: 'pages',
@@ -23,7 +21,21 @@ export default async function BuilderPublicPage({ params }: { params: Promise<{ 
     limit: 1,
     depth: 0,
   })
-  const page = docs[0]
+  return docs[0] ?? null
+}
+
+// Give each published page its own browser-tab + search title (TYN-231). The
+// (site) layout's title template appends " | Tynnell Hollins Photography".
+export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
+  const { slug } = await params
+  const page = await findPublishedPage(slug.join('/'))
+  if (!page) return {}
+  return { title: page.title }
+}
+
+export default async function BuilderPublicPage({ params }: { params: Promise<{ slug: string[] }> }) {
+  const { slug } = await params
+  const page = await findPublishedPage(slug.join('/'))
   if (!page) notFound()
 
   const data = (page.content as Data | undefined) ?? { content: [], root: {} }
