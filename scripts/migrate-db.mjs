@@ -322,6 +322,19 @@ async function run() {
     `)
 
     console.log('✓ pages placement flags ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260613_100000: gallery taped-photo display style (TYN-235)
+    // Boolean flag: when true the public /portfolio/[slug] page renders the
+    // gallery with the editorial taped-photo treatment instead of a clean grid.
+    // Default false so existing galleries are unchanged.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "taped_style" boolean DEFAULT false
+    `)
+
+    console.log('✓ galleries.taped_style ready')
   } finally {
     client.release()
     await pool.end()

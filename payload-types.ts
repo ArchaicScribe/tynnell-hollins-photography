@@ -271,6 +271,10 @@ export interface Gallery {
       }[]
     | null;
   /**
+   * Display this gallery with the editorial taped-photo look.
+   */
+  tapedStyle?: boolean | null;
+  /**
    * Turn on to feature this gallery on your homepage.
    */
   featured?: boolean | null;

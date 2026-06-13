@@ -135,6 +135,16 @@ export const Galleries: CollectionConfig = {
       ],
     },
     {
+      name: 'tapedStyle',
+      type: 'checkbox',
+      label: 'Taped Photo Style',
+      defaultValue: false,
+      admin: {
+        description:
+          'Display this gallery with the editorial taped-photo look (each photo on a cream mat with tape corners and a slight tilt). Leave off for a clean grid.',
+      },
+    },
+    {
       name: 'featured',
       type: 'checkbox',
       label: 'Show on Homepage',
