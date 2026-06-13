@@ -1,3 +1,4 @@
+import { PhotoEditHeader as PhotoEditHeader_994fa1cc565775730944a666ddd8cc75 } from '../../../components/admin/PhotoEditHeader'
 import { PhotoViewInPortfolioButton as PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93 } from '../../../components/admin/PhotoViewInPortfolioButton'
 import { PhotoGridView as PhotoGridView_416d697f5d1039cfdf395a457f2fc19a } from '../../../components/admin/PhotoGridView'
 import { GalleryViewOnSiteButton as GalleryViewOnSiteButton_ff74c64f710c29e33810b93734c4bd9e } from '../../../components/admin/GalleryViewOnSiteButton'
@@ -44,6 +45,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "./components/admin/PhotoEditHeader#PhotoEditHeader": PhotoEditHeader_994fa1cc565775730944a666ddd8cc75,
   "./components/admin/PhotoViewInPortfolioButton#PhotoViewInPortfolioButton": PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93,
   "./components/admin/PhotoGridView#PhotoGridView": PhotoGridView_416d697f5d1039cfdf395a457f2fc19a,
   "./components/admin/GalleryViewOnSiteButton#GalleryViewOnSiteButton": GalleryViewOnSiteButton_ff74c64f710c29e33810b93734c4bd9e,
