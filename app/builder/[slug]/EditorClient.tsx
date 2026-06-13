@@ -1,6 +1,6 @@
 'use client'
 
-import { Puck, type Data } from '@measured/puck'
+import { Puck, usePuck, type Data } from '@measured/puck'
 import '@measured/puck/puck.css'
 import '../puck-theme.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,7 +14,7 @@ import { config } from '../puck.config'
 // Robustness layer (TYN-228): tracks unsaved changes, warns before leaving
 // with edits in flight, shows a plain-English status pill, and offers a short
 // in-editor help panel for a non-technical user.
-type SaveState = 'idle' | 'saving' | 'error'
+type SaveState = 'idle' | 'saving' | 'error' | 'saved'
 
 export function EditorClient({
   slug,
@@ -48,20 +48,26 @@ export function EditorClient({
     setDirty(JSON.stringify(data) !== savedJson.current)
   }, [])
 
-  const onPublish = async (data: Data) => {
+  const persist = async (data: Data, publish: boolean) => {
     setSaveState('saving')
     try {
       const res = await fetch('/api/builder/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ slug, data }),
+        body: JSON.stringify({ slug, data, publish }),
       })
       if (res.ok) {
         savedJson.current = JSON.stringify(data)
         setDirty(false)
-        setIsPublished(true)
-        setSaveState('idle')
+        if (publish) {
+          setIsPublished(true)
+          setSaveState('idle')
+        } else {
+          // Brief confirmation, then settle back to the steady status.
+          setSaveState('saved')
+          setTimeout(() => setSaveState((s) => (s === 'saved' ? 'idle' : s)), 2500)
+        }
       } else {
         setSaveState('error')
       }
@@ -70,17 +76,23 @@ export function EditorClient({
     }
   }
 
+  // Publish = save + go live. Save draft = persist without changing published.
+  const onPublish = (data: Data) => persist(data, true)
+  const onSaveDraft = (data: Data) => persist(data, false)
+
   // Plain-English status shown in the header.
   const pill =
     saveState === 'saving'
       ? { label: 'Saving...', bg: '#3a3320', fg: '#e8c468', bd: '#7a6a2e' }
       : saveState === 'error'
         ? { label: 'Save failed - try again', bg: '#3a2020', fg: '#e88', bd: '#7a2e2e' }
-        : dirty
-          ? { label: 'Unsaved changes', bg: '#3a3320', fg: '#e8c468', bd: '#7a6a2e' }
-          : isPublished
-            ? { label: 'Live on site', bg: '#1f3320', fg: '#7fcf86', bd: '#2e5a33' }
-            : { label: 'Draft - not live yet', bg: '#262626', fg: '#9b9a9a', bd: '#3a3a3a' }
+        : saveState === 'saved'
+          ? { label: 'Draft saved', bg: '#1f3320', fg: '#7fcf86', bd: '#2e5a33' }
+          : dirty
+            ? { label: 'Unsaved changes', bg: '#3a3320', fg: '#e8c468', bd: '#7a6a2e' }
+            : isPublished
+              ? { label: 'Live on site', bg: '#1f3320', fg: '#7fcf86', bd: '#2e5a33' }
+              : { label: 'Draft - not live yet', bg: '#262626', fg: '#9b9a9a', bd: '#3a3a3a' }
 
   const guardLeave = (e: React.MouseEvent) => {
     if (dirty && !window.confirm('You have unsaved changes. Leave without publishing?')) {
@@ -155,6 +167,7 @@ export function EditorClient({
                   View Page &#8599;
                 </Link>
               )}
+              <SaveDraftButton onSave={onSaveDraft} style={headerBtn} />
               {children}
             </>
           ),
@@ -163,6 +176,17 @@ export function EditorClient({
 
       {showHelp && <HelpPanel onClose={() => setShowHelp(false)} isPublished={isPublished} />}
     </div>
+  )
+}
+
+// Save draft: persists the current document without publishing. Reads the live
+// Puck state via usePuck so it always saves exactly what is on the canvas.
+function SaveDraftButton({ onSave, style }: { onSave: (data: Data) => void; style: React.CSSProperties }) {
+  const { appState } = usePuck()
+  return (
+    <button type="button" style={style} onClick={() => onSave(appState.data)} title="Save your work without making it live">
+      Save draft
+    </button>
   )
 }
 
@@ -226,8 +250,8 @@ function HelpPanel({ onClose, isPublished }: { onClose: () => void; isPublished:
         <Tip n="5" title="Phone vs desktop">
           Sections resize for phones automatically. To hide one on a device, use the section&apos;s <strong>Show on phones</strong> / <strong>Show on desktop</strong> setting.
         </Tip>
-        <Tip n="6" title="Publish">
-          Click <strong>Publish</strong> (top right) to save and put your changes live. The status pill turns green when the page is live.
+        <Tip n="6" title="Save or publish">
+          Click <strong>Save draft</strong> to keep your work without going live, or <strong>Publish</strong> to put it on your site. The status pill shows where you stand.
         </Tip>
         <Tip n="7" title="Put it in your menu or make it home">
           Back on the Pages list, use the <strong>In menu</strong> and <strong>Homepage</strong> toggles on each page.
