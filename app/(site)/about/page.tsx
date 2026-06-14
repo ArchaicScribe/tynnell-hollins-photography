@@ -58,17 +58,19 @@ export default async function AboutPage() {
       {/* Story */}
       <section className={styles.story}>
         <div className={styles.storyImage}>
-          {headshotUrl ? (
-            <Image
-              src={headshotUrl}
-              alt={about?.headshotAlt ?? 'Tynnell Hollins'}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className={styles.headshotImg}
-            />
-          ) : (
-            <span className={styles.placeholderLabel}>Photographer portrait</span>
-          )}
+          <div className={styles.headshotSlot}>
+            {headshotUrl ? (
+              <Image
+                src={headshotUrl}
+                alt={about?.headshotAlt ?? 'Tynnell Hollins'}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className={styles.headshotImg}
+              />
+            ) : (
+              <span className={styles.placeholderLabel}>Photographer portrait</span>
+            )}
+          </div>
         </div>
         <div className={styles.storyContent}>
           <p className={styles.sectionEyebrow}>My Story</p>
