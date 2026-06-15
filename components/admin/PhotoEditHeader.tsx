@@ -45,16 +45,24 @@ export function PhotoEditHeader() {
     if (!id) return
     let active = true
     ;(async () => {
-      try {
-        const res = await fetch(`/api/photos/${id}?depth=0`, { credentials: 'include' })
-        if (res.ok && active) setDoc(await res.json())
-      } catch {
-        /* preview is non-critical */
+      // The two fetches are independent, so run them together.
+      const [photoRes, galleriesRes] = await Promise.allSettled([
+        fetch(`/api/photos/${id}?depth=0`, { credentials: 'include' }),
+        fetch('/api/galleries?limit=300&depth=0', { credentials: 'include' }),
+      ])
+      if (!active) return
+
+      if (photoRes.status === 'fulfilled' && photoRes.value.ok) {
+        try {
+          setDoc(await photoRes.value.json())
+        } catch {
+          /* preview is non-critical */
+        }
       }
-      try {
-        const res = await fetch('/api/galleries?limit=300&depth=0', { credentials: 'include' })
-        if (res.ok && active) {
-          const data = await res.json()
+
+      if (galleriesRes.status === 'fulfilled' && galleriesRes.value.ok) {
+        try {
+          const data = await galleriesRes.value.json()
           const names = (data?.docs ?? [])
             .filter((g: { photos?: { photo?: number | string }[] }) =>
               Array.isArray(g.photos) && g.photos.some((p) => String(p?.photo) === String(id)),
@@ -62,9 +70,9 @@ export function PhotoEditHeader() {
             .map((g: { title?: string }) => g.title)
             .filter(Boolean)
           setGalleries(names)
+        } catch {
+          /* membership is non-critical */
         }
-      } catch {
-        /* membership is non-critical */
       }
     })()
     return () => {

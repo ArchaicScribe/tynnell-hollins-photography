@@ -1,26 +1,18 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
+import { isUnsupportedImage, uploadPhotoToLibrary, type IngestedPhoto } from '@/app/lib/uploadPhoto'
 
 // Puck custom-field UI: pick an image from the photo library, OR upload a new
 // one right here (TYN-220 + TYN-222). Stores the selected photo's R2 URL.
 // Manual-URL input kept as a fallback for external images.
 
-type PhotoDoc = {
-  id: number
-  url?: string | null
-  filename?: string | null
-  alt?: string | null
-  category?: string | null
-  sizes?: Record<string, { url?: string | null } | undefined> | null
-}
+type PhotoDoc = IngestedPhoto
 
 const CATEGORIES = ['all', 'weddings', 'portraits', 'families', 'couples', 'brands']
 const CAT_LABELS: Record<string, string> = {
   all: 'All', weddings: 'Weddings', portraits: 'Portraits', families: 'Families', couples: 'Couples', brands: 'Brands',
 }
-// Formats sharp can't process on Vercel (no native libheif) - reject up front.
-const UNSUPPORTED_EXTS = new Set(['heic', 'heif', 'avif', 'tiff', 'tif', 'bmp'])
 
 const thumbOf = (p: PhotoDoc) => p.sizes?.thumbnail?.url ?? p.url ?? ''
 const valueOf = (p: PhotoDoc) => p.sizes?.card?.url ?? p.url ?? ''
@@ -50,44 +42,14 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
 
   const handleUpload = async (file: File) => {
     setUploadError('')
-    const ext = (file.name.split('.').pop() ?? '').toLowerCase()
-    if (UNSUPPORTED_EXTS.has(ext)) {
-      setUploadError(`${ext.toUpperCase()} files are not supported. Export the photo as JPEG and upload that.`)
+    if (isUnsupportedImage(file)) {
+      const ext = (file.name.split('.').pop() ?? '').toUpperCase()
+      setUploadError(`${ext} files are not supported. Export the photo as JPEG and upload that.`)
       return
     }
     setUploading(true)
     try {
-      // 1. presigned PUT URL
-      const pre = await fetch('/api/upload-presign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ filename: file.name, contentType: file.type }),
-      })
-      if (!pre.ok) {
-        const j = await pre.json().catch(() => ({}))
-        throw new Error(j.error || 'Could not start the upload.')
-      }
-      const { uploadUrl, key } = await pre.json()
-
-      // 2. PUT the file straight to R2
-      const put = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
-      if (!put.ok) throw new Error('Upload to storage failed.')
-
-      // 3. ingest -> creates the Photo record (sharp resize)
-      const ing = await fetch('/api/photos/ingest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ key, filename: file.name, category: null }),
-      })
-      if (!ing.ok) {
-        const j = await ing.json().catch(() => ({}))
-        throw new Error(j.error || 'Could not process the photo.')
-      }
-      const doc: PhotoDoc = await ing.json()
-
-      // 4. add to grid + select
+      const doc = await uploadPhotoToLibrary(file)
       setPhotos((prev) => [doc, ...prev])
       onChange(valueOf(doc))
       setOpen(false)

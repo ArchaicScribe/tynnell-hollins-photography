@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import { headers } from 'next/headers'
-import payloadConfig from '@payload-config'
+import { requireBuilderUser } from '@/app/lib/builderAuth'
 
 // Update a builder page's placement flags (TYN-226 / TYN-227). Auth-gated.
 // Accepts { id, showInNav?, isHomepage? }. Only the provided flags change.
@@ -10,11 +8,9 @@ import payloadConfig from '@payload-config'
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
-  const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers: await headers() })
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireBuilderUser()
+  if (auth instanceof NextResponse) return auth
+  const { payload } = auth
 
   let id: number | string | undefined
   let showInNav: unknown

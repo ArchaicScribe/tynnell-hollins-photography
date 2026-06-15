@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
@@ -13,7 +14,9 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 // fall through to notFound().
 export const dynamic = 'force-dynamic'
 
-async function findPublishedPage(path: string) {
+// cache() dedupes the lookup across generateMetadata + the page body within a
+// single request render, so a published-page view hits the DB once, not twice.
+const findPublishedPage = cache(async (path: string) => {
   const payload = await getPayload({ config: payloadConfig })
   const { docs } = await payload.find({
     collection: 'pages',
@@ -22,7 +25,7 @@ async function findPublishedPage(path: string) {
     depth: 0,
   })
   return docs[0] ?? null
-}
+})
 
 // Give each published page its own browser-tab + search title (TYN-231). The
 // (site) layout's title template appends " | Tynnell Hollins Photography".

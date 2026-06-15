@@ -1,6 +1,7 @@
 'use client'
 import { useField } from '@payloadcms/ui'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { isUnsupportedImage, uploadPhotoToLibrary, type IngestedPhoto } from '@/app/lib/uploadPhoto'
 
 // Visual gallery arranger (TYN-234 + TYN-235). Replaces the default vertical
 // array-row UI for a gallery's photos with a Pixieset-style grid of large
@@ -10,16 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 // Multiple Photos" button stays compatible.
 // 'use client' + inline styles for resilience, matching the rest of the admin.
 type PhotoRow = { id?: string; photo: number | null }
-type PhotoDoc = {
-  id: number
-  url?: string | null
-  filename?: string | null
-  alt?: string | null
-  sizes?: { thumbnail?: { url?: string | null }; card?: { url?: string | null } } | null
-}
-
-// Formats sharp can't process on Vercel (no native libheif) - reject up front.
-const UNSUPPORTED_EXTS = new Set(['heic', 'heif', 'avif', 'tiff', 'tif', 'bmp'])
+type PhotoDoc = IngestedPhoto
 
 function thumbOf(p: PhotoDoc | undefined): string | null {
   if (!p) return null
@@ -76,46 +68,13 @@ export function GalleryPhotoArranger() {
     setPhotos(photos.filter((_, i) => i !== idx))
   }
 
-  // Upload one file via the same presign -> R2 -> ingest flow the photo library
-  // and image picker use. Returns the created Photo doc, or throws.
-  const uploadOne = async (file: File): Promise<PhotoDoc> => {
-    const pre = await fetch('/api/upload-presign', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ filename: file.name, contentType: file.type }),
-    })
-    if (!pre.ok) {
-      const j = await pre.json().catch(() => ({}))
-      throw new Error(j.error || 'Could not start the upload.')
-    }
-    const { uploadUrl, key } = await pre.json()
-
-    const put = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
-    if (!put.ok) throw new Error('Upload to storage failed.')
-
-    const ing = await fetch('/api/photos/ingest', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      // Tag the upload with this gallery's category so the library stays tidy.
-      body: JSON.stringify({ key, filename: file.name, category }),
-    })
-    if (!ing.ok) {
-      const j = await ing.json().catch(() => ({}))
-      throw new Error(j.error || 'Could not process the photo.')
-    }
-    return ing.json()
-  }
-
   const handleFiles = async (fileList: FileList | File[]) => {
     setUploadError('')
     const all = Array.from(fileList)
     const accepted: File[] = []
     let rejected = 0
     for (const f of all) {
-      const ext = (f.name.split('.').pop() ?? '').toLowerCase()
-      if (UNSUPPORTED_EXTS.has(ext) || !f.type.startsWith('image/')) rejected++
+      if (isUnsupportedImage(f) || !f.type.startsWith('image/')) rejected++
       else accepted.push(f)
     }
     if (rejected > 0) {
@@ -130,7 +89,8 @@ export function GalleryPhotoArranger() {
     const newDocs: Record<number, PhotoDoc> = {}
     for (let i = 0; i < accepted.length; i++) {
       try {
-        const doc = await uploadOne(accepted[i])
+        // Tag the upload with this gallery's category so the library stays tidy.
+        const doc = await uploadPhotoToLibrary(accepted[i], { category })
         newRows.push({ id: crypto.randomUUID(), photo: doc.id })
         newDocs[doc.id] = doc
       } catch (e) {

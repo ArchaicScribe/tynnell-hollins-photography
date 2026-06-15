@@ -159,7 +159,6 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `components/admin/Dashboard.tsx` | Custom admin dashboard (client component) |
 | `components/admin/PhotoGridView.tsx` | Visual photo grid, drag-to-upload, category filters |
 | `components/admin/GalleryGridView.tsx` | Visual gallery card grid with category filter |
-| `components/admin/GalleryPhotoRowLabel.tsx` | Row label for gallery photo array (superseded by GalleryPhotoArranger; file retained) |
 | `components/admin/GalleryPhotoArranger.tsx` | Visual gallery grid: drag-arrange, drag-and-drop upload, remove, set cover (replaces the photos array UI) |
 | `components/admin/PhotoEditHeader.tsx` | Custom photo edit header: large preview, metadata, Featured toggle, gallery membership |
 | `components/admin/PostGridView.tsx` | Visual blog post grid with status filter |
@@ -268,7 +267,6 @@ The Payload admin sidebar is organized into four groups:
   - Uses `useField({ path: 'coverPhoto' }).setValue` with the full photo object
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
   - Featured quick-toggle on each card: gold "Featured" badge = on homepage, translucent dark = unfeatured. Clicks PATCH `/api/galleries/:id` inline (TYN-204)
-- `GalleryPhotoRowLabel`: legacy row label for the photos array, superseded by `GalleryPhotoArranger` (file retained, no longer wired)
 - `GalleryPhotoArranger`: registered on `Galleries.photos` array field as `admin.components.Field` (TYN-228 / TYN-235)
   - Replaces the default vertical array rows with a visual thumbnail grid. Reads/writes the `photos` path via `useField`
   - Drag a tile to reorder (grid order = order on the public album), remove a photo, or set the cover photo from the grid (writes `coverPhoto`)
