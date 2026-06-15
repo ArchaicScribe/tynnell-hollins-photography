@@ -6,6 +6,9 @@ export function middleware(request: NextRequest) {
   if (process.env.COMING_SOON !== 'true') return NextResponse.next()
   if (pathname.startsWith('/coming-soon')) return NextResponse.next()
   if (pathname.startsWith('/admin')) return NextResponse.next()
+  // The page builder is admin-only and auth-gated, so let it through during
+  // Coming Soon mode (same as /admin) instead of rewriting it to /coming-soon.
+  if (pathname.startsWith('/builder')) return NextResponse.next()
   if (pathname.startsWith('/api')) return NextResponse.next()
   if (pathname.startsWith('/book')) return NextResponse.next()
   if (pathname.startsWith('/_next')) return NextResponse.next()
