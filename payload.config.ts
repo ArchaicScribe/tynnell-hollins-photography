@@ -71,6 +71,30 @@ export default buildConfig({
     },
     theme: 'dark',
     suppressHydrationWarning: true,
+    // Live Preview pane (TYN-200). Same-origin embedded site, so a relative
+    // path resolves to the public page and is allowed by X-Frame-Options:
+    // SAMEORIGIN. Saves are reflected immediately via revalidatePath hooks on
+    // the Galleries collection and About Page global. (During Coming Soon mode,
+    // the middleware lets logged-in admins through so the pane shows the real
+    // page rather than the coming-soon screen.)
+    livePreview: {
+      url: ({ data, collectionConfig, globalConfig }) => {
+        if (globalConfig?.slug === 'about-page') return '/about'
+        if (collectionConfig?.slug === 'galleries') {
+          return typeof data?.slug === 'string' && data.slug
+            ? `/portfolio/${data.slug}`
+            : '/portfolio'
+        }
+        return '/'
+      },
+      collections: ['galleries'],
+      globals: ['about-page'],
+      breakpoints: [
+        { label: 'Mobile', name: 'mobile', width: 390, height: 844 },
+        { label: 'Tablet', name: 'tablet', width: 768, height: 1024 },
+        { label: 'Desktop', name: 'desktop', width: 1440, height: 900 },
+      ],
+    },
     components: {
       graphics: {
         Logo: './components/admin/AdminLogo#AdminLogo',

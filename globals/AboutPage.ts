@@ -1,9 +1,24 @@
-import type { GlobalConfig } from 'payload'
+import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { revalidatePath } from 'next/cache'
+
+// Bust the ISR cache for /about on save so the Live Preview pane (TYN-200)
+// reflects changes immediately. Safe outside a Next request scope (no-op).
+const revalidateAbout: GlobalAfterChangeHook = ({ doc }) => {
+  try {
+    revalidatePath('/about')
+  } catch {
+    // No-op outside a Next request scope.
+  }
+  return doc
+}
 
 export const AboutPage: GlobalConfig = {
   slug: 'about-page',
   label: 'About Page',
+  hooks: {
+    afterChange: [revalidateAbout],
+  },
   admin: {
     group: 'Site Settings',
     description: 'Content for your About page and the about preview section on your homepage.',

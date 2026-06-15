@@ -1,4 +1,5 @@
-import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
 
 function toSlug(str: string): string {
   return str
@@ -17,6 +18,20 @@ const autoSlugFromTitle: CollectionBeforeValidateHook = ({ data = {} }) => {
   return data
 }
 
+// Bust the ISR cache for the affected gallery page (and the portfolio index)
+// on every save so the Live Preview pane reflects changes immediately instead
+// of waiting up to the 120s revalidate window (TYN-200). No-op outside a Next
+// request scope (e.g. the Payload CLI).
+const revalidateGallery: CollectionAfterChangeHook = ({ doc }) => {
+  try {
+    if (doc?.slug) revalidatePath(`/portfolio/${doc.slug}`)
+    revalidatePath('/portfolio')
+  } catch {
+    // No-op outside a Next request scope.
+  }
+  return doc
+}
+
 export const Galleries: CollectionConfig = {
   slug: 'galleries',
   labels: {
@@ -25,6 +40,7 @@ export const Galleries: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [autoSlugFromTitle],
+    afterChange: [revalidateGallery],
   },
   admin: {
     group: 'My Portfolio',
