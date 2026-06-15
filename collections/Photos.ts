@@ -70,6 +70,17 @@ export const Photos: CollectionConfig = {
   },
   fields: [
     {
+      // Custom edit header: large preview + metadata + featured/gallery at a
+      // glance. Sits above the form fields; Payload still owns Save + upload.
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/PhotoEditHeader#PhotoEditHeader',
+        },
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       label: 'Title',

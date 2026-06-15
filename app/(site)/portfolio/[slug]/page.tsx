@@ -82,6 +82,8 @@ export default async function GalleryPage({ params, searchParams }: Props) {
         .filter((p): p is Photo => typeof p === 'object' && p !== null)
     : []
 
+  const taped = gallery.tapedStyle === true
+
   const pageUrl = `https://tynnellhollinsphotography.com/portfolio/${gallery.slug}`
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -132,22 +134,28 @@ export default async function GalleryPage({ params, searchParams }: Props) {
         </Link>
 
         {photos.length > 0 ? (
-          <div className={styles.grid}>
+          <div className={`${styles.grid}${taped ? ` ${styles.gridTaped}` : ''}`}>
             {photos.map((photo) => {
               const url = photo.sizes?.card?.url ?? photo.url ?? null
               if (!url) return null
               const caption = photo.alt || photo.title || null
+              const image = (
+                <div className={styles.imageSlot}>
+                  <ProtectedImage
+                    src={url}
+                    alt={photo.alt ?? photo.title ?? ''}
+                    fill
+                    sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+                    className={styles.photo}
+                  />
+                </div>
+              )
               return (
-                <div key={String(photo.id)} className={styles.imageWrapper}>
-                  <div className={styles.imageSlot}>
-                    <ProtectedImage
-                      src={url}
-                      alt={photo.alt ?? photo.title ?? ''}
-                      fill
-                      sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-                      className={styles.photo}
-                    />
-                  </div>
+                <div
+                  key={String(photo.id)}
+                  className={`${styles.imageWrapper}${taped ? ` ${styles.tapedTilt}` : ''}`}
+                >
+                  {taped ? <div className={styles.tapedMat}>{image}</div> : image}
                   {caption && <p className={styles.caption}>{caption}</p>}
                 </div>
               )

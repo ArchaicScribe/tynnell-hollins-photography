@@ -1,10 +1,11 @@
+import { PhotoEditHeader as PhotoEditHeader_994fa1cc565775730944a666ddd8cc75 } from '../../../components/admin/PhotoEditHeader'
 import { PhotoViewInPortfolioButton as PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93 } from '../../../components/admin/PhotoViewInPortfolioButton'
 import { PhotoGridView as PhotoGridView_416d697f5d1039cfdf395a457f2fc19a } from '../../../components/admin/PhotoGridView'
 import { GalleryViewOnSiteButton as GalleryViewOnSiteButton_ff74c64f710c29e33810b93734c4bd9e } from '../../../components/admin/GalleryViewOnSiteButton'
 import { CoverPhotoCell as CoverPhotoCell_7b6c7b5fe42940c056316d08f8b58c3d } from '../../../components/admin/CoverPhotoCell'
 import { CoverPhotoPicker as CoverPhotoPicker_3b28ab93a98ad4c3c31c60877ff3dab4 } from '../../../components/admin/CoverPhotoPicker'
 import { GalleryBulkPhotoPicker as GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a007c60f35b } from '../../../components/admin/GalleryBulkPhotoPicker'
-import { GalleryPhotoRowLabel as GalleryPhotoRowLabel_a629264ac74e3eb4c2c5abbb6b349c3c } from '../../../components/admin/GalleryPhotoRowLabel'
+import { GalleryPhotoArranger as GalleryPhotoArranger_4f7a56c3214650ac93f2acac369662ae } from '../../../components/admin/GalleryPhotoArranger'
 import { GalleryGridView as GalleryGridView_694fcc37683b7c53f35803e850250b41 } from '../../../components/admin/GalleryGridView'
 import { TestimonialsGridView as TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3 } from '../../../components/admin/TestimonialsGridView'
 import { ServicesGridView as ServicesGridView_f8436fdecdb227662e953e6db61537d6 } from '../../../components/admin/ServicesGridView'
@@ -44,13 +45,14 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "./components/admin/PhotoEditHeader#PhotoEditHeader": PhotoEditHeader_994fa1cc565775730944a666ddd8cc75,
   "./components/admin/PhotoViewInPortfolioButton#PhotoViewInPortfolioButton": PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93,
   "./components/admin/PhotoGridView#PhotoGridView": PhotoGridView_416d697f5d1039cfdf395a457f2fc19a,
   "./components/admin/GalleryViewOnSiteButton#GalleryViewOnSiteButton": GalleryViewOnSiteButton_ff74c64f710c29e33810b93734c4bd9e,
   "./components/admin/CoverPhotoCell#CoverPhotoCell": CoverPhotoCell_7b6c7b5fe42940c056316d08f8b58c3d,
   "./components/admin/CoverPhotoPicker#CoverPhotoPicker": CoverPhotoPicker_3b28ab93a98ad4c3c31c60877ff3dab4,
   "./components/admin/GalleryBulkPhotoPicker#GalleryBulkPhotoPicker": GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a007c60f35b,
-  "./components/admin/GalleryPhotoRowLabel#GalleryPhotoRowLabel": GalleryPhotoRowLabel_a629264ac74e3eb4c2c5abbb6b349c3c,
+  "./components/admin/GalleryPhotoArranger#GalleryPhotoArranger": GalleryPhotoArranger_4f7a56c3214650ac93f2acac369662ae,
   "./components/admin/GalleryGridView#GalleryGridView": GalleryGridView_694fcc37683b7c53f35803e850250b41,
   "./components/admin/TestimonialsGridView#TestimonialsGridView": TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3,
   "./components/admin/ServicesGridView#ServicesGridView": ServicesGridView_f8436fdecdb227662e953e6db61537d6,

@@ -42,11 +42,47 @@
   align-items: center;
 }
 
+/* Taped polaroid headshot (TYN-227 canonical cream tape look). */
 .storyImage {
+  position: relative;
+  background: #f4efe8;
+  padding: 0.8rem 0.8rem 1.6rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  transform: rotate(-2deg);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  align-self: center;
+}
+
+.storyImage:hover {
+  transform: rotate(0deg) scale(1.02);
+}
+
+.storyImage::before,
+.storyImage::after {
+  content: '';
+  position: absolute;
+  top: -0.6rem;
+  width: 5rem;
+  height: 1.5rem;
+  background: rgba(214, 209, 206, 0.42);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  z-index: 3;
+}
+
+.storyImage::before {
+  left: 1.2rem;
+  transform: rotate(-30deg);
+}
+
+.storyImage::after {
+  right: 1.2rem;
+  transform: rotate(30deg);
+}
+
+.headshotSlot {
   position: relative;
   aspect-ratio: 3 / 4;
   background: var(--color-bg-accent);
-  border: 1px solid #1e1e1e;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,7 +336,7 @@
     padding: 2rem 1.5rem 4rem;
   }
 
-  .storyImage {
+  .headshotSlot {
     aspect-ratio: 4 / 3;
   }
 

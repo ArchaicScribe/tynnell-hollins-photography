@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { navLinks } from '@/app/constants/nav'
+import { navLinks, type NavLink } from '@/app/constants/nav'
 import { useScrollLock } from '@/app/hooks/useScrollLock'
 import MobileMenu from '@/app/components/MobileMenu/MobileMenu'
 import styles from './Navbar.module.css'
 
-export default function Navbar() {
+// `builderLinks` are pages flagged "show in menu" in the visual builder
+// (TYN-226). They are appended after the built-in site links.
+export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[] }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -30,6 +32,8 @@ export default function Navbar() {
 
   const closeMenu = () => setMenuOpen(false)
 
+  const allLinks = [...navLinks, ...builderLinks]
+
   const navClass = [
     styles.navbar,
     !isHome || scrolled ? styles.scrolled : '',
@@ -45,7 +49,7 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <ul className={styles.links}>
-          {navLinks.map((link) => (
+          {allLinks.map((link) => (
             <li key={link.href}>
               <Link href={link.href} className={styles.link}>
                 {link.label}
@@ -68,7 +72,7 @@ export default function Navbar() {
         </button>
       </nav>
 
-      <MobileMenu isOpen={menuOpen} onClose={closeMenu} />
+      <MobileMenu isOpen={menuOpen} onClose={closeMenu} links={allLinks} />
     </>
   )
 }

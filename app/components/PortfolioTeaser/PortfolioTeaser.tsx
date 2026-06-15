@@ -46,7 +46,6 @@ export default function PortfolioTeaser({ photos }: Props) {
             style={{ '--rotation': `${TAPE_ANGLES[i]}deg` } as React.CSSProperties}
             aria-label={`View ${PLACEHOLDERS[i]} gallery`}
           >
-            <div className={styles.tape} />
             <div className={styles.imageSlot}>
               {photo?.imageUrl ? (
                 <ProtectedImage

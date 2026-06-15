@@ -18,6 +18,7 @@ import { AboutPage } from './globals/AboutPage'
 import { SiteConfig } from './globals/SiteConfig'
 import { BookingSettings } from './globals/BookingSettings'
 import { Availability } from './globals/Availability'
+import { Pages } from './collections/Pages'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -83,7 +84,7 @@ export default buildConfig({
     },
   },
   sharp,
-  collections: [Users, Photos, Galleries, Testimonials, Services, Posts],
+  collections: [Users, Photos, Galleries, Testimonials, Services, Posts, Pages],
   globals: [HeroSlides, AboutPage, SiteConfig, BookingSettings, Availability],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

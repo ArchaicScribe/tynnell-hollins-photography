@@ -73,6 +73,7 @@ export interface Config {
     testimonials: Testimonial;
     services: Service;
     posts: Post;
+    pages: Page;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -166,7 +168,7 @@ export interface User {
   collection: 'users';
 }
 /**
- * Your photo library. Every image you upload lives here and can be used in galleries, blog posts, and your homepage.
+ * Your photo library. Drop images here and they upload instantly — title and alt text are filled in automatically from the filename so you can bulk-upload without stopping. Edit any photo afterwards to update the details.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "photos".
@@ -174,27 +176,27 @@ export interface User {
 export interface Photo {
   id: number;
   /**
-   * Auto-filled from filename on upload. A short name to identify this photo in your dashboard. Clients do not see this.
+   * Auto-filled from the filename on upload. Edit this to give the photo a meaningful name — clients never see it. Example: "Smith Wedding - First Dance".
    */
   title?: string | null;
   /**
-   * Auto-filled from filename on upload. Describe what is in this photo for screen readers and SEO.
+   * Describe what is in this photo. Screen readers read this aloud for visually impaired visitors and Google uses it to understand your images. Auto-filled on upload — update it when you have a moment. Example: "Bride and groom laughing during their first dance at an outdoor reception."
    */
   alt?: string | null;
   /**
-   * The type of session this photo is from. Used to organise your portfolio.
+   * The type of session this photo is from. Used to filter your portfolio.
    */
   category?: ('weddings' | 'portraits' | 'families' | 'couples' | 'brands') | null;
   /**
-   * An optional caption displayed beneath this photo in galleries. Leave blank for no caption.
+   * Optional text displayed beneath this photo in galleries. Leave blank for no caption.
    */
   caption?: string | null;
   /**
-   * Turn this on to feature this photo in the portfolio preview section on your homepage. Up to 6 photos are shown.
+   * Turn on to feature this photo in the portfolio preview section on your homepage. Up to 6 photos are shown.
    */
   featured?: boolean | null;
   /**
-   * Controls the order this photo appears in. Lower numbers appear first. You can leave this blank and sort manually later.
+   * Controls the order this photo appears in. Lower numbers appear first. Leave blank and sort manually later.
    */
   displayOrder?: number | null;
   updatedAt: string;
@@ -248,11 +250,11 @@ export interface Gallery {
    */
   title: string;
   /**
-   * The web address for this gallery. Example: "smith-wedding". Use lowercase letters and hyphens only.
+   * Auto-generated from the title — you do not need to set this. If you want a custom web address, you can edit it here. Use lowercase letters and hyphens only.
    */
   slug: string;
   /**
-   * The type of session this gallery is from. Used to organise your portfolio.
+   * The type of session this gallery is from. Used to filter your portfolio.
    */
   category: 'weddings' | 'portraits' | 'families' | 'couples' | 'brands';
   /**
@@ -260,20 +262,24 @@ export interface Gallery {
    */
   coverPhoto: number | Photo;
   /**
-   * Add photos one at a time. Drag the handle on the left to reorder. Order here is exactly how photos appear on the site.
+   * Use the button above to add multiple photos at once, or add one at a time with the row picker below. Drag the handle on the left to reorder. The order here is exactly how photos appear on the site.
    */
   photos?:
     | {
-        photo?: (number | Photo) | null;
+        photo: number | Photo;
         id?: string | null;
       }[]
     | null;
   /**
-   * Turn this on to feature this gallery on your homepage.
+   * Display this gallery with the editorial taped-photo look.
+   */
+  tapedStyle?: boolean | null;
+  /**
+   * Turn on to feature this gallery on your homepage.
    */
   featured?: boolean | null;
   /**
-   * Controls the order this gallery appears on your portfolio page. Lower numbers appear first. Example: 1 = first, 2 = second.
+   * Controls the order this gallery appears on your portfolio page. Lower numbers appear first. Leave blank and galleries display in the order they were added.
    */
   displayOrder?: number | null;
   updatedAt: string;
@@ -300,7 +306,7 @@ export interface Testimonial {
    */
   sessionType?: ('Wedding' | 'Engagement' | 'Portrait' | 'Family' | 'Maternity' | 'Event') | null;
   /**
-   * When checked, this testimonial appears in the Testimonials section on your homepage.
+   * When checked, this testimonial appears in the Testimonials section on your homepage. Uncheck to keep it off the homepage (it will still appear on your full Testimonials page).
    */
   featured?: boolean | null;
   /**
@@ -348,9 +354,9 @@ export interface Service {
    */
   depositAmount?: number | null;
   /**
-   * The position of this service in the list. 1 appears first, 2 appears second, and so on.
+   * The position of this service in the list. 1 appears first, 2 appears second, and so on. Leave blank and services display in the order they were added.
    */
-  displayOrder: number;
+  displayOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -367,7 +373,7 @@ export interface Post {
    */
   title: string;
   /**
-   * The web address for this post. Example: "smith-wedding-recap". Use lowercase letters and hyphens only.
+   * Auto-generated from the title — you do not need to set this. Edit here only if you want a custom web address. Use lowercase letters and hyphens only.
    */
   slug: string;
   /**
@@ -375,7 +381,7 @@ export interface Post {
    */
   status: 'draft' | 'published';
   /**
-   * The date this post will show as published. You can set a future date to schedule it.
+   * Defaults to today. You can set a future date to schedule the post — it will appear on your blog on that date.
    */
   publishedAt: string;
   /**
@@ -383,7 +389,7 @@ export interface Post {
    */
   coverImage?: (number | null) | Photo;
   /**
-   * A 1–2 sentence summary shown on the blog listing page. Helps readers decide if they want to read more.
+   * A 1-2 sentence summary shown on the blog listing page. Helps readers decide if they want to read more.
    */
   excerpt?: string | null;
   /**
@@ -404,6 +410,30 @@ export interface Post {
     };
     [k: string]: unknown;
   } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  slug: string;
+  content?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  published?: boolean | null;
+  displayOrder?: number | null;
+  showInNav?: boolean | null;
+  isHomepage?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -454,6 +484,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -586,7 +620,12 @@ export interface GalleriesSelect<T extends boolean = true> {
   slug?: T;
   category?: T;
   coverPhoto?: T;
-  photos?: T;
+  photos?:
+    | T
+    | {
+        photo?: T;
+        id?: T;
+      };
   featured?: T;
   displayOrder?: T;
   updatedAt?: T;
@@ -637,6 +676,19 @@ export interface PostsSelect<T extends boolean = true> {
   coverImage?: T;
   excerpt?: T;
   body?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  content?: T;
+  published?: T;
+  displayOrder?: T;
   updatedAt?: T;
   createdAt?: T;
 }

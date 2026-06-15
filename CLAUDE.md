@@ -93,7 +93,7 @@ Two confirmed rules for reliable production deploys:
 - Payload is embedded inside Next.js — one Vercel deployment, no separate CMS server
 - All SSR/RSC data fetching uses the **local API** (`payload.find()`, `payload.findGlobal()`) — zero HTTP overhead
 - Admin at `/admin`
-- Collections: Photos, Galleries, Testimonials, Services, Posts, Users
+- Collections: Photos, Galleries, Testimonials, Services, Posts, Users, Pages (visual builder)
 - Globals: HeroSlides, AboutPage, SiteConfig, BookingSettings, Availability
 
 ### Media (Cloudflare R2)
@@ -108,11 +108,21 @@ Two confirmed rules for reliable production deploys:
 - Every schema change (new table, new column, new index) must have a migration block in this file
 
 ### Gallery photos field
-- `Gallery.photos` is `type: 'array'` with a `photo` relationship sub-field — **not** `hasMany relationship`
-- This gives Payload's built-in drag handles for reordering (TYN-193)
+- `Gallery.photos` is `type: 'array'` with a `photo` relationship sub-field, **not** `hasMany relationship`
 - Data stored in `galleries_photos` table (`_order`, `_parent_id`, `photo_id`)
-- `galleries_rels` table also exists (from an earlier revert) — Payload no longer writes to it
-- Site reads `gallery.photos[].photo` — the Photo object is nested one level deep
+- `galleries_rels` table also exists (from an earlier revert), Payload no longer writes to it
+- Site reads `gallery.photos[].photo`, the Photo object is nested one level deep
+- The array's default vertical-row UI is replaced by a custom `admin.components.Field` -> `GalleryPhotoArranger`: a visual thumbnail grid with drag-to-reorder, remove, set-cover, and drag-and-drop file upload. Adds also flow through `GalleryBulkPhotoPicker`. The `photo` sub-field (required relationship) still validates on save (TYN-228)
+- `Gallery.tapedStyle` (boolean, `taped_style` column) renders the public `/portfolio/[slug]` album with the taped-photo treatment instead of the clean grid (TYN-235)
+
+### Visual page builder (Puck)
+- Lets Tynnell build custom pages on a drag-and-drop canvas, on brand and self-hosted. Library: `@measured/puck` (MIT). NO recurring SaaS cost (a core reason for leaving Pixieset). Currently on branch `feature/0000124-TYN-217-section-library`, NOT yet merged to main.
+- Storage: the `pages` collection. Each row is one page: `title`, `slug` (unique), `content` (Puck document JSON), `published`, `displayOrder`, `showInNav`, `isHomepage`. Hidden from the admin nav; managed via `/builder`.
+- Editor: `/builder` (page list, create/rename/delete/duplicate/reorder, plus In-menu / Homepage toggles) and `/builder/[slug]` (the Puck editor, auth-gated). The editor lazy-loads Puck (`next/dynamic`, `ssr:false`).
+- Public render: `app/(site)/[...slug]/page.tsx` catch-all renders published pages via `@measured/puck/rsc`. It only fills slugs not owned by an explicit route; unknown or unpublished slugs `notFound()`. `app/(site)/page.tsx` renders an `isHomepage` page at `/`; `app/lib/nav.ts` merges `showInNav` pages into the site menu (Navbar + MobileMenu, fed from the `(site)` layout).
+- Block library + config: `app/builder/puck.config.tsx` (Hero, SectionHeading, Text, SplitImageText, Services, Testimonials, CTA, PhotoGallery, FullWidthImage, Spacer). Per-section Background/Spacing, per-device visibility (`.pk-hide-mobile` / `.pk-hide-desktop` injected at root), and a Photo Gallery "Taped" style. Image fields use `ImagePickerField` (pick from library or upload). Starter templates in `app/builder/templates.ts`.
+- Save vs publish: `POST /api/builder/save` honors a `publish` flag. Default false saves a DRAFT (leaves `published` untouched); true publishes. Other routes: `/api/builder/{delete,rename,duplicate,reorder,settings}`.
+- KEY GOTCHAS: Puck's preview iframe drops the session cookie on the save fetch (401), so MUST keep `iframe={{ enabled: false }}`. Render props are typed `any` with a file-level eslint-disable (Puck's generic Config carries no per-block prop types). Cross-root-layout links (`/builder` <-> `/admin`) cannot soft-navigate, use plain `<a>` with an eslint-disable.
 
 ### Payload admin components
 Any time a custom component is added to a collection or global config (Cell, Field, custom view, RowLabel, etc.):
@@ -149,11 +159,18 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `components/admin/Dashboard.tsx` | Custom admin dashboard (client component) |
 | `components/admin/PhotoGridView.tsx` | Visual photo grid, drag-to-upload, category filters |
 | `components/admin/GalleryGridView.tsx` | Visual gallery card grid with category filter |
-| `components/admin/GalleryPhotoRowLabel.tsx` | Row label for gallery photo array (thumbnail + filename) |
+| `components/admin/GalleryPhotoArranger.tsx` | Visual gallery grid: drag-arrange, drag-and-drop upload, remove, set cover (replaces the photos array UI) |
+| `components/admin/PhotoEditHeader.tsx` | Custom photo edit header: large preview, metadata, Featured toggle, gallery membership |
 | `components/admin/PostGridView.tsx` | Visual blog post grid with status filter |
 | `components/admin/PostViewOnSiteButton.tsx` | "View on Site" link in post edit sidebar (dimmed when draft) |
 | `components/admin/PayloadCssGuard.tsx` | Forces Payload CSS into static link tag |
 | `scripts/migrate-db.mjs` | DB migration runner (used by Vercel pre-build) |
+| `app/builder/puck.config.tsx` | Puck block library + per-section style and visibility controls |
+| `app/builder/templates.ts` | Starter templates for new builder pages (blank / landing / about / gallery) |
+| `app/builder/ImagePickerField.tsx` | Puck image field: pick from library or upload (presign -> R2 -> ingest) |
+| `app/builder/[slug]/EditorClient.tsx` | Puck editor: save draft / publish, status pill, help panel, unsaved-changes guard |
+| `app/(site)/[...slug]/page.tsx` | Public render of published builder pages (Puck RSC) |
+| `app/lib/nav.ts` | Builder pages flagged show-in-menu, merged into the site nav |
 | `app/lib/constants.ts` | `CONTACT_EMAIL`, `EMAIL_FROM` (single source of truth) |
 | `app/lib/validation.ts` | Form validation helpers |
 | `app/lib/emails.ts` | Email HTML templates |
@@ -193,6 +210,8 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `/contact` | 9-field form wired to `/api/contact` |
 | `/book` | Stripe Checkout integration |
 | `/book/success`, `/book/cancel` | Post-payment pages |
+| `/[...slug]` | Published builder pages (Puck), when the slug is not an explicit route |
+| `/builder`, `/builder/[slug]` | Visual page builder (auth-gated, admin only) |
 | `/sitemap.xml` | Auto-generated from Payload |
 
 ---
@@ -206,6 +225,10 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `POST /api/webhooks/stripe` | Handles `checkout.session.completed` |
 | `GET /api/robots` | robots.txt (disallows `/admin`, `/api/`) |
 | `GET /api/cron/ooo-return-notify` | Daily OOO return notification cron |
+| `POST /api/builder/save` | Save (draft) or publish a builder page (`publish` flag) |
+| `POST /api/builder/{delete,rename,duplicate,reorder,settings}` | Builder page management + In-menu/Homepage flags |
+| `POST /api/upload-presign` | Presigned R2 PUT URL (step 1 of the photo upload pipeline) |
+| `POST /api/photos/ingest` | Create the Photo record after the R2 PUT (sharp resize) |
 
 ---
 
@@ -244,8 +267,12 @@ The Payload admin sidebar is organized into four groups:
   - Uses `useField({ path: 'coverPhoto' }).setValue` with the full photo object
 - `GalleryGridView`: registered on `Galleries` collection under `admin.components.views.list.Component`
   - Featured quick-toggle on each card: gold "Featured" badge = on homepage, translucent dark = unfeatured. Clicks PATCH `/api/galleries/:id` inline (TYN-204)
-- `GalleryPhotoRowLabel`: registered on `Galleries.photos` array field as `admin.components.RowLabel`
-  - Shows thumbnail + filename in each row header so Tynnell can see which photo is which
+- `GalleryPhotoArranger`: registered on `Galleries.photos` array field as `admin.components.Field` (TYN-228 / TYN-235)
+  - Replaces the default vertical array rows with a visual thumbnail grid. Reads/writes the `photos` path via `useField`
+  - Drag a tile to reorder (grid order = order on the public album), remove a photo, or set the cover photo from the grid (writes `coverPhoto`)
+  - Drag image files onto the grid (or Browse) to upload via presign -> R2 -> ingest, auto-tagged with the gallery's category; file-drop vs tile-reorder is disambiguated by the drag payload
+- `PhotoEditHeader`: registered on `Photos` as a top `ui` field, `admin.components.Field` (photo edit revamp)
+  - Large preview (with onError fallback), filename + dimensions/size/type, category badge, interactive Feature-on-homepage toggle (bound to the form via `useField`), and gallery membership pills. Payload still owns Save, validation, and the upload field
 - Testimonials collection: `featured` checkbox (sidebar, default false) -- when checked, testimonial appears on the homepage; the dedicated `/testimonials` page shows all regardless
 - `TestimonialsGridView`: registered on `Testimonials` collection under `admin.components.views.list.Component` (TYN-198)
   - Card grid: client name (heading), italic quote excerpt (3-line clamp), session type badge, display order number
@@ -276,4 +303,7 @@ The Payload admin sidebar is organized into four groups:
 - **R2 custom domain (TYN-144)** — media URLs still use `r2.dev`. CNAME `media` is Active in Cloudflare. Remaining step: update `R2_PUBLIC_URL` in Vercel env vars to `https://media.tynnellhollinsphotography.com`. No code change needed.
 - **Stripe webhook secret (TYN-182)** — Vercel flags "Needs Attention." Rotate secret in Stripe dashboard and update `STRIPE_WEBHOOK_SECRET` in Vercel env vars.
 - **Gallery bulk photo adding** — resolved (TYN-197). `GalleryBulkPhotoPicker` modal lets Tynnell multi-select photos. Single-row "Add Row" still works for one-off additions.
+- **Local admin photos 500 + uploads fail on this machine (DEV ONLY, not a code bug)** - Payload's `/api/photos/file/...` thumbnail proxy and the browser R2 upload PUT fail in LOCAL dev with a TLS handshake error (`write EPROTO ... SSL alert number 40`). This is a machine/network issue (almost certainly antivirus or a proxy doing SSL inspection on the R2 endpoint), NOT the code. Photo previews do not render and uploads may fail locally. Everything works on Vercel. Verify anything photo-related on a preview deploy.
+- **Local dev secrets:** 1Password is often NOT signed in locally. `npm run dev:secure` / `.\dev.ps1` need `op signin` first. To run plain `next dev`, override the 9 `op://` keys in `.env.local` with dummies (only those are `op://` refs; `DATABASE_URI`, `PAYLOAD_SECRET`, and the R2 keys are literal). Minimum set: `UPSTASH_REDIS_REST_URL/TOKEN` (Redis client validates the URL at import). Middleware only gates when `COMING_SOON=true`, so localhost is not auth-walled. See MEMORY.md for the full dummy set.
+- **Visual page builder** lives on `feature/0000124-TYN-217-section-library` (Puck), NOT merged to main. See the "Visual page builder (Puck)" architecture section. Branch also carries a book-page `<a>` -> `<Link>` lint fix that main still needs before its next prod deploy.
 - **`feature/page-sections`** exists at commit `eca87f8` — leave it alone.

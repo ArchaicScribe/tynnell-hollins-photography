@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import styles from './page.module.css'
 
 export type BookingPackage = {
@@ -89,7 +90,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
   if (packages.length === 0) {
     return (
       <p className={styles.emptyState}>
-        Packages coming soon. <a href="/contact" className={styles.noteLink}>Reach out directly</a> to discuss your vision.
+        Packages coming soon. <Link href="/contact" className={styles.noteLink}>Reach out directly</Link> to discuss your vision.
       </p>
     )
   }
@@ -198,7 +199,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
 
       <p className={styles.note}>
         Not sure which session is right for you?{' '}
-        <a href="/contact" className={styles.noteLink}>{"Let's talk first."}</a>
+        <Link href="/contact" className={styles.noteLink}>{"Let's talk first."}</Link>
       </p>
     </>
   )

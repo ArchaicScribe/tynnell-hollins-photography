@@ -254,6 +254,87 @@ async function run() {
     `)
 
     console.log('✓ testimonials.featured column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260611_100000: add builder global table
+    // Required by TYN-214: Puck visual-builder POC stores the whole page
+    // document as a single JSON blob in the `builder` global.
+    // ------------------------------------------------------------------
+
+    // The `builder` global was a single-page POC store; it was replaced by the
+    // `pages` collection (TYN-216). Drop the orphaned table so dev schema-push
+    // does not prompt and prod stays clean. (POC data is disposable.)
+    await client.query(`DROP TABLE IF EXISTS "builder"`)
+
+    console.log('✓ builder table dropped (replaced by pages collection)')
+
+    // ------------------------------------------------------------------
+    // Migration 20260611_110000: add pages collection table
+    // Required by TYN-216: multi-page visual builder. Each row is one page
+    // composed in /builder; `content` is the Puck document JSON.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "pages" (
+        "id"          serial  PRIMARY KEY NOT NULL,
+        "title"       varchar,
+        "slug"        varchar,
+        "content"     jsonb,
+        "published"   boolean DEFAULT false,
+        "updated_at"  timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"  timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS "pages_slug_idx" ON "pages" USING btree ("slug")
+    `)
+
+    console.log('✓ pages table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260612_100000: add display_order to pages (TYN-225)
+    // Builder page-list manual reordering. Backfill existing rows with their
+    // id so every page has a stable distinct order.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "display_order" numeric
+    `)
+    await client.query(`
+      UPDATE "pages" SET "display_order" = "id" WHERE "display_order" IS NULL
+    `)
+
+    console.log('✓ pages.display_order ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260612_120000: page placement flags (TYN-226 / TYN-227)
+    // `show_in_nav` lets a builder page appear in the public site menu.
+    // `is_homepage` lets a builder page render at "/" as the site homepage.
+    // Both default false so existing pages are untouched (URL-only, as before).
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "show_in_nav" boolean DEFAULT false
+    `)
+    await client.query(`
+      ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "is_homepage" boolean DEFAULT false
+    `)
+
+    console.log('✓ pages placement flags ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260613_100000: gallery taped-photo display style (TYN-235)
+    // Boolean flag: when true the public /portfolio/[slug] page renders the
+    // gallery with the editorial taped-photo treatment instead of a clean grid.
+    // Default false so existing galleries are unchanged.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "taped_style" boolean DEFAULT false
+    `)
+
+    console.log('✓ galleries.taped_style ready')
   } finally {
     client.release()
     await pool.end()

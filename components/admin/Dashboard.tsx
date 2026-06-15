@@ -613,6 +613,18 @@ export function Dashboard() {
         </Link>
       </div>
 
+      {/* Page Builder CTA */}
+      <div style={css.quickUpload}>
+        <div style={css.quickUploadText}>
+          <p style={css.quickUploadHeading}>Build a page</p>
+          <p style={css.quickUploadSub}>Design pages visually with drag-and-drop sections.</p>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- cross root-layout: hard nav avoids the RSC-payload fetch error */}
+        <a href="/builder" style={css.quickUploadBtn}>
+          Open Page Builder
+        </a>
+      </div>
+
       {/* Collections */}
       <p style={css.sectionLabel}>Collections</p>
       <div style={css.grid}>
