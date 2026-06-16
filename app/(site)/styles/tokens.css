@@ -12,6 +12,15 @@
   --color-border:         rgba(214, 209, 206, 0.08);
   --color-border-subtle:  rgba(214, 209, 206, 0.06);
 
+  /* Taped-photo treatment (TYN-230). The cream-polaroid look's identity lives
+     here so it can be tuned in one place. Used by the gallery pages, the home
+     portfolio teaser, the About headshot, and the builder Photo Gallery block.
+     Per-surface tape geometry (size/offset/tilt) stays in each stylesheet since
+     it scales with context. */
+  --tape-mat:             #f4efe8;
+  --tape-color:           rgba(214, 209, 206, 0.42);
+  --tape-shadow:          0 10px 26px rgba(0, 0, 0, 0.45);
+
   /* Typography — values are overridden by next/font CSS variables on <html>.
      Fallbacks here ensure nothing breaks if the variable is unset. */
   --font-display:      'Tangerine', cursive;

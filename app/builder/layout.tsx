@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
 import { Archivo, Roboto_Mono } from 'next/font/google'
+// Design tokens (incl. the shared --tape-* vars) so the Puck editor's taped
+// Photo Gallery preview resolves them, matching the public render (TYN-230).
+import '../(site)/styles/tokens.css'
 
 // Root layout for the full-screen Puck editor (TYN-214 POC). Top-level routes
 // each need their own root layout; the editor is intentionally chrome-free

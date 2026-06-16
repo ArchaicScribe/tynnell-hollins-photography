@@ -37,11 +37,11 @@
    matching the gallery + builder taped style). */
 .card {
   position: relative;
-  background: #f4efe8;
+  background: var(--tape-mat);
   padding: 0.7rem 0.7rem 2.25rem;
   transform: rotate(var(--rotation));
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--tape-shadow);
   cursor: pointer;
   text-decoration: none;
   color: inherit;
@@ -61,7 +61,7 @@
   top: -0.55rem;
   width: 4.5rem;
   height: 1.4rem;
-  background: rgba(214, 209, 206, 0.42);
+  background: var(--tape-color);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
   z-index: 3;
 }

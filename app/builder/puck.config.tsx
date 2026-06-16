@@ -54,10 +54,10 @@ const RESPONSIVE_CSS = `
 // rules live in the root-injected stylesheet. Per-photo rotation is applied
 // inline (alternating) so the grid feels hand-placed, not mechanical.
 const TAPE_CSS = `
-.pk-taped{position:relative;background:#f4efe8;padding:0.7rem 0.7rem 1.1rem;box-shadow:0 10px 26px rgba(0,0,0,0.45);transition:transform .25s ease}
+.pk-taped{position:relative;background:var(--tape-mat);padding:0.7rem 0.7rem 1.1rem;box-shadow:var(--tape-shadow);transition:transform .25s ease}
 .pk-taped:hover{transform:rotate(0deg) scale(1.015) !important;z-index:2}
 .pk-taped img{display:block;width:100%;height:auto}
-.pk-taped::before,.pk-taped::after{content:'';position:absolute;top:-0.55rem;width:4.5rem;height:1.4rem;background:rgba(214,209,206,0.42);box-shadow:0 1px 2px rgba(0,0,0,0.18);backdrop-filter:blur(1px)}
+.pk-taped::before,.pk-taped::after{content:'';position:absolute;top:-0.55rem;width:4.5rem;height:1.4rem;background:var(--tape-color);box-shadow:0 1px 2px rgba(0,0,0,0.18);backdrop-filter:blur(1px)}
 .pk-taped::before{left:0.6rem;transform:rotate(-32deg)}
 .pk-taped::after{right:0.6rem;transform:rotate(32deg)}
 `
