@@ -1,4 +1,5 @@
-import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 function toSlug(str: string): string {
@@ -7,6 +8,14 @@ function toSlug(str: string): string {
     .trim()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
+
+const revalidatePost: CollectionAfterChangeHook = ({ doc }) => {
+  if (typeof doc.slug === 'string' && doc.slug) {
+    revalidatePath(`/blog/${doc.slug}`)
+  }
+  revalidatePath('/blog')
+  return doc
 }
 
 // Auto-generate slug from title and default publishedAt to now.
@@ -29,6 +38,7 @@ export const Posts: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [autoPopulate],
+    afterChange: [revalidatePost],
   },
   admin: {
     group: 'Content',

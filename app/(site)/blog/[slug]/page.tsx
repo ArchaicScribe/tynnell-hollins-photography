@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { draftMode } from 'next/headers'
 import Link from 'next/link'
 import Image from 'next/image'
 import { RichText } from '@payloadcms/richtext-lexical/react'
@@ -62,11 +63,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params
   const payload = await getPayload({ config })
+  const { isEnabled: isPreview } = await draftMode()
 
   const [{ docs }, { docs: relatedDocs }] = await Promise.all([
     payload.find({
       collection: 'posts',
-      where: { slug: { equals: slug } },
+      where: isPreview
+        ? { slug: { equals: slug } }
+        : { and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }] },
       depth: 1,
       limit: 1,
     }),
