@@ -13,5 +13,15 @@ export const Users: CollectionConfig = {
       type: 'text',
       label: 'Full Name',
     },
+    {
+      name: 'mustChangePassword',
+      type: 'checkbox',
+      label: 'Must Change Password on Next Login',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'When checked, the user is prompted to set a new password before accessing the admin.',
+      },
+    },
   ],
 }

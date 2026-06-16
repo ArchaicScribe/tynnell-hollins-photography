@@ -101,6 +101,7 @@ export default buildConfig({
       ],
     },
     components: {
+      providers: ['./components/admin/ForcePasswordChange#ForcePasswordChange'],
       graphics: {
         Logo: './components/admin/AdminLogo#AdminLogo',
         Icon: './components/admin/AdminIcon#AdminIcon',

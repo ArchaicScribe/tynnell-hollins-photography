@@ -335,6 +335,24 @@ async function run() {
     `)
 
     console.log('✓ galleries.taped_style ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260616_100000: must_change_password column on users (TYN-175)
+    // When true the admin UI prompts the user to set a new password before
+    // they can continue. Pre-set for Tynnell's account so she sets her own
+    // password on first login rather than using the temp one.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "must_change_password" boolean DEFAULT false
+    `)
+    await client.query(`
+      UPDATE "users" SET "must_change_password" = true
+      WHERE email = 'Hello@TynnellHollinsPhotography.com'
+        AND "must_change_password" = false
+    `)
+
+    console.log('✓ users.must_change_password ready')
   } finally {
     client.release()
     await pool.end()
