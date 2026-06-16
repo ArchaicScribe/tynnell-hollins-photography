@@ -38,7 +38,7 @@ export function PhotoEditHeader() {
   const category = useFormFields(([fields]) => fields.category?.value as string | undefined)
 
   const [doc, setDoc] = useState<PhotoDoc | null>(null)
-  const [galleries, setGalleries] = useState<string[]>([])
+  const [galleries, setGalleries] = useState<{ name: string; slug: string }[]>([])
   const [imgFailed, setImgFailed] = useState(false)
 
   useEffect(() => {
@@ -63,13 +63,13 @@ export function PhotoEditHeader() {
       if (galleriesRes.status === 'fulfilled' && galleriesRes.value.ok) {
         try {
           const data = await galleriesRes.value.json()
-          const names = (data?.docs ?? [])
+          const matched = (data?.docs ?? [])
             .filter((g: { photos?: { photo?: number | string }[] }) =>
               Array.isArray(g.photos) && g.photos.some((p) => String(p?.photo) === String(id)),
             )
-            .map((g: { title?: string }) => g.title)
-            .filter(Boolean)
-          setGalleries(names)
+            .map((g: { title?: string; slug?: string }) => ({ name: g.title ?? '', slug: g.slug ?? '' }))
+            .filter((g: { name: string; slug: string }) => g.name && g.slug)
+          setGalleries(matched)
         } catch {
           /* membership is non-critical */
         }
@@ -182,9 +182,9 @@ export function PhotoEditHeader() {
           {galleries.length === 0 ? (
             <span style={{ color: '#6b6a6a', fontSize: '0.72rem', fontStyle: 'italic' }}>none yet</span>
           ) : (
-            galleries.map((name) => (
+            galleries.map(({ name, slug }) => (
               <span
-                key={name}
+                key={slug}
                 style={{
                   fontSize: '0.72rem',
                   padding: '0.22rem 0.55rem',
@@ -197,6 +197,45 @@ export function PhotoEditHeader() {
               </span>
             ))
           )}
+        </div>
+
+        {/* View in Portfolio links */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginTop: '0.1rem' }}>
+          <a
+            href={category ? `https://tynnellhollinsphotography.com/portfolio?category=${category}` : 'https://tynnellhollinsphotography.com/portfolio'}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              fontSize: '0.72rem',
+              padding: '0.25rem 0.6rem',
+              borderRadius: 4,
+              border: '1px solid rgba(155,154,154,0.3)',
+              color: '#9b9a9a',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            View in Portfolio
+          </a>
+          {galleries.map(({ name, slug }) => (
+            <a
+              key={slug}
+              href={`https://tynnellhollinsphotography.com/portfolio/${slug}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                fontSize: '0.72rem',
+                padding: '0.25rem 0.6rem',
+                borderRadius: 4,
+                border: '1px solid rgba(155,154,154,0.3)',
+                color: '#9b9a9a',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              View in {name}
+            </a>
+          ))}
         </div>
       </div>
     </div>
