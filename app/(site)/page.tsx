@@ -1,3 +1,4 @@
+import { preload } from 'react-dom'
 import { getPayload } from 'payload'
 import { Render } from '@measured/puck/rsc'
 import type { Data } from '@measured/puck'
@@ -20,6 +21,10 @@ import type { Photo } from '@/payload-types'
 export const revalidate = 120
 
 export default async function Home() {
+  // Preload the hero background so the browser fetches it early (LCP boost).
+  // CSS background-image is not auto-preloaded; this emits a <link rel="preload">.
+  preload('/hero-background.jpg', { as: 'image', fetchPriority: 'high' })
+
   const payload = await getPayload({ config })
 
   // A builder page can be promoted to the site homepage (TYN-227). When one is

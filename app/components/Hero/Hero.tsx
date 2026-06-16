@@ -1,9 +1,5 @@
-'use client'
 import Link from 'next/link'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, EffectFade } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/effect-fade'
+import dynamic from 'next/dynamic'
 import styles from './Hero.module.css'
 
 export interface HeroSlide {
@@ -20,30 +16,24 @@ interface Props {
 
 const FALLBACK_TAGLINE = 'Lost in the Moment, Found in Forever'
 
+const SwiperSlides = dynamic(() => import('./SwiperSlides'), { ssr: false })
+
 export default function Hero({ slides, defaultTagline = FALLBACK_TAGLINE }: Props) {
-  const hasSlides = slides.length > 0 && slides.some(s => s.imageUrl)
+  const validSlides = slides.filter(s => s.imageUrl)
 
   return (
     <section className={styles.hero}>
-      {hasSlides ? (
-        <Swiper
-          modules={[Autoplay, EffectFade]}
-          effect="fade"
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
-          loop={true}
-          className={styles.swiper}
-        >
-          {slides.filter(s => s.imageUrl).map((slide) => (
-            <SwiperSlide key={slide.id} className={styles.slide}>
-              <div
-                className={styles.image}
-                style={{ backgroundImage: `url(${slide.imageUrl})` }}
-                role="img"
-                aria-label={slide.alt ?? ''}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+      {validSlides.length > 1 ? (
+        <SwiperSlides slides={validSlides} />
+      ) : validSlides.length === 1 ? (
+        <div className={styles.swiper}>
+          <div
+            className={styles.image}
+            style={{ backgroundImage: `url(${validSlides[0].imageUrl})` }}
+            role="img"
+            aria-label={validSlides[0].alt ?? ''}
+          />
+        </div>
       ) : (
         <div className={styles.swiper} />
       )}

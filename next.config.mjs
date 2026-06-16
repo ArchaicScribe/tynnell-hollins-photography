@@ -2,6 +2,10 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
+  experimental: {
+    optimizePackageImports: ['swiper'],
+  },
   images: {
     // Photos are served from Cloudflare R2. next/image rejects any remote host
     // not listed here. This block was lost when Sanity (cdn.sanity.io) was
