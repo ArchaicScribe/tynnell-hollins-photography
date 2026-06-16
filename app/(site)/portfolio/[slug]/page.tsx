@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     limit: 1,
   })
   const gallery = docs[0]
-  if (!gallery) return { title: 'Gallery | Tynnell Hollins Photography' }
+  if (!gallery) return { title: 'Gallery' }
 
   const cover = typeof gallery.coverPhoto === 'object' && gallery.coverPhoto !== null
     ? gallery.coverPhoto as Photo
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ogImageUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
 
   return {
-    title: `${gallery.title} | Tynnell Hollins Photography`,
+    title: `${gallery.title}`,
     description: `${gallery.title} — a ${gallery.category} session by Tynnell Hollins Photography.`,
     ...(ogImageUrl && {
       openGraph: {

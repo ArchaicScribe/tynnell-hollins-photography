@@ -10,7 +10,7 @@ import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Contact | Tynnell Hollins Photography',
+  title: 'Contact',
   description: 'Book a session with Tynnell Hollins Photography. Weddings, engagements, portraits, and more.',
 }
 

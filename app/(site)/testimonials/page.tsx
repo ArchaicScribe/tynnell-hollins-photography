@@ -5,7 +5,7 @@ import config from '@payload-config'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Client Love | Tynnell Hollins Photography',
+  title: 'Client Love',
   description: 'Kind words from couples, families, and portrait clients who have worked with Tynnell Hollins Photography.',
 }
 

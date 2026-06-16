@@ -10,7 +10,7 @@ import styles from './page.module.css'
 export const revalidate = 120
 
 export const metadata: Metadata = {
-  title: 'Blog | Tynnell Hollins Photography',
+  title: 'Blog',
   description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',
 }
 

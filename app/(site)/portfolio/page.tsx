@@ -11,7 +11,7 @@ import styles from './page.module.css'
 export const revalidate = 120
 
 export const metadata: Metadata = {
-  title: 'Portfolio | Tynnell Hollins Photography',
+  title: 'Portfolio',
   description: 'Browse the full portfolio: weddings, portraits, families, couples, and more.',
 }
 

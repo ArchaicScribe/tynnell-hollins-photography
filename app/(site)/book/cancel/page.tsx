@@ -3,7 +3,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Booking Cancelled | Tynnell Hollins Photography',
+  title: 'Booking Cancelled',
 }
 
 export default function BookCancelPage() {

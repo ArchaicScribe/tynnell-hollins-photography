@@ -8,7 +8,7 @@ import styles from './page.module.css'
 export const revalidate = 120
 
 export const metadata: Metadata = {
-  title: 'Services | Tynnell Hollins Photography',
+  title: 'Services',
   description: "Photography packages for weddings, portraits, families, couples, and brands. View pricing and what's included.",
 }
 

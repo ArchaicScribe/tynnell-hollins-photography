@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     limit: 1,
   })
   const post = docs[0]
-  if (!post) return { title: 'Post | Tynnell Hollins Photography' }
+  if (!post) return { title: 'Post' }
 
   const cover = typeof post.coverImage === 'object' && post.coverImage !== null
     ? post.coverImage as Photo
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ogImageUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
 
   return {
-    title: `${post.title} | Tynnell Hollins Photography`,
+    title: `${post.title}`,
     description: post.excerpt ?? undefined,
     ...(ogImageUrl && {
       openGraph: {

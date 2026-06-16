@@ -12,7 +12,7 @@ import styles from './page.module.css'
 export const revalidate = 120
 
 export const metadata: Metadata = {
-  title: 'About | Tynnell Hollins Photography',
+  title: 'About',
   description: 'Meet Tynnell Hollins, New Mexico photographer specializing in weddings, engagements, portraits, and family sessions.',
 }
 

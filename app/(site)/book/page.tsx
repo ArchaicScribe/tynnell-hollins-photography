@@ -8,7 +8,7 @@ import styles from './page.module.css'
 import { getActiveOoo } from '@/app/lib/availability'
 
 export const metadata: Metadata = {
-  title: 'Book a Session | Tynnell Hollins Photography',
+  title: 'Book a Session',
   description: 'Reserve your date with a deposit. Choose from weddings, portraits, families, engagements, maternity, and brand sessions.',
 }
 
