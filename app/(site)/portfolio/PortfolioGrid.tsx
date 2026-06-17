@@ -70,12 +70,13 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
   return (
     <>
       {/* Category filter */}
-      <div className={styles.filterBar}>
+      <div className={styles.filterBar} role="group" aria-label="Filter by category">
         {CATEGORIES.map(cat => (
           <button
             key={cat.value}
             className={`${styles.filterBtn} ${activeCategory === cat.value ? styles.filterBtnActive : ''}`}
             onClick={() => handleFilter(cat.value)}
+            aria-pressed={activeCategory === cat.value}
           >
             {cat.label}
           </button>

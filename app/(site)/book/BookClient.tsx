@@ -110,7 +110,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
                 role={isActive ? undefined : 'button'}
                 tabIndex={isActive ? undefined : 0}
                 onClick={() => !isActive && handleSelect(pkg.id)}
-                onKeyDown={(e) => !isActive && e.key === 'Enter' && handleSelect(pkg.id)}
+                onKeyDown={(e) => !isActive && (e.key === 'Enter' || e.key === ' ') && handleSelect(pkg.id)}
               >
                 {pkg.eyebrow && <p className={styles.cardEyebrow}>{pkg.eyebrow}</p>}
                 <h2 className={styles.cardTitle}>{pkg.title}</h2>
