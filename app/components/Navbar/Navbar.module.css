@@ -28,6 +28,7 @@
   color: var(--color-heading);
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  text-decoration: none;
 }
 
 /* ── Desktop links ───────────────────────────────────────── */

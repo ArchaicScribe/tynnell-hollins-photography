@@ -61,8 +61,9 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${tangerine.variable} ${archivo.variable} ${robotoMono.variable}`}>
       <body suppressHydrationWarning>
+        <a href="#main-content" className="skipLink">Skip to content</a>
         <Navbar builderLinks={builderLinks} />
-        {children}
+        <div id="main-content">{children}</div>
         <Footer />
         <Analytics />
         <SpeedInsights />

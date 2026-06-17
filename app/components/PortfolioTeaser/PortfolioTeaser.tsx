@@ -19,7 +19,7 @@ const PLACEHOLDERS = [
   'Wedding moment', 'Portrait session', 'Family photography',
   'Engagement shoot', 'Graduation portrait', 'Couples session',
 ]
-const CATEGORY_HREFS = [
+const FALLBACK_HREFS = [
   '/portfolio?category=weddings',
   '/portfolio?category=portraits',
   '/portfolio?category=families',
@@ -38,13 +38,17 @@ export default function PortfolioTeaser({ photos }: Props) {
         <p className={styles.subheading}>Every frame tells a story</p>
       </div>
       <div className={styles.grid}>
-        {slots.map((photo, i) => (
+        {slots.map((photo, i) => {
+          const href = photo?.category
+            ? `/portfolio?category=${photo.category}`
+            : FALLBACK_HREFS[i]
+          return (
           <Link
             key={photo?.id ?? i}
-            href={CATEGORY_HREFS[i]}
+            href={href}
             className={styles.card}
             style={{ '--rotation': `${TAPE_ANGLES[i]}deg` } as React.CSSProperties}
-            aria-label={`View ${PLACEHOLDERS[i]} gallery`}
+            aria-label={`View ${photo?.category ?? PLACEHOLDERS[i]} gallery`}
           >
             <div className={styles.imageSlot}>
               {photo?.imageUrl ? (
@@ -61,7 +65,8 @@ export default function PortfolioTeaser({ photos }: Props) {
             </div>
             <div className={styles.caption}>{photo?.title ?? PLACEHOLDERS[i]}</div>
           </Link>
-        ))}
+          )
+        })}
       </div>
       <div className={styles.cta}>
         <Link href="/portfolio" className={styles.ctaButton}>View All Work</Link>

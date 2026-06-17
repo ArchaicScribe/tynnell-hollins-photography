@@ -22,6 +22,34 @@ a {
   text-decoration: none;
 }
 
+/* ── Skip to content ──────────────────────────────────────── */
+/* Visually hidden until focused; lets keyboard users skip    */
+/* past the navbar directly to page content.                  */
+
+.skipLink {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-accent);
+  color: var(--color-heading);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  z-index: 9999;
+  border: 1px solid rgba(214, 209, 206, 0.2);
+  transition: top 0.15s ease;
+}
+
+.skipLink:focus {
+  top: 1rem;
+  outline: 2px solid var(--color-detail);
+  outline-offset: 2px;
+}
+
 /* ── Focus styles ──────────────────────────────────────────── */
 /* Keyboard-only focus ring; hidden for mouse/touch users     */
 
