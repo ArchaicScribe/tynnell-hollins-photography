@@ -7,7 +7,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-// Blog listing — posts are published infrequently, revalidate every 2 minutes
+// Blog listing - posts are published infrequently, revalidate every 2 minutes
 export const revalidate = 120
 
 export const metadata: Metadata = {
@@ -67,7 +67,7 @@ export default async function BlogPage() {
         <p className={styles.emptyState}>New posts are on their way. Check back soon.</p>
       ) : (
         <>
-          {/* Featured post — most recent, full width with cover hero */}
+          {/* Featured post - most recent, full width with cover hero */}
           {featuredPost && (
             <article className={styles.featured}>
               {featuredCoverUrl && (

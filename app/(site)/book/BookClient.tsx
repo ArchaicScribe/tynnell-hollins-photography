@@ -109,6 +109,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
                 className={styles.cardTop}
                 role={isActive ? undefined : 'button'}
                 tabIndex={isActive ? undefined : 0}
+                aria-label={isActive ? undefined : `Select ${pkg.title} package`}
                 onClick={() => !isActive && handleSelect(pkg.id)}
                 onKeyDown={(e) => !isActive && (e.key === 'Enter' || e.key === ' ') && handleSelect(pkg.id)}
               >

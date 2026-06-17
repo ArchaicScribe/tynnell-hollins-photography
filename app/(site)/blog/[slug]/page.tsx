@@ -11,7 +11,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-// Post content rarely changes once published — revalidate every 2 minutes for fresh edits
+// Post content rarely changes once published - revalidate every 2 minutes for fresh edits
 export const revalidate = 120
 
 type Props = { params: Promise<{ slug: string }> }

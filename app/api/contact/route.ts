@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Please enter a valid phone number (at least 7 digits).' }, { status: 400 })
   }
 
-  // Fetch booking settings and availability from the admin — fall back to
+  // Fetch booking settings and availability from the admin - fall back to
   // hardcoded defaults if the globals haven't been saved yet or the fetch fails
   let minLeadTimeHours = MIN_LEAD_TIME_HOURS
   let maxBookingMonths = MAX_BOOKING_MONTHS
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // Check if today is within an OOO period — used to set acknowledgment expectations
+  // Check if today is within an OOO period - used to set acknowledgment expectations
   const activeOoo = blockedRanges.length > 0 ? getActiveOoo(blockedRanges) : null
 
   const safeName              = escapeHtml(name)

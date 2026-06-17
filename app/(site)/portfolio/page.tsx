@@ -8,7 +8,7 @@ import type { PortfolioPhoto, PortfolioGallery } from './PortfolioGrid'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-// Portfolio updates occasionally as photos are added — revalidate every 2 minutes
+// Portfolio updates occasionally as photos are added - revalidate every 2 minutes
 export const revalidate = 120
 
 export const metadata: Metadata = {

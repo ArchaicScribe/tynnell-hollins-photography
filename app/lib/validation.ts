@@ -20,7 +20,7 @@ export const CHECKOUT_MAX_LENGTHS = {
 
 /**
  * Returns true if any field in `values` exceeds its limit in `limits`.
- * Only checks string values — non-strings are skipped.
+ * Only checks string values - non-strings are skipped.
  */
 export function anyFieldTooLong(
   values: Record<string, unknown>,
@@ -70,7 +70,7 @@ export const MAX_BOOKING_MONTHS = 24
 /**
  * Validates a session date string submitted via the contact form.
  *
- * Accepts optional overrides for lead time and booking window — used when
+ * Accepts optional overrides for lead time and booking window - used when
  * the contact API route fetches live values from the BookingSettings global.
  * Falls back to the hardcoded constants if overrides are not provided.
  */

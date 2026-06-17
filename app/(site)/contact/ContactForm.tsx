@@ -5,7 +5,7 @@ import { CONTACT_EMAIL } from '@/app/lib/constants'
 import dynamic from 'next/dynamic'
 
 // ssr: false prevents @googlemaps/js-api-loader from being evaluated on the
-// server — it references `window` at module load time and throws during SSR.
+// server - it references `window` at module load time and throws during SSR.
 const LocationInput = dynamic(
   () => import('@/app/components/LocationInput/LocationInput'),
   { ssr: false },
@@ -102,7 +102,7 @@ export default function ContactForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        // 400: server returned a user-facing validation message — show it directly.
+        // 400: server returned a user-facing validation message - show it directly.
         // 429: rate limit hit.
         // anything else: generic fallback with a clickable email link.
         let message: ReactNode

@@ -1,15 +1,15 @@
-/* Tynnell Hollins Photography — Payload admin brand theme */
+/* Tynnell Hollins Photography - Payload admin brand theme */
 
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Roboto+Mono:ital,wght@0,400;0,500;1,400&family=Tangerine:wght@400;700&display=swap');
 
-/* Override Payload CSS variables — applied under both themes so the dark
+/* Override Payload CSS variables - applied under both themes so the dark
    palette holds regardless of the user's system preference. */
 :root,
 [data-theme="dark"],
 [data-theme="light"] {
   color-scheme: dark;
 
-  /* Backgrounds — lifted from near-black to a readable dark grey (TYN-190) */
+  /* Backgrounds - lifted from near-black to a readable dark grey (TYN-190) */
   --theme-bg:             #1a1a1a;
   --theme-elevation-0:    #1a1a1a;
   --theme-elevation-50:   #1e1e1e;
@@ -69,7 +69,7 @@ h1, h2, h3, h4, h5, h6,
   background: #3a3a3a;
 }
 
-/* ── List view — taller rows so thumbnails breathe ─────────── */
+/* ── List view - taller rows so thumbnails breathe ─────────── */
 
 .cell--relationship img,
 .cell--upload img,
@@ -83,7 +83,7 @@ tbody tr,
   height: 64px;
 }
 
-/* ── Upload thumbnail — make it larger in the list ─────────── */
+/* ── Upload thumbnail - make it larger in the list ─────────── */
 
 .file-meta__thumbnail img,
 .thumbnail--list img {
@@ -317,7 +317,7 @@ h1.login__heading {
   opacity: 0.7;
 }
 
-/* Indicator chevron — keep it subtle */
+/* Indicator chevron - keep it subtle */
 .nav-group__indicator {
   opacity: 0.5;
   width: 10px;

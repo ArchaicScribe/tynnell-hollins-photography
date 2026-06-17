@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
   }
 
-  // Fetch booking settings + availability for date validation — fall back to defaults
+  // Fetch booking settings + availability for date validation - fall back to defaults
   let minLeadTimeHours = MIN_LEAD_TIME_HOURS
   let maxBookingMonths = MAX_BOOKING_MONTHS
   let blockedRanges: Array<{
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // Validate depositAmount against Payload — Payload is the source of truth for pricing
+  // Validate depositAmount against Payload - Payload is the source of truth for pricing
   const { docs } = await payload.find({
     collection: 'services',
     where: {

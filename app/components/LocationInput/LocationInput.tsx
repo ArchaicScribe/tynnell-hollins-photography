@@ -21,7 +21,7 @@ export default function LocationInput({ id, value, onChange, onBlur, className, 
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!apiKey || !inputRef.current) return
 
-    // setOptions is idempotent — safe to call multiple times
+    // setOptions is idempotent - safe to call multiple times
     if (!initialized) {
       setOptions({ key: apiKey })
       initialized = true

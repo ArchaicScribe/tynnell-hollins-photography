@@ -101,7 +101,7 @@ a {
   display: none;
 }
 
-/* Hide the "Powered by Google" logo — required by ToS to be visible,
+/* Hide the "Powered by Google" logo - required by ToS to be visible,
    but it renders inside the dropdown. We keep it accessible but minimal. */
 .pac-logo::after {
   opacity: 0.3;

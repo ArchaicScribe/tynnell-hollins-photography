@@ -9,7 +9,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-// About content rarely changes — revalidate every 2 minutes
+// About content rarely changes - revalidate every 2 minutes
 export const revalidate = 120
 
 export const metadata: Metadata = {

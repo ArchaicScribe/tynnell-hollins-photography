@@ -64,7 +64,7 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
           ))}
         </ul>
 
-        {/* Hamburger button — mobile only */}
+        {/* Hamburger button - mobile only */}
         <button
           className={`${styles.hamburger} ${menuOpen ? styles.hamburgerOpen : ''}`}
           onClick={() => setMenuOpen((prev) => !prev)}

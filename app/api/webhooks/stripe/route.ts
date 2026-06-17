@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'))
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Stripe requires the raw request body for signature verification —
+// Stripe requires the raw request body for signature verification -
 // disable Next.js body parsing by reading text directly.
 export async function POST(request: Request) {
 
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const packageName = escapeHtml(session.metadata?.packageName ?? 'Session')
     const amountPaid  = session.amount_total ? `$${(session.amount_total / 100).toFixed(0)}` : ''
 
-    // Check OOO status — non-fatal if unavailable
+    // Check OOO status - non-fatal if unavailable
     let oooMessage: string | undefined
     try {
       const payload = await getPayload({ config })

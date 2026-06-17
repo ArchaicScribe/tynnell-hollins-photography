@@ -64,7 +64,7 @@
   color: var(--color-detail);
 }
 
-/* Date input — fix browser default text color */
+/* Date input - fix browser default text color */
 .input[type='date']::-webkit-calendar-picker-indicator {
   filter: invert(0.5);
   cursor: pointer;

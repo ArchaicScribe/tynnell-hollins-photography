@@ -108,7 +108,7 @@
   padding: 2.5rem 3rem;
 }
 
-/* Text colors — default (no image) */
+/* Text colors - default (no image) */
 .featuredEyebrow {
   font-family: var(--font-mono);
   font-size: 0.65rem;
@@ -171,7 +171,7 @@
   border-color: var(--color-heading);
 }
 
-/* Text colors — overlaid on cover image */
+/* Text colors - overlaid on cover image */
 .featured:has(.featuredImageLink) .featuredEyebrow {
   color: rgba(255, 255, 255, 0.6);
 }
@@ -198,7 +198,7 @@
   border-bottom-color: rgba(255, 255, 255, 0.8);
 }
 
-/* ── More posts grid — taped polaroid style ────────────────── */
+/* ── More posts grid - taped polaroid style ────────────────── */
 
 .grid {
   max-width: 1200px;
