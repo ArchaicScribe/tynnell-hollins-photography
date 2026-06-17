@@ -2,6 +2,7 @@
 // Dashboard: collection counts, recent activity, OOO status (rev: 0000115)
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { type BlockedRange } from '@/app/lib/availability'
 
 interface CollectionStat {
   slug: string
@@ -33,14 +34,6 @@ interface GlobalLink {
   label: string
   emoji: string
   path: string
-}
-
-interface BlockedRange {
-  internalLabel?: string | null
-  startDate?: string | null
-  endDate?: string | null
-  applyReturnBuffer?: boolean | null
-  returnBufferDays?: number | null
 }
 
 interface OooState {

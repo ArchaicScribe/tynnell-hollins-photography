@@ -4,6 +4,7 @@
  */
 
 export interface BlockedRange {
+  internalLabel?: string | null
   startDate?: string | null
   endDate?: string | null
   applyReturnBuffer?: boolean | null
@@ -17,7 +18,7 @@ export interface ActiveOoo {
   message: string
 }
 
-function computeReturnDate(range: BlockedRange): Date {
+export function computeReturnDate(range: BlockedRange): Date {
   const end = new Date(range.endDate!)
   const bufferDays = range.applyReturnBuffer !== false ? (range.returnBufferDays ?? 2) : 0
   if (bufferDays > 0) end.setDate(end.getDate() + bufferDays)

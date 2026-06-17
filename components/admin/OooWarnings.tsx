@@ -2,26 +2,10 @@
 
 import React from 'react'
 import { useField } from '@payloadcms/ui'
-
-type BlockedRange = {
-  id?: string | null
-  internalLabel?: string | null
-  startDate?: string | null
-  endDate?: string | null
-  applyReturnBuffer?: boolean | null
-  returnBufferDays?: number | null
-}
+import { type BlockedRange, computeReturnDate } from '@/app/lib/availability'
 
 function label(range: BlockedRange, index: number): string {
   return range.internalLabel ? `"${range.internalLabel}"` : `Entry ${index + 1}`
-}
-
-function computeReturnDate(range: BlockedRange): Date {
-  const end = new Date(range.endDate!)
-  const buffer = range.applyReturnBuffer !== false ? (range.returnBufferDays ?? 2) : 0
-  end.setDate(end.getDate() + buffer)
-  end.setHours(23, 59, 59, 999)
-  return end
 }
 
 export function OooWarnings() {
