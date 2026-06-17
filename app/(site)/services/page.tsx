@@ -72,6 +72,7 @@ export default async function ServicesPage() {
             <Link
               href={`/book?package=${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
               className={styles.bookBtn}
+              aria-label={`Book ${service.title} session`}
             >
               Reserve Your Date
             </Link>
