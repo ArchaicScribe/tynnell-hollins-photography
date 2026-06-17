@@ -5,6 +5,7 @@ import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import PortfolioGrid from './PortfolioGrid'
 import type { PortfolioPhoto, PortfolioGallery } from './PortfolioGrid'
+import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
 // Portfolio updates occasionally as photos are added — revalidate every 2 minutes
@@ -62,8 +63,18 @@ export default async function PortfolioPage() {
     }
   })
 
+  const portfolioSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Portfolio',
+    description: 'Browse the full portfolio: weddings, portraits, families, couples, and more.',
+    url: 'https://tynnellhollinsphotography.com/portfolio',
+    author: { '@type': 'Person', name: 'Tynnell Hollins', url: 'https://tynnellhollinsphotography.com/about' },
+  }
+
   return (
     <main className={styles.main}>
+      <JsonLd data={portfolioSchema} />
       <div className={styles.header}>
         <p className={styles.eyebrow}>The Work</p>
         <h1 className={styles.heading}>Portfolio</h1>

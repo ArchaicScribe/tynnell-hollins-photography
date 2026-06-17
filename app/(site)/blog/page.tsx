@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
+import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
 // Blog listing — posts are published infrequently, revalidate every 2 minutes
@@ -36,8 +37,25 @@ export default async function BlogPage() {
     ? typeof featuredPost.slug === 'string' ? featuredPost.slug : ''
     : ''
 
+  const blogSchema = posts.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'Journal',
+    description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',
+    url: 'https://tynnellhollinsphotography.com/blog',
+    author: { '@type': 'Person', name: 'Tynnell Hollins', url: 'https://tynnellhollinsphotography.com/about' },
+    blogPost: posts.slice(0, 10).map(p => ({
+      '@type': 'BlogPosting',
+      headline: p.title,
+      description: p.excerpt ?? undefined,
+      datePublished: p.publishedAt,
+      url: `https://tynnellhollinsphotography.com/blog/${typeof p.slug === 'string' ? p.slug : ''}`,
+    })),
+  } : null
+
   return (
     <main className={styles.main}>
+      {blogSchema && <JsonLd data={blogSchema} />}
 
       {/* Hero */}
       <section className={styles.hero}>

@@ -101,6 +101,16 @@ export default async function Home() {
     url: 'https://tynnellhollinsphotography.com',
     email: CONTACT_EMAIL,
     image: 'https://tynnellhollinsphotography.com/og-image.jpg',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Albuquerque',
+      addressRegion: 'NM',
+      addressCountry: 'US',
+    },
+    areaServed: [
+      { '@type': 'City', name: 'Albuquerque' },
+      { '@type': 'State', name: 'New Mexico' },
+    ],
     sameAs: [
       'https://instagram.com/tynnellhollinsphotography',
     ],

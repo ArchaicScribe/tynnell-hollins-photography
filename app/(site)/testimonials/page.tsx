@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
 export const revalidate = 120
@@ -19,8 +20,24 @@ export default async function TestimonialsPage() {
     depth: 0,
   })
 
+  const reviewSchema = testimonials.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@graph': testimonials.map(t => ({
+      '@type': 'Review',
+      reviewBody: t.quote,
+      author: { '@type': 'Person', name: t.clientName },
+      reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
+      itemReviewed: {
+        '@type': 'LocalBusiness',
+        name: 'Tynnell Hollins Photography',
+        url: 'https://tynnellhollinsphotography.com',
+      },
+    })),
+  } : null
+
   return (
     <main className={styles.page}>
+      {reviewSchema && <JsonLd data={reviewSchema} />}
 
       <div className={styles.header}>
         <p className={styles.eyebrow}>Kind Words</p>
@@ -33,11 +50,11 @@ export default async function TestimonialsPage() {
       {testimonials.length > 0 ? (
         <div className={styles.grid}>
           {testimonials.map((t) => (
-            <article key={t.id} className={styles.card}>
-              <p className={styles.stars} aria-label="5 stars">★★★★★</p>
+            <article key={t.id} className={styles.card} aria-label={`Review from ${t.clientName}`}>
+              <p className={styles.stars} aria-label="5 out of 5 stars">★★★★★</p>
               <blockquote className={styles.quote}>&ldquo;{t.quote}&rdquo;</blockquote>
               <footer className={styles.footer}>
-                <p className={styles.name}>{t.clientName}</p>
+                <cite className={styles.name}>{t.clientName}</cite>
                 {t.sessionType && (
                   <p className={styles.session}>{t.sessionType}</p>
                 )}
