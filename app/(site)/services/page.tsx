@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
 // Service packages change rarely — revalidate every 2 minutes
@@ -20,8 +21,32 @@ export default async function ServicesPage() {
     depth: 0,
   })
 
+  const servicesSchema = services.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@graph': services.map(s => ({
+      '@type': 'Service',
+      name: s.title,
+      description: s.description ?? undefined,
+      url: 'https://tynnellhollinsphotography.com/services',
+      provider: {
+        '@type': 'LocalBusiness',
+        name: 'Tynnell Hollins Photography',
+        url: 'https://tynnellhollinsphotography.com',
+      },
+      ...(s.price ? {
+        offers: {
+          '@type': 'Offer',
+          price: s.price,
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+        },
+      } : {}),
+    })),
+  } : null
+
   return (
     <main className={styles.main}>
+      {servicesSchema && <JsonLd data={servicesSchema} />}
 
       {/* Hero */}
       <section className={styles.hero}>
