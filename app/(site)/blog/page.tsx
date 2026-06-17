@@ -102,11 +102,11 @@ export default async function BlogPage() {
                 )}
                 <div className={styles.featuredMeta}>
                   {featuredPost.publishedAt && (
-                    <span className={styles.featuredDate}>
+                    <time className={styles.featuredDate} dateTime={featuredPost.publishedAt}>
                       {new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
                         year: 'numeric', month: 'long', day: 'numeric',
                       })}
-                    </span>
+                    </time>
                   )}
                   <Link href={`/blog/${featuredSlug}`} className={styles.featuredCta}>
                     Read Article
@@ -149,11 +149,11 @@ export default async function BlogPage() {
                     )}
                     <div className={styles.cardBody}>
                       {post.publishedAt && (
-                        <p className={styles.cardDate}>
+                        <time className={styles.cardDate} dateTime={post.publishedAt}>
                           {new Date(post.publishedAt).toLocaleDateString('en-US', {
                             year: 'numeric', month: 'long', day: 'numeric',
                           })}
-                        </p>
+                        </time>
                       )}
                       <h2 className={styles.cardTitle}>
                         <Link href={`/blog/${slug}`} className={styles.cardLink}>

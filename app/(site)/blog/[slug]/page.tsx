@@ -145,11 +145,11 @@ export default async function BlogPostPage({ params }: Props) {
           <p className={styles.eyebrow}>Journal</p>
           <h1 id="post-heading" className={styles.title}>{post.title}</h1>
           {post.publishedAt && (
-            <p className={styles.date}>
+            <time className={styles.date} dateTime={post.publishedAt}>
               {new Date(post.publishedAt).toLocaleDateString('en-US', {
                 year: 'numeric', month: 'long', day: 'numeric',
               })}
-            </p>
+            </time>
           )}
         </div>
       </header>
@@ -205,11 +205,11 @@ export default async function BlogPostPage({ params }: Props) {
                     )}
                     <div className={styles.relatedBody}>
                       {rp.publishedAt && (
-                        <p className={styles.relatedDate}>
+                        <time className={styles.relatedDate} dateTime={rp.publishedAt}>
                           {new Date(rp.publishedAt).toLocaleDateString('en-US', {
                             year: 'numeric', month: 'long', day: 'numeric',
                           })}
-                        </p>
+                        </time>
                       )}
                       <h3 className={styles.relatedTitle}>
                         <Link href={`/blog/${rpSlug}`} className={styles.relatedLink}>
