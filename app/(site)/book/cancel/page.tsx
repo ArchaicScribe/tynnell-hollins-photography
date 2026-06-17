@@ -4,6 +4,7 @@ import styles from './page.module.css'
 
 export const metadata: Metadata = {
   title: 'Booking Cancelled',
+  robots: { index: false },
 }
 
 export default function BookCancelPage() {

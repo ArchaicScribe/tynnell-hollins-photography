@@ -4,6 +4,7 @@ import styles from './page.module.css'
 
 export const metadata: Metadata = {
   title: 'Booking Confirmed',
+  robots: { index: false },
 }
 
 export default function BookSuccessPage() {

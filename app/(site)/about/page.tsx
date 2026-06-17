@@ -6,6 +6,7 @@ import type { SerializedEditorState } from 'lexical'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
+import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
 // About content rarely changes — revalidate every 2 minutes
@@ -44,8 +45,31 @@ export default async function AboutPage() {
     ? about.values.map((v: RawValue) => ({ heading: v.heading ?? '', body: v.body ?? undefined }))
     : DEFAULT_VALUES
 
+  const personSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Tynnell Hollins',
+    jobTitle: 'Photographer',
+    url: 'https://tynnellhollinsphotography.com/about',
+    sameAs: ['https://instagram.com/tynnellhollinsphotography'],
+    worksFor: {
+      '@type': 'LocalBusiness',
+      name: 'Tynnell Hollins Photography',
+      url: 'https://tynnellhollinsphotography.com',
+    },
+    knowsAbout: ['Wedding Photography', 'Portrait Photography', 'Family Photography', 'Engagement Photography', 'Maternity Photography'],
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Albuquerque',
+      addressRegion: 'NM',
+      addressCountry: 'US',
+    },
+    ...(headshotUrl && { image: headshotUrl }),
+  }
+
   return (
     <main className={styles.main}>
+      <JsonLd data={personSchema} />
 
       {/* Hero */}
       <section className={styles.hero}>

@@ -4,6 +4,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import styles from './page.module.css'
 
+export const revalidate = 120
+
 export const metadata: Metadata = {
   title: 'Client Love',
   description: 'Kind words from couples, families, and portrait clients who have worked with Tynnell Hollins Photography.',
