@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import ContactForm from './ContactForm'
+import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
@@ -55,8 +56,23 @@ export default async function ContactPage() {
     // Non-fatal: banner simply won't show if globals are unavailable
   }
 
+  const contactPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact Tynnell Hollins Photography',
+    description: 'Book a session or send an inquiry. Weddings, engagements, portraits, and more.',
+    url: 'https://tynnellhollinsphotography.com/contact',
+    mainEntity: {
+      '@type': 'LocalBusiness',
+      name: 'Tynnell Hollins Photography',
+      email: CONTACT_EMAIL,
+      url: 'https://tynnellhollinsphotography.com',
+    },
+  }
+
   return (
     <main className={styles.main}>
+      <JsonLd data={contactPageSchema} />
       {oooMessage && (
         <div className={styles.oooBanner}>
           <p className={styles.oooMessage}>{oooMessage}</p>

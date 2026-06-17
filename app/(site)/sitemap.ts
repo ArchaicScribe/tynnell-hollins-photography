@@ -92,5 +92,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }))
 
-  return [...staticPages, ...galleryPages, ...postPages]
+  // Published builder pages (visual page builder)
+  const { docs: builderPages } = await payload.find({
+    collection: 'pages',
+    where: { published: { equals: true } },
+    depth: 0,
+    limit: 1000,
+  })
+
+  const builderPageEntries: MetadataRoute.Sitemap = builderPages
+    .filter((p): p is typeof p & { slug: string } => typeof p.slug === 'string' && p.slug.length > 0)
+    .map(p => ({
+      url: `${BASE_URL}/${p.slug}`,
+      lastModified: new Date(p.updatedAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    }))
+
+  return [...staticPages, ...galleryPages, ...postPages, ...builderPageEntries]
 }

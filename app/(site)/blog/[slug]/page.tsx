@@ -96,6 +96,16 @@ export default async function BlogPostPage({ params }: Props) {
     : null
   const coverUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tynnellhollinsphotography.com' },
+      { '@type': 'ListItem', position: 2, name: 'Journal', item: 'https://tynnellhollinsphotography.com/blog' },
+      { '@type': 'ListItem', position: 3, name: post.title, item: `https://tynnellhollinsphotography.com/blog/${post.slug}` },
+    ],
+  }
+
   const blogPostingSchema = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -124,6 +134,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <main className={styles.main}>
+      <JsonLd data={breadcrumbSchema} />
       <JsonLd data={blogPostingSchema} />
 
       {/* Hero */}
