@@ -17,7 +17,7 @@ export default function Footer() {
             <span className={styles.brandName}>Tynnell Hollins Photography</span>
             <span className={styles.brandSub}>Albuquerque, New Mexico</span>
           </div>
-          <ul className={styles.nav}>
+          <ul className={styles.nav} aria-label="Footer navigation">
             {navLinks.filter(l => l.href !== '/').map(link => (
               <li key={link.href}>
                 <Link href={link.href} className={styles.navLink}>{link.label}</Link>

@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { navLinks, type NavLink } from '@/app/constants/nav'
 import styles from './MobileMenu.module.css'
 
@@ -11,6 +12,7 @@ interface MobileMenuProps {
 
 export default function MobileMenu({ isOpen, onClose, links = navLinks }: MobileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!isOpen) return
@@ -77,6 +79,7 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks }: Mobile
                 className={styles.link}
                 onClick={onClose}
                 tabIndex={isOpen ? 0 : -1}
+                aria-current={pathname === link.href ? 'page' : undefined}
               >
                 {link.label}
               </a>

@@ -50,10 +50,14 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
         </Link>
 
         {/* Desktop links */}
-        <ul className={styles.links}>
+        <ul className={styles.links} aria-label="Site navigation">
           {allLinks.map((link) => (
             <li key={link.href}>
-              <Link href={link.href} className={styles.link}>
+              <Link
+                href={link.href}
+                className={styles.link}
+                aria-current={pathname === link.href ? 'page' : undefined}
+              >
                 {link.label}
               </Link>
             </li>
