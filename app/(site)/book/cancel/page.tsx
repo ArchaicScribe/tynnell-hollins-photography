@@ -14,7 +14,7 @@ export default function BookCancelPage() {
         <p className={styles.eyebrow}>No worries</p>
         <h1 className={styles.heading}>Payment Cancelled.</h1>
         <p className={styles.body}>
-          Your booking wasn&apos;t completed — nothing was charged. Your date hasn&apos;t been held yet.
+          Your booking wasn&apos;t completed. Nothing was charged. Your date hasn&apos;t been held yet.
         </p>
         <p className={styles.body}>
           Ready to try again, or have questions first?

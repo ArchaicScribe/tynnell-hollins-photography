@@ -126,7 +126,7 @@ export async function POST(request: Request) {
             currency: 'usd',
             unit_amount: Math.round(depositAmount * 100),
             product_data: {
-              name: `${packageName} — Booking Deposit`,
+              name: `${packageName}: Booking Deposit`,
               description: `Secures your date with Tynnell Hollins Photography. The remaining balance is due before your session.`,
             },
           },

@@ -4,7 +4,7 @@ import { CONTACT_EMAIL } from '@/app/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Coming Soon | Tynnell Hollins Photography',
-  description: 'Tynnell Hollins Photography — Albuquerque wedding and portrait photographer. Launching soon.',
+  description: 'Tynnell Hollins Photography, Albuquerque wedding and portrait photographer. Launching soon.',
   robots: { index: false, follow: false },
 }
 

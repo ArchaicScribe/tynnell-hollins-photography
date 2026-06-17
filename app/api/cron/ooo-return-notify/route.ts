@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     await resend.emails.send({
       from: EMAIL_FROM,
       to: process.env.CONTACT_TO_EMAIL ?? CONTACT_EMAIL,
-      subject: `You're back — ${range.internalLabel ?? 'OOO period'} has ended`,
+      subject: `You're back: ${range.internalLabel ?? 'OOO period'} has ended`,
       html: oooReturnNotificationEmailHtml({
         internalLabel: range.internalLabel ?? 'OOO period',
         returnDate: returnDateStr,

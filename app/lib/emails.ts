@@ -113,7 +113,7 @@ export interface OooReturnNotificationFields {
 
 export function oooReturnNotificationEmailHtml(f: OooReturnNotificationFields): string {
   return wrapper(`
-    <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">You're back — availability is open again.</h2>
+    <h2 style="border-bottom: 1px solid #eee; padding-bottom: 1rem;">You're back: availability is open again.</h2>
     <p>Your OOO period <strong>${f.internalLabel}</strong> has ended and your return buffer has expired.</p>
     <p>As of <strong>${f.returnDate}</strong>, the site is accepting new session inquiries and bookings again.</p>
     <p>

@@ -45,7 +45,7 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
   return (
     <>
       <nav className={navClass}>
-        <Link href="/" className={styles.brand} aria-label="Tynnell Hollins Photography — Home">
+        <Link href="/" className={styles.brand} aria-label="Tynnell Hollins Photography, home">
           Tynnell Hollins Photography
         </Link>
 

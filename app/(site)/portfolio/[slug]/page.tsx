@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${gallery.title}`,
-    description: `${gallery.title} — a ${gallery.category} session by Tynnell Hollins Photography.`,
+    description: `${gallery.title}, a ${gallery.category} session by Tynnell Hollins Photography.`,
     ...(ogImageUrl && {
       openGraph: {
         images: [{ url: ogImageUrl, width: 1920, height: 1080, alt: gallery.title }],
@@ -97,7 +97,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
     '@context': 'https://schema.org',
     '@type': 'ImageGallery',
     name: gallery.title,
-    description: `${gallery.title} — a ${gallery.category} session by Tynnell Hollins Photography.`,
+    description: `${gallery.title}, a ${gallery.category} session by Tynnell Hollins Photography.`,
     url: pageUrl,
     author: { '@type': 'Person', name: 'Tynnell Hollins' },
     ...(coverUrl && { thumbnailUrl: coverUrl }),

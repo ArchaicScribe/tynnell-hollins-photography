@@ -46,7 +46,7 @@ export default async function BlogPage() {
       </section>
 
       {posts.length === 0 ? (
-        <p className={styles.emptyState}>New posts are on their way — check back soon.</p>
+        <p className={styles.emptyState}>New posts are on their way. Check back soon.</p>
       ) : (
         <>
           {/* Featured post — most recent, full width with cover hero */}
