@@ -101,6 +101,7 @@ export default async function BlogPostPage({ params }: Props) {
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt ?? undefined,
+    inLanguage: 'en-US',
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
     author: {
@@ -112,6 +113,10 @@ export default async function BlogPostPage({ params }: Props) {
       '@type': 'Organization',
       name: 'Tynnell Hollins Photography',
       url: 'https://tynnellhollinsphotography.com',
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://tynnellhollinsphotography.com/blog/${post.slug}`,
     },
     url: `https://tynnellhollinsphotography.com/blog/${post.slug}`,
     ...(coverUrl && { image: coverUrl }),
@@ -138,7 +143,7 @@ export default async function BlogPostPage({ params }: Props) {
         )}
         <div className={styles.headerContent}>
           <p className={styles.eyebrow}>Journal</p>
-          <h1 className={styles.title}>{post.title}</h1>
+          <h1 id="post-heading" className={styles.title}>{post.title}</h1>
           {post.publishedAt && (
             <p className={styles.date}>
               {new Date(post.publishedAt).toLocaleDateString('en-US', {
@@ -150,7 +155,7 @@ export default async function BlogPostPage({ params }: Props) {
       </header>
 
       {/* Body */}
-      <article className={styles.article}>
+      <article className={styles.article} aria-labelledby="post-heading">
         {post.excerpt && <p className={styles.excerpt}>{post.excerpt}</p>}
         {post.body && (
           <div className={styles.body}>

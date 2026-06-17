@@ -86,7 +86,7 @@
 
 .card {
   background: var(--color-bg-accent);
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--color-border-solid);
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -187,7 +187,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  border-top: 1px solid #1e1e1e;
+  border-top: 1px solid var(--color-border-solid);
   padding-top: 1.25rem;
 }
 
@@ -212,7 +212,7 @@
   font-weight: 300;
   color: var(--color-body);
   background: var(--color-bg);
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--color-border-solid);
   border-radius: 2px;
   padding: 0.65rem 0.85rem;
   width: 100%;
@@ -225,13 +225,13 @@
 }
 
 .input::placeholder {
-  color: #444;
+  color: var(--color-detail);
 }
 
 .error {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: #c87171;
+  color: var(--color-error);
   margin: 0;
 }
 

@@ -53,6 +53,32 @@
   color: rgba(255,255,255,0.6);
 }
 
+/* ── Hero (no cover photo fallback) ──────────────────────── */
+
+.heroTextOnly {
+  padding: calc(var(--padding-block) * 2) var(--padding-x) var(--padding-block);
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.headingDark {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 400;
+  color: var(--color-heading);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.photoCountDark {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+}
+
 /* ── Content ──────────────────────────────────────────────── */
 
 .content {
@@ -93,7 +119,7 @@
 .imageSlot {
   position: relative;
   aspect-ratio: 4 / 3;
-  background: #1a1a1a;
+  background: var(--color-bg-card);
   overflow: hidden;
 }
 

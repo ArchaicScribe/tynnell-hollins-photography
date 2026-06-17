@@ -61,7 +61,7 @@
 }
 
 .input::placeholder {
-  color: #444;
+  color: var(--color-detail);
 }
 
 /* Date input — fix browser default text color */
@@ -116,7 +116,7 @@
   font-family: var(--font-prose);
   font-size: 0.8125rem;
   line-height: 1.6;
-  color: #c87171;
+  color: var(--color-error);
   margin: 0;
 }
 

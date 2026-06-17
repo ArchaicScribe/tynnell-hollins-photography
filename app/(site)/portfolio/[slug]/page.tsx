@@ -109,7 +109,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
       <JsonLd data={breadcrumbSchema} />
       <JsonLd data={imageGallerySchema} />
       {/* Hero */}
-      {coverUrl && (
+      {coverUrl ? (
         <div className={styles.hero}>
           <ProtectedImage
             src={coverUrl}
@@ -124,6 +124,12 @@ export default async function GalleryPage({ params, searchParams }: Props) {
             <h1 className={styles.heading}>{gallery.title}</h1>
             <p className={styles.photoCount}>{photos.length} photos</p>
           </div>
+        </div>
+      ) : (
+        <div className={styles.heroTextOnly}>
+          <p className={styles.eyebrow}>{gallery.category}</p>
+          <h1 className={styles.headingDark}>{gallery.title}</h1>
+          <p className={styles.photoCountDark}>{photos.length} photos</p>
         </div>
       )}
 

@@ -165,8 +165,8 @@
 /* ── Philosophy ───────────────────────────────────────────── */
 
 .philosophy {
-  border-top: 1px solid #1e1e1e;
-  border-bottom: 1px solid #1e1e1e;
+  border-top: 1px solid var(--color-border-solid);
+  border-bottom: 1px solid var(--color-border-solid);
   padding: 6rem 2.5vw;
   text-align: center;
   display: flex;
