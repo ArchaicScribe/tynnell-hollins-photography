@@ -3,6 +3,7 @@ import { Tangerine, Archivo, Roboto_Mono } from 'next/font/google'
 import './globals.css'
 import './styles/tokens.css'
 import Navbar from '../components/Navbar/Navbar'
+import Footer from '../components/Footer/Footer'
 import { getBuilderNavLinks } from '@/app/lib/nav'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -62,6 +63,7 @@ export default async function RootLayout({
       <body suppressHydrationWarning>
         <Navbar builderLinks={builderLinks} />
         {children}
+        <Footer />
         <Analytics />
         <SpeedInsights />
       </body>

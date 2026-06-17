@@ -1,0 +1,126 @@
+.footer {
+  background: var(--color-bg-accent);
+  border-top: 1px solid rgba(214, 209, 206, 0.08);
+  padding: 4rem var(--padding-x) 2.5rem;
+  margin-top: auto;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3rem;
+  align-items: start;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid rgba(214, 209, 206, 0.08);
+}
+
+/* Brand */
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--color-heading);
+  line-height: 1.1;
+}
+
+.brandSub {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+}
+
+/* Nav links */
+.nav {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 0.5rem 3rem;
+  list-style: none;
+  text-align: right;
+}
+
+.navLink {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: var(--color-heading);
+}
+
+/* Bottom bar */
+.bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 2rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.contact {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.contactLink {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--color-detail);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.contactLink:hover {
+  color: var(--color-heading);
+}
+
+.copy {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: rgba(155, 154, 154, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .top {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .nav {
+    grid-template-columns: repeat(3, auto);
+    text-align: left;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
