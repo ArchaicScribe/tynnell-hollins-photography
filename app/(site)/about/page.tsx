@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { cache } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { RichText } from '@payloadcms/richtext-lexical/react'
@@ -12,9 +13,26 @@ import styles from './page.module.css'
 // About content rarely changes - revalidate every 2 minutes
 export const revalidate = 120
 
-export const metadata: Metadata = {
-  title: 'About',
-  description: 'Meet Tynnell Hollins, New Mexico photographer specializing in weddings, engagements, portraits, and family sessions.',
+const getAboutData = cache(async () => {
+  const payload = await getPayload({ config })
+  return payload.findGlobal({ slug: 'about-page', depth: 1 })
+})
+
+export async function generateMetadata(): Promise<Metadata> {
+  const about = await getAboutData()
+  const headshotPhoto = typeof about?.headshot === 'object' && about.headshot !== null
+    ? about.headshot as Photo
+    : null
+  const ogImageUrl = headshotPhoto?.sizes?.hero?.url ?? headshotPhoto?.url ?? null
+
+  return {
+    title: 'About',
+    description: 'Meet Tynnell Hollins, New Mexico photographer specializing in weddings, engagements, portraits, and family sessions.',
+    ...(ogImageUrl && {
+      openGraph: { images: [{ url: ogImageUrl, alt: 'Tynnell Hollins' }] },
+      twitter: { images: [ogImageUrl] },
+    }),
+  }
 }
 
 type AboutValue = {
@@ -32,8 +50,7 @@ const DEFAULT_VALUES: AboutValue[] = [
 ]
 
 export default async function AboutPage() {
-  const payload = await getPayload({ config })
-  const about = await payload.findGlobal({ slug: 'about-page', depth: 1 })
+  const about = await getAboutData()
 
   const headshotPhoto = typeof about?.headshot === 'object' && about.headshot !== null
     ? about.headshot as Photo
