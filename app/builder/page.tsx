@@ -80,7 +80,7 @@ export default async function BuilderHome() {
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {p.published && (
-                    <Link href={`/${p.slug}`} target="_blank" style={{ color: '#9b9a9a', textDecoration: 'none', fontSize: '0.78rem', border: '1px solid rgba(155,154,154,0.25)', padding: '0.35rem 0.7rem', borderRadius: 4 }}>
+                    <Link href={`/${p.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: '#9b9a9a', textDecoration: 'none', fontSize: '0.78rem', border: '1px solid rgba(155,154,154,0.25)', padding: '0.35rem 0.7rem', borderRadius: 4 }}>
                       View &#8599;
                     </Link>
                   )}

@@ -65,35 +65,35 @@ a {
 /* ── Google Places autocomplete dropdown ───────────────────── */
 
 .pac-container {
-  background: #1a1a1a;
+  background: var(--color-bg-card);
   border: 1px solid rgba(214, 209, 206, 0.12);
   border-top: none;
   border-radius: 0 0 2px 2px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-  font-family: 'Roboto Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
 }
 
 .pac-item {
   padding: 0.6rem 1rem;
-  color: #9B9A9A;
-  border-top: 1px solid rgba(214, 209, 206, 0.06);
+  color: var(--color-detail);
+  border-top: 1px solid var(--color-border-subtle);
   cursor: pointer;
 }
 
 .pac-item:hover,
 .pac-item-selected {
   background: #222222;
-  color: #E6E1DE;
+  color: var(--color-body);
 }
 
 .pac-item-query {
-  color: #D6D1CE;
+  color: var(--color-heading);
   font-size: 0.8rem;
 }
 
 .pac-matched {
-  color: #E6E1DE;
+  color: var(--color-body);
   font-weight: 400;
 }
 
