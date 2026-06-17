@@ -198,27 +198,68 @@
   border-bottom-color: rgba(255, 255, 255, 0.8);
 }
 
-/* ── More posts grid ──────────────────────────────────────── */
+/* ── More posts grid — taped polaroid style ────────────────── */
 
 .grid {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 0 6rem;
+  padding: 3rem var(--padding-x) 6rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border-left: 1px solid var(--color-border);
+  gap: 4.5rem 2.5rem;
 }
 
 .card {
-  border-right: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
 }
 
+/* The image link wrapper becomes the cream polaroid mat */
 .cardImageLink {
   display: block;
-  overflow: hidden;
+  position: relative;
+  background: var(--tape-mat);
+  padding: 0.6rem 0.6rem 2rem;
+  box-shadow: var(--tape-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Washi-tape corners at the top of each polaroid */
+.cardImageLink::before,
+.cardImageLink::after {
+  content: '';
+  position: absolute;
+  top: -0.5rem;
+  width: 4rem;
+  height: 1.25rem;
+  background: var(--tape-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  z-index: 3;
+}
+
+.cardImageLink::before {
+  left: 0.8rem;
+  transform: rotate(-30deg);
+}
+
+.cardImageLink::after {
+  right: 0.8rem;
+  transform: rotate(30deg);
+}
+
+/* Alternating tilts so adjacent cards dont mirror each other */
+.card:nth-child(odd) .cardImageLink {
+  transform: rotate(-1.5deg);
+}
+
+.card:nth-child(even) .cardImageLink {
+  transform: rotate(1.2deg);
+}
+
+/* Hover: straighten, lift, and subtly zoom the photo */
+.card:hover .cardImageLink {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65);
 }
 
 .cardImage {
@@ -233,12 +274,12 @@
   transition: transform 0.5s ease;
 }
 
-.cardImageLink:hover .cardPhoto {
+.card:hover .cardPhoto {
   transform: scale(1.03);
 }
 
 .cardBody {
-  padding: 2rem 2.5rem 3rem;
+  padding: 1.5rem 0.25rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -305,6 +346,7 @@
 @media (min-width: 769px) and (max-width: 1024px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 4rem 2rem;
   }
 
   .featured:has(.featuredImageLink) .featuredContent {
@@ -337,16 +379,11 @@
 
   .grid {
     grid-template-columns: 1fr;
-    padding: 0 0 4rem;
-    border-left: none;
-  }
-
-  .card {
-    padding: 2.5rem 0;
-    border-right: none;
+    padding: 2.5rem var(--padding-x) 4rem;
+    gap: 4rem;
   }
 
   .cardBody {
-    padding: 1.5rem var(--padding-x) 2rem;
+    padding: 1.25rem 0.25rem 1.5rem;
   }
 }
