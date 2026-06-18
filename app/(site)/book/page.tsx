@@ -7,6 +7,9 @@ import BookClient, { type BookingPackage } from './BookClient'
 import styles from './page.module.css'
 import { getActiveOoo } from '@/app/lib/availability'
 
+// OOO banner is time-sensitive - shorter revalidate so it appears within 1 minute of being set
+export const revalidate = 60
+
 export const metadata: Metadata = {
   title: 'Book a Session',
   description: 'Reserve your date with a deposit. Choose from weddings, portraits, families, engagements, maternity, and brand sessions.',
