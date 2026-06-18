@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       year: 'numeric',
     })
 
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: EMAIL_FROM,
       to: process.env.CONTACT_TO_EMAIL ?? CONTACT_EMAIL,
       subject: `You're back: ${range.internalLabel ?? 'OOO period'} has ended`,
@@ -66,6 +66,11 @@ export async function GET(request: Request) {
         returnDate: returnDateStr,
       }),
     })
+
+    if (result.error) {
+      console.error('[cron/ooo-return-notify] email send failed:', JSON.stringify(result.error))
+      continue
+    }
 
     updatedRanges[i] = { ...updatedRanges[i], notificationSent: true }
     sent++
