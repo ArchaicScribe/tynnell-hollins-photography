@@ -40,7 +40,7 @@ export default async function BookPage() {
   return (
     <main className={styles.page}>
       {ooo && (
-        <div className={styles.oooBanner}>
+        <div className={styles.oooBanner} role="note" aria-label="Availability notice">
           <p className={styles.oooMessage}>{ooo.message}</p>
         </div>
       )}

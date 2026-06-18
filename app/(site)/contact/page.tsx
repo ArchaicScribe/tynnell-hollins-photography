@@ -73,7 +73,7 @@ export default async function ContactPage() {
     <main className={styles.main}>
       <JsonLd data={contactPageSchema} />
       {oooMessage && (
-        <div className={styles.oooBanner}>
+        <div className={styles.oooBanner} role="note" aria-label="Availability notice">
           <p className={styles.oooMessage}>{oooMessage}</p>
         </div>
       )}
