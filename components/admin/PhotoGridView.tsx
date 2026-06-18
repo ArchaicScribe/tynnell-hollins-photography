@@ -590,6 +590,7 @@ export function PhotoGridView() {
           }}
           onClick={() => uploadState.status !== 'uploading' && fileInputRef.current?.click()}
           disabled={uploadState.status === 'uploading'}
+          aria-busy={uploadState.status === 'uploading'}
         >
           {uploadState.status === 'uploading'
             ? `Uploading ${uploadState.current} / ${uploadState.total}...`
@@ -817,6 +818,7 @@ export function PhotoGridView() {
                           type="button"
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); void deletePhoto(photo.id) }}
                           disabled={deletingIds.has(photo.id)}
+                          aria-busy={deletingIds.has(photo.id)}
                           style={{
                             padding: '0.25rem 0.6rem',
                             background: deletingIds.has(photo.id) ? 'rgba(220,38,38,0.4)' : 'rgba(220,38,38,0.8)',
