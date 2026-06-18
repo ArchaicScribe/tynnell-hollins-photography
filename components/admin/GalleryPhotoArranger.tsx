@@ -172,6 +172,7 @@ export function GalleryPhotoArranger() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
+              aria-busy={uploading}
               style={{ marginLeft: '0.4rem', background: 'rgba(155,154,154,0.14)', border: '1px solid rgba(155,154,154,0.3)', color: '#e6e1de', borderRadius: 4, padding: '0.25rem 0.7rem', fontSize: '0.75rem', cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}
             >
               {uploading && progress ? `Uploading ${progress.done}/${progress.total}...` : 'Browse'}

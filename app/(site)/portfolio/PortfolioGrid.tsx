@@ -122,7 +122,7 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
               )}
               <div className={styles.albumFooter}>
                 <span className={styles.albumTitle}>{gallery.title}</span>
-                <span className={styles.albumMeta}>{gallery.photoCount} photos &rarr;</span>
+                <span className={styles.albumMeta}>{gallery.photoCount} photos <span aria-hidden="true">&rarr;</span></span>
               </div>
             </Link>
           )) : (
