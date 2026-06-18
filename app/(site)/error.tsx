@@ -15,7 +15,7 @@ export default function SiteError({
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        padding: '4rem max(1.25rem, 2.5vw)',
+        padding: '4rem var(--padding-x)',
         background: 'var(--color-bg)',
       }}
     >
@@ -74,6 +74,7 @@ export default function SiteError({
         >
           Try Again
         </button>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a
           href="/"
           style={{
