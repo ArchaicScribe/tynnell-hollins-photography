@@ -1,5 +1,5 @@
 'use client'
-// Dashboard: collection counts, recent activity, OOO status (rev: 0000115)
+// Dashboard: collection counts, recent activity, OOO status
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { type BlockedRange } from '@/app/lib/availability'
