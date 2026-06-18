@@ -87,6 +87,7 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
 
       <input
         type="text"
+        aria-label="Or paste an image URL"
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder="or paste an image URL"
@@ -99,11 +100,14 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
           style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="img-picker-heading"
             onClick={(e) => e.stopPropagation()}
             style={{ background: '#1a1a1a', border: '1px solid rgba(155,154,154,0.18)', borderRadius: 6, width: 'min(92vw, 1000px)', maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1.2rem', borderBottom: '1px solid rgba(155,154,154,0.12)' }}>
-              <span style={{ color: '#d6d1ce', fontWeight: 600 }}>Choose a Photo</span>
+              <span id="img-picker-heading" style={{ color: '#d6d1ce', fontWeight: 600 }}>Choose a Photo</span>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <input
                   ref={fileInputRef}
@@ -124,7 +128,7 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
             </div>
 
             {uploadError && (
-              <div style={{ padding: '0.6rem 1.2rem', color: '#f87171', fontSize: '0.78rem', borderBottom: '1px solid rgba(155,154,154,0.08)' }}>
+              <div role="alert" style={{ padding: '0.6rem 1.2rem', color: '#f87171', fontSize: '0.78rem', borderBottom: '1px solid rgba(155,154,154,0.08)' }}>
                 {uploadError}
               </div>
             )}

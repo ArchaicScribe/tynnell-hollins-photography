@@ -94,6 +94,7 @@ export function ForcePasswordChange({ children }: { children: ReactNode }) {
             <button
               type="submit"
               disabled={saving}
+              aria-busy={saving}
               style={{
                 marginTop: '0.25rem',
                 background: saving ? '#555' : '#9B9A9A',
