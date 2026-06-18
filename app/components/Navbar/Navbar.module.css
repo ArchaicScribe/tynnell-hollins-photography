@@ -102,7 +102,7 @@
 
 @media (min-width: 769px) and (max-width: 1024px) {
   .navbar {
-    padding: 1.25rem 2vw;
+    padding: 1.25rem var(--padding-x);
   }
 
   .brand {
