@@ -166,6 +166,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
                       type="submit"
                       className={styles.checkoutBtn}
                       disabled={loading || !fields.name || !fields.email || !fields.sessionDate}
+                      aria-busy={loading}
                     >
                       {loading ? 'Redirecting…' : `Pay $${pkg.depositAmount} Deposit`}
                     </button>

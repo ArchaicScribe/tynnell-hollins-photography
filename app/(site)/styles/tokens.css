@@ -12,6 +12,7 @@
   --color-border:         rgba(214, 209, 206, 0.08);
   --color-border-subtle:  rgba(214, 209, 206, 0.06);
   --color-border-solid:   #1e1e1e;  /* solid dividers/card borders on dark surfaces */
+  --color-bg-hover:       #222222;  /* hover highlight on dark card surfaces */
   --color-error:          #c87171;  /* inline validation errors */
 
   /* Taped-photo treatment (TYN-230). The cream-polaroid look's identity lives

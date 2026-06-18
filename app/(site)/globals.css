@@ -83,7 +83,7 @@ a {
 
 .pac-item:hover,
 .pac-item-selected {
-  background: #222222;
+  background: var(--color-bg-hover);
   color: var(--color-body);
 }
 
