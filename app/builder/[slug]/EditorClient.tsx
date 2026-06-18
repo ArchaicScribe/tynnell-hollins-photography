@@ -150,11 +150,11 @@ export function EditorClient({
               >
                 {pill.label}
               </span>
-              <button type="button" style={headerBtn} onClick={() => setShowHelp((v) => !v)} title="How the builder works">
-                ? Help
+              <button type="button" style={headerBtn} aria-pressed={showHelp} onClick={() => setShowHelp((v) => !v)} title="How the builder works">
+                <span aria-hidden="true">?</span> Help
               </button>
               <Link href="/builder" style={headerBtn} onClick={guardLeave}>
-                &#8592; Pages
+                <span aria-hidden="true">&#8592;</span> Pages
               </Link>
               {isPublished && (
                 <Link
@@ -164,7 +164,7 @@ export function EditorClient({
                   style={headerBtn}
                   title={`Open the live page at /${slug}`}
                 >
-                  View Page &#8599;
+                  View Page <span aria-hidden="true">&#8599;</span>
                 </Link>
               )}
               <SaveDraftButton onSave={onSaveDraft} style={headerBtn} saving={saveState === 'saving'} />
