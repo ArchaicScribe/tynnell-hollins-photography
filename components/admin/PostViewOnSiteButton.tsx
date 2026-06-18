@@ -52,7 +52,7 @@ export function PostViewOnSiteButton() {
         }}
       >
         View on Site
-        <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>↗</span>
+        <span aria-hidden="true" style={{ fontSize: '0.7rem', opacity: 0.7 }}>↗</span>
       </a>
       {isDraft && (
         <p style={{
