@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { isUnsupportedImage, uploadPhotoToLibrary, type IngestedPhoto } from '@/app/lib/uploadPhoto'
 
 // Puck custom-field UI: pick an image from the photo library, OR upload a new
@@ -25,6 +25,13 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open])
 
   const openModal = useCallback(() => {
     setOpen(true)
@@ -120,7 +127,7 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
                     e.target.value = ''
                   }}
                 />
-                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} style={{ ...btn, background: '#9b9a9a', color: '#0c0c0c', opacity: uploading ? 0.6 : 1 }}>
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-busy={uploading} style={{ ...btn, background: '#9b9a9a', color: '#0c0c0c', opacity: uploading ? 0.6 : 1 }}>
                   {uploading ? 'Uploading...' : '+ Upload Photo'}
                 </button>
                 <button type="button" onClick={() => setOpen(false)} style={{ ...btn, background: 'transparent' }}>Cancel</button>
@@ -139,6 +146,7 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
                   key={c}
                   type="button"
                   onClick={() => setCat(c)}
+                  aria-pressed={cat === c}
                   style={{ padding: '0.2rem 0.6rem', borderRadius: 3, fontSize: '0.72rem', cursor: 'pointer', textTransform: 'capitalize', background: cat === c ? 'rgba(155,154,154,0.2)' : 'transparent', border: `1px solid ${cat === c ? 'rgba(155,154,154,0.4)' : 'rgba(155,154,154,0.15)'}`, color: cat === c ? '#d6d1ce' : '#9b9a9a' }}
                 >
                   {CAT_LABELS[c]}
@@ -159,12 +167,17 @@ export function ImagePickerField({ value, onChange }: { value?: string; onChange
                     return (
                       <div
                         key={p.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={p.alt ?? p.filename ?? 'Photo'}
+                        aria-pressed={isSelected}
                         onClick={() => { onChange(v); setOpen(false) }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(v); setOpen(false) } }}
                         style={{ position: 'relative', aspectRatio: '1', borderRadius: 4, overflow: 'hidden', cursor: 'pointer', border: `2px solid ${isSelected ? 'rgba(214,209,206,0.8)' : 'transparent'}` }}
                       >
                         {thumbOf(p) ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={thumbOf(p)} alt={p.alt ?? ''} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={thumbOf(p)} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
                           <div style={{ width: '100%', height: '100%', background: '#2a2a2a' }} />
                         )}
