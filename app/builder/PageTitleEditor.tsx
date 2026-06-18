@@ -43,6 +43,7 @@ export function PageTitleEditor({ id, title }: { id: number | string; title: str
         <input
           value={val}
           autoFocus
+          aria-label="Page title"
           onChange={(e) => setVal(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') save()

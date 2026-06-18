@@ -21,6 +21,7 @@ export function NewPageForm({ action }: { action: (formData: FormData) => Promis
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <input
             name="title"
+            aria-label="New page title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="New page title"

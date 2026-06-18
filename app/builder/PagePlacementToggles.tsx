@@ -55,6 +55,7 @@ export function PagePlacementToggles({
         type="button"
         onClick={() => update('nav', !showInNav)}
         disabled={busy !== null}
+        aria-pressed={showInNav}
         style={pill(showInNav, busy === 'nav')}
         title={
           showInNav
@@ -70,6 +71,7 @@ export function PagePlacementToggles({
         type="button"
         onClick={() => update('home', !isHomepage)}
         disabled={busy !== null}
+        aria-pressed={isHomepage}
         style={pill(isHomepage, busy === 'home')}
         title={
           isHomepage
