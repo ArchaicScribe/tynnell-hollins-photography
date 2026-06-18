@@ -39,10 +39,10 @@ export function ReorderButtons({ id, isFirst, isLast }: { id: number | string; i
 
   return (
     <span style={{ display: 'inline-flex', flexDirection: 'column', gap: '0.15rem' }}>
-      <button type="button" onClick={() => move('up')} disabled={busy || isFirst} style={arrow(isFirst)} title="Move up" aria-label="Move up">
+      <button type="button" onClick={() => move('up')} disabled={busy || isFirst} aria-busy={busy} style={arrow(isFirst)} title="Move up" aria-label="Move up">
         &#8593;
       </button>
-      <button type="button" onClick={() => move('down')} disabled={busy || isLast} style={arrow(isLast)} title="Move down" aria-label="Move down">
+      <button type="button" onClick={() => move('down')} disabled={busy || isLast} aria-busy={busy} style={arrow(isLast)} title="Move down" aria-label="Move down">
         &#8595;
       </button>
     </span>

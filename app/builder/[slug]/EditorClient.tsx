@@ -167,7 +167,7 @@ export function EditorClient({
                   View Page &#8599;
                 </Link>
               )}
-              <SaveDraftButton onSave={onSaveDraft} style={headerBtn} />
+              <SaveDraftButton onSave={onSaveDraft} style={headerBtn} saving={saveState === 'saving'} />
               {children}
             </>
           ),
@@ -181,11 +181,11 @@ export function EditorClient({
 
 // Save draft: persists the current document without publishing. Reads the live
 // Puck state via usePuck so it always saves exactly what is on the canvas.
-function SaveDraftButton({ onSave, style }: { onSave: (data: Data) => void; style: React.CSSProperties }) {
+function SaveDraftButton({ onSave, style, saving }: { onSave: (data: Data) => void; style: React.CSSProperties; saving: boolean }) {
   const { appState } = usePuck()
   return (
-    <button type="button" style={style} onClick={() => onSave(appState.data)} title="Save your work without making it live">
-      Save draft
+    <button type="button" style={{ ...style, opacity: saving ? 0.6 : 1, cursor: saving ? 'default' : 'pointer' }} disabled={saving} aria-busy={saving} onClick={() => onSave(appState.data)} title="Save your work without making it live">
+      {saving ? 'Saving...' : 'Save draft'}
     </button>
   )
 }
