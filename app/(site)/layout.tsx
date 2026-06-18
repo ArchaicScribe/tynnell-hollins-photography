@@ -63,7 +63,7 @@ export default async function RootLayout({
       <body suppressHydrationWarning>
         <a href="#main-content" className="skipLink">Skip to content</a>
         <Navbar builderLinks={builderLinks} />
-        <div id="main-content">{children}</div>
+        <div id="main-content" tabIndex={-1}>{children}</div>
         <Footer />
         <Analytics />
         <SpeedInsights />

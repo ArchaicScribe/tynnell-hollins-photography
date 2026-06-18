@@ -12,16 +12,26 @@ interface MobileMenuProps {
 
 export default function MobileMenu({ isOpen, onClose, links = navLinks }: MobileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!isOpen) return
+    if (isOpen) {
+      // Remember what had focus before the menu opened so we can restore it on close
+      previousFocusRef.current = document.activeElement as HTMLElement
+      // Focus first focusable element on open
+      const focusable = menuRef.current?.querySelectorAll<HTMLElement>(
+        'a, button, [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable?.length) focusable[0].focus()
+    } else {
+      // Return focus to the element that opened the menu
+      previousFocusRef.current?.focus()
+    }
+  }, [isOpen])
 
-    // Focus first focusable element on open
-    const focusable = menuRef.current?.querySelectorAll<HTMLElement>(
-      'a, button, [tabindex]:not([tabindex="-1"])'
-    )
-    if (focusable?.length) focusable[0].focus()
+  useEffect(() => {
+    if (!isOpen) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
