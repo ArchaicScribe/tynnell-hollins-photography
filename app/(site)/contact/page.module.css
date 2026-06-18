@@ -1,6 +1,6 @@
 .main {
   min-height: 100vh;
-  padding: 8rem 2.5vw 5rem;
+  padding: 8rem var(--padding-x) 5rem;
   background: var(--color-bg);
 }
 

@@ -6,7 +6,7 @@
 /* ── Hero ─────────────────────────────────────────────────── */
 
 .hero {
-  padding: 6rem 2.5vw 5rem;
+  padding: 6rem var(--padding-x) 5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -35,7 +35,7 @@
 .story {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem 2.5vw 6rem;
+  padding: 4rem var(--padding-x) 6rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6rem;
@@ -167,7 +167,7 @@
 .philosophy {
   border-top: 1px solid var(--color-border-solid);
   border-bottom: 1px solid var(--color-border-solid);
-  padding: 6rem 2.5vw;
+  padding: 6rem var(--padding-x);
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -201,7 +201,7 @@
 .specialties {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 6rem 2.5vw;
+  padding: 6rem var(--padding-x);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
@@ -267,7 +267,7 @@
 
 .cta {
   background: var(--color-bg-accent);
-  padding: 8rem 2.5vw;
+  padding: 8rem var(--padding-x);
   text-align: center;
   display: flex;
   flex-direction: column;
