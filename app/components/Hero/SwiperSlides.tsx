@@ -7,12 +7,16 @@ import styles from './Hero.module.css'
 import type { HeroSlide } from './Hero'
 
 export default function SwiperSlides({ slides }: { slides: HeroSlide[] }) {
+  const reduceMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
   return (
     <Swiper
       modules={[Autoplay, EffectFade]}
       effect="fade"
-      autoplay={{ delay: 5000, disableOnInteraction: false }}
-      loop={true}
+      autoplay={reduceMotion ? false : { delay: 5000, disableOnInteraction: false }}
+      loop={!reduceMotion}
       className={styles.swiper}
     >
       {slides.map((slide) => (

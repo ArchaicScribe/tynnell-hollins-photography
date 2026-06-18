@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
@@ -44,6 +44,11 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
   const [fields, setFields] = useState<BookingState>({ name: '', email: '', sessionDate: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const firstInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (activeId) firstInputRef.current?.focus()
+  }, [activeId])
 
   const selected = packages.find((p) => p.id === activeId)
 
@@ -129,6 +134,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
                       type="text"
                       autoComplete="name"
                       required
+                      ref={firstInputRef}
                       value={fields.name}
                       onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))}
                       placeholder="Jane Smith"
