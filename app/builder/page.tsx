@@ -48,7 +48,7 @@ export default async function BuilderHome() {
     <main style={{ minHeight: '100vh', background: '#0c0c0c', color: '#e6e1de', fontFamily: "var(--font-body, 'Roboto Mono', monospace)", padding: '2.5rem clamp(1.25rem,4vw,4rem)' }}>
       <div style={{ maxWidth: 920, margin: '0 auto' }}>
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- cross root-layout: hard nav avoids the RSC-payload fetch error */}
-        <a href="/admin" style={{ color: '#9b9a9a', textDecoration: 'none', fontSize: '0.78rem', letterSpacing: '0.04em' }}>&#8592; Back to Admin</a>
+        <a href="/admin" style={{ color: '#9b9a9a', textDecoration: 'none', fontSize: '0.78rem', letterSpacing: '0.04em' }}><span aria-hidden="true">&#8592;</span> Back to Admin</a>
         <h1 style={{ fontFamily: "var(--font-heading, Archivo, sans-serif)", color: '#d6d1ce', fontSize: '1.75rem', margin: '1.25rem 0 0' }}>Pages</h1>
         <p style={{ color: '#9b9a9a', marginTop: '0.5rem' }}>Build and manage your site pages.</p>
 
@@ -81,7 +81,7 @@ export default async function BuilderHome() {
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {p.published && (
                     <Link href={`/${p.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: '#9b9a9a', textDecoration: 'none', fontSize: '0.78rem', border: '1px solid rgba(155,154,154,0.25)', padding: '0.35rem 0.7rem', borderRadius: 4 }}>
-                      View &#8599;
+                      View <span aria-hidden="true">&#8599;</span>
                     </Link>
                   )}
                   <Link href={`/builder/${p.slug}`} style={{ color: '#0c0c0c', background: '#d6d1ce', textDecoration: 'none', fontSize: '0.78rem', padding: '0.35rem 0.7rem', borderRadius: 4 }}>

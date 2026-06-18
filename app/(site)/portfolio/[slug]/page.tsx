@@ -58,7 +58,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   const { slug } = await params
   const { from } = await searchParams
   const backHref = from ? `/portfolio?category=${from}` : '/portfolio'
-  const backLabel = from ? `← Back to ${from.charAt(0).toUpperCase() + from.slice(1)}` : '← Back to Portfolio'
+  const backText = from ? `Back to ${from.charAt(0).toUpperCase() + from.slice(1)}` : 'Back to Portfolio'
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'galleries',
@@ -136,7 +136,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
       {/* Back link + grid */}
       <div className={styles.content}>
         <Link href={backHref} className={styles.back}>
-          {backLabel}
+          <span aria-hidden="true">&#8592;</span> {backText}
         </Link>
 
         {photos.length > 0 ? (
