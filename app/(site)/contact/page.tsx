@@ -47,8 +47,7 @@ export default async function ContactPage() {
 
   try {
     const payload = await getPayload({ config })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const availability = await payload.findGlobal({ slug: 'availability' as any }) as any
+    const availability = await payload.findGlobal({ slug: 'availability' })
     if (Array.isArray(availability?.blockedRanges)) {
       oooMessage = findActiveOrUpcoming(availability.blockedRanges)
     }

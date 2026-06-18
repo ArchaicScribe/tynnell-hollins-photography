@@ -47,16 +47,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${post.title}`,
     description: post.excerpt ?? undefined,
-    ...(ogImageUrl && {
-      openGraph: {
-        type: 'article',
-        images: [{ url: ogImageUrl, width: 1920, height: 1080, alt: post.title }],
-        publishedTime: post.publishedAt,
-      },
-      twitter: {
-        images: [ogImageUrl],
-      },
-    }),
+    openGraph: {
+      type: 'article',
+      ...(post.publishedAt ? { publishedTime: post.publishedAt } : {}),
+      ...(ogImageUrl ? { images: [{ url: ogImageUrl, width: 1920, height: 1080, alt: post.title }] } : {}),
+    },
+    ...(ogImageUrl ? { twitter: { images: [ogImageUrl] } } : {}),
   }
 }
 
