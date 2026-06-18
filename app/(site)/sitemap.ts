@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
+export const revalidate = 3600
+
 const BASE_URL = 'https://tynnellhollinsphotography.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
