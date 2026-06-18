@@ -62,7 +62,7 @@ export function PostViewOnSiteButton() {
           color: '#6b6a6a',
           letterSpacing: '0.04em',
         }}>
-          Draft — not visible to visitors yet
+          Draft - not visible to visitors yet
         </p>
       )}
     </div>

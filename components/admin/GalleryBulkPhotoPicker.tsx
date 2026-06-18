@@ -99,6 +99,9 @@ export function GalleryBulkPhotoPicker() {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bulk-picker-heading"
       style={{
         position: 'fixed',
         inset: 0,
@@ -133,6 +136,7 @@ export function GalleryBulkPhotoPicker() {
           }}
         >
           <span
+            id="bulk-picker-heading"
             style={{
               fontFamily: 'var(--font-heading, Archivo, sans-serif)',
               fontSize: '0.95rem',

@@ -141,6 +141,9 @@ export function CoverPhotoPicker() {
       {/* Modal */}
       {open && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cover-picker-heading"
           style={{
             position: 'fixed',
             inset: 0,
@@ -175,6 +178,7 @@ export function CoverPhotoPicker() {
               }}
             >
               <span
+                id="cover-picker-heading"
                 style={{
                   fontFamily: 'Archivo, sans-serif',
                   fontSize: '0.95rem',
