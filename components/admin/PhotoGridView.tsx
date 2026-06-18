@@ -677,8 +677,8 @@ export function PhotoGridView() {
       {uploadState.status === 'done' && (
         <>
           {uploadState.uploaded > 0 && (
-            <div style={css.doneBar}>
-              <span>&#10003;</span>
+            <div style={css.doneBar} role="status">
+              <span aria-hidden="true">&#10003;</span>
               {uploadState.uploaded} photo{uploadState.uploaded !== 1 ? 's' : ''} uploaded
               {uploadState.errors.length > 0 && ` (${uploadState.errors.length} failed)`}
               <button

@@ -174,7 +174,7 @@ export function PhotoEditHeader() {
               color: featured ? '#e8c468' : '#9b9a9a',
             }}
           >
-            {featured ? '★ On homepage' : '☆ Feature on homepage'}
+            {featured ? <><span aria-hidden="true">★ </span>On homepage</> : <><span aria-hidden="true">☆ </span>Feature on homepage</>}
           </button>
         </div>
 
@@ -206,7 +206,7 @@ export function PhotoEditHeader() {
           <a
             href={category ? `https://tynnellhollinsphotography.com/portfolio?category=${category}` : 'https://tynnellhollinsphotography.com/portfolio'}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             style={{
               fontSize: '0.72rem',
               padding: '0.25rem 0.6rem',
@@ -224,7 +224,7 @@ export function PhotoEditHeader() {
               key={slug}
               href={`https://tynnellhollinsphotography.com/portfolio/${slug}`}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               style={{
                 fontSize: '0.72rem',
                 padding: '0.25rem 0.6rem',

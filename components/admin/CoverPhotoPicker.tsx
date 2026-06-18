@@ -330,7 +330,7 @@ export function CoverPhotoPicker() {
                               justifyContent: 'center',
                             }}
                           >
-                            <span style={{ color: '#0c0c0c', fontSize: '0.6rem', fontWeight: 700, lineHeight: 1 }}>
+                            <span style={{ color: '#0c0c0c', fontSize: '0.6rem', fontWeight: 700, lineHeight: 1 }} aria-hidden="true">
                               &#10003;
                             </span>
                           </div>

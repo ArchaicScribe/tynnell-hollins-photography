@@ -249,7 +249,7 @@ export function GalleryPhotoArranger() {
 
                 {/* Cover badge / set-cover */}
                 {isCover ? (
-                  <span style={{ ...badge, bottom: '0.3rem', left: '0.3rem', background: 'rgba(201,162,39,0.92)', color: '#0c0c0c', fontWeight: 700, textTransform: 'uppercase' }}>★ Cover</span>
+                  <span style={{ ...badge, bottom: '0.3rem', left: '0.3rem', background: 'rgba(201,162,39,0.92)', color: '#0c0c0c', fontWeight: 700, textTransform: 'uppercase' }}><span aria-hidden="true">★ </span>Cover</span>
                 ) : (
                   pid !== null && (
                     <button

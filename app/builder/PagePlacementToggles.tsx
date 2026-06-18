@@ -56,6 +56,7 @@ export function PagePlacementToggles({
         onClick={() => update('nav', !showInNav)}
         disabled={busy !== null}
         aria-pressed={showInNav}
+        aria-busy={busy === 'nav'}
         style={pill(showInNav, busy === 'nav')}
         title={
           showInNav
@@ -65,13 +66,14 @@ export function PagePlacementToggles({
             : 'Add this page to the site menu'
         }
       >
-        {showInNav ? '✓ In menu' : 'In menu'}
+        {showInNav ? <><span aria-hidden="true">✓ </span>In menu</> : 'In menu'}
       </button>
       <button
         type="button"
         onClick={() => update('home', !isHomepage)}
         disabled={busy !== null}
         aria-pressed={isHomepage}
+        aria-busy={busy === 'home'}
         style={pill(isHomepage, busy === 'home')}
         title={
           isHomepage
@@ -81,7 +83,7 @@ export function PagePlacementToggles({
             : 'Use this page as the site homepage'
         }
       >
-        {isHomepage ? '★ Homepage' : 'Homepage'}
+        {isHomepage ? <><span aria-hidden="true">★ </span>Homepage</> : 'Homepage'}
       </button>
     </span>
   )
