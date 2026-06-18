@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2.5vw;
+  padding: 1.5rem var(--padding-x);
   background: transparent;
   transition: background 0.3s ease;
 }
