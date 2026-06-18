@@ -178,7 +178,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Related posts */}
       {relatedDocs.length > 0 && (
-        <section className={styles.related}>
+        <section className={styles.related} aria-label="More from the Journal">
           <div className={styles.relatedInner}>
             <p className={styles.relatedLabel}>More from the Journal</p>
             <div className={styles.relatedGrid}>

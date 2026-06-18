@@ -141,7 +141,7 @@ export default async function AboutPage() {
       </section>
 
       {/* Philosophy */}
-      <section className={styles.philosophy}>
+      <section className={styles.philosophy} aria-label="My Approach">
         <p className={styles.sectionEyebrow}>My Approach</p>
         <blockquote className={styles.philosophyQuote}>
           {about?.tagline ??
