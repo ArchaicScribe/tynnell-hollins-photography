@@ -572,6 +572,7 @@ export function PhotoGridView() {
         <input
           type="search"
           placeholder="Search by name or filename..."
+          aria-label="Search photos"
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={css.search}
@@ -734,6 +735,8 @@ export function PhotoGridView() {
                     type="button"
                     onClick={(e) => { void toggleFeatured(e, photo) }}
                     title={photo.featured ? 'Featured - click to unfeature' : 'Click to feature this photo'}
+                    aria-label={photo.featured ? 'Remove from featured' : 'Add to featured'}
+                    aria-pressed={photo.featured ?? false}
                     style={{
                       position: 'absolute',
                       top: '0.35rem',
@@ -766,6 +769,7 @@ export function PhotoGridView() {
                       setConfirmDeleteId(photo.id)
                     }}
                     title="Delete this photo"
+                    aria-label="Delete this photo"
                     style={{
                       position: 'absolute',
                       top: '0.35rem',

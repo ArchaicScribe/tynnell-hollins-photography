@@ -624,11 +624,11 @@ export function Dashboard() {
         {stats.map((col) => (
           <div key={col.slug} style={css.card}>
             <div style={css.cardHeader}>
-              <span style={css.emoji}>{col.emoji}</span>
+              <span style={css.emoji} aria-hidden="true">{col.emoji}</span>
               <span style={css.cardLabel}>{col.label}</span>
             </div>
             {col.count === null ? (
-              <span style={css.countLoading}>...</span>
+              <span style={css.countLoading} aria-label="Loading">...</span>
             ) : (
               <>
                 <span style={css.count}>{col.count}</span>
@@ -660,7 +660,7 @@ export function Dashboard() {
       <div style={css.globalGrid}>
         {GLOBALS.map((g) => (
           <Link key={g.slug} href={g.path} style={css.globalCard}>
-            <span style={css.emoji}>{g.emoji}</span>
+            <span style={css.emoji} aria-hidden="true">{g.emoji}</span>
             <span>{g.label}</span>
           </Link>
         ))}

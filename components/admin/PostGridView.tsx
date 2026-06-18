@@ -293,6 +293,7 @@ export function PostGridView() {
         <input
           type="search"
           placeholder="Search posts..."
+          aria-label="Search posts"
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={css.search}
@@ -357,7 +358,9 @@ export function PostGridView() {
                   <button
                     type="button"
                     onClick={(e) => { void toggleStatus(e, post) }}
-                    title={post.status === 'published' ? 'Published — click to revert to draft' : 'Draft — click to publish'}
+                    title={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
+                    aria-label={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
+                    aria-pressed={post.status === 'published'}
                     style={{
                       position: 'absolute',
                       top: '0.5rem',

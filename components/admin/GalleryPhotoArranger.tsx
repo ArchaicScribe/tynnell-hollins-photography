@@ -196,7 +196,7 @@ export function GalleryPhotoArranger() {
       />
 
       {uploadError && (
-        <div style={{ color: '#f0a3a3', fontSize: '0.74rem', marginBottom: '0.6rem' }}>{uploadError}</div>
+        <div role="alert" style={{ color: '#f0a3a3', fontSize: '0.74rem', marginBottom: '0.6rem' }}>{uploadError}</div>
       )}
 
       {count === 0 ? (
@@ -255,6 +255,7 @@ export function GalleryPhotoArranger() {
                       type="button"
                       onClick={() => setCover(pid)}
                       title="Set as the gallery cover photo"
+                      aria-label={`Set photo ${i + 1} as the gallery cover`}
                       style={{ ...badge, bottom: '0.3rem', left: '0.3rem', background: 'rgba(0,0,0,0.6)', color: '#d6d1ce', border: 'none', cursor: 'pointer' }}
                     >
                       Set cover
