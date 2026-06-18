@@ -29,6 +29,7 @@ export function DuplicatePageButton({ id }: { id: number | string }) {
       type="button"
       onClick={duplicate}
       disabled={busy}
+      aria-busy={busy}
       style={{ cursor: 'pointer', fontSize: '0.78rem', padding: '0.35rem 0.7rem', borderRadius: 4, fontFamily: 'inherit', border: '1px solid rgba(155,154,154,0.25)', background: 'transparent', color: '#9b9a9a' }}
     >
       {busy ? '...' : 'Duplicate'}

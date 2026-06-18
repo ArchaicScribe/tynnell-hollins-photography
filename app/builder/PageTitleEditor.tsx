@@ -51,7 +51,7 @@ export function PageTitleEditor({ id, title }: { id: number | string; title: str
           }}
           style={{ background: '#232323', color: '#e6e1de', border: '1px solid rgba(155,154,154,0.3)', borderRadius: 4, padding: '0.25rem 0.5rem', fontFamily: 'inherit', fontSize: '0.9rem' }}
         />
-        <button type="button" onClick={save} disabled={saving} style={chip('#d6d1ce', '#0c0c0c')}>
+        <button type="button" onClick={save} disabled={saving} aria-busy={saving} style={chip('#d6d1ce', '#0c0c0c')}>
           {saving ? '...' : 'Save'}
         </button>
         <button type="button" onClick={cancel} disabled={saving} style={chip('transparent', '#9b9a9a')}>

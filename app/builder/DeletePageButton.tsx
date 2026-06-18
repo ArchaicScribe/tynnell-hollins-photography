@@ -38,7 +38,7 @@ export function DeletePageButton({ id }: { id: number | string }) {
   if (confirming) {
     return (
       <span style={{ display: 'inline-flex', gap: '0.35rem' }}>
-        <button type="button" onClick={del} disabled={deleting} style={{ ...base, border: '1px solid rgba(248,113,113,0.5)', color: '#f87171' }}>
+        <button type="button" onClick={del} disabled={deleting} aria-busy={deleting} style={{ ...base, border: '1px solid rgba(248,113,113,0.5)', color: '#f87171' }}>
           {deleting ? '...' : 'Delete'}
         </button>
         <button type="button" onClick={() => setConfirming(false)} disabled={deleting} style={{ ...base, color: '#9b9a9a' }}>
