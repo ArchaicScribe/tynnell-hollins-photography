@@ -36,18 +36,22 @@ export function ForcePasswordChange({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 99999,
-        background: 'rgba(12,12,12,0.92)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backdropFilter: 'blur(4px)',
-      }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="force-pw-heading"
+        style={{
+          position: 'fixed', inset: 0, zIndex: 99999,
+          background: 'rgba(12,12,12,0.92)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+        }}>
         <div style={{
           background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8,
           padding: '2.5rem', width: '100%', maxWidth: 400,
           fontFamily: 'var(--font-body, monospace)',
         }}>
-          <h2 style={{ margin: '0 0 0.5rem', color: '#D6D1CE', fontSize: '1.25rem', fontWeight: 600 }}>
+          <h2 id="force-pw-heading" style={{ margin: '0 0 0.5rem', color: '#D6D1CE', fontSize: '1.25rem', fontWeight: 600 }}>
             Set your password
           </h2>
           <p style={{ margin: '0 0 1.5rem', color: '#9B9A9A', fontSize: '0.875rem', lineHeight: 1.5 }}>
@@ -55,8 +59,9 @@ export function ForcePasswordChange({ children }: { children: ReactNode }) {
           </p>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-              <label style={{ color: '#B8B4B1', fontSize: '0.8125rem' }}>New password</label>
+              <label htmlFor="force-pw-new" style={{ color: '#B8B4B1', fontSize: '0.8125rem' }}>New password</label>
               <input
+                id="force-pw-new"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -70,8 +75,9 @@ export function ForcePasswordChange({ children }: { children: ReactNode }) {
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-              <label style={{ color: '#B8B4B1', fontSize: '0.8125rem' }}>Confirm password</label>
+              <label htmlFor="force-pw-confirm" style={{ color: '#B8B4B1', fontSize: '0.8125rem' }}>Confirm password</label>
               <input
+                id="force-pw-confirm"
                 type="password"
                 value={confirm}
                 onChange={e => setConfirm(e.target.value)}
@@ -83,7 +89,7 @@ export function ForcePasswordChange({ children }: { children: ReactNode }) {
               />
             </div>
             {error && (
-              <p style={{ margin: 0, color: '#e57373', fontSize: '0.8125rem' }}>{error}</p>
+              <p role="alert" style={{ margin: 0, color: '#e57373', fontSize: '0.8125rem' }}>{error}</p>
             )}
             <button
               type="submit"
