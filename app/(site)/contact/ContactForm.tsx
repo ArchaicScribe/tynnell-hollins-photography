@@ -1,5 +1,5 @@
 'use client'
-import { useState, FormEvent, ReactNode } from 'react'
+import { useState, useEffect, useRef, FormEvent, ReactNode } from 'react'
 import styles from './ContactForm.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import dynamic from 'next/dynamic'
@@ -66,6 +66,11 @@ export default function ContactForm() {
   const [status, setStatus] = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<ReactNode>('')
   const [phoneError, setPhoneError] = useState('')
+  const successRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (status === 'success') successRef.current?.focus()
+  }, [status])
 
   const update = (field: keyof FormFields) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -136,7 +141,7 @@ export default function ContactForm() {
 
   if (status === 'success') {
     return (
-      <div className={styles.success} role="status">
+      <div className={styles.success} role="status" tabIndex={-1} ref={successRef}>
         <p className={styles.successEyebrow}>Message Sent</p>
         <p className={styles.successHeading}>Thank you.</p>
         <p className={styles.successBody}>
