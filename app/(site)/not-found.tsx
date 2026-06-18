@@ -16,7 +16,7 @@ export default function NotFound() {
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        padding: '4rem max(1.25rem, 2.5vw)',
+        padding: '4rem var(--padding-x)',
         background: 'var(--color-bg)',
       }}
     >
