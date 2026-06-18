@@ -315,6 +315,7 @@ export function PostGridView() {
               ...filterBtn(statusFilter === s),
               ...(s === 'published' && statusFilter === s ? { background: 'rgba(16,185,129,0.2)', color: '#10B981', borderColor: 'transparent' } : {}),
             }}
+            aria-pressed={statusFilter === s}
             onClick={() => { setStatusFilter(s); setPage(1) }}
           >
             {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}

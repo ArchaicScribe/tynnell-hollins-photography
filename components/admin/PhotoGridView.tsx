@@ -599,13 +599,14 @@ export function PhotoGridView() {
 
       {/* Category + featured filter pills */}
       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.875rem', alignItems: 'center' }}>
-        <button style={filterBtn(category === null && !featuredOnly)} onClick={() => { setCategory(null); setFeaturedOnly(false); setPage(1) }}>
+        <button style={filterBtn(category === null && !featuredOnly)} aria-pressed={category === null && !featuredOnly} onClick={() => { setCategory(null); setFeaturedOnly(false); setPage(1) }}>
           All
         </button>
         {CATEGORIES.map(cat => (
           <button
             key={cat}
             style={filterBtn(category === cat)}
+            aria-pressed={category === cat}
             onClick={() => { setCategory(cat); setFeaturedOnly(false); setPage(1) }}
           >
             {cat}
@@ -619,6 +620,7 @@ export function PhotoGridView() {
             color: featuredOnly ? '#fff' : 'rgba(212,175,55,0.8)',
             background: featuredOnly ? 'rgba(212,175,55,0.25)' : 'transparent',
           }}
+          aria-pressed={featuredOnly}
           onClick={() => { setFeaturedOnly(f => !f); setPage(1) }}
           title="Show only photos featured on the homepage"
         >

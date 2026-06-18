@@ -305,6 +305,7 @@ export function GalleryGridView() {
       <div style={{ ...css.filters, marginBottom: '1.25rem' }}>
         <button
           style={css.filterBtn(category === null)}
+          aria-pressed={category === null}
           onClick={() => { setCategory(null); setPage(1) }}
         >
           All
@@ -313,6 +314,7 @@ export function GalleryGridView() {
           <button
             key={cat}
             style={css.filterBtn(category === cat)}
+            aria-pressed={category === cat}
             onClick={() => { setCategory(cat); setPage(1) }}
           >
             {cat}

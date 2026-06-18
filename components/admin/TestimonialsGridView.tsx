@@ -287,6 +287,7 @@ export function TestimonialsGridView() {
           <button
             key={type}
             style={filterBtn(typeFilter === type)}
+            aria-pressed={typeFilter === type}
             onClick={() => {
               setTypeFilter(type)
               setPage(1)
@@ -301,6 +302,7 @@ export function TestimonialsGridView() {
             ...filterBtn(featuredOnly),
             ...(featuredOnly ? { background: 'rgba(155,154,154,0.2)', borderColor: 'rgba(155,154,154,0.35)', color: '#d6d1ce' } : {}),
           }}
+          aria-pressed={featuredOnly}
           onClick={() => {
             setFeaturedOnly(f => !f)
             setPage(1)
