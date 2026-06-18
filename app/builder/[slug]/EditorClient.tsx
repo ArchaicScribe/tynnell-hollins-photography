@@ -194,6 +194,12 @@ function SaveDraftButton({ onSave, style }: { onSave: (data: Data) => void; styl
 // click or the X. Kept inline so it survives a CSS hiccup like the rest of the
 // builder chrome.
 function HelpPanel({ onClose, isPublished }: { onClose: () => void; isPublished: boolean }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
+
   return (
     <div
       onClick={onClose}
@@ -207,6 +213,9 @@ function HelpPanel({ onClose, isPublished }: { onClose: () => void; isPublished:
       }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-panel-heading"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 'min(380px, 90vw)',
@@ -222,7 +231,7 @@ function HelpPanel({ onClose, isPublished }: { onClose: () => void; isPublished:
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <strong style={{ fontFamily: "var(--font-heading, Archivo, sans-serif)", color: '#d6d1ce', fontSize: '1rem' }}>
+          <strong id="help-panel-heading" style={{ fontFamily: "var(--font-heading, Archivo, sans-serif)", color: '#d6d1ce', fontSize: '1rem' }}>
             How the builder works
           </strong>
           <button
