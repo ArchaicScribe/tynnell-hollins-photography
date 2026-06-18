@@ -365,6 +365,8 @@ export function GalleryGridView() {
                   <button
                     type="button"
                     onClick={(e) => { void toggleFeatured(e, gallery) }}
+                    disabled={togglingIds.has(gallery.id)}
+                    aria-busy={togglingIds.has(gallery.id)}
                     title={gallery.featured ? 'Featured on homepage - click to remove' : 'Click to feature on homepage'}
                     aria-label={gallery.featured ? 'Remove from homepage' : 'Feature on homepage'}
                     aria-pressed={gallery.featured ?? false}

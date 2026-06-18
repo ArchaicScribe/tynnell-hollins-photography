@@ -680,18 +680,19 @@ export function Dashboard() {
                     key={photo.id}
                     href={`/admin/collections/photos/${photo.id}`}
                     style={css.photoThumb}
+                    aria-label={photo.alt ?? photo.filename ?? `Photo ${photo.id}`}
                     title={photo.alt ?? photo.filename ?? `Photo ${photo.id}`}
                   >
                     {photo.url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={photo.url}
-                        alt={photo.alt ?? photo.filename ?? ''}
+                        alt=""
                         loading="lazy"
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                       />
                     ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: '#444' }}>
+                      <div aria-hidden="true" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: '#444' }}>
                         &#128247;
                       </div>
                     )}

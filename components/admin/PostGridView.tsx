@@ -359,6 +359,8 @@ export function PostGridView() {
                   <button
                     type="button"
                     onClick={(e) => { void toggleStatus(e, post) }}
+                    disabled={togglingIds.has(post.id)}
+                    aria-busy={togglingIds.has(post.id)}
                     title={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
                     aria-label={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
                     aria-pressed={post.status === 'published'}

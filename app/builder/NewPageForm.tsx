@@ -48,6 +48,7 @@ export function NewPageForm({ action }: { action: (formData: FormData) => Promis
               <button
                 key={opt.value}
                 type="button"
+                aria-pressed={active}
                 onClick={() => setTemplate(opt.value)}
                 style={{
                   textAlign: 'left',
@@ -60,7 +61,7 @@ export function NewPageForm({ action }: { action: (formData: FormData) => Promis
                 }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: active ? '#d6d1ce' : '#c8c3c0', fontSize: '0.85rem', fontWeight: 600 }}>
-                  <span style={{ fontSize: '0.9rem' }}>{active ? '◉' : '○'}</span>
+                  <span style={{ fontSize: '0.9rem' }} aria-hidden="true">{active ? '◉' : '○'}</span>
                   {opt.label}
                 </span>
                 <span style={{ display: 'block', color: '#6b6a6a', fontSize: '0.72rem', lineHeight: 1.45, marginTop: '0.3rem' }}>
