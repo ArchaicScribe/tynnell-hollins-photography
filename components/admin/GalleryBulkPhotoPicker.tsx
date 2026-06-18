@@ -1,6 +1,6 @@
 'use client'
 import { useField } from '@payloadcms/ui'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 type PhotoRow = { id?: string; photo: number | null }
 type PhotoDoc = {
@@ -74,6 +74,13 @@ export function GalleryBulkPhotoPicker() {
   }
 
   const filtered = catFilter === 'all' ? allPhotos : allPhotos.filter(p => p.category === catFilter)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open])
 
   const btnBase: React.CSSProperties = {
     cursor: 'pointer',
@@ -187,6 +194,7 @@ export function GalleryBulkPhotoPicker() {
               key={cat}
               type="button"
               onClick={() => setCatFilter(cat)}
+              aria-pressed={catFilter === cat}
               style={{
                 padding: '0.18rem 0.6rem',
                 background: catFilter === cat ? 'rgba(155,154,154,0.18)' : 'transparent',
@@ -229,7 +237,13 @@ export function GalleryBulkPhotoPicker() {
                 return (
                   <div
                     key={photo.id}
+                    role="button"
+                    tabIndex={inGallery ? -1 : 0}
+                    aria-label={photo.alt ?? photo.filename ?? 'Photo'}
+                    aria-pressed={isSelected}
+                    aria-disabled={inGallery}
                     onClick={() => toggle(photo.id)}
+                    onKeyDown={(e) => { if (!inGallery && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(photo.id) } }}
                     style={{
                       position: 'relative',
                       aspectRatio: '1',

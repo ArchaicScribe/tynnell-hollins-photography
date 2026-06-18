@@ -1,6 +1,6 @@
 'use client'
 import { useField } from '@payloadcms/ui'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 type PhotoDoc = {
   id: number
@@ -60,6 +60,13 @@ export function CoverPhotoPicker() {
     setValue(photo)
     setOpen(false)
   }
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open])
 
   const filtered = catFilter === 'all' ? allPhotos : allPhotos.filter(p => p.category === catFilter)
 
@@ -227,6 +234,7 @@ export function CoverPhotoPicker() {
                   key={cat}
                   type="button"
                   onClick={() => setCatFilter(cat)}
+                  aria-pressed={catFilter === cat}
                   style={{
                     padding: '0.18rem 0.6rem',
                     background: catFilter === cat ? 'rgba(155,154,154,0.18)' : 'transparent',
@@ -268,7 +276,12 @@ export function CoverPhotoPicker() {
                     return (
                       <div
                         key={photo.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={photo.alt ?? photo.filename ?? 'Photo'}
+                        aria-pressed={isCurrentCover}
                         onClick={() => selectPhoto(photo)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPhoto(photo) } }}
                         style={{
                           position: 'relative',
                           aspectRatio: '1',
