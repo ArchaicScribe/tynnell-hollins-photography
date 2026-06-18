@@ -36,7 +36,7 @@ export const HeroSlides: GlobalConfig = {
           label: 'Caption Text',
           admin: {
             description:
-              'Optional text displayed over the photo. Keep it short — one line works best. Leave blank for a clean photo with no text.',
+              'Optional text displayed over the photo. Keep it short - one line works best. Leave blank for a clean photo with no text.',
           },
         },
         {

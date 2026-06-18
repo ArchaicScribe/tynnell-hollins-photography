@@ -19,7 +19,7 @@ const revalidatePost: CollectionAfterChangeHook = ({ doc }) => {
 }
 
 // Auto-generate slug from title and default publishedAt to now.
-// Manual values are always preserved — only fills in if empty.
+// Manual values are always preserved, only fills in if empty.
 const autoPopulate: CollectionBeforeValidateHook = ({ data = {} }) => {
   if (!data.slug && data.title) {
     data.slug = toSlug(data.title as string)
@@ -72,7 +72,7 @@ export const Posts: CollectionConfig = {
       unique: true,
       admin: {
         description:
-          'Auto-generated from the title — you do not need to set this. Edit here only if you want a custom web address. Use lowercase letters and hyphens only.',
+          'Auto-generated from the title - you do not need to set this. Edit here only if you want a custom web address. Use lowercase letters and hyphens only.',
       },
     },
     {
@@ -107,7 +107,7 @@ export const Posts: CollectionConfig = {
       required: true,
       admin: {
         description:
-          'Defaults to today. You can set a future date to schedule the post — it will appear on your blog on that date.',
+          'Defaults to today. You can set a future date to schedule the post - it will appear on your blog on that date.',
         date: {
           pickerAppearance: 'dayAndTime',
         },

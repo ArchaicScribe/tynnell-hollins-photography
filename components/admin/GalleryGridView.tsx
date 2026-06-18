@@ -102,7 +102,7 @@ const css = {
   } as React.CSSProperties,
   imgWrap: {
     width: '100%',
-    paddingBottom: '62.5%', // 16:10 — landscape photography feel
+    paddingBottom: '62.5%', // 16:10, landscape photography feel
     position: 'relative' as const,
     background: 'var(--theme-elevation-200, #1a1a1a)',
     overflow: 'hidden',

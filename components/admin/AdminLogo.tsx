@@ -19,7 +19,7 @@ export function AdminLogo() {
         userSelect: 'none',
       }}
     >
-      {/* Tangerine is loaded via custom.css — no inline <style> needed here */}
+      {/* Tangerine is loaded via custom.css, no inline <style> needed here */}
       <span
         style={{
           fontFamily: "'Tangerine', cursive",

@@ -32,7 +32,7 @@ export function OooWarnings() {
     const days = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
     if (days > 60) {
       warnings.push(
-        `${label(r, i)} spans ${days} days — make sure your Booking Settings reflect this long absence.`,
+        `${label(r, i)} spans ${days} days - make sure your Booking Settings reflect this long absence.`,
       )
     }
 
@@ -40,7 +40,7 @@ export function OooWarnings() {
     const returnDate = computeReturnDate(r)
     if (today >= start && today <= returnDate) {
       warnings.push(
-        `${label(r, i)} is currently active — clients visiting the site right now will see your unavailability message.`,
+        `${label(r, i)} is currently active - clients visiting the site right now will see your unavailability message.`,
       )
     }
 
@@ -54,7 +54,7 @@ export function OooWarnings() {
       end2.setHours(0, 0, 0, 0)
       if (start <= end2 && start2 <= end) {
         warnings.push(
-          `${label(r, i)} and ${label(r2, j)} have overlapping dates — both will apply to clients.`,
+          `${label(r, i)} and ${label(r2, j)} have overlapping dates - both will apply to clients.`,
         )
       }
     }

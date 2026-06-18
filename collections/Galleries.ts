@@ -10,7 +10,7 @@ function toSlug(str: string): string {
 }
 
 // Auto-generate slug from title so Tynnell never has to think about URLs.
-// Only sets the slug if it is empty — manual slugs are preserved.
+// Only sets the slug if it is empty, manual slugs are preserved.
 const autoSlugFromTitle: CollectionBeforeValidateHook = ({ data = {} }) => {
   if (!data.slug && data.title) {
     data.slug = toSlug(data.title as string)
@@ -75,7 +75,7 @@ export const Galleries: CollectionConfig = {
       unique: true,
       admin: {
         description:
-          'Auto-generated from the title — you do not need to set this. If you want a custom web address, you can edit it here. Use lowercase letters and hyphens only.',
+          'Auto-generated from the title - you do not need to set this. If you want a custom web address, you can edit it here. Use lowercase letters and hyphens only.',
       },
     },
     {

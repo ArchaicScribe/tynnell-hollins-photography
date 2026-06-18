@@ -6,7 +6,7 @@ export const Availability: GlobalConfig = {
   admin: {
     group: 'Services & Booking',
     description:
-      'Block out dates when you are unavailable — vacations, personal time, recovery periods. Clients requesting sessions during these windows will see your custom message.',
+      'Block out dates when you are unavailable - vacations, personal time, recovery periods. Clients requesting sessions during these windows will see your custom message.',
   },
   fields: [
     {
@@ -26,7 +26,7 @@ export const Availability: GlobalConfig = {
           required: true,
           admin: {
             description:
-              'A private note for your reference only — never shown to clients. Example: "Cancun trip" or "Wedding weekend".',
+              'A private note for your reference only - never shown to clients. Example: "Cancun trip" or "Wedding weekend".',
           },
         },
         {

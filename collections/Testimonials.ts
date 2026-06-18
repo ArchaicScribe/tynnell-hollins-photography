@@ -38,7 +38,7 @@ export const Testimonials: CollectionConfig = {
       required: true,
       admin: {
         description:
-          "Paste the client's review exactly as you want it to appear on your website. Keep it genuine — real words from real clients build trust with future bookings.",
+          "Paste the client's review exactly as you want it to appear on your website. Keep it genuine - real words from real clients build trust with future bookings.",
         rows: 4,
       },
     },

@@ -6,7 +6,7 @@ export const BookingSettings: GlobalConfig = {
   admin: {
     group: 'Services & Booking',
     description:
-      'Controls how far in advance clients can request sessions. Changes take effect immediately — no code change needed.',
+      'Controls how far in advance clients can request sessions. Changes take effect immediately - no code change needed.',
   },
   fields: [
     {

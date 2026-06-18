@@ -58,7 +58,7 @@ export const Photos: CollectionConfig = {
     group: 'My Portfolio',
     useAsTitle: 'title',
     description:
-      'Your photo library. Drop images here and they upload instantly — title and alt text are filled in automatically from the filename so you can bulk-upload without stopping. Edit any photo afterwards to update the details.',
+      'Your photo library. Drop images here and they upload instantly - title and alt text are filled in automatically from the filename so you can bulk-upload without stopping. Edit any photo afterwards to update the details.',
     defaultColumns: ['filename', 'title', 'category', 'featured', 'updatedAt'],
     components: {
       views: {
@@ -86,7 +86,7 @@ export const Photos: CollectionConfig = {
       label: 'Title',
       admin: {
         description:
-          'Auto-filled from the filename on upload. Edit this to give the photo a meaningful name — clients never see it. Example: "Smith Wedding - First Dance".',
+          'Auto-filled from the filename on upload. Edit this to give the photo a meaningful name - clients never see it. Example: "Smith Wedding - First Dance".',
       },
     },
     {
@@ -95,7 +95,7 @@ export const Photos: CollectionConfig = {
       label: 'Alt Text (Accessibility and SEO)',
       admin: {
         description:
-          'Describe what is in this photo. Screen readers read this aloud for visually impaired visitors and Google uses it to understand your images. Auto-filled on upload — update it when you have a moment. Example: "Bride and groom laughing during their first dance at an outdoor reception."',
+          'Describe what is in this photo. Screen readers read this aloud for visually impaired visitors and Google uses it to understand your images. Auto-filled on upload - update it when you have a moment. Example: "Bride and groom laughing during their first dance at an outdoor reception."',
       },
     },
     {
