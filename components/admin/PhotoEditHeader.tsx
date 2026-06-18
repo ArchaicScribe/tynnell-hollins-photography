@@ -162,6 +162,8 @@ export function PhotoEditHeader() {
             type="button"
             onClick={() => setFeatured(!featured)}
             title={featured ? 'Shown on the homepage. Click to remove.' : 'Add to the homepage portfolio preview.'}
+            aria-label={featured ? 'Remove from homepage' : 'Feature on homepage'}
+            aria-pressed={featured ?? false}
             style={{
               fontSize: '0.72rem',
               padding: '0.25rem 0.6rem',

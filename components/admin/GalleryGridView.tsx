@@ -288,6 +288,7 @@ export function GalleryGridView() {
         <input
           type="search"
           placeholder="Search galleries..."
+          aria-label="Search galleries"
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={css.search}
@@ -362,7 +363,9 @@ export function GalleryGridView() {
                   <button
                     type="button"
                     onClick={(e) => { void toggleFeatured(e, gallery) }}
-                    title={gallery.featured ? 'Featured on homepage — click to remove' : 'Click to feature on homepage'}
+                    title={gallery.featured ? 'Featured on homepage - click to remove' : 'Click to feature on homepage'}
+                    aria-label={gallery.featured ? 'Remove from homepage' : 'Feature on homepage'}
+                    aria-pressed={gallery.featured ?? false}
                     style={{
                       position: 'absolute',
                       top: '0.5rem',

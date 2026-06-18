@@ -266,6 +266,7 @@ export function TestimonialsGridView() {
         <input
           type="search"
           placeholder="Search by client name..."
+          aria-label="Search testimonials by client name"
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={css.search}
@@ -337,7 +338,9 @@ export function TestimonialsGridView() {
                 <button
                   type="button"
                   onClick={(e) => { void toggleHomepage(e, t) }}
-                  title={t.featured ? 'On homepage — click to remove' : 'Click to show on homepage'}
+                  title={t.featured ? 'On homepage - click to remove' : 'Click to show on homepage'}
+                  aria-label={t.featured ? 'Remove from homepage' : 'Show on homepage'}
+                  aria-pressed={t.featured ?? false}
                   style={{
                     flexShrink: 0,
                     padding: '0.14rem 0.45rem',
