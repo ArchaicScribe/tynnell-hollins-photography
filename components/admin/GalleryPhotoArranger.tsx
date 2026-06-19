@@ -1,6 +1,6 @@
 'use client'
 import { useField } from '@payloadcms/ui'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { isUnsupportedImage, uploadPhotoToLibrary, type IngestedPhoto } from '@/app/lib/uploadPhoto'
 
 // Visual gallery arranger (TYN-234 + TYN-235). Replaces the default vertical
