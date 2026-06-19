@@ -174,8 +174,7 @@ export const Galleries: CollectionConfig = {
       type: 'number',
       label: 'Display Position',
       admin: {
-        description:
-          'Controls the order this gallery appears on your portfolio page. Lower numbers appear first. Leave blank and galleries display in the order they were added.',
+        hidden: true,
       },
     },
   ],

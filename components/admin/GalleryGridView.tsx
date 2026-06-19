@@ -205,6 +205,9 @@ export function GalleryGridView() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [overIdx, setOverIdx] = useState<number | null>(null)
+  const [reordering, setReordering] = useState(false)
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -221,7 +224,7 @@ export function GalleryGridView() {
       limit: String(LIMIT),
       page: String(page),
       depth: '1',
-      sort: '-updatedAt',
+      sort: 'displayOrder',
     })
     if (debouncedSearch) {
       params.append('where[title][contains]', debouncedSearch)
@@ -267,6 +270,40 @@ export function GalleryGridView() {
     }
   }, [togglingIds])
 
+  // Drag-to-reorder is only available when all galleries are visible
+  // (no filters, single page). When filters are active the relative order
+  // is ambiguous so we disable it to avoid confusing partial reorders.
+  const canReorder = totalPages === 1 && !debouncedSearch && !category && !loading
+
+  const handleReorderDrop = useCallback(async (toIdx: number) => {
+    if (dragIdx === null || dragIdx === toIdx) {
+      setDragIdx(null)
+      setOverIdx(null)
+      return
+    }
+    const newOrder = [...galleries]
+    const [moved] = newOrder.splice(dragIdx, 1)
+    newOrder.splice(toIdx, 0, moved)
+    setGalleries(newOrder)
+    setDragIdx(null)
+    setOverIdx(null)
+    setReordering(true)
+    try {
+      await Promise.all(
+        newOrder.map((g, i) =>
+          fetch(`/api/galleries/${g.id}`, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ displayOrder: i + 1 }),
+          })
+        )
+      )
+    } finally {
+      setReordering(false)
+    }
+  }, [dragIdx, galleries])
+
   const getCoverUrl = (g: GalleryDoc): string | null => {
     if (!g.coverPhoto || typeof g.coverPhoto === 'number') return null
     const cp = g.coverPhoto as CoverPhoto
@@ -300,6 +337,21 @@ export function GalleryGridView() {
           + New Gallery
         </Link>
       </div>
+
+      {/* Reorder instruction — only shown when drag is available */}
+      {canReorder && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem', padding: '0.35rem 0.5rem', background: 'rgba(155,154,154,0.06)', borderRadius: 4, border: '1px solid rgba(155,154,154,0.1)' }}>
+          <span style={{ fontSize: '1rem', lineHeight: 1, color: '#9b9a9a' }} aria-hidden="true">&#8942;&#8942;</span>
+          <span style={{ fontSize: '0.75rem', color: '#9b9a9a' }}>
+            {reordering ? 'Saving order...' : 'Drag galleries to change the order they appear on your portfolio page.'}
+          </span>
+        </div>
+      )}
+      {!canReorder && !loading && (debouncedSearch || category) && (
+        <div style={{ fontSize: '0.72rem', color: 'rgba(155,154,154,0.5)', marginBottom: '0.75rem' }}>
+          Clear filters to enable drag-to-reorder.
+        </div>
+      )}
 
       {/* Category filter pills */}
       <div style={{ ...css.filters, marginBottom: '1.25rem' }}>
@@ -337,16 +389,33 @@ export function GalleryGridView() {
         </div>
       ) : (
         <div style={css.grid}>
-          {galleries.map(gallery => {
+          {galleries.map((gallery, i) => {
             const coverUrl = getCoverUrl(gallery)
             const count = photoCount(gallery)
             return (
-              <Link
+              <div
                 key={gallery.id}
+                draggable={canReorder}
+                onDragStart={() => canReorder && setDragIdx(i)}
+                onDragEnter={() => canReorder && dragIdx !== null && setOverIdx(i)}
+                onDragOver={(e) => { if (canReorder) e.preventDefault() }}
+                onDrop={(e) => { e.preventDefault(); void handleReorderDrop(i) }}
+                onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
+                style={{
+                  ...css.card,
+                  cursor: canReorder ? (dragIdx === i ? 'grabbing' : 'grab') : undefined,
+                  opacity: dragIdx === i ? 0.45 : 1,
+                  border: overIdx === i && dragIdx !== null && dragIdx !== i
+                    ? '2px solid rgba(214,209,206,0.6)'
+                    : css.card.border,
+                  transition: 'opacity .12s, border-color .12s',
+                }}
+              >
+              <Link
                 href={`/admin/collections/galleries/${gallery.id}`}
-                style={css.card}
-                className="gallery-card"
+                style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
                 title={gallery.title}
+                draggable={false}
               >
                 <div style={css.imgWrap}>
                   {coverUrl ? (
@@ -361,10 +430,18 @@ export function GalleryGridView() {
                   {gallery.category && (
                     <div style={css.badge(gallery.category)}>{gallery.category}</div>
                   )}
+                  {/* Drag handle — visible when reordering is available */}
+                  {canReorder && (
+                    <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', display: 'grid', gridTemplateColumns: 'repeat(2,4px)', gap: '3px', opacity: 0.55, pointerEvents: 'none' }}>
+                      {Array.from({ length: 6 }).map((_, d) => (
+                        <div key={d} style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />
+                      ))}
+                    </div>
+                  )}
                   {/* Featured quick-toggle */}
                   <button
                     type="button"
-                    onClick={(e) => { void toggleFeatured(e, gallery) }}
+                    onClick={(e) => { e.stopPropagation(); void toggleFeatured(e, gallery) }}
                     disabled={togglingIds.has(gallery.id)}
                     aria-busy={togglingIds.has(gallery.id)}
                     title={gallery.featured ? 'Featured on homepage - click to remove' : 'Click to feature on homepage'}
@@ -399,6 +476,7 @@ export function GalleryGridView() {
                   </div>
                 </div>
               </Link>
+              </div>
             )
           })}
         </div>
