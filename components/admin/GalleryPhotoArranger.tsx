@@ -125,10 +125,10 @@ export function GalleryPhotoArranger() {
     borderRadius: 5,
     overflow: 'hidden',
     cursor: 'grab',
-    border: `2px solid ${overIdx === i && dragIdx !== null ? 'rgba(214,209,206,0.8)' : 'transparent'}`,
+    border: `2px solid ${overIdx === i && dragIdx !== null ? 'rgba(214,209,206,0.8)' : 'rgba(155,154,154,0.18)'}`,
     opacity: dragIdx === i ? 0.4 : 1,
     boxSizing: 'border-box',
-    background: '#0c0c0c',
+    background: '#1a1a1a',
     transition: 'opacity .12s ease, border-color .12s ease',
   })
 
@@ -233,7 +233,14 @@ export function GalleryPhotoArranger() {
             }}
           >
           {photos.map((row, i) => {
-            const pid = typeof row.photo === 'number' ? row.photo : null
+            // Payload may store the relationship as a number ID or a resolved object
+            const rawPid = row.photo
+            const pid: number | null =
+              typeof rawPid === 'number'
+                ? rawPid
+                : rawPid !== null && typeof rawPid === 'object'
+                  ? ((rawPid as { id?: number }).id ?? null)
+                  : null
             const doc = pid !== null ? docs[pid] : undefined
             const src = thumbOf(doc)
             const isCover = pid !== null && pid === coverId
@@ -259,10 +266,19 @@ export function GalleryPhotoArranger() {
               >
                 {src ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={src} alt={doc?.alt ?? doc?.filename ?? ''} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }} />
+                  <img
+                    src={src}
+                    alt={doc?.alt ?? doc?.filename ?? ''}
+                    loading="lazy"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
                 ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '0.6rem', textAlign: 'center', padding: '0 0.3rem' }}>
-                    {pid !== null ? 'Preview on live site' : 'No photo'}
+                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', padding: '0.4rem', textAlign: 'center' }}>
+                    <span aria-hidden="true" style={{ fontSize: '1.4rem', opacity: 0.3 }}>&#128247;</span>
+                    {doc?.filename && (
+                      <span style={{ fontSize: '0.55rem', color: '#9b9a9a', wordBreak: 'break-all', lineHeight: 1.3, maxHeight: '2.6em', overflow: 'hidden' }}>{doc.filename}</span>
+                    )}
                   </div>
                 )}
 
