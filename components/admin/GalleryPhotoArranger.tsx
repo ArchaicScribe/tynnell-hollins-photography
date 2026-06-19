@@ -3,15 +3,14 @@ import { useField } from '@payloadcms/ui'
 import { useEffect, useRef, useState } from 'react'
 import { isUnsupportedImage, uploadPhotoToLibrary, type IngestedPhoto } from '@/app/lib/uploadPhoto'
 
-// Visual gallery arranger (TYN-234 + TYN-235). Replaces the default vertical
-// array-row UI for a gallery's photos with a Pixieset-style grid of large
-// thumbnails: drag photos from the computer onto the grid to upload them,
-// drag tiles to reorder, remove, and set the cover photo right from the grid.
-// Reads/writes the same `photos` form path via useField, so the existing "Add
-// Multiple Photos" button stays compatible.
-// 'use client' + inline styles for resilience, matching the rest of the admin.
-type PhotoRow = { id?: string; photo: number | null }
+type PhotoRow = { id?: string; photo: number | { id?: number } | null }
 type PhotoDoc = IngestedPhoto
+
+function getPhotoId(photo: PhotoRow['photo']): number | null {
+  if (typeof photo === 'number') return photo
+  if (photo !== null && typeof photo === 'object') return photo.id ?? null
+  return null
+}
 
 function thumbOf(p: PhotoDoc | undefined): string | null {
   if (!p) return null
@@ -20,13 +19,12 @@ function thumbOf(p: PhotoDoc | undefined): string | null {
 
 export function GalleryPhotoArranger() {
   const { value: rawPhotos, setValue: setPhotos } = useField<PhotoRow[]>({ path: 'photos' })
-  const { value: rawCover, setValue: setCover } = useField<number | { id?: number } | null>({ path: 'coverPhoto' })
+  const { value: rawCover, setValue: setCoverField } = useField<number | { id?: number } | null>({ path: 'coverPhoto' })
   const category = useField<string | null>({ path: 'category' }).value ?? null
 
-  // On a brand-new (unsaved) gallery Payload reports an array field's value as
-  // its row count (the number 0), not an array. Guard with Array.isArray.
   const photos: PhotoRow[] = Array.isArray(rawPhotos) ? rawPhotos : []
-  const coverId = typeof rawCover === 'object' && rawCover !== null ? rawCover.id ?? null : (rawCover as number | null)
+  const count = photos.length
+  const coverId = getPhotoId(rawCover as PhotoRow['photo'])
 
   const [docs, setDocs] = useState<Record<number, PhotoDoc>>({})
   const [dragIdx, setDragIdx] = useState<number | null>(null)
@@ -35,19 +33,16 @@ export function GalleryPhotoArranger() {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [uploadError, setUploadError] = useState('')
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch thumbnails only for the photos actually in this gallery, deferred past
-  // the initial paint so the rest of the gallery form renders immediately.
+  // Fetch thumbnails deferred so the form renders first
   useEffect(() => {
     let active = true
-    const ids = photos
-      .map((r) => (typeof r.photo === 'number' ? r.photo : null))
-      .filter((id): id is number => id !== null)
+    const ids = photos.map((r) => getPhotoId(r.photo)).filter((id): id is number => id !== null)
     if (ids.length === 0) return
     const params = new URLSearchParams({ limit: String(ids.length + 10), depth: '1' })
     params.append('where[id][in]', ids.join(','))
-    // Defer the fetch so the admin form finishes its initial render first.
     const timer = setTimeout(() => {
       if (!active) return
       fetch(`/api/photos?${params.toString()}`, { credentials: 'include' })
@@ -59,15 +54,10 @@ export function GalleryPhotoArranger() {
           setDocs(map)
         })
         .catch(() => {})
-    }, 120)
-    return () => {
-      active = false
-      clearTimeout(timer)
-    }
+    }, 150)
+    return () => { active = false; clearTimeout(timer) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos.map((r) => (typeof r.photo === 'number' ? r.photo : null)).join(',')])
-
-  const count = photos.length
+  }, [photos.map((r) => getPhotoId(r.photo)).join(',')])
 
   const move = (from: number | null, to: number) => {
     if (from === null || from === to) return
@@ -77,18 +67,9 @@ export function GalleryPhotoArranger() {
     setPhotos(next)
   }
 
-  const moveOne = (i: number, dir: -1 | 1) => {
-    const target = i + dir
-    if (target < 0 || target >= photos.length) return
-    move(i, target)
-  }
+  const remove = (idx: number) => setPhotos(photos.filter((_, i) => i !== idx))
 
-  const moveToFront = (i: number) => { if (i > 0) move(i, 0) }
-  const moveToEnd = (i: number) => { if (i < photos.length - 1) move(i, photos.length - 1) }
-
-  const remove = (idx: number) => {
-    setPhotos(photos.filter((_, i) => i !== idx))
-  }
+  const setCover = (pid: number) => setCoverField(pid)
 
   const handleFiles = async (fileList: FileList | File[]) => {
     setUploadError('')
@@ -100,10 +81,9 @@ export function GalleryPhotoArranger() {
       else accepted.push(f)
     }
     if (rejected > 0) {
-      setUploadError(`${rejected} file${rejected !== 1 ? 's were' : ' was'} skipped (HEIC and non-image files are not supported - export as JPEG).`)
+      setUploadError(`${rejected} file${rejected !== 1 ? 's' : ''} skipped (HEIC not supported - export as JPEG).`)
     }
     if (accepted.length === 0) return
-
     setUploading(true)
     setProgress({ done: 0, total: accepted.length })
     const base = photos
@@ -111,7 +91,6 @@ export function GalleryPhotoArranger() {
     const newDocs: Record<number, PhotoDoc> = {}
     for (let i = 0; i < accepted.length; i++) {
       try {
-        // Tag the upload with this gallery's category so the library stays tidy.
         const doc = await uploadPhotoToLibrary(accepted[i], { category })
         newRows.push({ id: crypto.randomUUID(), photo: doc.id })
         newDocs[doc.id] = doc
@@ -128,152 +107,141 @@ export function GalleryPhotoArranger() {
     setProgress(null)
   }
 
-  const tileStyle = (i: number): React.CSSProperties => ({
-    position: 'relative',
-    aspectRatio: '1',
-    borderRadius: 5,
-    overflow: 'hidden',
-    cursor: 'grab',
-    border: `2px solid ${overIdx === i && dragIdx !== null ? 'rgba(214,209,206,0.8)' : 'rgba(155,154,154,0.18)'}`,
-    opacity: dragIdx === i ? 0.4 : 1,
-    boxSizing: 'border-box',
-    background: '#1a1a1a',
-    transition: 'opacity .12s ease, border-color .12s ease',
-  })
+  const outerStyle: React.CSSProperties = {
+    paddingTop: '0.5rem',
+  }
 
-  const badge: React.CSSProperties = {
-    position: 'absolute',
-    fontSize: '0.6rem',
-    letterSpacing: '0.04em',
-    lineHeight: 1,
-    padding: '0.18rem 0.32rem',
-    borderRadius: 3,
+  const headerStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '0.75rem',
+    gap: '0.5rem',
+    flexWrap: 'wrap' as const,
+  }
+
+  const uploadBtnStyle: React.CSSProperties = {
+    background: 'rgba(155,154,154,0.14)',
+    border: '1px solid rgba(155,154,154,0.3)',
+    color: '#e6e1de',
+    borderRadius: 4,
+    padding: '0.3rem 0.8rem',
+    fontSize: '0.78rem',
+    cursor: uploading ? 'default' : 'pointer',
+    opacity: uploading ? 0.6 : 1,
+    fontFamily: 'Archivo, sans-serif',
+  }
+
+  const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+    gap: '0.6rem',
   }
 
   return (
     <div
+      style={outerStyle}
       onDragOver={(e) => {
         if (Array.from(e.dataTransfer.types).includes('Files')) {
           e.preventDefault()
           if (!fileOver) setFileOver(true)
         }
       }}
-      onDragLeave={(e) => {
-        if (e.currentTarget === e.target) setFileOver(false)
-      }}
+      onDragLeave={(e) => { if (e.currentTarget === e.target) setFileOver(false) }}
       onDrop={(e) => {
-        if (e.dataTransfer.files?.length) {
-          e.preventDefault()
-          handleFiles(e.dataTransfer.files)
-        }
+        if (e.dataTransfer.files?.length) { e.preventDefault(); handleFiles(e.dataTransfer.files) }
         setFileOver(false)
       }}
-      style={{
-        paddingTop: '0.25rem',
-        border: `2px dashed ${fileOver ? 'rgba(214,209,206,0.8)' : count === 0 ? 'rgba(155,154,154,0.2)' : 'transparent'}`,
-        borderRadius: 8,
-        transition: 'border-color .12s ease',
-        padding: count === 0 ? '0' : '0.25rem 0',
-      }}
     >
+      {/* Header row */}
+      <div style={headerStyle}>
+        <span style={{ fontSize: '0.78rem', color: '#9b9a9a' }}>
+          {count > 0
+            ? `${count} photo${count !== 1 ? 's' : ''} — drag to reorder`
+            : fileOver ? 'Drop photos to upload' : 'No photos yet — drag files here or browse'}
+        </span>
+        <button
+          type="button"
+          style={uploadBtnStyle}
+          disabled={uploading}
+          aria-busy={uploading}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {uploading && progress ? `Uploading ${progress.done}/${progress.total}...` : '+ Upload photos'}
+        </button>
+      </div>
+
+      {uploadError && (
+        <div role="alert" style={{ color: '#f0a3a3', fontSize: '0.75rem', marginBottom: '0.6rem' }}>{uploadError}</div>
+      )}
+
       {count === 0 ? (
-        /* Empty state — prominent drop zone with full workflow explanation */
-        <div style={{ padding: '2rem 1.5rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.6rem', opacity: 0.35 }} aria-hidden="true">&#128444;</div>
-          <p style={{ margin: '0 0 0.4rem', fontSize: '0.9rem', fontWeight: 600, color: '#d6d1ce', fontFamily: 'Archivo, sans-serif' }}>
-            {fileOver ? 'Drop photos to upload them' : 'No photos in this gallery yet'}
+        /* Drop zone placeholder */
+        <div
+          style={{
+            border: `2px dashed ${fileOver ? 'rgba(214,209,206,0.7)' : 'rgba(155,154,154,0.22)'}`,
+            borderRadius: 8,
+            padding: '2.5rem 1rem',
+            textAlign: 'center',
+            transition: 'border-color .12s',
+            background: fileOver ? 'rgba(155,154,154,0.04)' : 'transparent',
+          }}
+        >
+          <div style={{ fontSize: '2rem', opacity: 0.3, marginBottom: '0.5rem' }} aria-hidden="true">&#128444;</div>
+          <p style={{ margin: 0, fontSize: '0.8rem', color: '#9b9a9a', lineHeight: 1.5 }}>
+            Use <strong style={{ color: '#b8b4b1' }}>Add Multiple Photos</strong> above to pick from your library,<br />
+            or drag image files here to upload directly.
           </p>
-          {!fileOver && (
-            <>
-              <p style={{ margin: '0 0 1.1rem', fontSize: '0.78rem', color: '#9b9a9a', lineHeight: 1.5 }}>
-                Add photos using the <strong style={{ color: '#b8b4b1' }}>Add Multiple Photos</strong> button above, or drag image files directly onto this area to upload them. Once photos are added you can drag the tiles to reorder them — the order here is exactly the order they appear on your gallery page.
-              </p>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                aria-busy={uploading}
-                style={{ background: 'rgba(155,154,154,0.14)', border: '1px solid rgba(155,154,154,0.3)', color: '#e6e1de', borderRadius: 4, padding: '0.45rem 1.1rem', fontSize: '0.8rem', cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1, fontFamily: 'Archivo, sans-serif' }}
-              >
-                {uploading && progress ? `Uploading ${progress.done}/${progress.total}...` : 'Browse files'}
-              </button>
-            </>
-          )}
         </div>
       ) : (
-        /* Populated state — upload bar + reorder strip + grid */
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.8rem', color: '#b8b4b1', letterSpacing: '0.03em' }}>
-              {fileOver ? 'Drop to upload these photos' : 'Drag image files here to add more, or'}
-              {!fileOver && (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  aria-busy={uploading}
-                  style={{ marginLeft: '0.4rem', background: 'rgba(155,154,154,0.14)', border: '1px solid rgba(155,154,154,0.3)', color: '#e6e1de', borderRadius: 4, padding: '0.25rem 0.7rem', fontSize: '0.75rem', cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}
-                >
-                  {uploading && progress ? `Uploading ${progress.done}/${progress.total}...` : 'Browse'}
-                </button>
-              )}
-            </span>
-            <span style={{ fontSize: '0.72rem', color: '#9b9a9a' }}>
-              {count} photo{count !== 1 ? 's' : ''}
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.7rem', padding: '0.35rem 0.5rem', background: 'rgba(155,154,154,0.06)', borderRadius: 4, border: '1px solid rgba(155,154,154,0.1)' }}>
-            <span style={{ fontSize: '1rem', lineHeight: 1, color: '#9b9a9a' }} aria-hidden="true">&#8942;&#8942;</span>
-            <span style={{ fontSize: '0.75rem', color: '#9b9a9a' }}>
-              Drag the photos below to reorder them. The order here is the order they appear on your gallery page.
-            </span>
-          </div>
-
-          {uploadError && (
-            <div role="alert" style={{ color: '#f0a3a3', fontSize: '0.74rem', marginBottom: '0.6rem' }}>{uploadError}</div>
-          )}
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-              gap: '0.55rem',
-            }}
-          >
+        /* Photo grid */
+        <div
+          style={{
+            ...gridStyle,
+            border: `2px dashed ${fileOver ? 'rgba(214,209,206,0.7)' : 'transparent'}`,
+            borderRadius: 8,
+            padding: fileOver ? '0.5rem' : '0',
+            transition: 'border-color .12s, padding .12s',
+          }}
+        >
           {photos.map((row, i) => {
-            // Payload may store the relationship as a number ID or a resolved object
-            const rawPid = row.photo
-            const pid: number | null =
-              typeof rawPid === 'number'
-                ? rawPid
-                : rawPid !== null && typeof rawPid === 'object'
-                  ? ((rawPid as { id?: number }).id ?? null)
-                  : null
+            const pid = getPhotoId(row.photo)
             const doc = pid !== null ? docs[pid] : undefined
             const src = thumbOf(doc)
             const isCover = pid !== null && pid === coverId
+            const isDragging = dragIdx === i
+            const isOver = overIdx === i && dragIdx !== null && dragIdx !== i
+            const isHovered = hoveredIdx === i
+
             return (
               <div
                 key={row.id ?? `${pid}-${i}`}
                 draggable
-                onDragStart={() => setDragIdx(i)}
-                onDragEnter={() => dragIdx !== null && setOverIdx(i)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  move(dragIdx, i)
-                  setDragIdx(null)
-                  setOverIdx(null)
+                onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; setDragIdx(i) }}
+                onDragEnter={() => { if (dragIdx !== null && dragIdx !== i) setOverIdx(i) }}
+                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move' }}
+                onDrop={(e) => { e.preventDefault(); move(dragIdx, i); setDragIdx(null); setOverIdx(null) }}
+                onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                style={{
+                  position: 'relative',
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                  cursor: isDragging ? 'grabbing' : 'grab',
+                  border: `2px solid ${isOver ? 'rgba(214,209,206,0.9)' : isCover ? 'rgba(201,162,39,0.6)' : 'rgba(155,154,154,0.15)'}`,
+                  opacity: isDragging ? 0.35 : 1,
+                  transition: 'opacity .12s, border-color .1s, transform .1s',
+                  transform: isOver ? 'scale(1.02)' : 'scale(1)',
+                  boxShadow: isOver ? '0 0 0 3px rgba(214,209,206,0.2)' : 'none',
+                  background: '#1a1a1a',
+                  // Explicit height instead of aspectRatio for reliability
+                  height: '160px',
                 }}
-                onDragEnd={() => {
-                  setDragIdx(null)
-                  setOverIdx(null)
-                }}
-                style={tileStyle(i)}
-                title={doc?.filename ?? undefined}
+                title={doc?.filename ?? `Photo ${i + 1}`}
               >
-                {src ? (
+                {/* Thumbnail */}
+                {src && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={src}
@@ -282,165 +250,115 @@ export function GalleryPhotoArranger() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                   />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', padding: '0.4rem', textAlign: 'center' }}>
-                    <span aria-hidden="true" style={{ fontSize: '1.4rem', opacity: 0.3 }}>&#128247;</span>
+                )}
+
+                {/* No-thumbnail placeholder */}
+                {!src && (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+                    <span aria-hidden="true" style={{ fontSize: '1.6rem', opacity: 0.2 }}>&#128247;</span>
                     {doc?.filename && (
-                      <span style={{ fontSize: '0.55rem', color: '#9b9a9a', wordBreak: 'break-all', lineHeight: 1.3, maxHeight: '2.6em', overflow: 'hidden' }}>{doc.filename}</span>
+                      <span style={{ fontSize: '0.55rem', color: '#9b9a9a', padding: '0 0.5rem', textAlign: 'center', wordBreak: 'break-all', lineHeight: 1.3 }}>{doc.filename}</span>
                     )}
                   </div>
                 )}
 
-                {/* Drag handle - subtle center indicator; primary reordering via buttons below */}
+                {/* Overlay — always visible for position + cover badge; controls show on hover */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: isHovered || isDragging ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.18)',
+                    transition: 'background .15s',
+                    pointerEvents: 'none',
+                  }}
+                  aria-hidden="true"
+                />
+
+                {/* Position badge */}
+                <span style={{
+                  position: 'absolute', top: '0.3rem', left: '0.3rem',
+                  fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.04em',
+                  background: 'rgba(0,0,0,0.65)', color: '#d6d1ce',
+                  padding: '0.15rem 0.35rem', borderRadius: 3,
+                }}>
+                  {i + 1}
+                </span>
+
+                {/* Remove button */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); remove(i) }}
+                  aria-label="Remove from gallery"
+                  style={{
+                    position: 'absolute', top: '0.3rem', right: '0.3rem',
+                    width: 22, height: 22, borderRadius: '50%',
+                    border: 'none', background: 'rgba(0,0,0,0.65)', color: '#fff',
+                    fontSize: '0.9rem', lineHeight: 1, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    opacity: isHovered ? 1 : 0, transition: 'opacity .15s',
+                  }}
+                >
+                  &times;
+                </button>
+
+                {/* Bottom: cover indicator or set-cover button */}
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '0.3rem 0.5rem',
+                  background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                  opacity: (isHovered || isCover) ? 1 : 0,
+                  transition: 'opacity .15s',
+                }}>
+                  {isCover ? (
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'rgba(201,162,39,0.95)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      <span aria-hidden="true">★ </span>Cover photo
+                    </span>
+                  ) : pid !== null ? (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setCover(pid) }}
+                      aria-label={`Set photo ${i + 1} as gallery cover`}
+                      style={{
+                        fontSize: '0.62rem', color: '#d6d1ce', background: 'none',
+                        border: '1px solid rgba(214,209,206,0.4)', borderRadius: 3,
+                        padding: '0.15rem 0.4rem', cursor: 'pointer',
+                      }}
+                    >
+                      Set as cover
+                    </button>
+                  ) : null}
+                </div>
+
+                {/* Drag grip indicator */}
                 <div
                   aria-hidden="true"
                   style={{
-                    position: 'absolute',
-                    top: '38%',
-                    left: '50%',
+                    position: 'absolute', top: '50%', left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 4px)',
-                    gap: '3px',
-                    opacity: dragIdx === i ? 0 : 0.4,
-                    pointerEvents: 'none',
-                    transition: 'opacity .15s',
+                    display: 'grid', gridTemplateColumns: 'repeat(3, 4px)', gap: '3px',
+                    opacity: isHovered && !isDragging ? 0.6 : 0,
+                    transition: 'opacity .15s', pointerEvents: 'none',
                   }}
                 >
                   {Array.from({ length: 9 }).map((_, d) => (
                     <div key={d} style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />
                   ))}
                 </div>
-
-                {/* Position number + remove */}
-                <span style={{ ...badge, top: '0.3rem', left: '0.3rem', background: 'rgba(0,0,0,0.7)', color: '#d6d1ce' }}>{i + 1}</span>
-
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); remove(i) }}
-                  title="Remove from gallery"
-                  aria-label="Remove from gallery"
-                  style={{
-                    position: 'absolute',
-                    top: '0.3rem',
-                    right: '0.3rem',
-                    width: 20,
-                    height: 20,
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: 'rgba(0,0,0,0.7)',
-                    color: '#fff',
-                    fontSize: '0.85rem',
-                    lineHeight: 1,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  &times;
-                </button>
-
-                {/* Bottom toolbar: cover toggle + prev/next move buttons */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: 'rgba(0,0,0,0.72)',
-                    padding: '0.2rem 0.3rem',
-                    gap: '0.2rem',
-                  }}
-                >
-                  {/* Cover toggle */}
-                  {isCover ? (
-                    <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'rgba(201,162,39,0.95)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
-                      <span aria-hidden="true">★ </span>Cover
-                    </span>
-                  ) : pid !== null ? (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setCover(pid) }}
-                      title="Set as gallery cover"
-                      aria-label={`Set photo ${i + 1} as gallery cover`}
-                      style={{ fontSize: '0.55rem', color: '#9b9a9a', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1, letterSpacing: '0.02em' }}
-                    >
-                      Set cover
-                    </button>
-                  ) : <span />}
-
-                  {/* Move controls */}
-                  <div style={{ display: 'flex', gap: '0.15rem', flexShrink: 0 }}>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); moveToFront(i) }}
-                      disabled={i === 0}
-                      title="Move to first"
-                      aria-label={`Move photo ${i + 1} to first position`}
-                      style={{ fontSize: '0.7rem', color: i === 0 ? '#444' : '#b8b4b1', background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', padding: '0 0.1rem', lineHeight: 1 }}
-                    >
-                      &#10218;
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); moveOne(i, -1) }}
-                      disabled={i === 0}
-                      title="Move earlier"
-                      aria-label={`Move photo ${i + 1} one position earlier`}
-                      style={{ fontSize: '0.7rem', color: i === 0 ? '#444' : '#b8b4b1', background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', padding: '0 0.1rem', lineHeight: 1 }}
-                    >
-                      &#8592;
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); moveOne(i, 1) }}
-                      disabled={i === count - 1}
-                      title="Move later"
-                      aria-label={`Move photo ${i + 1} one position later`}
-                      style={{ fontSize: '0.7rem', color: i === count - 1 ? '#444' : '#b8b4b1', background: 'none', border: 'none', cursor: i === count - 1 ? 'default' : 'pointer', padding: '0 0.1rem', lineHeight: 1 }}
-                    >
-                      &#8594;
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); moveToEnd(i) }}
-                      disabled={i === count - 1}
-                      title="Move to last"
-                      aria-label={`Move photo ${i + 1} to last position`}
-                      style={{ fontSize: '0.7rem', color: i === count - 1 ? '#444' : '#b8b4b1', background: 'none', border: 'none', cursor: i === count - 1 ? 'default' : 'pointer', padding: '0 0.1rem', lineHeight: 1 }}
-                    >
-                      &#10219;
-                    </button>
-                  </div>
-                </div>
               </div>
             )
           })}
         </div>
-        </>
       )}
 
-      {/* Hidden file input — always in DOM so both empty-state and populated Browse buttons work */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
         multiple
         style={{ display: 'none' }}
-        onChange={(e) => {
-          if (e.target.files?.length) handleFiles(e.target.files)
-          e.target.value = ''
-        }}
+        onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files); e.target.value = '' }}
       />
-
-      {/* Upload error — shown outside the conditional so it persists across state changes */}
-      {count === 0 && uploadError && (
-        <div role="alert" style={{ color: '#f0a3a3', fontSize: '0.74rem', margin: '0.4rem 0.5rem 0' }}>{uploadError}</div>
-      )}
     </div>
   )
 }

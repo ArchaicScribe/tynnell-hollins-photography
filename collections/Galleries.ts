@@ -143,16 +143,22 @@ export const Galleries: CollectionConfig = {
       },
     },
     {
+      name: 'photoArranger',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/GalleryPhotoArranger#GalleryPhotoArranger',
+        },
+      },
+    },
+    {
       name: 'photos',
       type: 'array',
       label: 'Photos in This Gallery',
       admin: {
         description:
           'Use the button above to add photos. Drag the thumbnails to reorder them - the order here is exactly how they appear on your site. Hover a photo to set it as the cover or remove it.',
-        components: {
-          // Visual grid arranger replaces Payload's default vertical row list.
-          Field: './components/admin/GalleryPhotoArranger#GalleryPhotoArranger',
-        },
+        hidden: true,
       },
       fields: [
         {
@@ -162,6 +168,20 @@ export const Galleries: CollectionConfig = {
           required: true,
           label: 'Photo',
         },
+      ],
+    },
+    {
+      name: 'status',
+      type: 'select',
+      label: 'Status',
+      defaultValue: 'published',
+      admin: {
+        position: 'sidebar',
+        description: 'Draft galleries are hidden from your public portfolio.',
+      },
+      options: [
+        { label: 'Published', value: 'published' },
+        { label: 'Draft', value: 'draft' },
       ],
     },
     {

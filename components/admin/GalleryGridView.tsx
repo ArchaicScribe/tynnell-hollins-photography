@@ -487,6 +487,17 @@ export function GalleryGridView() {
                   </div>
                 </div>
               </Link>
+              {/* Open Gallery Editor button */}
+              <div style={{ padding: '0 0.75rem 0.6rem' }}>
+                <a
+                  href={`/gallery-editor/${gallery.id}`}
+                  onClick={e => e.stopPropagation()}
+                  draggable={false}
+                  style={{ display: 'block', textAlign: 'center', padding: '0.4rem', background: 'rgba(214,209,206,0.08)', border: '1px solid rgba(214,209,206,0.15)', borderRadius: 4, color: '#d6d1ce', fontSize: '0.72rem', textDecoration: 'none', letterSpacing: '0.04em', transition: 'background 0.12s' }}
+                >
+                  Open Gallery Editor
+                </a>
+              </div>
               </div>
             )
           })}

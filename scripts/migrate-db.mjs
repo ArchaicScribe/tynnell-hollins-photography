@@ -369,6 +369,19 @@ async function run() {
     `)
 
     console.log('✓ galleries.hero_photo_id ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260619_200000: galleries.status column (gallery editor)
+    // Draft/published toggle for the Pixieset-style gallery editor.
+    // Default 'published' so all existing galleries remain visible.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries"
+        ADD COLUMN IF NOT EXISTS "status" varchar(20) DEFAULT 'published'
+    `)
+
+    console.log('✓ galleries.status ready')
   } finally {
     client.release()
     await pool.end()
