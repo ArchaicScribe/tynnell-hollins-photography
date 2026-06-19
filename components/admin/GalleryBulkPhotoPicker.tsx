@@ -1,6 +1,6 @@
 'use client'
 import { useField } from '@payloadcms/ui'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 type PhotoRow = { id?: string; photo: number | null }
 type PhotoDoc = {
@@ -9,6 +9,11 @@ type PhotoDoc = {
   filename?: string | null
   alt?: string | null
   category?: string | null
+  sizes?: { thumbnail?: { url?: string | null } | null; card?: { url?: string | null } | null } | null
+}
+
+function thumbUrl(p: PhotoDoc): string | null {
+  return p.sizes?.thumbnail?.url ?? p.sizes?.card?.url ?? p.url ?? null
 }
 
 const CATEGORIES = ['all', 'weddings', 'portraits', 'families', 'couples', 'brands']
@@ -21,38 +26,82 @@ const CAT_LABELS: Record<string, string> = {
   brands: 'Brands',
 }
 
+const PAGE_SIZE = 48
+
 export function GalleryBulkPhotoPicker() {
   const { value: rawPhotos, setValue: setPhotos } = useField<PhotoRow[]>({ path: 'photos' })
   // On a brand-new (unsaved) gallery, Payload reports an array field's value as
-  // its row count (the number 0), not an empty array. `?? []` does not catch 0,
-  // so guard with Array.isArray to avoid `photos.map is not a function` on the
-  // Create page. On a saved gallery the value is the real array of rows.
+  // its row count (the number 0), not an empty array. Guard with Array.isArray.
   const photos: PhotoRow[] = Array.isArray(rawPhotos) ? rawPhotos : []
 
   const [open, setOpen] = useState(false)
-  const [allPhotos, setAllPhotos] = useState<PhotoDoc[]>([])
+  const [pagePhotos, setPagePhotos] = useState<PhotoDoc[]>([])
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState('')
   const [catFilter, setCatFilter] = useState('all')
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // IDs already in this gallery
   const currentIds = new Set(
     photos.map(r => (typeof r.photo === 'number' ? r.photo : null)).filter((v): v is number => v !== null),
   )
 
+  const fetchPhotos = useCallback((cat: string, q: string, pg: number) => {
+    setLoading(true)
+    setLoadError('')
+    const params = new URLSearchParams({ limit: String(PAGE_SIZE), page: String(pg), depth: '1', sort: '-createdAt' })
+    if (cat !== 'all') params.append('where[category][equals]', cat)
+    if (q) params.append('where[filename][contains]', q)
+    fetch(`/api/photos?${params.toString()}`, { credentials: 'include' })
+      .then(r => {
+        if (!r.ok) throw new Error(`Server error ${r.status}`)
+        return r.json()
+      })
+      .then((data: { docs?: PhotoDoc[]; totalDocs?: number; totalPages?: number }) => {
+        setPagePhotos(data.docs ?? [])
+        setTotal(data.totalDocs ?? 0)
+        setTotalPages(data.totalPages ?? 1)
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoadError("Couldn't load photos. Check your connection and try again.")
+        setLoading(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    fetchPhotos(catFilter, debouncedSearch, page)
+  }, [open, catFilter, debouncedSearch, page, fetchPhotos])
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(search)
+      setPage(1)
+    }, 300)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [search])
+
   const openPicker = useCallback(() => {
     setSelected(new Set())
     setCatFilter('all')
-    setLoading(true)
+    setSearch('')
+    setDebouncedSearch('')
+    setPage(1)
     setOpen(true)
-    fetch('/api/photos?limit=500&depth=0', { credentials: 'include' })
-      .then(r => r.json())
-      .then((data: { docs?: PhotoDoc[] }) => {
-        setAllPhotos(data.docs ?? [])
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
   }, [])
+
+  const changeCategory = (cat: string) => {
+    setCatFilter(cat)
+    setPage(1)
+  }
 
   const toggle = (id: number) => {
     if (currentIds.has(id)) return
@@ -72,8 +121,6 @@ export function GalleryBulkPhotoPicker() {
     setPhotos([...photos, ...newRows])
     setOpen(false)
   }
-
-  const filtered = catFilter === 'all' ? allPhotos : allPhotos.filter(p => p.category === catFilter)
 
   useEffect(() => {
     if (!open) return
@@ -178,50 +225,75 @@ export function GalleryBulkPhotoPicker() {
           </div>
         </div>
 
-        {/* Category filter */}
+        {/* Search + category filter */}
         <div
           style={{
-            display: 'flex',
-            gap: '0.35rem',
             padding: '0.55rem 1.25rem',
             borderBottom: '1px solid rgba(155,154,154,0.08)',
             flexShrink: 0,
-            flexWrap: 'wrap',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.45rem',
           }}
         >
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setCatFilter(cat)}
-              aria-pressed={catFilter === cat}
-              style={{
-                padding: '0.18rem 0.6rem',
-                background: catFilter === cat ? 'rgba(155,154,154,0.18)' : 'transparent',
-                border: `1px solid ${catFilter === cat ? 'rgba(155,154,154,0.35)' : 'rgba(155,154,154,0.15)'}`,
-                borderRadius: '3px',
-                color: catFilter === cat ? '#d6d1ce' : '#9b9a9a',
-                fontSize: '0.7rem',
-                cursor: 'pointer',
-                letterSpacing: '0.04em',
-                fontFamily: 'var(--font-body, inherit)',
-                textTransform: 'capitalize',
-              }}
-            >
-              {CAT_LABELS[cat]}
-            </button>
-          ))}
+          <input
+            type="search"
+            placeholder="Search by filename..."
+            aria-label="Search photos by filename"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.4rem 0.7rem',
+              background: '#262626',
+              border: '1px solid rgba(155,154,154,0.2)',
+              borderRadius: '4px',
+              color: '#d6d1ce',
+              fontSize: '0.82rem',
+              fontFamily: 'inherit',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => changeCategory(cat)}
+                aria-pressed={catFilter === cat}
+                style={{
+                  padding: '0.18rem 0.6rem',
+                  background: catFilter === cat ? 'rgba(155,154,154,0.18)' : 'transparent',
+                  border: `1px solid ${catFilter === cat ? 'rgba(155,154,154,0.35)' : 'rgba(155,154,154,0.15)'}`,
+                  borderRadius: '3px',
+                  color: catFilter === cat ? '#d6d1ce' : '#9b9a9a',
+                  fontSize: '0.7rem',
+                  cursor: 'pointer',
+                  letterSpacing: '0.04em',
+                  fontFamily: 'inherit',
+                  textTransform: 'capitalize',
+                }}
+              >
+                {CAT_LABELS[cat]}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Photo grid */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0.85rem 1.25rem' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#9b9a9a', fontSize: '0.85rem' }}>
-              Loading photos...
+          {loadError ? (
+            <div role="alert" style={{ textAlign: 'center', padding: '3rem', color: '#f0a3a3', fontSize: '0.85rem' }}>
+              {loadError}
             </div>
-          ) : filtered.length === 0 ? (
+          ) : loading ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: '#9b9a9a', fontSize: '0.85rem' }}>
-              No photos in this category.
+              Loading...
+            </div>
+          ) : pagePhotos.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#9b9a9a', fontSize: '0.85rem' }}>
+              No photos found.
             </div>
           ) : (
             <div
@@ -231,9 +303,10 @@ export function GalleryBulkPhotoPicker() {
                 gap: '0.45rem',
               }}
             >
-              {filtered.map(photo => {
+              {pagePhotos.map(photo => {
                 const inGallery = currentIds.has(photo.id)
                 const isSelected = selected.has(photo.id)
+                const src = thumbUrl(photo)
                 return (
                   <div
                     key={photo.id}
@@ -255,9 +328,10 @@ export function GalleryBulkPhotoPicker() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    {photo.url ? (
+                    {src ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={photo.url}
+                        src={src}
                         alt={photo.alt ?? photo.filename ?? ''}
                         loading="lazy"
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
@@ -277,7 +351,6 @@ export function GalleryBulkPhotoPicker() {
                       </div>
                     )}
 
-                    {/* Already added overlay */}
                     {inGallery && (
                       <div
                         style={{
@@ -305,7 +378,6 @@ export function GalleryBulkPhotoPicker() {
                       </div>
                     )}
 
-                    {/* Selection checkmark */}
                     {isSelected && !inGallery && (
                       <div
                         style={{
@@ -333,7 +405,7 @@ export function GalleryBulkPhotoPicker() {
           )}
         </div>
 
-        {/* Footer count */}
+        {/* Footer: count + pagination + clear */}
         <div
           style={{
             padding: '0.55rem 1.25rem',
@@ -342,29 +414,39 @@ export function GalleryBulkPhotoPicker() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: '0.75rem',
+            flexWrap: 'wrap',
           }}
         >
           <span style={{ fontSize: '0.72rem', color: 'rgba(155,154,154,0.6)' }}>
-            {filtered.length} photo{filtered.length !== 1 ? 's' : ''}
-            {catFilter !== 'all' ? ` in ${CAT_LABELS[catFilter]}` : ' total'}
+            {total} photo{total !== 1 ? 's' : ''}
+            {catFilter !== 'all' ? ` in ${CAT_LABELS[catFilter]}` : ''}
             {currentIds.size > 0 ? ` · ${currentIds.size} already in gallery` : ''}
           </span>
-          {selected.size > 0 && (
-            <button
-              type="button"
-              onClick={() => setSelected(new Set())}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'rgba(155,154,154,0.6)',
-                fontSize: '0.72rem',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-body, inherit)',
-              }}
-            >
-              Clear selection
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {selected.size > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelected(new Set())}
+                style={{ background: 'transparent', border: 'none', color: 'rgba(155,154,154,0.6)', fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Clear selection
+              </button>
+            )}
+            {totalPages > 1 && (
+              <>
+                <button type="button" disabled={page === 1} onClick={() => setPage(p => p - 1)}
+                  style={{ padding: '0.3rem 0.65rem', background: 'transparent', border: '1px solid rgba(155,154,154,0.25)', borderRadius: '3px', color: page === 1 ? 'rgba(155,154,154,0.3)' : '#9b9a9a', fontSize: '0.72rem', cursor: page === 1 ? 'default' : 'pointer', fontFamily: 'inherit' }}>
+                  Prev
+                </button>
+                <span style={{ fontSize: '0.72rem', color: '#9b9a9a' }}>{page} / {totalPages}</span>
+                <button type="button" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}
+                  style={{ padding: '0.3rem 0.65rem', background: 'transparent', border: '1px solid rgba(155,154,154,0.25)', borderRadius: '3px', color: page === totalPages ? 'rgba(155,154,154,0.3)' : '#9b9a9a', fontSize: '0.72rem', cursor: page === totalPages ? 'default' : 'pointer', fontFamily: 'inherit' }}>
+                  Next
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
