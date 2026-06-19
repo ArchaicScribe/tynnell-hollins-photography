@@ -34,10 +34,12 @@
   --font-mono:    'Roboto Mono', monospace;
 }
 
-/* Apply fonts globally across the admin */
+/* Apply fonts globally across the admin.
+   Archivo for all UI chrome; Roboto Mono reserved for data/code contexts. */
 html,
 body {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Archivo', sans-serif;
+  font-size: 15px;
   background-color: #1a1a1a;
   color: #E6E1DE;
 }
@@ -125,9 +127,9 @@ tbody tr,
 /* ── Buttons ───────────────────────────────────────────────── */
 
 .btn {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
 }
 
 /* ── Table header cells ────────────────────────────────────── */
@@ -135,9 +137,9 @@ tbody tr,
 .sort-column__label,
 th,
 .cell--header {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #9B9A9A;
 }
@@ -150,17 +152,24 @@ input[type='number'],
 textarea,
 select,
 .rs__control {
-  font-family: 'Roboto Mono', monospace !important;
-  font-size: 0.8rem !important;
+  font-family: 'Archivo', sans-serif !important;
+  font-size: 0.9rem !important;
 }
 
 /* ── Status select pills ───────────────────────────────────── */
 
 .pill {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+/* ── Hide the API tab — not relevant to content editors ─────── */
+
+.doc-tab__list-item:has(a[href*="/api"]),
+.doc-tab__list-item:has(button[aria-label*="API"]) {
+  display: none !important;
 }
 
 /* ── Login page revamp (TYN-181) ────────────────────────────── */
@@ -200,9 +209,9 @@ select,
 .login__heading,
 h1.login__heading {
   font-family: 'Archivo', sans-serif;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #9B9A9A;
   text-align: center;
@@ -258,14 +267,14 @@ h1.login__heading {
 /* Forgot password link */
 .login a,
 .login__link {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: #9B9A9A;
   text-align: center;
   display: block;
   margin-top: 1rem;
   text-decoration: none;
-  font-family: 'Roboto Mono', monospace;
-  letter-spacing: 0.04em;
+  font-family: 'Archivo', sans-serif;
+  letter-spacing: 0.02em;
 }
 
 .login a:hover,
@@ -356,11 +365,11 @@ h1.login__heading {
 .field-label,
 label.field-label {
   font-family: 'Archivo', sans-serif;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #B8B4B1;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.35rem;
 }
 
 /* ── Text inputs and textareas ──────────────────────────────── */
@@ -379,7 +388,8 @@ textarea {
 /* ── Field descriptions (helper text) ──────────────────────── */
 
 .field-description {
-  font-size: 0.72rem;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.78rem;
   line-height: 1.5;
   color: #9B9A9A;
   margin-top: 0.35rem;
@@ -447,8 +457,20 @@ tbody tr td,
 /* ── Error messages ─────────────────────────────────────────── */
 
 .field-error {
-  font-size: 0.7rem;
-  font-family: 'Roboto Mono', monospace;
+  font-size: 0.78rem;
+  font-family: 'Archivo', sans-serif;
+}
+
+/* ── Roboto Mono stays for data/code contexts only ──────────── */
+
+/* Slug fields, URL fields, timestamps — mono reinforces "this is a key" */
+input[name='slug'],
+input[name='url'],
+.cell--createdAt,
+.cell--updatedAt,
+.cell--slug {
+  font-family: 'Roboto Mono', monospace !important;
+  font-size: 0.8rem !important;
 }
 
 /* ── Document edit page readability (TYN-202) ───────────────── */
