@@ -105,6 +105,20 @@ export const Galleries: CollectionConfig = {
       ],
     },
     {
+      name: 'heroPhoto',
+      type: 'relationship',
+      label: 'Hero Photo',
+      relationTo: 'photos',
+      required: false,
+      admin: {
+        description:
+          'Optional. The photo used as the full-bleed banner at the top of this gallery page. If not set, the Cover Photo is used instead.',
+        components: {
+          Field: './components/admin/HeroPhotoPicker#HeroPhotoPicker',
+        },
+      },
+    },
+    {
       name: 'coverPhoto',
       type: 'relationship',
       label: 'Cover Photo',

@@ -353,6 +353,22 @@ async function run() {
     `)
 
     console.log('✓ users.must_change_password ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260619_100000: galleries hero_photo_id column (TYN-239)
+    // Separate hero photo for the full-bleed gallery page banner, distinct
+    // from the cover photo used on the portfolio index card.
+    // Optional: when null the page falls back to coverPhoto.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries"
+        ADD COLUMN IF NOT EXISTS "hero_photo_id" integer
+          REFERENCES "photos" ("id")
+          ON DELETE SET NULL
+    `)
+
+    console.log('✓ galleries.hero_photo_id ready')
   } finally {
     client.release()
     await pool.end()

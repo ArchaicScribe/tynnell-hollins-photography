@@ -73,7 +73,11 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   const cover = typeof gallery.coverPhoto === 'object' && gallery.coverPhoto !== null
     ? gallery.coverPhoto as Photo
     : null
-  const coverUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
+  // heroPhoto is the full-bleed banner; falls back to coverPhoto when not set.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const heroRaw = (gallery as any).heroPhoto
+  const hero = typeof heroRaw === 'object' && heroRaw !== null ? heroRaw as Photo : cover
+  const coverUrl = hero?.sizes?.hero?.url ?? hero?.url ?? null
 
   // gallery.photos is an ordered array of { photo: Photo | number } rows
   const photos: Photo[] = Array.isArray(gallery.photos)
@@ -113,7 +117,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
         <div className={styles.hero}>
           <ProtectedImage
             src={coverUrl}
-            alt={cover?.alt ?? gallery.title}
+            alt={hero?.alt ?? gallery.title}
             fill
             priority
             className={styles.heroImage}
