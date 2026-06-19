@@ -376,6 +376,8 @@ export function PhotoGridView() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   // IDs currently being deleted (shows loading state)
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set())
+  const [loadError, setLoadError] = useState('')
+  const [toggleError, setToggleError] = useState('')
 
   const deletePhoto = useCallback(async (id: number) => {
     setDeletingIds(prev => new Set([...prev, id]))
@@ -408,7 +410,13 @@ export function PhotoGridView() {
       })
       if (res.ok) {
         setPhotos(prev => prev.map(p => p.id === photo.id ? { ...p, featured: !p.featured } : p))
+      } else {
+        setToggleError("Couldn't save - please try again.")
+        setTimeout(() => setToggleError(''), 3500)
       }
+    } catch {
+      setToggleError("Couldn't save - please try again.")
+      setTimeout(() => setToggleError(''), 3500)
     } finally {
       setTogglingIds(prev => {
         const next = new Set(prev)
@@ -445,7 +453,7 @@ export function PhotoGridView() {
         setTotalPages(data.totalPages ?? 1)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => { setLoading(false); setLoadError("Couldn't load photos. Check your connection and try again.") })
   }, [debouncedSearch, category, featuredOnly, page])
 
   // Keep a ref so upload callback can trigger a refresh without stale closure
@@ -699,6 +707,9 @@ export function PhotoGridView() {
           )}
         </>
       )}
+
+      {loadError && <div role="alert" style={{ marginBottom: '0.75rem', padding: '0.55rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, fontSize: '0.8rem', color: '#f0a3a3' }}>{loadError}</div>}
+      {toggleError && <div role="alert" style={{ marginBottom: '0.75rem', padding: '0.55rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, fontSize: '0.8rem', color: '#f0a3a3' }}>{toggleError}</div>}
 
       {/* Grid */}
       {loading ? (

@@ -208,6 +208,8 @@ export function GalleryGridView() {
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
   const [reordering, setReordering] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const [toggleError, setToggleError] = useState('')
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -241,7 +243,7 @@ export function GalleryGridView() {
         setTotalPages(data.totalPages ?? 1)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => { setLoading(false); setLoadError("Couldn't load galleries. Check your connection and try again.") })
   }, [debouncedSearch, category, page])
 
   const toggleFeatured = useCallback(async (e: React.MouseEvent, gallery: GalleryDoc) => {
@@ -260,7 +262,13 @@ export function GalleryGridView() {
         setGalleries(prev => prev.map(g =>
           g.id === gallery.id ? { ...g, featured: !g.featured } : g
         ))
+      } else {
+        setToggleError("Couldn't save - please try again.")
+        setTimeout(() => setToggleError(''), 3500)
       }
+    } catch {
+      setToggleError("Couldn't save - please try again.")
+      setTimeout(() => setToggleError(''), 3500)
     } finally {
       setTogglingIds(prev => {
         const next = new Set(prev)
@@ -337,6 +345,9 @@ export function GalleryGridView() {
           + New Gallery
         </Link>
       </div>
+
+      {loadError && <div role="alert" style={{ marginBottom: '0.75rem', padding: '0.55rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, fontSize: '0.8rem', color: '#f0a3a3' }}>{loadError}</div>}
+      {toggleError && <div role="alert" style={{ marginBottom: '0.75rem', padding: '0.55rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, fontSize: '0.8rem', color: '#f0a3a3' }}>{toggleError}</div>}
 
       {/* Reorder instruction — only shown when drag is available */}
       {canReorder && (

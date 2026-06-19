@@ -200,6 +200,8 @@ export function PostGridView() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
+  const [loadError, setLoadError] = useState('')
+  const [toggleError, setToggleError] = useState('')
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -233,7 +235,7 @@ export function PostGridView() {
         setTotalPages(data.totalPages ?? 1)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => { setLoading(false); setLoadError("Couldn't load posts. Check your connection and try again.") })
   }, [debouncedSearch, statusFilter, page])
 
   const toggleStatus = useCallback(async (e: React.MouseEvent, post: PostDoc) => {
@@ -265,7 +267,13 @@ export function PostGridView() {
           setPosts(prev => prev.filter(p => p.id !== post.id || p.status === statusFilter))
           setTotal(n => n - 1)
         }
+      } else {
+        setToggleError("Couldn't save - please try again.")
+        setTimeout(() => setToggleError(''), 3500)
       }
+    } catch {
+      setToggleError("Couldn't save - please try again.")
+      setTimeout(() => setToggleError(''), 3500)
     } finally {
       setTogglingIds(prev => {
         const next = new Set(prev)
@@ -322,6 +330,9 @@ export function PostGridView() {
           </button>
         ))}
       </div>
+
+      {loadError && <div role="alert" style={{ marginBottom: '0.75rem', padding: '0.55rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, fontSize: '0.8rem', color: '#f0a3a3' }}>{loadError}</div>}
+      {toggleError && <div role="alert" style={{ marginBottom: '0.75rem', padding: '0.55rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, fontSize: '0.8rem', color: '#f0a3a3' }}>{toggleError}</div>}
 
       {/* Grid */}
       {loading ? (
