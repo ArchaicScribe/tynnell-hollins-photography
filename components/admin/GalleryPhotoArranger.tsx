@@ -37,10 +37,17 @@ export function GalleryPhotoArranger() {
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Load the library once to resolve each row's thumbnail.
+  // Fetch thumbnails only for the photos actually in this gallery.
+  // Resolves IDs from the photos array and queries only those docs.
   useEffect(() => {
     let active = true
-    fetch('/api/photos?limit=500&depth=0', { credentials: 'include' })
+    const ids = photos
+      .map((r) => (typeof r.photo === 'number' ? r.photo : null))
+      .filter((id): id is number => id !== null)
+    if (ids.length === 0) return
+    const params = new URLSearchParams({ limit: String(ids.length + 10), depth: '1' })
+    params.append('where[id][in]', ids.join(','))
+    fetch(`/api/photos?${params.toString()}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((data: { docs?: PhotoDoc[] }) => {
         if (!active) return
@@ -52,7 +59,8 @@ export function GalleryPhotoArranger() {
     return () => {
       active = false
     }
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photos.map((r) => (typeof r.photo === 'number' ? r.photo : null)).join(',')])
 
   const count = photos.length
 
@@ -164,7 +172,7 @@ export function GalleryPhotoArranger() {
       }}
     >
       {/* Upload bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.7rem', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
         <span style={{ fontSize: '0.8rem', color: '#b8b4b1', letterSpacing: '0.03em' }}>
           {fileOver ? 'Drop to upload these photos' : 'Drag photos here to upload, or'}
           {!fileOver && (
@@ -179,10 +187,22 @@ export function GalleryPhotoArranger() {
             </button>
           )}
         </span>
-        <span style={{ fontSize: '0.72rem', color: '#6b6a6a' }}>
-          {count > 0 ? `${count} photo${count !== 1 ? 's' : ''} · drag to reorder · order = order on the site` : ''}
-        </span>
+        {count > 0 && (
+          <span style={{ fontSize: '0.72rem', color: '#9b9a9a' }}>
+            {count} photo{count !== 1 ? 's' : ''}
+          </span>
+        )}
       </div>
+
+      {/* Drag-to-reorder instruction strip */}
+      {count > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.7rem', padding: '0.35rem 0.5rem', background: 'rgba(155,154,154,0.06)', borderRadius: 4, border: '1px solid rgba(155,154,154,0.1)' }}>
+          <span style={{ fontSize: '1rem', lineHeight: 1, color: '#9b9a9a' }} aria-hidden="true">&#8942;&#8942;</span>
+          <span style={{ fontSize: '0.75rem', color: '#9b9a9a' }}>
+            Drag the photos to reorder them. The order here is the order they appear on the site.
+          </span>
+        </div>
+      )}
 
       <input
         ref={fileInputRef}
@@ -243,6 +263,27 @@ export function GalleryPhotoArranger() {
                     {pid !== null ? 'Preview on live site' : 'No photo'}
                   </div>
                 )}
+
+                {/* Drag handle - visible grip indicator */}
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 4px)',
+                    gap: '3px',
+                    opacity: dragIdx === i ? 0 : 0.55,
+                    pointerEvents: 'none',
+                    transition: 'opacity .15s',
+                  }}
+                >
+                  {Array.from({ length: 6 }).map((_, d) => (
+                    <div key={d} style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />
+                  ))}
+                </div>
 
                 {/* Position number */}
                 <span style={{ ...badge, top: '0.3rem', left: '0.3rem', background: 'rgba(0,0,0,0.6)', color: '#d6d1ce' }}>{i + 1}</span>
