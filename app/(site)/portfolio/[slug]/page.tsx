@@ -148,7 +148,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
             {photos.map((photo) => {
               const url = photo.sizes?.card?.url ?? photo.url ?? null
               if (!url) return null
-              const caption = photo.alt || photo.title || null
+              const caption = photo.caption || null
               const image = (
                 <div className={styles.imageSlot}>
                   <ProtectedImage
