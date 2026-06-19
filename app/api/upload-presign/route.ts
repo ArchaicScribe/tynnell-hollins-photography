@@ -76,6 +76,11 @@ export async function POST(request: Request) {
   // Use a temp/ prefix with a UUID so the key is unguessable and easy to clean up
   const key = `temp/${crypto.randomUUID()}-${Date.now()}.${ext || 'jpg'}`
 
+  if (!process.env.R2_ACCOUNT_ID) {
+    console.error('[upload-presign] R2_ACCOUNT_ID is not set')
+    return NextResponse.json({ error: 'Storage is not configured' }, { status: 503 })
+  }
+
   try {
     const s3 = buildS3Client()
     const command = new PutObjectCommand({
