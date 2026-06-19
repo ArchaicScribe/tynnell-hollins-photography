@@ -1,13 +1,16 @@
 'use client'
 import React from 'react'
-import { useFormFields } from '@payloadcms/ui'
+import { useDocumentInfo, useFormFields } from '@payloadcms/ui'
 import { AdminViewOnSiteLink } from './AdminViewOnSiteLink'
 
 export function GalleryViewOnSiteButton() {
+  const { id } = useDocumentInfo()
   const slug = useFormFields(([fields]) => fields.slug?.value as string | undefined)
 
-  // No public page exists until the gallery is saved and has a slug.
-  if (!slug) return null
+  // Only show after the gallery is saved. The slug field is pre-populated from
+  // the title on the create form, so checking slug alone shows the button on
+  // unsaved docs where no public page exists yet.
+  if (!id || !slug) return null
 
   return (
     <AdminViewOnSiteLink
