@@ -37,8 +37,8 @@ export function GalleryPhotoArranger() {
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch thumbnails only for the photos actually in this gallery.
-  // Resolves IDs from the photos array and queries only those docs.
+  // Fetch thumbnails only for the photos actually in this gallery, deferred past
+  // the initial paint so the rest of the gallery form renders immediately.
   useEffect(() => {
     let active = true
     const ids = photos
@@ -47,17 +47,22 @@ export function GalleryPhotoArranger() {
     if (ids.length === 0) return
     const params = new URLSearchParams({ limit: String(ids.length + 10), depth: '1' })
     params.append('where[id][in]', ids.join(','))
-    fetch(`/api/photos?${params.toString()}`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((data: { docs?: PhotoDoc[] }) => {
-        if (!active) return
-        const map: Record<number, PhotoDoc> = {}
-        for (const d of data.docs ?? []) map[d.id] = d
-        setDocs(map)
-      })
-      .catch(() => {})
+    // Defer the fetch so the admin form finishes its initial render first.
+    const timer = setTimeout(() => {
+      if (!active) return
+      fetch(`/api/photos?${params.toString()}`, { credentials: 'include' })
+        .then((r) => r.json())
+        .then((data: { docs?: PhotoDoc[] }) => {
+          if (!active) return
+          const map: Record<number, PhotoDoc> = {}
+          for (const d of data.docs ?? []) map[d.id] = d
+          setDocs(map)
+        })
+        .catch(() => {})
+    }, 120)
     return () => {
       active = false
+      clearTimeout(timer)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos.map((r) => (typeof r.photo === 'number' ? r.photo : null)).join(',')])
