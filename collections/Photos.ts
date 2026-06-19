@@ -83,10 +83,10 @@ export const Photos: CollectionConfig = {
     {
       name: 'title',
       type: 'text',
-      label: 'Title',
+      label: 'Internal Name',
       admin: {
         description:
-          'Auto-filled from the filename on upload. Edit this to give the photo a meaningful name - clients never see it. Example: "Smith Wedding - First Dance".',
+          'Your private label for this photo - never shown to visitors. Auto-filled from the filename. Rename it to something meaningful for you: "Smith Wedding - First Dance", "Outdoor Portraits - Golden Hour". To add text that appears on your live site beneath this photo, use the Caption field below.',
       },
     },
     {
@@ -126,10 +126,10 @@ export const Photos: CollectionConfig = {
     {
       name: 'caption',
       type: 'text',
-      label: 'Caption',
+      label: 'Caption (Public)',
       admin: {
         description:
-          'Optional text displayed beneath this photo in galleries. Leave blank for no caption.',
+          'Optional. This text appears beneath this photo on your live gallery pages - visitors will see it. Leave it blank for no caption. Example: "Dancing under the stars at a Napa Valley vineyard."',
       },
     },
     {

@@ -7,6 +7,7 @@ type PhotoDoc = {
   id: number
   filename: string
   title?: string | null
+  caption?: string | null
   category?: string | null
   featured?: boolean | null
   url?: string | null
@@ -864,7 +865,12 @@ export function PhotoGridView() {
                   )}
                 </div>
                 <div style={css.cardBody}>
-                  <div style={css.cardTitle}>{label}</div>
+                  <div style={{ ...css.cardTitle, color: '#9b9a9a' }} title="Internal name — not shown to visitors">{label}</div>
+                  {photo.caption && (
+                    <div style={{ fontSize: '0.65rem', color: '#b8b4b1', marginTop: '0.15rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={`Public caption: ${photo.caption}`}>
+                      <span aria-hidden="true">&ldquo;</span>{photo.caption}<span aria-hidden="true">&rdquo;</span>
+                    </div>
+                  )}
                   {photo.category && (
                     <div style={css.cardMeta}>{photo.category}</div>
                   )}
