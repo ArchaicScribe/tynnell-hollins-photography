@@ -77,6 +77,15 @@ export function GalleryPhotoArranger() {
     setPhotos(next)
   }
 
+  const moveOne = (i: number, dir: -1 | 1) => {
+    const target = i + dir
+    if (target < 0 || target >= photos.length) return
+    move(i, target)
+  }
+
+  const moveToFront = (i: number) => { if (i > 0) move(i, 0) }
+  const moveToEnd = (i: number) => { if (i < photos.length - 1) move(i, photos.length - 1) }
+
   const remove = (idx: number) => {
     setPhotos(photos.filter((_, i) => i !== idx))
   }
@@ -228,7 +237,7 @@ export function GalleryPhotoArranger() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
               gap: '0.55rem',
             }}
           >
@@ -282,51 +291,33 @@ export function GalleryPhotoArranger() {
                   </div>
                 )}
 
-                {/* Drag handle - visible grip indicator */}
+                {/* Drag handle - subtle center indicator; primary reordering via buttons below */}
                 <div
                   aria-hidden="true"
                   style={{
                     position: 'absolute',
-                    top: '50%',
+                    top: '38%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 4px)',
+                    gridTemplateColumns: 'repeat(3, 4px)',
                     gap: '3px',
-                    opacity: dragIdx === i ? 0 : 0.55,
+                    opacity: dragIdx === i ? 0 : 0.4,
                     pointerEvents: 'none',
                     transition: 'opacity .15s',
                   }}
                 >
-                  {Array.from({ length: 6 }).map((_, d) => (
+                  {Array.from({ length: 9 }).map((_, d) => (
                     <div key={d} style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />
                   ))}
                 </div>
 
-                {/* Position number */}
-                <span style={{ ...badge, top: '0.3rem', left: '0.3rem', background: 'rgba(0,0,0,0.6)', color: '#d6d1ce' }}>{i + 1}</span>
+                {/* Position number + remove */}
+                <span style={{ ...badge, top: '0.3rem', left: '0.3rem', background: 'rgba(0,0,0,0.7)', color: '#d6d1ce' }}>{i + 1}</span>
 
-                {/* Cover badge / set-cover */}
-                {isCover ? (
-                  <span style={{ ...badge, bottom: '0.3rem', left: '0.3rem', background: 'rgba(201,162,39,0.92)', color: '#0c0c0c', fontWeight: 700, textTransform: 'uppercase' }}><span aria-hidden="true">★ </span>Cover</span>
-                ) : (
-                  pid !== null && (
-                    <button
-                      type="button"
-                      onClick={() => setCover(pid)}
-                      title="Set as the gallery cover photo"
-                      aria-label={`Set photo ${i + 1} as the gallery cover`}
-                      style={{ ...badge, bottom: '0.3rem', left: '0.3rem', background: 'rgba(0,0,0,0.6)', color: '#d6d1ce', border: 'none', cursor: 'pointer' }}
-                    >
-                      Set cover
-                    </button>
-                  )
-                )}
-
-                {/* Remove */}
                 <button
                   type="button"
-                  onClick={() => remove(i)}
+                  onClick={(e) => { e.stopPropagation(); remove(i) }}
                   title="Remove from gallery"
                   aria-label="Remove from gallery"
                   style={{
@@ -337,7 +328,7 @@ export function GalleryPhotoArranger() {
                     height: 20,
                     borderRadius: '50%',
                     border: 'none',
-                    background: 'rgba(0,0,0,0.62)',
+                    background: 'rgba(0,0,0,0.7)',
                     color: '#fff',
                     fontSize: '0.85rem',
                     lineHeight: 1,
@@ -349,6 +340,83 @@ export function GalleryPhotoArranger() {
                 >
                   &times;
                 </button>
+
+                {/* Bottom toolbar: cover toggle + prev/next move buttons */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'rgba(0,0,0,0.72)',
+                    padding: '0.2rem 0.3rem',
+                    gap: '0.2rem',
+                  }}
+                >
+                  {/* Cover toggle */}
+                  {isCover ? (
+                    <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'rgba(201,162,39,0.95)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
+                      <span aria-hidden="true">★ </span>Cover
+                    </span>
+                  ) : pid !== null ? (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setCover(pid) }}
+                      title="Set as gallery cover"
+                      aria-label={`Set photo ${i + 1} as gallery cover`}
+                      style={{ fontSize: '0.55rem', color: '#9b9a9a', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1, letterSpacing: '0.02em' }}
+                    >
+                      Set cover
+                    </button>
+                  ) : <span />}
+
+                  {/* Move controls */}
+                  <div style={{ display: 'flex', gap: '0.15rem', flexShrink: 0 }}>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); moveToFront(i) }}
+                      disabled={i === 0}
+                      title="Move to first"
+                      aria-label={`Move photo ${i + 1} to first position`}
+                      style={{ fontSize: '0.7rem', color: i === 0 ? '#444' : '#b8b4b1', background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', padding: '0 0.1rem', lineHeight: 1 }}
+                    >
+                      &#10218;
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); moveOne(i, -1) }}
+                      disabled={i === 0}
+                      title="Move earlier"
+                      aria-label={`Move photo ${i + 1} one position earlier`}
+                      style={{ fontSize: '0.7rem', color: i === 0 ? '#444' : '#b8b4b1', background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', padding: '0 0.1rem', lineHeight: 1 }}
+                    >
+                      &#8592;
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); moveOne(i, 1) }}
+                      disabled={i === count - 1}
+                      title="Move later"
+                      aria-label={`Move photo ${i + 1} one position later`}
+                      style={{ fontSize: '0.7rem', color: i === count - 1 ? '#444' : '#b8b4b1', background: 'none', border: 'none', cursor: i === count - 1 ? 'default' : 'pointer', padding: '0 0.1rem', lineHeight: 1 }}
+                    >
+                      &#8594;
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); moveToEnd(i) }}
+                      disabled={i === count - 1}
+                      title="Move to last"
+                      aria-label={`Move photo ${i + 1} to last position`}
+                      style={{ fontSize: '0.7rem', color: i === count - 1 ? '#444' : '#b8b4b1', background: 'none', border: 'none', cursor: i === count - 1 ? 'default' : 'pointer', padding: '0 0.1rem', lineHeight: 1 }}
+                    >
+                      &#10219;
+                    </button>
+                  </div>
+                </div>
               </div>
             )
           })}
