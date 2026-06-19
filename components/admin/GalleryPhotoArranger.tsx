@@ -136,15 +136,6 @@ export function GalleryPhotoArranger() {
     borderRadius: 3,
   }
 
-  const empty = useMemo(
-    () => (
-      <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#9b9a9a', fontSize: '0.85rem' }}>
-        No photos yet. Drag photos here to upload, or use <strong>Browse</strong> above.
-      </div>
-    ),
-    [],
-  )
-
   return (
     <div
       onDragOver={(e) => {
@@ -154,7 +145,6 @@ export function GalleryPhotoArranger() {
         }
       }}
       onDragLeave={(e) => {
-        // Only clear when leaving the whole arranger, not moving between tiles.
         if (e.currentTarget === e.target) setFileOver(false)
       }}
       onDrop={(e) => {
@@ -166,70 +156,77 @@ export function GalleryPhotoArranger() {
       }}
       style={{
         paddingTop: '0.25rem',
-        border: `2px dashed ${fileOver ? 'rgba(214,209,206,0.8)' : 'transparent'}`,
+        border: `2px dashed ${fileOver ? 'rgba(214,209,206,0.8)' : count === 0 ? 'rgba(155,154,154,0.2)' : 'transparent'}`,
         borderRadius: 8,
         transition: 'border-color .12s ease',
+        padding: count === 0 ? '0' : '0.25rem 0',
       }}
     >
-      {/* Upload bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '0.8rem', color: '#b8b4b1', letterSpacing: '0.03em' }}>
-          {fileOver ? 'Drop to upload these photos' : 'Drag photos here to upload, or'}
-          {!fileOver && (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              aria-busy={uploading}
-              style={{ marginLeft: '0.4rem', background: 'rgba(155,154,154,0.14)', border: '1px solid rgba(155,154,154,0.3)', color: '#e6e1de', borderRadius: 4, padding: '0.25rem 0.7rem', fontSize: '0.75rem', cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}
-            >
-              {uploading && progress ? `Uploading ${progress.done}/${progress.total}...` : 'Browse'}
-            </button>
-          )}
-        </span>
-        {count > 0 && (
-          <span style={{ fontSize: '0.72rem', color: '#9b9a9a' }}>
-            {count} photo{count !== 1 ? 's' : ''}
-          </span>
-        )}
-      </div>
-
-      {/* Drag-to-reorder instruction strip */}
-      {count > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.7rem', padding: '0.35rem 0.5rem', background: 'rgba(155,154,154,0.06)', borderRadius: 4, border: '1px solid rgba(155,154,154,0.1)' }}>
-          <span style={{ fontSize: '1rem', lineHeight: 1, color: '#9b9a9a' }} aria-hidden="true">&#8942;&#8942;</span>
-          <span style={{ fontSize: '0.75rem', color: '#9b9a9a' }}>
-            Drag the photos to reorder them. The order here is the order they appear on the site.
-          </span>
-        </div>
-      )}
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        style={{ display: 'none' }}
-        onChange={(e) => {
-          if (e.target.files?.length) handleFiles(e.target.files)
-          e.target.value = ''
-        }}
-      />
-
-      {uploadError && (
-        <div role="alert" style={{ color: '#f0a3a3', fontSize: '0.74rem', marginBottom: '0.6rem' }}>{uploadError}</div>
-      )}
-
       {count === 0 ? (
-        empty
+        /* Empty state — prominent drop zone with full workflow explanation */
+        <div style={{ padding: '2rem 1.5rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.6rem', opacity: 0.35 }} aria-hidden="true">&#128444;</div>
+          <p style={{ margin: '0 0 0.4rem', fontSize: '0.9rem', fontWeight: 600, color: '#d6d1ce', fontFamily: 'Archivo, sans-serif' }}>
+            {fileOver ? 'Drop photos to upload them' : 'No photos in this gallery yet'}
+          </p>
+          {!fileOver && (
+            <>
+              <p style={{ margin: '0 0 1.1rem', fontSize: '0.78rem', color: '#9b9a9a', lineHeight: 1.5 }}>
+                Add photos using the <strong style={{ color: '#b8b4b1' }}>Add Multiple Photos</strong> button above, or drag image files directly onto this area to upload them. Once photos are added you can drag the tiles to reorder them — the order here is exactly the order they appear on your gallery page.
+              </p>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                aria-busy={uploading}
+                style={{ background: 'rgba(155,154,154,0.14)', border: '1px solid rgba(155,154,154,0.3)', color: '#e6e1de', borderRadius: 4, padding: '0.45rem 1.1rem', fontSize: '0.8rem', cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1, fontFamily: 'Archivo, sans-serif' }}
+              >
+                {uploading && progress ? `Uploading ${progress.done}/${progress.total}...` : 'Browse files'}
+              </button>
+            </>
+          )}
+        </div>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-            gap: '0.55rem',
-          }}
-        >
+        /* Populated state — upload bar + reorder strip + grid */
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.8rem', color: '#b8b4b1', letterSpacing: '0.03em' }}>
+              {fileOver ? 'Drop to upload these photos' : 'Drag image files here to add more, or'}
+              {!fileOver && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  aria-busy={uploading}
+                  style={{ marginLeft: '0.4rem', background: 'rgba(155,154,154,0.14)', border: '1px solid rgba(155,154,154,0.3)', color: '#e6e1de', borderRadius: 4, padding: '0.25rem 0.7rem', fontSize: '0.75rem', cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}
+                >
+                  {uploading && progress ? `Uploading ${progress.done}/${progress.total}...` : 'Browse'}
+                </button>
+              )}
+            </span>
+            <span style={{ fontSize: '0.72rem', color: '#9b9a9a' }}>
+              {count} photo{count !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.7rem', padding: '0.35rem 0.5rem', background: 'rgba(155,154,154,0.06)', borderRadius: 4, border: '1px solid rgba(155,154,154,0.1)' }}>
+            <span style={{ fontSize: '1rem', lineHeight: 1, color: '#9b9a9a' }} aria-hidden="true">&#8942;&#8942;</span>
+            <span style={{ fontSize: '0.75rem', color: '#9b9a9a' }}>
+              Drag the photos below to reorder them. The order here is the order they appear on your gallery page.
+            </span>
+          </div>
+
+          {uploadError && (
+            <div role="alert" style={{ color: '#f0a3a3', fontSize: '0.74rem', marginBottom: '0.6rem' }}>{uploadError}</div>
+          )}
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+              gap: '0.55rem',
+            }}
+          >
           {photos.map((row, i) => {
             const pid = typeof row.photo === 'number' ? row.photo : null
             const doc = pid !== null ? docs[pid] : undefined
@@ -335,6 +332,25 @@ export function GalleryPhotoArranger() {
             )
           })}
         </div>
+        </>
+      )}
+
+      {/* Hidden file input — always in DOM so both empty-state and populated Browse buttons work */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          if (e.target.files?.length) handleFiles(e.target.files)
+          e.target.value = ''
+        }}
+      />
+
+      {/* Upload error — shown outside the conditional so it persists across state changes */}
+      {count === 0 && uploadError && (
+        <div role="alert" style={{ color: '#f0a3a3', fontSize: '0.74rem', margin: '0.4rem 0.5rem 0' }}>{uploadError}</div>
       )}
     </div>
   )
