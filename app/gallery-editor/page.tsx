@@ -2,8 +2,11 @@ import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import payloadConfig from '@payload-config'
+import type { Photo } from '@/payload-types'
+import { GalleryIndexClient, type GalleryCard } from './GalleryIndexClient'
 
 export const dynamic = 'force-dynamic'
+export const metadata = { title: 'Galleries - Gallery Editor' }
 
 export default async function GalleryEditorHome() {
   const payload = await getPayload({ config: payloadConfig })
@@ -13,21 +16,24 @@ export default async function GalleryEditorHome() {
   const { docs } = await payload.find({
     collection: 'galleries',
     sort: 'displayOrder',
-    limit: 1,
-    depth: 0,
+    limit: 200,
+    depth: 1,
   })
 
-  if (docs.length > 0) {
-    redirect(`/gallery-editor/${docs[0].id}`)
-  }
+  const galleries: GalleryCard[] = docs.map(g => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const gAny = g as any
+    const cover = typeof g.coverPhoto === 'object' && g.coverPhoto !== null ? g.coverPhoto as Photo : null
+    return {
+      id: g.id,
+      title: g.title,
+      slug: typeof g.slug === 'string' ? g.slug : null,
+      category: g.category ?? null,
+      status: gAny.status ?? 'published',
+      photoCount: Array.isArray(g.photos) ? g.photos.length : 0,
+      coverThumb: cover?.sizes?.card?.url ?? cover?.url ?? null,
+    }
+  })
 
-  return (
-    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0c0c0c', color: '#9b9a9a', fontFamily: "var(--font-body, 'Roboto Mono', monospace)", fontSize: '0.9rem' }}>
-      <div style={{ textAlign: 'center' }}>
-        <p>No galleries yet.</p>
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/admin/collections/galleries/create" style={{ color: '#d6d1ce', textDecoration: 'underline' }}>Create your first gallery in Admin</a>
-      </div>
-    </main>
-  )
+  return <GalleryIndexClient galleries={galleries} />
 }
