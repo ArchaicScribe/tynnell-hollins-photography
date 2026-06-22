@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { GalleryViewer, type LightboxPhoto } from './GalleryViewer'
 import styles from './page.module.css'
 
 // Gallery content changes when photos are added - revalidate every 2 minutes
@@ -82,11 +83,19 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   const coverUrl = hero?.sizes?.hero?.url ?? hero?.url ?? null
 
   // gallery.photos is an ordered array of { photo: Photo | number } rows
-  const photos: Photo[] = Array.isArray(gallery.photos)
+  const rawPhotos: Photo[] = Array.isArray(gallery.photos)
     ? gallery.photos
         .map(item => item.photo)
         .filter((p): p is Photo => typeof p === 'object' && p !== null)
     : []
+
+  const photos: LightboxPhoto[] = rawPhotos.map(p => ({
+    id: p.id,
+    thumbUrl: p.sizes?.card?.url ?? p.url ?? null,
+    fullUrl: p.sizes?.hero?.url ?? p.url ?? null,
+    alt: p.alt ?? null,
+    caption: p.caption || null,
+  }))
 
   const taped = gallery.tapedStyle === true
 
@@ -139,43 +148,12 @@ export default async function GalleryPage({ params, searchParams }: Props) {
         </div>
       )}
 
-      {/* Back link + grid */}
+      {/* Back link + photo grid (with lightbox) */}
       <div className={styles.content}>
         <Link href={backHref} className={styles.back}>
           <span aria-hidden="true">&#8592;</span> {backText}
         </Link>
-
-        {photos.length > 0 ? (
-          <div className={`${styles.grid}${taped ? ` ${styles.gridTaped}` : ''}`}>
-            {photos.map((photo) => {
-              const url = photo.sizes?.card?.url ?? photo.url ?? null
-              if (!url) return null
-              const caption = photo.caption || null
-              const image = (
-                <div className={styles.imageSlot}>
-                  <ProtectedImage
-                    src={url}
-                    alt={photo.alt ?? photo.title ?? ''}
-                    fill
-                    sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-                    className={styles.photo}
-                  />
-                </div>
-              )
-              return (
-                <div
-                  key={String(photo.id)}
-                  className={`${styles.imageWrapper}${taped ? ` ${styles.tapedTilt}` : ''}`}
-                >
-                  {taped ? <div className={styles.tapedMat}>{image}</div> : image}
-                  {caption && <p className={styles.caption}>{caption}</p>}
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <p className={styles.empty}>Photos coming soon.</p>
-        )}
+        <GalleryViewer photos={photos} taped={taped} />
       </div>
     </main>
   )
