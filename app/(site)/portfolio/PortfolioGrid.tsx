@@ -251,16 +251,16 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
               &#8592;
             </button>
           )}
+          {imgLoading && (
+            <div aria-label="Loading image" style={{ position: 'absolute', pointerEvents: 'none' }}>
+              <div style={{ width: 32, height: 32, border: '2px solid rgba(214,209,206,0.2)', borderTopColor: '#d6d1ce', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+              <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+            </div>
+          )}
           <div
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: '90vw', maxHeight: '90vh', position: 'relative' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: '90vw', maxHeight: '90vh' }}
             onClick={e => e.stopPropagation()}
           >
-            {imgLoading && (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 32, height: 32, border: '2px solid rgba(214,209,206,0.2)', borderTopColor: '#d6d1ce', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-              </div>
-            )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={currentLightboxPhoto.fullUrl ?? currentLightboxPhoto.imageUrl ?? ''}
