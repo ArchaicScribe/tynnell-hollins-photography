@@ -1,4 +1,14 @@
-import type { CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
+import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
+
+const revalidateTestimonial: CollectionAfterChangeHook = () => {
+  try {
+    revalidatePath('/')
+    revalidatePath('/testimonials')
+  } catch {
+    // no-op outside Next.js request context
+  }
+}
 
 export const Testimonials: CollectionConfig = {
   slug: 'testimonials',
@@ -19,6 +29,9 @@ export const Testimonials: CollectionConfig = {
         },
       },
     },
+  },
+  hooks: {
+    afterChange: [revalidateTestimonial],
   },
   fields: [
     {
