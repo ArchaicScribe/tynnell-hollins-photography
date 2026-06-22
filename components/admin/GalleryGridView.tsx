@@ -16,6 +16,7 @@ type GalleryDoc = {
   title: string
   slug?: string | null
   category?: string | null
+  status?: string | null
   featured?: boolean | null
   coverPhoto?: CoverPhoto | number | null
   photos?: { photo?: number | object | null; id?: string | null }[] | null
@@ -481,22 +482,51 @@ export function GalleryGridView() {
                   </button>
                 </div>
                 <div style={css.cardBody}>
-                  <div style={css.cardTitle}>{gallery.title}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
+                    <div style={{ ...css.cardTitle, marginBottom: 0, flex: 1 }}>{gallery.title}</div>
+                    <span style={{
+                      fontSize: '0.58rem',
+                      fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      padding: '0.15rem 0.4rem',
+                      borderRadius: '3px',
+                      background: gallery.status === 'published' ? 'rgba(16,185,129,0.15)' : 'rgba(155,154,154,0.1)',
+                      color: gallery.status === 'published' ? '#10B981' : '#9b9a9a',
+                      border: `1px solid ${gallery.status === 'published' ? 'rgba(16,185,129,0.3)' : 'rgba(155,154,154,0.2)'}`,
+                      flexShrink: 0,
+                    }}>
+                      {gallery.status === 'published' ? 'Live' : 'Draft'}
+                    </span>
+                  </div>
                   <div style={css.cardMeta}>
                     {count > 0 ? `${count} photo${count !== 1 ? 's' : ''}` : 'No photos yet'}
                   </div>
                 </div>
               </Link>
-              {/* Open Gallery Editor button */}
-              <div style={{ padding: '0 0.75rem 0.6rem' }}>
+              {/* Action row: gallery editor + view on site */}
+              <div style={{ padding: '0 0.75rem 0.6rem', display: 'flex', gap: '0.4rem' }}>
                 <a
                   href={`/gallery-editor/${gallery.id}`}
                   onClick={e => e.stopPropagation()}
                   draggable={false}
-                  style={{ display: 'block', textAlign: 'center', padding: '0.4rem', background: 'rgba(214,209,206,0.08)', border: '1px solid rgba(214,209,206,0.15)', borderRadius: 4, color: '#d6d1ce', fontSize: '0.72rem', textDecoration: 'none', letterSpacing: '0.04em', transition: 'background 0.12s' }}
+                  style={{ flex: 1, display: 'block', textAlign: 'center', padding: '0.4rem', background: 'rgba(214,209,206,0.08)', border: '1px solid rgba(214,209,206,0.15)', borderRadius: 4, color: '#d6d1ce', fontSize: '0.72rem', textDecoration: 'none', letterSpacing: '0.04em', transition: 'background 0.12s' }}
                 >
-                  Open Gallery Editor
+                  Open Editor
                 </a>
+                {gallery.status === 'published' && gallery.slug && (
+                  <a
+                    href={`/portfolio/${gallery.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    draggable={false}
+                    title="View on site"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem 0.6rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 4, color: '#10B981', fontSize: '0.72rem', textDecoration: 'none', transition: 'background 0.12s' }}
+                  >
+                    &#8599;
+                  </a>
+                )}
               </div>
               </div>
             )
