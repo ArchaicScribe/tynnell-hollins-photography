@@ -68,6 +68,13 @@ export function GalleryEditorClient({
   const [duplicating, setDuplicating] = useState(false)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [showLibraryModal, setShowLibraryModal] = useState(false)
+  const [libraryPhotos, setLibraryPhotos] = useState<PhotoItem[]>([])
+  const [libraryLoading, setLibraryLoading] = useState(false)
+  const [libraryLoaded, setLibraryLoaded] = useState(false)
+  const [libraryCategory, setLibraryCategory] = useState<string | null>(null)
+  const [librarySearch, setLibrarySearch] = useState('')
+  const [librarySelectedIds, setLibrarySelectedIds] = useState<Set<number>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const saveMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -176,6 +183,55 @@ export function GalleryEditorClient({
     setSelectedIds(new Set())
     setSelectMode(false)
     markChanged()
+  }
+
+  const loadLibrary = async () => {
+    setLibraryLoading(true)
+    try {
+      const res = await fetch('/api/photos?limit=500&depth=1&sort=-createdAt', { credentials: 'include' })
+      if (res.ok) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data = await res.json() as { docs: any[] }
+        setLibraryPhotos(data.docs.map((p: { id: number; url?: string; sizes?: { card?: { url?: string }; thumbnail?: { url?: string } }; alt?: string; filename?: string; category?: string }) => ({
+          id: p.id,
+          url: p.sizes?.card?.url ?? p.url ?? null,
+          thumbUrl: p.sizes?.thumbnail?.url ?? p.sizes?.card?.url ?? p.url ?? null,
+          alt: p.alt ?? null,
+          filename: p.filename ?? null,
+          category: p.category ?? null,
+        })))
+        setLibraryLoaded(true)
+      }
+    } catch {
+      // ignore
+    }
+    setLibraryLoading(false)
+  }
+
+  const openLibrary = async () => {
+    setShowLibraryModal(true)
+    setLibrarySelectedIds(new Set())
+    setLibrarySearch('')
+    setLibraryCategory(null)
+    if (!libraryLoaded) await loadLibrary()
+  }
+
+  const toggleLibrarySelect = (id: number) => {
+    setLibrarySelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  const addFromLibrary = () => {
+    const currentIds = new Set(photos.map(p => p.id))
+    const toAdd = libraryPhotos.filter(p => librarySelectedIds.has(p.id) && !currentIds.has(p.id))
+    if (toAdd.length) {
+      setPhotos(prev => [...prev, ...toAdd])
+      markChanged()
+    }
+    setShowLibraryModal(false)
   }
 
   const setCover = (photo: PhotoItem) => {
@@ -377,6 +433,161 @@ export function GalleryEditorClient({
           </div>
         </div>
       )}
+
+      {/* Add from library modal */}
+      {showLibraryModal && (() => {
+        const currentIds = new Set(photos.map(p => p.id))
+        const filtered = libraryPhotos.filter(p =>
+          (libraryCategory === null || p.category === libraryCategory) &&
+          (!librarySearch || (p.filename ?? '').toLowerCase().includes(librarySearch.toLowerCase()) || (p.alt ?? '').toLowerCase().includes(librarySearch.toLowerCase()))
+        )
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="library-modal-title"
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 200, display: 'flex', alignItems: 'stretch', justifyContent: 'center', padding: '2rem' }}
+            onClick={e => { if (e.target === e.currentTarget) setShowLibraryModal(false) }}
+            onKeyDown={e => { if (e.key === 'Escape') setShowLibraryModal(false) }}
+          >
+            <div style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 1100, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.7)' }}>
+              {/* Modal header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+                <h2 id="library-modal-title" style={{ margin: 0, fontFamily: ui, fontSize: '1rem', fontWeight: 600, color: '#d6d1ce', flex: 1 }}>Add from library</h2>
+                <span style={{ fontSize: '0.72rem', color: '#4b4b4b', fontFamily: ui }}>{libraryPhotos.length} photos in library</span>
+                <button
+                  type="button"
+                  onClick={() => void loadLibrary()}
+                  disabled={libraryLoading}
+                  style={{ background: 'none', border: 'none', color: '#6b6a6a', fontSize: '0.72rem', cursor: libraryLoading ? 'wait' : 'pointer', fontFamily: ui, padding: '0.2rem 0.4rem' }}
+                >
+                  {libraryLoading ? 'Loading...' : 'Refresh'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowLibraryModal(false)}
+                  aria-label="Close library"
+                  style={{ background: 'none', border: 'none', color: '#6b6a6a', fontSize: '1.4rem', cursor: 'pointer', padding: '0.1rem 0.4rem', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Filters */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', flex: 1 }}>
+                  <button
+                    type="button"
+                    onClick={() => setLibraryCategory(null)}
+                    aria-pressed={libraryCategory === null}
+                    style={{ fontSize: '0.72rem', fontWeight: 500, padding: '0.25rem 0.7rem', borderRadius: 20, border: '1px solid', borderColor: libraryCategory === null ? '#d6d1ce' : 'rgba(255,255,255,0.12)', background: libraryCategory === null ? '#d6d1ce' : 'none', color: libraryCategory === null ? '#0c0c0c' : '#6b6a6a', cursor: 'pointer', fontFamily: ui, transition: 'all .12s' }}
+                  >
+                    All
+                  </button>
+                  {CATEGORIES.map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setLibraryCategory(c)}
+                      aria-pressed={libraryCategory === c}
+                      style={{ fontSize: '0.72rem', fontWeight: 500, padding: '0.25rem 0.7rem', borderRadius: 20, border: '1px solid', borderColor: libraryCategory === c ? '#d6d1ce' : 'rgba(255,255,255,0.12)', background: libraryCategory === c ? '#d6d1ce' : 'none', color: libraryCategory === c ? '#0c0c0c' : '#6b6a6a', cursor: 'pointer', fontFamily: ui, transition: 'all .12s' }}
+                    >
+                      {c.charAt(0).toUpperCase() + c.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="search"
+                  placeholder="Search photos..."
+                  value={librarySearch}
+                  onChange={e => setLibrarySearch(e.target.value)}
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.35rem 0.7rem', color: '#d6d1ce', fontSize: '0.8rem', outline: 'none', fontFamily: ui, width: 200 }}
+                  aria-label="Search photos"
+                />
+              </div>
+
+              {/* Photo grid */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.5rem' }}>
+                {libraryLoading && !libraryLoaded ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: '#4b4b4b', fontFamily: ui, fontSize: '0.85rem' }}>
+                    Loading photos...
+                  </div>
+                ) : filtered.length === 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: '#4b4b4b', fontFamily: ui, fontSize: '0.85rem' }}>
+                    {libraryPhotos.length === 0 ? 'No photos in library yet.' : 'No photos match this filter.'}
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.5rem' }}>
+                    {filtered.map(photo => {
+                      const isSelected = librarySelectedIds.has(photo.id)
+                      const isAdded = currentIds.has(photo.id)
+                      return (
+                        <div
+                          key={photo.id}
+                          role="button"
+                          tabIndex={isAdded ? -1 : 0}
+                          aria-label={`${isAdded ? 'Already added: ' : isSelected ? 'Selected: ' : 'Select: '}${photo.filename ?? 'Photo'}`}
+                          aria-pressed={isSelected}
+                          onClick={() => { if (!isAdded) toggleLibrarySelect(photo.id) }}
+                          onKeyDown={e => { if (!isAdded && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleLibrarySelect(photo.id) } }}
+                          style={{
+                            position: 'relative',
+                            aspectRatio: '4/3',
+                            overflow: 'hidden',
+                            borderRadius: 4,
+                            cursor: isAdded ? 'default' : 'pointer',
+                            border: `2px solid ${isSelected ? '#1db954' : 'transparent'}`,
+                            transition: 'border-color .1s',
+                            background: '#1a1a1a',
+                            opacity: isAdded ? 0.45 : 1,
+                          }}
+                        >
+                          {photo.thumbUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={photo.thumbUrl} alt={photo.alt ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3a3a3a', fontSize: '0.65rem', fontFamily: ui, padding: '0.25rem', textAlign: 'center' }}>{photo.filename ?? 'Photo'}</div>
+                          )}
+                          {isAdded && (
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.4)' }}>
+                              <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#9b9a9a', letterSpacing: '0.06em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.6)', padding: '0.2rem 0.45rem', borderRadius: 3 }}>Added</span>
+                            </div>
+                          )}
+                          {isSelected && !isAdded && (
+                            <div style={{ position: 'absolute', top: '0.35rem', left: '0.35rem', width: 20, height: 20, borderRadius: '50%', background: '#1db954', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ color: '#fff', fontSize: '0.65rem', fontWeight: 700, lineHeight: 1 }}>&#10003;</span>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Modal footer */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+                <span style={{ fontSize: '0.78rem', color: '#4b4b4b', fontFamily: ui }}>
+                  {librarySelectedIds.size > 0 ? `${librarySelectedIds.size} selected` : 'Click photos to select'}
+                </span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button type="button" onClick={() => setShowLibraryModal(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: '#6b6a6a', borderRadius: 6, padding: '0.45rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontFamily: ui }}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={addFromLibrary}
+                    disabled={librarySelectedIds.size === 0}
+                    style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.45rem 1.2rem', fontSize: '0.82rem', fontWeight: 600, cursor: librarySelectedIds.size === 0 ? 'not-allowed' : 'pointer', fontFamily: ui, opacity: librarySelectedIds.size === 0 ? 0.4 : 1 }}
+                  >
+                    {librarySelectedIds.size > 0 ? `Add ${librarySelectedIds.size} photo${librarySelectedIds.size !== 1 ? 's' : ''}` : 'Add photos'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Top bar */}
       <header style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1.25rem', height: 54, borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#0e0e0e', flexShrink: 0 }}>
@@ -732,15 +943,24 @@ export function GalleryEditorClient({
                 </>
               )}
               {!selectMode && (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  aria-busy={uploading}
-                  style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 600, cursor: uploading ? 'wait' : 'pointer', fontFamily: ui, opacity: uploading ? 0.6 : 1 }}
-                >
-                  + Upload photos
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => void openLibrary()}
+                    style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer', fontFamily: ui }}
+                  >
+                    Add from library
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    aria-busy={uploading}
+                    style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 600, cursor: uploading ? 'wait' : 'pointer', fontFamily: ui, opacity: uploading ? 0.6 : 1 }}
+                  >
+                    + Upload photos
+                  </button>
+                </>
               )}
             </div>
           </div>
