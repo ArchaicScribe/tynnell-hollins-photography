@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
@@ -66,14 +66,17 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
   const initialCategory = CATEGORIES.some(c => c.value === paramCategory) ? paramCategory : 'all'
   const [activeCategory, setActiveCategory] = useState(initialCategory)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+  const [imgLoading, setImgLoading] = useState(false)
+  const touchStartX = useRef<number | null>(null)
 
   const visiblePhotos = activeCategory === 'all'
     ? photos
     : photos.filter(p => p.category === activeCategory)
 
   const closeLightbox = useCallback(() => setLightboxIdx(null), [])
-  const prevPhoto = useCallback(() => setLightboxIdx(i => i !== null ? (i - 1 + visiblePhotos.length) % visiblePhotos.length : null), [visiblePhotos.length])
-  const nextPhoto = useCallback(() => setLightboxIdx(i => i !== null ? (i + 1) % visiblePhotos.length : null), [visiblePhotos.length])
+  const prevPhoto = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + visiblePhotos.length) % visiblePhotos.length : null) }, [visiblePhotos.length])
+  const nextPhoto = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % visiblePhotos.length : null) }, [visiblePhotos.length])
+  const openPhoto = useCallback((i: number) => { setImgLoading(true); setLightboxIdx(i) }, [])
 
   useEffect(() => {
     if (lightboxIdx === null) return
@@ -186,8 +189,8 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
                   role="button"
                   tabIndex={0}
                   aria-label={`View photo${photo.alt ? `: ${photo.alt}` : photo.title ? `: ${photo.title}` : ''}`}
-                  onClick={() => setLightboxIdx(i)}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxIdx(i) } }}
+                  onClick={() => openPhoto(i)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPhoto(i) } }}
                 >
                   <ProtectedImage
                     src={photo.imageUrl}
@@ -226,6 +229,15 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
             justifyContent: 'center',
           }}
           onClick={closeLightbox}
+          onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
+          onTouchEnd={e => {
+            if (touchStartX.current === null) return
+            const delta = e.changedTouches[0].clientX - touchStartX.current
+            touchStartX.current = null
+            if (Math.abs(delta) < 50) return
+            e.stopPropagation()
+            if (delta < 0) nextPhoto(); else prevPhoto()
+          }}
         >
           {visiblePhotos.length > 1 && (
             <button
@@ -238,16 +250,23 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
             </button>
           )}
           <div
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: '90vw', maxHeight: '90vh' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: '90vw', maxHeight: '90vh', position: 'relative' }}
             onClick={e => e.stopPropagation()}
           >
+            {imgLoading && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 32, height: 32, border: '2px solid rgba(214,209,206,0.2)', borderTopColor: '#d6d1ce', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+              </div>
+            )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={currentLightboxPhoto.fullUrl ?? currentLightboxPhoto.imageUrl ?? ''}
               alt={currentLightboxPhoto.alt ?? currentLightboxPhoto.title ?? ''}
               draggable={false}
+              onLoad={() => setImgLoading(false)}
               onContextMenu={e => e.preventDefault()}
-              style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', display: 'block', userSelect: 'none' }}
+              style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', display: 'block', userSelect: 'none', opacity: imgLoading ? 0 : 1, transition: 'opacity 0.2s' }}
             />
           </div>
           {visiblePhotos.length > 1 && (

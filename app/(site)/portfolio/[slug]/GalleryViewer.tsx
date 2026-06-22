@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import styles from './page.module.css'
 
@@ -38,10 +38,14 @@ const NAV_BTN: React.CSSProperties = {
 
 export function GalleryViewer({ photos, taped }: Props) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+  const [imgLoading, setImgLoading] = useState(false)
+  const touchStartX = useRef<number | null>(null)
 
   const close = useCallback(() => setLightboxIdx(null), [])
-  const prev = useCallback(() => setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null), [photos.length])
-  const next = useCallback(() => setLightboxIdx(i => i !== null ? (i + 1) % photos.length : null), [photos.length])
+  const prev = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null) }, [photos.length])
+  const next = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % photos.length : null) }, [photos.length])
+
+  const open = useCallback((i: number) => { setImgLoading(true); setLightboxIdx(i) }, [])
 
   useEffect(() => {
     if (lightboxIdx === null) return
@@ -76,8 +80,8 @@ export function GalleryViewer({ photos, taped }: Props) {
               role="button"
               tabIndex={0}
               aria-label={`Open photo ${i + 1}${photo.alt ? `: ${photo.alt}` : ''}`}
-              onClick={() => setLightboxIdx(i)}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxIdx(i) } }}
+              onClick={() => open(i)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(i) } }}
             >
               <ProtectedImage
                 src={photo.thumbUrl}
@@ -115,6 +119,15 @@ export function GalleryViewer({ photos, taped }: Props) {
             justifyContent: 'center',
           }}
           onClick={close}
+          onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
+          onTouchEnd={e => {
+            if (touchStartX.current === null) return
+            const delta = e.changedTouches[0].clientX - touchStartX.current
+            touchStartX.current = null
+            if (Math.abs(delta) < 50) return
+            e.stopPropagation()
+            if (delta < 0) next(); else prev()
+          }}
         >
           {photos.length > 1 && (
             <button
@@ -129,16 +142,23 @@ export function GalleryViewer({ photos, taped }: Props) {
 
           {/* Photo - stop click from propagating to the close overlay */}
           <div
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: '90vw', maxHeight: '90vh' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: '90vw', maxHeight: '90vh', position: 'relative' }}
             onClick={e => e.stopPropagation()}
           >
+            {imgLoading && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 32, height: 32, border: '2px solid rgba(214,209,206,0.2)', borderTopColor: '#d6d1ce', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+              </div>
+            )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={current.fullUrl ?? current.thumbUrl ?? ''}
               alt={current.alt ?? ''}
               draggable={false}
+              onLoad={() => setImgLoading(false)}
               onContextMenu={e => e.preventDefault()}
-              style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', display: 'block', userSelect: 'none' }}
+              style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', display: 'block', userSelect: 'none', opacity: imgLoading ? 0 : 1, transition: 'opacity 0.2s' }}
             />
           </div>
 
