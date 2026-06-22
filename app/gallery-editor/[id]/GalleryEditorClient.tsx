@@ -55,10 +55,39 @@ export function GalleryEditorClient({
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null)
   const [uploadError, setUploadError] = useState('')
   const [sidebarSection, setSidebarSection] = useState<'galleries' | 'settings'>('galleries')
+  const [showNewModal, setShowNewModal] = useState(false)
+  const [newTitle, setNewTitle] = useState('')
+  const [newCategory, setNewCategory] = useState<string>('portraits')
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const saveMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const markChanged = () => setHasChanges(true)
+
+  const createGallery = async () => {
+    if (!newTitle.trim()) return
+    setCreating(true)
+    setCreateError('')
+    try {
+      const res = await fetch('/api/galleries', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle.trim(), category: newCategory, status: 'draft' }),
+      })
+      if (res.ok) {
+        const data = await res.json() as { doc?: { id: number } }
+        const id = data.doc?.id
+        if (id) window.location.href = `/gallery-editor/${id}`
+      } else {
+        setCreateError('Could not create gallery. Please try again.')
+      }
+    } catch {
+      setCreateError('Could not create gallery. Check your connection.')
+    }
+    setCreating(false)
+  }
 
   const setField = <T,>(setter: (v: T) => void) => (v: T) => {
     setter(v)
@@ -169,10 +198,54 @@ export function GalleryEditorClient({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0c0c0c', overflow: 'hidden' }}>
 
+      {/* New gallery modal */}
+      {showNewModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="new-gallery-title"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={e => { if (e.target === e.currentTarget) setShowNewModal(false) }}
+          onKeyDown={e => { if (e.key === 'Escape') setShowNewModal(false) }}
+        >
+          <div style={{ background: '#131313', border: '1px solid rgba(155,154,154,0.18)', borderRadius: 8, padding: '1.75rem', width: 360, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <h2 id="new-gallery-title" style={{ margin: 0, fontFamily: font, fontSize: '1rem', fontWeight: 500, color: '#d6d1ce' }}>New Gallery</h2>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              <span style={{ fontSize: '0.68rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b6a6a', fontFamily: mono }}>Title</span>
+              <input
+                type="text"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') void createGallery() }}
+                placeholder="e.g. Smith Wedding"
+                autoFocus
+                style={{ background: '#0c0c0c', border: '1px solid rgba(155,154,154,0.25)', borderRadius: 4, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.88rem', outline: 'none', fontFamily: font }}
+              />
+            </label>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              <span style={{ fontSize: '0.68rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b6a6a', fontFamily: mono }}>Category</span>
+              <select
+                value={newCategory}
+                onChange={e => setNewCategory(e.target.value)}
+                style={{ background: '#0c0c0c', border: '1px solid rgba(155,154,154,0.25)', borderRadius: 4, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.88rem', outline: 'none', fontFamily: font, cursor: 'pointer' }}
+              >
+                {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+              </select>
+            </label>
+            {createError && <p role="alert" style={{ margin: 0, fontSize: '0.75rem', color: '#f0a3a3', fontFamily: mono }}>{createError}</p>}
+            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => setShowNewModal(false)} style={{ background: 'none', border: '1px solid rgba(155,154,154,0.2)', color: '#9b9a9a', borderRadius: 4, padding: '0.45rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontFamily: mono }}>Cancel</button>
+              <button type="button" onClick={() => void createGallery()} disabled={!newTitle.trim() || creating} aria-busy={creating} style={{ background: '#d6d1ce', border: 'none', color: '#0c0c0c', borderRadius: 4, padding: '0.45rem 1.2rem', fontSize: '0.82rem', fontWeight: 600, cursor: (!newTitle.trim() || creating) ? 'not-allowed' : 'pointer', fontFamily: mono, opacity: (!newTitle.trim() || creating) ? 0.5 : 1 }}>
+                {creating ? 'Creating...' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <header style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 1.25rem', height: 52, borderBottom: '1px solid rgba(155,154,154,0.12)', background: '#0f0f0f', flexShrink: 0 }}>
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/admin/collections/galleries" style={{ color: '#9b9a9a', textDecoration: 'none', fontSize: '0.78rem', letterSpacing: '0.04em', whiteSpace: 'nowrap', flexShrink: 0 }}>
+        <a href="/gallery-editor" style={{ color: '#9b9a9a', textDecoration: 'none', fontSize: '0.78rem', letterSpacing: '0.04em', whiteSpace: 'nowrap', flexShrink: 0 }}>
           <span aria-hidden="true">&#8592;</span> Galleries
         </a>
         <span aria-hidden="true" style={{ color: 'rgba(155,154,154,0.3)', flexShrink: 0 }}>|</span>
@@ -213,7 +286,19 @@ export function GalleryEditorClient({
 
           {/* Gallery list */}
           {sidebarSection === 'galleries' && (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 0' }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(155,154,154,0.08)', flexShrink: 0 }}>
+                <span style={{ fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4b4b4b', fontFamily: mono }}>All Galleries</span>
+                <button
+                  type="button"
+                  onClick={() => { setNewTitle(''); setCreateError(''); setShowNewModal(true) }}
+                  style={{ background: 'rgba(155,154,154,0.1)', border: '1px solid rgba(155,154,154,0.2)', color: '#d6d1ce', borderRadius: 3, padding: '0.2rem 0.55rem', fontSize: '0.7rem', cursor: 'pointer', fontFamily: mono }}
+                  aria-label="New gallery"
+                >
+                  + New
+                </button>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0.4rem 0' }}>
               {allGalleries.map(g => {
                 const isCurrent = g.id === galleryId
                 return (
@@ -230,12 +315,16 @@ export function GalleryEditorClient({
                     )}
                     <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '0.8rem', color: isCurrent ? '#d6d1ce' : '#9b9a9a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: font }}>{g.title}</div>
-                      {g.status === 'draft' && <div style={{ fontSize: '0.6rem', color: '#6b6a6a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Draft</div>}
+                      <div style={{ fontSize: '0.6rem', color: '#4b4b4b', letterSpacing: '0.04em', display: 'flex', gap: '0.4rem', marginTop: '0.1rem' }}>
+                        {g.status === 'draft' && <span style={{ color: '#6b6a6a', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Draft</span>}
+                        {g.photoCount != null && g.photoCount > 0 && <span>{g.photoCount} photo{g.photoCount !== 1 ? 's' : ''}</span>}
+                      </div>
                     </div>
                     {isCurrent && <span aria-hidden="true" style={{ color: '#9b9a9a', fontSize: '0.75rem', flexShrink: 0 }}>&#9679;</span>}
                   </a>
                 )
               })}
+              </div>
             </div>
           )}
 
@@ -324,13 +413,6 @@ export function GalleryEditorClient({
             </div>
           )}
 
-          {/* Bottom: "Add to Admin" link */}
-          <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid rgba(155,154,154,0.12)', flexShrink: 0 }}>
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href={`/admin/collections/galleries/${galleryId}`} style={{ fontSize: '0.72rem', color: '#6b6a6a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              Open in Admin <span aria-hidden="true">&#8599;</span>
-            </a>
-          </div>
         </aside>
 
         {/* MAIN CANVAS */}

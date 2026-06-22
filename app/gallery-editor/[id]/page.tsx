@@ -21,6 +21,7 @@ export type GalleryListItem = {
   title: string
   status: string
   coverThumb: string | null
+  photoCount: number
 }
 
 type Props = { params: Promise<{ id: string }> }
@@ -86,6 +87,7 @@ export default async function GalleryEditorPage({ params }: Props) {
       title: g.title,
       status: gAny.status ?? 'published',
       coverThumb: cover?.sizes?.thumbnail?.url ?? cover?.sizes?.card?.url ?? cover?.url ?? null,
+      photoCount: Array.isArray(g.photos) ? g.photos.length : 0,
     }
   })
 
