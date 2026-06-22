@@ -19,6 +19,7 @@ export default async function ServicesPage() {
     collection: 'services',
     sort: 'displayOrder',
     depth: 0,
+    limit: 50,
   })
 
   const servicesSchema = services.length > 0 ? {

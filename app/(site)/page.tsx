@@ -44,8 +44,8 @@ export default async function Home() {
   const [heroData, { docs: featuredPhotos }, { docs: testimonials }, aboutData] =
     await Promise.all([
       payload.findGlobal({ slug: 'hero-slides', depth: 1 }),
-      payload.find({ collection: 'photos', where: { featured: { equals: true } }, sort: 'displayOrder', depth: 0 }),
-      payload.find({ collection: 'testimonials', where: { featured: { equals: true } }, sort: 'displayOrder', depth: 0 }),
+      payload.find({ collection: 'photos', where: { featured: { equals: true } }, sort: 'displayOrder', depth: 0, limit: 6 }),
+      payload.find({ collection: 'testimonials', where: { featured: { equals: true } }, sort: 'displayOrder', depth: 0, limit: 20 }),
       payload.findGlobal({ slug: 'about-page', depth: 1 }),
     ])
 

@@ -18,6 +18,7 @@ export default async function TestimonialsPage() {
     collection: 'testimonials',
     sort: 'displayOrder',
     depth: 0,
+    limit: 200,
   })
 
   const reviewSchema = testimonials.length > 0 ? {

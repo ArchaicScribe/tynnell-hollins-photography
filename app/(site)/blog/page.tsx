@@ -22,6 +22,7 @@ export default async function BlogPage() {
     where: { status: { equals: 'published' } },
     sort: '-publishedAt',
     depth: 1,
+    limit: 100,
   })
 
   const featuredPost = posts[0] ?? null

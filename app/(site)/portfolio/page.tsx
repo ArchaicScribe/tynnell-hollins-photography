@@ -20,8 +20,8 @@ export default async function PortfolioPage() {
   const payload = await getPayload({ config })
 
   const [{ docs: rawPhotos }, { docs: rawGalleries }] = await Promise.all([
-    payload.find({ collection: 'photos', sort: 'displayOrder', depth: 0 }),
-    payload.find({ collection: 'galleries', sort: 'displayOrder', depth: 1, where: { status: { not_equals: 'draft' } } }),
+    payload.find({ collection: 'photos', sort: 'displayOrder', depth: 0, limit: 1000 }),
+    payload.find({ collection: 'galleries', sort: 'displayOrder', depth: 1, limit: 200, where: { status: { not_equals: 'draft' } } }),
   ])
 
   const photos: PortfolioPhoto[] = rawPhotos.map(p => ({
