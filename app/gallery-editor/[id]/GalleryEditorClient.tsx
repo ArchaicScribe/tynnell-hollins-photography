@@ -442,6 +442,15 @@ export function GalleryEditorClient({
           (libraryCategory === null || p.category === libraryCategory) &&
           (!librarySearch || (p.filename ?? '').toLowerCase().includes(librarySearch.toLowerCase()) || (p.alt ?? '').toLowerCase().includes(librarySearch.toLowerCase()))
         )
+        const selectableFiltered = filtered.filter(p => !currentIds.has(p.id))
+        const allSelectableSelected = selectableFiltered.length > 0 && selectableFiltered.every(p => librarySelectedIds.has(p.id))
+        const toggleSelectAll = () => {
+          if (allSelectableSelected) {
+            setLibrarySelectedIds(new Set())
+          } else {
+            setLibrarySelectedIds(new Set(selectableFiltered.map(p => p.id)))
+          }
+        }
         return (
           <div
             role="dialog"
@@ -568,9 +577,20 @@ export function GalleryEditorClient({
 
               {/* Modal footer */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-                <span style={{ fontSize: '0.78rem', color: '#4b4b4b', fontFamily: ui }}>
-                  {librarySelectedIds.size > 0 ? `${librarySelectedIds.size} selected` : 'Click photos to select'}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '0.78rem', color: '#4b4b4b', fontFamily: ui }}>
+                    {librarySelectedIds.size > 0 ? `${librarySelectedIds.size} selected` : 'Click photos to select'}
+                  </span>
+                  {selectableFiltered.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={toggleSelectAll}
+                      style={{ background: 'none', border: 'none', color: '#6b6a6a', fontSize: '0.75rem', cursor: 'pointer', fontFamily: ui, textDecoration: 'underline', padding: 0 }}
+                    >
+                      {allSelectableSelected ? 'Deselect all' : `Select all ${selectableFiltered.length > 1 ? `(${selectableFiltered.length})` : ''}`}
+                    </button>
+                  )}
+                </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button type="button" onClick={() => setShowLibraryModal(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', color: '#6b6a6a', borderRadius: 6, padding: '0.45rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontFamily: ui }}>
                     Cancel
