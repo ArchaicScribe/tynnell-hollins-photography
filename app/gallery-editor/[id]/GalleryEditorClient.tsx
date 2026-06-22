@@ -37,6 +37,7 @@ export function GalleryEditorClient({
 }: Props) {
   const [photos, setPhotos] = useState<PhotoItem[]>(initialPhotos)
   const [title, setTitle] = useState(initialTitle)
+  const [slug, setSlug] = useState(initialSlug ?? '')
   const [category, setCategory] = useState(initialCategory)
   const [status, setStatus] = useState(initialStatus)
   const [tapedStyle, setTapedStyle] = useState(initialTapedStyle)
@@ -64,6 +65,7 @@ export function GalleryEditorClient({
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
   const saveMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -188,6 +190,7 @@ export function GalleryEditorClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
+          slug: slug.trim() || undefined,
           category,
           status: targetStatus,
           featured,
@@ -224,7 +227,7 @@ export function GalleryEditorClient({
     autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChanges, title, category, status, featured, tapedStyle, coverId, photos])
+  }, [hasChanges, title, slug, category, status, featured, tapedStyle, coverId, photos])
 
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
@@ -251,7 +254,7 @@ export function GalleryEditorClient({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saving, title, category, status, featured, tapedStyle, coverId, photos])
+  }, [saving, title, slug, category, status, featured, tapedStyle, coverId, photos])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
@@ -339,8 +342,8 @@ export function GalleryEditorClient({
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
           {saveMsg && <span style={{ fontSize: '0.78rem', color: '#1db954', fontFamily: ui, fontWeight: 500 }}>{saveMsg}</span>}
           {error && <span role="alert" style={{ fontSize: '0.78rem', color: '#f0a3a3', fontFamily: ui }}>{error}</span>}
-          {initialSlug && (
-            <a href={`/portfolio/${initialSlug}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', fontWeight: 500, color: '#9b9a9a', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '0.3rem 0.75rem', borderRadius: 6, whiteSpace: 'nowrap', fontFamily: ui }}>
+          {slug && (
+            <a href={`/portfolio/${slug}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', fontWeight: 500, color: '#9b9a9a', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '0.3rem 0.75rem', borderRadius: 6, whiteSpace: 'nowrap', fontFamily: ui }}>
               View on site <span aria-hidden="true">&#8599;</span>
             </a>
           )}
@@ -427,6 +430,21 @@ export function GalleryEditorClient({
                 </label>
 
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>URL slug</span>
+                  <div style={{ display: 'flex', alignItems: 'center', background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, overflow: 'hidden' }}>
+                    <span style={{ padding: '0.5rem 0 0.5rem 0.65rem', fontSize: '0.75rem', color: '#3a3a3a', fontFamily: ui, whiteSpace: 'nowrap', flexShrink: 0 }}>/portfolio/</span>
+                    <input
+                      type="text"
+                      value={slug}
+                      onChange={e => setField(setSlug)(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
+                      onBlur={e => setSlug(e.target.value.replace(/^-+|-+$/g, ''))}
+                      style={{ flex: 1, background: 'transparent', border: 'none', padding: '0.5rem 0.65rem 0.5rem 0', color: '#e6e1de', fontSize: '0.82rem', outline: 'none', fontFamily: ui, minWidth: 0 }}
+                      aria-label="URL slug"
+                    />
+                  </div>
+                </label>
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Category</span>
                   <select
                     value={category}
@@ -488,9 +506,20 @@ export function GalleryEditorClient({
                 {coverThumb && (
                   <div>
                     <div style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui, marginBottom: '0.5rem' }}>Cover photo</div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={coverThumb} alt="Cover" style={{ width: '100%', aspectRatio: '16/10', objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(201,162,39,0.35)' }} />
-                    <div style={{ fontSize: '0.68rem', color: '#4b4b4b', fontFamily: ui, marginTop: '0.4rem', lineHeight: 1.4 }}>Hover a photo and click Set as cover to change.</div>
+                    <button
+                      type="button"
+                      onClick={() => gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      onMouseEnter={e => { const ov = (e.currentTarget as HTMLElement).querySelector('.cover-ov') as HTMLElement | null; if (ov) ov.style.opacity = '1' }}
+                      onMouseLeave={e => { const ov = (e.currentTarget as HTMLElement).querySelector('.cover-ov') as HTMLElement | null; if (ov) ov.style.opacity = '0' }}
+                      style={{ display: 'block', width: '100%', padding: 0, border: '1px solid rgba(201,162,39,0.35)', borderRadius: 6, overflow: 'hidden', cursor: 'pointer', background: 'none', position: 'relative' }}
+                      aria-label="Change cover photo - scroll to photo grid"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={coverThumb} alt="Cover" style={{ width: '100%', aspectRatio: '16/10', objectFit: 'cover', display: 'block' }} />
+                      <div className="cover-ov" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity .15s', pointerEvents: 'none' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', fontFamily: ui }}>Change cover</span>
+                      </div>
+                    </button>
                   </div>
                 )}
 
@@ -581,7 +610,7 @@ export function GalleryEditorClient({
           )}
 
           {/* The photo grid - this is the main editing surface */}
-          <div style={{ padding: '0 2rem 4rem' }}>
+          <div ref={gridRef} style={{ padding: '0 2rem 4rem' }}>
             {photos.length === 0 ? (
               <div style={{ border: '2px dashed rgba(255,255,255,0.08)', borderRadius: 10, padding: '5rem 2rem', textAlign: 'center' }}>
                 <div style={{ fontSize: '3rem', opacity: 0.15, marginBottom: '1rem' }} aria-hidden="true">&#128444;</div>
