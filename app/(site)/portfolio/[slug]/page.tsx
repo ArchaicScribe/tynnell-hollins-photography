@@ -155,6 +155,16 @@ export default async function GalleryPage({ params, searchParams }: Props) {
         </Link>
         <GalleryViewer photos={photos} taped={taped} />
       </div>
+
+      {/* CTA */}
+      <section className={styles.cta}>
+        <p className={styles.ctaEyebrow}>Ready to create yours?</p>
+        <h2 className={styles.ctaHeading}>{"Let's capture"}<br />{"your story."}</h2>
+        <div className={styles.ctaActions}>
+          <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
+          <Link href="/contact" className={styles.ctaBtnSecondary}>Get in touch</Link>
+        </div>
+      </section>
     </main>
   )
 }
