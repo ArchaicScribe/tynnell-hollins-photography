@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
+import Link from 'next/link'
 import { isUnsupportedImage, uploadPhotoToLibrary } from '@/app/lib/uploadPhoto'
 import type { PhotoItem, GalleryListItem } from './page'
 
@@ -247,9 +248,9 @@ export function GalleryEditorClient({
 
       {/* Top bar */}
       <header style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1.25rem', height: 54, borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#0e0e0e', flexShrink: 0 }}>
-        <a href="/gallery-editor" style={{ color: '#6b6a6a', textDecoration: 'none', fontSize: '0.82rem', fontFamily: ui, fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+        <Link href="/gallery-editor" style={{ color: '#6b6a6a', textDecoration: 'none', fontSize: '0.82rem', fontFamily: ui, fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
           <span aria-hidden="true" style={{ fontSize: '1rem', lineHeight: 1 }}>&#8592;</span> Galleries
-        </a>
+        </Link>
         <span aria-hidden="true" style={{ color: 'rgba(255,255,255,0.1)', flexShrink: 0, fontSize: '1.1rem', fontWeight: 300 }}>/</span>
         <span style={{ fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#d6d1ce', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, letterSpacing: '-0.01em' }}>{title}</span>
         <span style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '0.2rem 0.55rem', borderRadius: 20, background: isDraft ? 'rgba(155,154,154,0.12)' : 'rgba(29,185,84,0.15)', color: isDraft ? '#6b6a6a' : '#1db954', border: `1px solid ${isDraft ? 'rgba(155,154,154,0.15)' : 'rgba(29,185,84,0.3)'}`, flexShrink: 0, fontFamily: ui }}>
