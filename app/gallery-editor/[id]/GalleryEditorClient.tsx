@@ -61,10 +61,32 @@ export function GalleryEditorClient({
   const [newCategory, setNewCategory] = useState<string>('portraits')
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const saveMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const markChanged = () => setHasChanges(true)
+
+  const deleteGallery = async () => {
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/galleries/${galleryId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      if (res.ok) {
+        window.location.href = '/gallery-editor'
+      } else {
+        setShowDeleteConfirm(false)
+        setDeleting(false)
+      }
+    } catch {
+      setShowDeleteConfirm(false)
+      setDeleting(false)
+    }
+  }
 
   const createGallery = async () => {
     if (!newTitle.trim()) return
@@ -189,7 +211,29 @@ export function GalleryEditorClient({
     setSaving(false)
   }
 
-  useEffect(() => () => { if (saveMsgTimer.current) clearTimeout(saveMsgTimer.current) }, [])
+  useEffect(() => () => {
+    if (saveMsgTimer.current) clearTimeout(saveMsgTimer.current)
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+  }, [])
+
+  // Auto-save 2.5s after any change (preserves current status)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!hasChanges || saving || uploading) return
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasChanges, title, category, status, featured, tapedStyle, coverId, photos])
+
+  // Warn before closing/navigating away with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (hasChanges) { e.preventDefault(); e.returnValue = '' }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [hasChanges])
 
   const font = "var(--font-heading, Archivo, sans-serif)"
   const ui = font
@@ -251,6 +295,31 @@ export function GalleryEditorClient({
               <button type="button" onClick={() => setShowNewModal(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 6, padding: '0.5rem 1.1rem', fontSize: '0.85rem', cursor: 'pointer', fontFamily: ui, fontWeight: 500 }}>Cancel</button>
               <button type="button" onClick={() => void createGallery()} disabled={!newTitle.trim() || creating} aria-busy={creating} style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.5rem 1.3rem', fontSize: '0.85rem', fontWeight: 600, cursor: (!newTitle.trim() || creating) ? 'not-allowed' : 'pointer', fontFamily: ui, opacity: (!newTitle.trim() || creating) ? 0.5 : 1 }}>
                 {creating ? 'Creating...' : 'Create gallery'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirm modal */}
+      {showDeleteConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-gallery-title"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={e => { if (e.target === e.currentTarget) setShowDeleteConfirm(false) }}
+          onKeyDown={e => { if (e.key === 'Escape') setShowDeleteConfirm(false) }}
+        >
+          <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '2rem', width: 360, display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
+            <h2 id="delete-gallery-title" style={{ margin: 0, fontFamily: ui, fontSize: '1.05rem', fontWeight: 600, color: '#e6e1de', letterSpacing: '-0.01em' }}>Delete gallery?</h2>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: '#6b6a6a', fontFamily: ui, lineHeight: 1.5 }}>
+              This removes the gallery from the portfolio. Photos in the library are not deleted.
+            </p>
+            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
+              <button type="button" onClick={() => setShowDeleteConfirm(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 6, padding: '0.5rem 1.1rem', fontSize: '0.85rem', cursor: 'pointer', fontFamily: ui, fontWeight: 500 }}>Cancel</button>
+              <button type="button" onClick={() => void deleteGallery()} disabled={deleting} aria-busy={deleting} style={{ background: '#c0392b', border: 'none', color: '#fff', borderRadius: 6, padding: '0.5rem 1.3rem', fontSize: '0.85rem', fontWeight: 600, cursor: deleting ? 'wait' : 'pointer', fontFamily: ui, opacity: deleting ? 0.6 : 1 }}>
+                {deleting ? 'Deleting...' : 'Delete gallery'}
               </button>
             </div>
           </div>
@@ -424,6 +493,16 @@ export function GalleryEditorClient({
                     <div style={{ fontSize: '0.68rem', color: '#4b4b4b', fontFamily: ui, marginTop: '0.4rem', lineHeight: 1.4 }}>Hover a photo and click Set as cover to change.</div>
                   </div>
                 )}
+
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0.5rem 0' }} />
+
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{ background: 'none', border: '1px solid rgba(192,57,43,0.3)', color: '#c0392b', borderRadius: 6, padding: '0.45rem 0.75rem', fontSize: '0.78rem', fontWeight: 500, cursor: 'pointer', fontFamily: ui, width: '100%', textAlign: 'left' }}
+                >
+                  Delete gallery
+                </button>
               </div>
             </div>
           )}
@@ -514,8 +593,8 @@ export function GalleryEditorClient({
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: tapedStyle
-                  ? 'repeat(auto-fill, minmax(220px, 1fr))'
-                  : 'repeat(auto-fill, minmax(240px, 1fr))',
+                  ? 'repeat(auto-fill, minmax(240px, 1fr))'
+                  : 'repeat(auto-fill, minmax(280px, 1fr))',
                 gap: tapedStyle ? '2rem' : '0.5rem',
               }}>
                 {photos.map((photo, i) => {
@@ -661,8 +740,8 @@ export function GalleryEditorClient({
 
       {/* BOTTOM BAR */}
       <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', height: 58, borderTop: '1px solid rgba(255,255,255,0.07)', background: '#0e0e0e', flexShrink: 0 }}>
-        <span style={{ fontSize: '0.78rem', fontWeight: 500, color: hasChanges ? '#d4a44c' : '#3a3a3a', fontFamily: ui, transition: 'color .2s' }}>
-          {hasChanges ? 'Unsaved changes' : 'All changes saved'}
+        <span style={{ fontSize: '0.78rem', fontWeight: 500, color: saving ? '#6b6a6a' : hasChanges ? '#d4a44c' : '#3a3a3a', fontFamily: ui, transition: 'color .2s' }}>
+          {saving ? 'Saving...' : hasChanges ? 'Unsaved changes' : 'All changes saved'}
         </span>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span style={{ fontSize: '0.67rem', color: '#3a3a3a', fontFamily: ui }}>&#8984;S</span>
