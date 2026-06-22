@@ -176,6 +176,16 @@ export default async function BlogPostPage({ params }: Props) {
         <Link href="/blog" className={styles.back}>Back to Journal</Link>
       </div>
 
+      {/* Booking CTA */}
+      <section className={styles.cta}>
+        <p className={styles.ctaEyebrow}>Inspired to book?</p>
+        <h2 className={styles.ctaHeading}>{"Let's create"}<br />{"something together."}</h2>
+        <div className={styles.ctaActions}>
+          <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
+          <Link href="/portfolio" className={styles.ctaBtnSecondary}>View Portfolio</Link>
+        </div>
+      </section>
+
       {/* Related posts */}
       {relatedDocs.length > 0 && (
         <section className={styles.related} aria-label="More from the Journal">
