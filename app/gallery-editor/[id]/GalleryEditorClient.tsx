@@ -307,6 +307,14 @@ export function GalleryEditorClient({
         if (saveMsgTimer.current) clearTimeout(saveMsgTimer.current)
         setSaveMsg(newStatus === 'published' ? 'Published!' : 'Saved')
         saveMsgTimer.current = setTimeout(() => setSaveMsg(''), 2500)
+        if (targetStatus === 'published') {
+          fetch('/api/revalidate-gallery', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug: slug.trim() || undefined }),
+          }).catch(() => {})
+        }
       } else {
         setError('Save failed. Please try again.')
       }
