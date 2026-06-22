@@ -999,30 +999,35 @@ export function GalleryEditorClient({
                   const isCover = photo.id === coverId
 
                   if (tapedStyle) {
+                    const isSelected = selectedIds.has(photo.id)
                     return (
                       <div
                         key={photo.id}
-                        draggable
-                        onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; setDragIdx(i) }}
-                        onDragEnter={() => { if (dragIdx !== null && dragIdx !== i) setOverIdx(i) }}
-                        onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move' }}
-                        onDrop={e => { e.preventDefault(); move(dragIdx!, i); setDragIdx(null); setOverIdx(null) }}
+                        draggable={!selectMode}
+                        onClick={() => { if (selectMode) toggleSelect(photo.id) }}
+                        onDragStart={e => { if (selectMode) { e.preventDefault(); return }; e.dataTransfer.effectAllowed = 'move'; setDragIdx(i) }}
+                        onDragEnter={() => { if (!selectMode && dragIdx !== null && dragIdx !== i) setOverIdx(i) }}
+                        onDragOver={e => { if (!selectMode) { e.preventDefault(); e.dataTransfer.dropEffect = 'move' } }}
+                        onDrop={e => { if (!selectMode) { e.preventDefault(); move(dragIdx!, i); setDragIdx(null); setOverIdx(null) } }}
                         onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
                         onMouseEnter={() => setHoveredIdx(i)}
                         onMouseLeave={() => setHoveredIdx(null)}
                         style={{
-                          cursor: isDragging ? 'grabbing' : 'grab',
+                          cursor: selectMode ? 'pointer' : isDragging ? 'grabbing' : 'grab',
                           opacity: isDragging ? 0.3 : 1,
-                          transform: `rotate(${(i % 5 - 2) * 1.2}deg) ${isOver ? 'scale(1.04)' : 'scale(1)'}`,
+                          transform: selectMode ? 'none' : `rotate(${(i % 5 - 2) * 1.2}deg) ${isOver ? 'scale(1.04)' : 'scale(1)'}`,
                           transition: 'opacity .12s, transform .15s',
                           position: 'relative',
+                          outline: isSelected ? '3px solid #1db954' : 'none',
+                          outlineOffset: 4,
+                          borderRadius: 2,
                         }}
                       >
-                        {/* Tape corners */}
-                        {[{ top: '-6px', left: '20%', rotate: '-35deg' }, { top: '-6px', right: '20%', rotate: '35deg' }, { bottom: '-6px', left: '20%', rotate: '35deg' }, { bottom: '-6px', right: '20%', rotate: '-35deg' }].map((pos, t) => (
+                        {/* Tape corners (hidden in select mode) */}
+                        {!selectMode && [{ top: '-6px', left: '20%', rotate: '-35deg' }, { top: '-6px', right: '20%', rotate: '35deg' }, { bottom: '-6px', left: '20%', rotate: '35deg' }, { bottom: '-6px', right: '20%', rotate: '-35deg' }].map((pos, t) => (
                           <div key={t} aria-hidden="true" style={{ position: 'absolute', width: 36, height: 12, background: 'rgba(214,209,206,0.42)', transform: `rotate(${pos.rotate})`, zIndex: 2, ...Object.fromEntries(Object.entries(pos).filter(([k]) => k !== 'rotate')) }} />
                         ))}
-                        <div style={{ background: 'var(--tape-mat, #f4efe8)', padding: '0.75rem 0.75rem 2.5rem', boxShadow: 'var(--tape-shadow, 0 4px 16px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2))', position: 'relative' }}>
+                        <div style={{ background: 'var(--tape-mat, #f4efe8)', padding: '0.75rem 0.75rem 2.5rem', boxShadow: selectMode ? 'none' : 'var(--tape-shadow, 0 4px 16px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2))', position: 'relative' }}>
                           <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden' }}>
                             {photo.url ? (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -1030,8 +1035,16 @@ export function GalleryEditorClient({
                             ) : (
                               <div style={{ width: '100%', height: '100%', background: '#e8e3dc' }} />
                             )}
-                            {/* Controls overlay */}
-                            {(isHovered || isCover) && (
+                            {/* Select mode overlay */}
+                            {selectMode && (
+                              <div style={{ position: 'absolute', inset: 0, background: isSelected ? 'rgba(29,185,84,0.2)' : 'rgba(0,0,0,0.15)', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', padding: '0.4rem' }}>
+                                <div style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${isSelected ? '#1db954' : 'rgba(255,255,255,0.7)'}`, background: isSelected ? '#1db954' : 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  {isSelected && <span style={{ color: '#fff', fontSize: '0.7rem', fontWeight: 700, lineHeight: 1 }}>&#10003;</span>}
+                                </div>
+                              </div>
+                            )}
+                            {/* Controls overlay (hidden in select mode) */}
+                            {!selectMode && (isHovered || isCover) && (
                               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                                 {isCover ? (
                                   <span style={{ fontSize: '0.65rem', color: 'rgba(201,162,39,0.95)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
@@ -1045,7 +1058,7 @@ export function GalleryEditorClient({
                             )}
                           </div>
                         </div>
-                        {isOver && <div style={{ position: 'absolute', inset: -4, border: '2px dashed rgba(214,209,206,0.8)', borderRadius: 4, pointerEvents: 'none' }} aria-hidden="true" />}
+                        {!selectMode && isOver && <div style={{ position: 'absolute', inset: -4, border: '2px dashed rgba(214,209,206,0.8)', borderRadius: 4, pointerEvents: 'none' }} aria-hidden="true" />}
                       </div>
                     )
                   }
