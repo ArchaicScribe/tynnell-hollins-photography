@@ -23,6 +23,25 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/admin/collections/galleries',
+        destination: '/gallery-editor',
+        permanent: false,
+      },
+      {
+        source: '/admin/collections/galleries/create',
+        destination: '/gallery-editor',
+        permanent: false,
+      },
+      {
+        source: '/admin/collections/galleries/:id',
+        destination: '/gallery-editor/:id',
+        permanent: false,
+      },
+    ]
+  },
   async headers() {
     return [
       {
