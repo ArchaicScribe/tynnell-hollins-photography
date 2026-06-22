@@ -65,6 +65,8 @@ export function GalleryEditorClient({
   const [createError, setCreateError] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const saveMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -131,6 +133,21 @@ export function GalleryEditorClient({
 
   const removePhoto = (idx: number) => {
     setPhotos(prev => prev.filter((_, i) => i !== idx))
+    markChanged()
+  }
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  const removeSelected = () => {
+    setPhotos(prev => prev.filter(p => !selectedIds.has(p.id)))
+    setSelectedIds(new Set())
+    setSelectMode(false)
     markChanged()
   }
 
@@ -251,11 +268,15 @@ export function GalleryEditorClient({
         e.preventDefault()
         if (!saving) void save()
       }
+      if (e.key === 'Escape' && selectMode) {
+        setSelectMode(false)
+        setSelectedIds(new Set())
+      }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saving, title, slug, category, status, featured, tapedStyle, coverId, photos])
+  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, coverId, photos])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
@@ -597,7 +618,9 @@ export function GalleryEditorClient({
           <div style={{ padding: '1.25rem 2rem 0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
             <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: 500, color: '#4b4b4b', fontFamily: ui }}>
               {photos.length > 0
-                ? `${photos.length} photo${photos.length !== 1 ? 's' : ''} - drag to reorder`
+                ? selectMode
+                  ? selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Click photos to select'
+                  : `${photos.length} photo${photos.length !== 1 ? 's' : ''} - drag to reorder`
                 : 'No photos yet'}
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -606,15 +629,46 @@ export function GalleryEditorClient({
                   Uploading {uploadProgress.done}/{uploadProgress.total}...
                 </span>
               )}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                aria-busy={uploading}
-                style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 600, cursor: uploading ? 'wait' : 'pointer', fontFamily: ui, opacity: uploading ? 0.6 : 1 }}
-              >
-                + Upload photos
-              </button>
+              {photos.length > 0 && !selectMode && (
+                <button
+                  type="button"
+                  onClick={() => { setSelectMode(true); setSelectedIds(new Set()) }}
+                  style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#6b6a6a', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer', fontFamily: ui }}
+                >
+                  Select
+                </button>
+              )}
+              {selectMode && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectMode(false); setSelectedIds(new Set()) }}
+                    style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#6b6a6a', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer', fontFamily: ui }}
+                  >
+                    Cancel
+                  </button>
+                  {selectedIds.size > 0 && (
+                    <button
+                      type="button"
+                      onClick={removeSelected}
+                      style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', color: '#e87070', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui }}
+                    >
+                      Remove {selectedIds.size}
+                    </button>
+                  )}
+                </>
+              )}
+              {!selectMode && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  aria-busy={uploading}
+                  style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 600, cursor: uploading ? 'wait' : 'pointer', fontFamily: ui, opacity: uploading ? 0.6 : 1 }}
+                >
+                  + Upload photos
+                </button>
+              )}
             </div>
           </div>
 
@@ -697,14 +751,16 @@ export function GalleryEditorClient({
                     )
                   }
 
+                  const isSelected = selectedIds.has(photo.id)
                   return (
                     <div
                       key={photo.id}
-                      draggable
-                      onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; setDragIdx(i) }}
-                      onDragEnter={() => { if (dragIdx !== null && dragIdx !== i) setOverIdx(i) }}
-                      onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move' }}
-                      onDrop={e => { e.preventDefault(); move(dragIdx!, i); setDragIdx(null); setOverIdx(null) }}
+                      draggable={!selectMode}
+                      onClick={() => { if (selectMode) toggleSelect(photo.id) }}
+                      onDragStart={e => { if (selectMode) { e.preventDefault(); return }; e.dataTransfer.effectAllowed = 'move'; setDragIdx(i) }}
+                      onDragEnter={() => { if (!selectMode && dragIdx !== null && dragIdx !== i) setOverIdx(i) }}
+                      onDragOver={e => { if (!selectMode) { e.preventDefault(); e.dataTransfer.dropEffect = 'move' } }}
+                      onDrop={e => { if (!selectMode) { e.preventDefault(); move(dragIdx!, i); setDragIdx(null); setOverIdx(null) } }}
                       onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
                       onMouseEnter={() => setHoveredIdx(i)}
                       onMouseLeave={() => setHoveredIdx(null)}
@@ -712,9 +768,9 @@ export function GalleryEditorClient({
                         position: 'relative',
                         aspectRatio: '4/3',
                         overflow: 'hidden',
-                        cursor: isDragging ? 'grabbing' : 'grab',
+                        cursor: selectMode ? 'pointer' : isDragging ? 'grabbing' : 'grab',
                         opacity: isDragging ? 0.3 : 1,
-                        border: `2px solid ${isOver ? 'rgba(214,209,206,0.9)' : isCover ? 'rgba(201,162,39,0.5)' : 'transparent'}`,
+                        border: `2px solid ${isSelected ? '#1db954' : isOver ? 'rgba(214,209,206,0.9)' : isCover ? 'rgba(201,162,39,0.5)' : 'transparent'}`,
                         transition: 'opacity .12s, border-color .1s, transform .1s',
                         transform: isOver ? 'scale(1.02)' : 'scale(1)',
                         background: '#1a1a1a',
@@ -728,40 +784,53 @@ export function GalleryEditorClient({
                       )}
 
                       {/* Dark overlay on hover */}
-                      <div style={{ position: 'absolute', inset: 0, background: isHovered ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)', transition: 'background .15s', pointerEvents: 'none' }} aria-hidden="true" />
+                      <div style={{ position: 'absolute', inset: 0, background: (isHovered || selectMode) ? (isSelected ? 'rgba(29,185,84,0.15)' : 'rgba(0,0,0,0.45)') : 'rgba(0,0,0,0.1)', transition: 'background .15s', pointerEvents: 'none' }} aria-hidden="true" />
 
-                      {/* Position number */}
-                      <span style={{ position: 'absolute', top: '0.4rem', left: '0.4rem', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(0,0,0,0.65)', color: '#d6d1ce', padding: '0.15rem 0.35rem', borderRadius: 3 }}>{i + 1}</span>
+                      {/* Select mode checkmark */}
+                      {selectMode && (
+                        <div style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', width: 22, height: 22, borderRadius: '50%', border: `2px solid ${isSelected ? '#1db954' : 'rgba(255,255,255,0.5)'}`, background: isSelected ? '#1db954' : 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .12s' }}>
+                          {isSelected && <span style={{ color: '#fff', fontSize: '0.7rem', fontWeight: 700, lineHeight: 1 }}>&#10003;</span>}
+                        </div>
+                      )}
 
-                      {/* Remove button */}
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(i)}
-                        aria-label={`Remove photo ${i + 1}`}
-                        style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', width: 24, height: 24, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isHovered ? 1 : 0, transition: 'opacity .15s' }}
-                      >
-                        &times;
-                      </button>
+                      {/* Position number (hidden in select mode) */}
+                      {!selectMode && <span style={{ position: 'absolute', top: '0.4rem', left: '0.4rem', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(0,0,0,0.65)', color: '#d6d1ce', padding: '0.15rem 0.35rem', borderRadius: 3 }}>{i + 1}</span>}
 
-                      {/* Cover / set cover */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.4rem 0.6rem', background: 'linear-gradient(transparent, rgba(0,0,0,0.75))', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isHovered || isCover) ? 1 : 0, transition: 'opacity .15s' }}>
-                        {isCover ? (
-                          <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'rgba(201,162,39,0.95)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                            <span aria-hidden="true">&#9733; </span>Cover photo
-                          </span>
-                        ) : (
-                          <button type="button" onClick={() => setCover(photo)} style={{ fontSize: '0.62rem', color: '#d6d1ce', background: 'none', border: '1px solid rgba(214,209,206,0.4)', borderRadius: 3, padding: '0.15rem 0.4rem', cursor: 'pointer' }}>
-                            Set as cover
-                          </button>
-                        )}
-                      </div>
+                      {/* Remove button (hidden in select mode) */}
+                      {!selectMode && (
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(i)}
+                          aria-label={`Remove photo ${i + 1}`}
+                          style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', width: 24, height: 24, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isHovered ? 1 : 0, transition: 'opacity .15s' }}
+                        >
+                          &times;
+                        </button>
+                      )}
 
-                      {/* Drag grip dots */}
-                      <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', display: 'grid', gridTemplateColumns: 'repeat(3,4px)', gap: '3px', opacity: isHovered && !isDragging ? 0.7 : 0, transition: 'opacity .15s', pointerEvents: 'none' }}>
-                        {Array.from({ length: 9 }).map((_, d) => (
-                          <div key={d} style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />
-                        ))}
-                      </div>
+                      {/* Cover / set cover (hidden in select mode) */}
+                      {!selectMode && (
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.4rem 0.6rem', background: 'linear-gradient(transparent, rgba(0,0,0,0.75))', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isHovered || isCover) ? 1 : 0, transition: 'opacity .15s' }}>
+                          {isCover ? (
+                            <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'rgba(201,162,39,0.95)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                              <span aria-hidden="true">&#9733; </span>Cover photo
+                            </span>
+                          ) : (
+                            <button type="button" onClick={() => setCover(photo)} style={{ fontSize: '0.62rem', color: '#d6d1ce', background: 'none', border: '1px solid rgba(214,209,206,0.4)', borderRadius: 3, padding: '0.15rem 0.4rem', cursor: 'pointer' }}>
+                              Set as cover
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Drag grip dots (hidden in select mode) */}
+                      {!selectMode && (
+                        <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', display: 'grid', gridTemplateColumns: 'repeat(3,4px)', gap: '3px', opacity: isHovered && !isDragging ? 0.7 : 0, transition: 'opacity .15s', pointerEvents: 'none' }}>
+                          {Array.from({ length: 9 }).map((_, d) => (
+                            <div key={d} style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )
                 })}
