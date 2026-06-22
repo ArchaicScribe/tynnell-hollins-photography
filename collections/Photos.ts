@@ -1,4 +1,5 @@
-import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
+import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 
 // Auto-populate title and alt from the filename so bulk uploads never get
 // blocked by required-field validation. Tynnell can clean up titles/alt text
@@ -19,6 +20,15 @@ const autoPopulateFromFilename: CollectionBeforeValidateHook = ({ data = {} }) =
   return data
 }
 
+const revalidatePhoto: CollectionAfterChangeHook = () => {
+  try {
+    revalidatePath('/portfolio')
+    revalidatePath('/')
+  } catch {
+    // no-op outside Next.js request context
+  }
+}
+
 export const Photos: CollectionConfig = {
   slug: 'photos',
   labels: {
@@ -27,6 +37,7 @@ export const Photos: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [autoPopulateFromFilename],
+    afterChange: [revalidatePhoto],
   },
   upload: {
     staticDir: 'media',
