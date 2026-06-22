@@ -22,6 +22,8 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
   const [newCategory, setNewCategory] = useState<string>('portraits')
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState('')
+  const [filterCat, setFilterCat] = useState<string | null>(null)
+  const [filterStatus, setFilterStatus] = useState<string | null>(null)
 
   const createGallery = async () => {
     if (!newTitle.trim()) return
@@ -108,6 +110,39 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
 
       {/* Gallery grid */}
       <main style={{ padding: '2rem', maxWidth: 1200, margin: '0 auto' }}>
+        {galleries.length > 0 && (
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'center' }}>
+            {(['all', ...CATEGORIES] as const).map(cat => {
+              const active = cat === 'all' ? filterCat === null : filterCat === cat
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setFilterCat(cat === 'all' ? null : cat)}
+                  aria-pressed={active}
+                  style={{ background: active ? 'rgba(255,255,255,0.1)' : 'none', border: `1px solid ${active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`, color: active ? '#e6e1de' : '#4b4b4b', borderRadius: 20, padding: '0.28rem 0.75rem', fontSize: '0.72rem', fontWeight: active ? 600 : 400, cursor: 'pointer', fontFamily: ui, textTransform: 'capitalize', transition: 'all .12s' }}
+                >
+                  {cat}
+                </button>
+              )
+            })}
+            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.07)', margin: '0 0.2rem' }} aria-hidden="true" />
+            {(['live', 'draft'] as const).map(s => {
+              const active = filterStatus === s
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setFilterStatus(active ? null : s)}
+                  aria-pressed={active}
+                  style={{ background: active ? (s === 'live' ? 'rgba(29,185,84,0.15)' : 'rgba(255,255,255,0.07)') : 'none', border: `1px solid ${active ? (s === 'live' ? 'rgba(29,185,84,0.35)' : 'rgba(255,255,255,0.15)') : 'rgba(255,255,255,0.07)'}`, color: active ? (s === 'live' ? '#1db954' : '#9b9a9a') : '#4b4b4b', borderRadius: 20, padding: '0.28rem 0.75rem', fontSize: '0.72rem', fontWeight: active ? 600 : 400, cursor: 'pointer', fontFamily: ui, textTransform: 'capitalize', transition: 'all .12s' }}
+                >
+                  {s}
+                </button>
+              )
+            })}
+          </div>
+        )}
         {galleries.length === 0 ? (
           <div style={{ textAlign: 'center', paddingTop: '6rem' }}>
             <div style={{ fontSize: '3.5rem', opacity: 0.08, marginBottom: '1.25rem' }} aria-hidden="true">&#128444;</div>
@@ -122,11 +157,20 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
           </div>
         ) : (
           <>
-            <p style={{ margin: '0 0 1.5rem', fontSize: '0.78rem', color: '#3a3a3a', fontFamily: ui }}>
-              {galleries.length} {galleries.length === 1 ? 'gallery' : 'galleries'}
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-              {galleries.map(g => (
+            {(() => {
+              const filtered = galleries.filter(g =>
+                (!filterCat || g.category === filterCat) &&
+                (!filterStatus || (filterStatus === 'live' ? g.status !== 'draft' : g.status === 'draft'))
+              )
+              return (
+                <>
+                  <p style={{ margin: '0 0 1.25rem', fontSize: '0.78rem', color: '#3a3a3a', fontFamily: ui }}>
+                    {filtered.length === galleries.length
+                      ? `${galleries.length} ${galleries.length === 1 ? 'gallery' : 'galleries'}`
+                      : `${filtered.length} of ${galleries.length}`}
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
+                    {filtered.map(g => (
                 <Link
                   key={g.id}
                   href={`/gallery-editor/${g.id}`}
@@ -171,9 +215,12 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
                       )}
                     </div>
                   </div>
-                </Link>
-              ))}
-            </div>
+                    </Link>
+                    ))}
+                  </div>
+                </>
+              )
+            })()}
           </>
         )}
       </main>

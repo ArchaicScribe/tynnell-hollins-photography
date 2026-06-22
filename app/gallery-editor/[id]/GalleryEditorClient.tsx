@@ -57,6 +57,7 @@ export function GalleryEditorClient({
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null)
   const [uploadError, setUploadError] = useState('')
   const [sidebarSection, setSidebarSection] = useState<'galleries' | 'settings'>('galleries')
+  const [gallerySearch, setGallerySearch] = useState('')
   const [showNewModal, setShowNewModal] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newCategory, setNewCategory] = useState<string>('portraits')
@@ -373,8 +374,8 @@ export function GalleryEditorClient({
           {/* Gallery list */}
           {sidebarSection === 'galleries' && (
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
-                <span style={{ fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3a3a3a', fontFamily: ui }}>All Galleries</span>
+              <div style={{ padding: '0.55rem 0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
+                <span style={{ fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3a3a3a', fontFamily: ui }}>{allGalleries.length} Galleries</span>
                 <button
                   type="button"
                   onClick={() => { setNewTitle(''); setCreateError(''); setShowNewModal(true) }}
@@ -384,8 +385,20 @@ export function GalleryEditorClient({
                   + Add
                 </button>
               </div>
+              {allGalleries.length > 5 && (
+                <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
+                  <input
+                    type="search"
+                    placeholder="Search galleries..."
+                    value={gallerySearch}
+                    onChange={e => setGallerySearch(e.target.value)}
+                    style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '0.38rem 0.6rem', color: '#9b9a9a', fontSize: '0.75rem', outline: 'none', fontFamily: ui }}
+                    aria-label="Search galleries"
+                  />
+                </div>
+              )}
               <div style={{ flex: 1, overflowY: 'auto', padding: '0.25rem 0' }}>
-              {allGalleries.map(g => {
+              {allGalleries.filter(g => !gallerySearch || g.title.toLowerCase().includes(gallerySearch.toLowerCase())).map(g => {
                 const isCurrent = g.id === galleryId
                 return (
                   <Link
