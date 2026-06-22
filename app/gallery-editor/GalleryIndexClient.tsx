@@ -257,8 +257,9 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
                       )}
                     </div>
                   </div>
-                    </Link>
-                    ))}
+                </Link>
+              )
+            })}
                   </div>
                 </>
               )
