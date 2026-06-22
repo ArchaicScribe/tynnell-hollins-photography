@@ -45,9 +45,12 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const firstInputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    if (activeId) firstInputRef.current?.focus()
+    if (!activeId) return
+    firstInputRef.current?.focus()
+    formRef.current?.closest('article')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [activeId])
 
   const selected = packages.find((p) => p.id === activeId)
@@ -125,7 +128,7 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
               </div>
 
               {isActive ? (
-                <form className={styles.form} onSubmit={handleCheckout} noValidate>
+                <form className={styles.form} onSubmit={handleCheckout} noValidate ref={formRef}>
                   <div className={styles.field}>
                     <label className={styles.label} htmlFor={`name-${pkg.id}`}>Your Name *</label>
                     <input
