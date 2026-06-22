@@ -65,6 +65,7 @@ export function GalleryEditorClient({
   const [createError, setCreateError] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [duplicating, setDuplicating] = useState(false)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -90,6 +91,32 @@ export function GalleryEditorClient({
     } catch {
       setShowDeleteConfirm(false)
       setDeleting(false)
+    }
+  }
+
+  const duplicateGallery = async () => {
+    setDuplicating(true)
+    try {
+      const res = await fetch('/api/galleries', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `${title} (copy)`,
+          category,
+          tapedStyle,
+          status: 'draft',
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const newId = data?.doc?.id ?? data?.id
+        if (newId) window.location.href = `/gallery-editor/${newId}`
+      }
+    } catch {
+      // ignore
+    } finally {
+      setDuplicating(false)
     }
   }
 
@@ -581,6 +608,16 @@ export function GalleryEditorClient({
                 </div>
 
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0.5rem 0' }} />
+
+                <button
+                  type="button"
+                  onClick={duplicateGallery}
+                  disabled={duplicating}
+                  aria-busy={duplicating}
+                  style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9b9a9a', borderRadius: 6, padding: '0.45rem 0.75rem', fontSize: '0.78rem', fontWeight: 500, cursor: duplicating ? 'wait' : 'pointer', fontFamily: ui, width: '100%', textAlign: 'left', opacity: duplicating ? 0.6 : 1 }}
+                >
+                  {duplicating ? 'Duplicating...' : 'Duplicate gallery'}
+                </button>
 
                 <button
                   type="button"
