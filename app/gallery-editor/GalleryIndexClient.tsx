@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 
 const CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
@@ -24,6 +24,32 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
   const [createError, setCreateError] = useState('')
   const [filterCat, setFilterCat] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string | null>(null)
+  const [orderedGalleries, setOrderedGalleries] = useState<GalleryCard[]>(galleries)
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [overIdx, setOverIdx] = useState<number | null>(null)
+  const [reordering, setReordering] = useState(false)
+  const reorderTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const moveGallery = (from: number, to: number) => {
+    if (from === to) return
+    const next = [...orderedGalleries]
+    const [moved] = next.splice(from, 1)
+    next.splice(to, 0, moved)
+    setOrderedGalleries(next)
+    if (reorderTimer.current) clearTimeout(reorderTimer.current)
+    reorderTimer.current = setTimeout(async () => {
+      setReordering(true)
+      await Promise.all(next.map((g, i) =>
+        fetch(`/api/galleries/${g.id}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ displayOrder: (i + 1) * 10 }),
+        })
+      ))
+      setReordering(false)
+    }, 800)
+  }
 
   const createGallery = async () => {
     if (!newTitle.trim()) return
@@ -158,24 +184,40 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
         ) : (
           <>
             {(() => {
-              const filtered = galleries.filter(g =>
+              const isFiltered = !!(filterCat || filterStatus)
+              const filtered = orderedGalleries.filter(g =>
                 (!filterCat || g.category === filterCat) &&
                 (!filterStatus || (filterStatus === 'live' ? g.status !== 'draft' : g.status === 'draft'))
               )
               return (
                 <>
-                  <p style={{ margin: '0 0 1.25rem', fontSize: '0.78rem', color: '#3a3a3a', fontFamily: ui }}>
-                    {filtered.length === galleries.length
-                      ? `${galleries.length} ${galleries.length === 1 ? 'gallery' : 'galleries'}`
-                      : `${filtered.length} of ${galleries.length}`}
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#3a3a3a', fontFamily: ui }}>
+                      {filtered.length === orderedGalleries.length
+                        ? `${orderedGalleries.length} ${orderedGalleries.length === 1 ? 'gallery' : 'galleries'}`
+                        : `${filtered.length} of ${orderedGalleries.length}`}
+                    </p>
+                    {reordering && <span style={{ fontSize: '0.7rem', color: '#4b4b4b', fontFamily: ui }}>Saving order...</span>}
+                    {isFiltered && <span style={{ fontSize: '0.7rem', color: '#3a3a3a', fontFamily: ui }}>Clear filters to drag-reorder</span>}
+                    {!isFiltered && !reordering && <span style={{ fontSize: '0.7rem', color: '#2a2a2a', fontFamily: ui }}>Drag to reorder</span>}
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-                    {filtered.map(g => (
+                    {filtered.map((g) => {
+                      const realIdx = orderedGalleries.indexOf(g)
+                      const isDragging = dragIdx === realIdx
+                      const isOver = overIdx === realIdx && dragIdx !== null && dragIdx !== realIdx
+                      return (
                 <Link
                   key={g.id}
                   href={`/gallery-editor/${g.id}`}
-                  style={{ textDecoration: 'none', display: 'block', borderRadius: 8, overflow: 'hidden', background: '#141414', border: '1px solid rgba(255,255,255,0.06)', transition: 'border-color .15s, transform .15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.14)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+                  draggable={!isFiltered}
+                  onDragStart={e => { if (isFiltered) { e.preventDefault(); return }; e.dataTransfer.effectAllowed = 'move'; setDragIdx(realIdx) }}
+                  onDragEnter={() => { if (!isFiltered && dragIdx !== null && dragIdx !== realIdx) setOverIdx(realIdx) }}
+                  onDragOver={e => { if (!isFiltered) { e.preventDefault(); e.dataTransfer.dropEffect = 'move' } }}
+                  onDrop={e => { if (!isFiltered && dragIdx !== null) { e.preventDefault(); moveGallery(dragIdx, realIdx); setDragIdx(null); setOverIdx(null) } }}
+                  onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
+                  style={{ textDecoration: 'none', display: 'block', borderRadius: 8, overflow: 'hidden', background: '#141414', border: `1px solid ${isOver ? 'rgba(29,185,84,0.5)' : 'rgba(255,255,255,0.06)'}`, transition: 'border-color .15s, transform .15s, opacity .12s', opacity: isDragging ? 0.35 : 1, cursor: !isFiltered ? 'grab' : 'pointer', transform: isOver ? 'scale(1.02)' : 'scale(1)' }}
+                  onMouseEnter={e => { if (!isDragging) { (e.currentTarget as HTMLElement).style.borderColor = isOver ? 'rgba(29,185,84,0.5)' : 'rgba(255,255,255,0.14)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' } }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
                 >
                   {/* Cover image */}
