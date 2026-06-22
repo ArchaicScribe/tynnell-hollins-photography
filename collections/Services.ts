@@ -1,4 +1,14 @@
-import type { CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
+import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
+
+const revalidateService: CollectionAfterChangeHook = () => {
+  try {
+    revalidatePath('/services')
+    revalidatePath('/book')
+  } catch {
+    // no-op outside Next.js request context
+  }
+}
 
 export const Services: CollectionConfig = {
   slug: 'services',
@@ -19,6 +29,9 @@ export const Services: CollectionConfig = {
         },
       },
     },
+  },
+  hooks: {
+    afterChange: [revalidateService],
   },
   fields: [
     {
