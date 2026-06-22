@@ -24,6 +24,7 @@ export default async function BookPage() {
       where: { depositAmount: { exists: true } },
       sort: 'displayOrder',
       depth: 0,
+      limit: 50,
     }),
     payload.findGlobal({ slug: 'availability' }).catch(() => null),
   ])

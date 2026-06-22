@@ -203,7 +203,7 @@
 .grid {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 3rem var(--padding-x) 6rem;
+  padding: 3rem var(--padding-x) 4rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4.5rem 2.5rem;
@@ -339,6 +339,75 @@
 
 .readMore:hover {
   color: var(--color-body);
+}
+
+/* ── CTA ──────────────────────────────────────────────────── */
+
+.cta {
+  text-align: center;
+  padding: var(--padding-block) var(--padding-x);
+  background: var(--color-bg-accent);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.ctaEyebrow {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin-bottom: 1rem;
+}
+
+.ctaHeading {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 400;
+  color: var(--color-heading);
+  line-height: 1.1;
+  margin-bottom: 2rem;
+}
+
+.ctaActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ctaBtn {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-bg);
+  background: var(--color-btn-bg);
+  text-decoration: none;
+  padding: 0.875rem 2rem;
+  transition: opacity 0.2s ease;
+}
+
+.ctaBtn:hover {
+  opacity: 0.85;
+}
+
+.ctaBtnSecondary {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  text-decoration: none;
+  padding: 0.875rem 2rem;
+  border: 1px solid rgba(155,154,154,0.3);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.ctaBtnSecondary:hover {
+  color: var(--color-heading);
+  border-color: rgba(155,154,154,0.6);
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
