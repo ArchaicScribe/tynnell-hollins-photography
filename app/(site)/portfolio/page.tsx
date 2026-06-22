@@ -29,6 +29,7 @@ export default async function PortfolioPage() {
     title: p.title,
     alt: p.alt ?? undefined,
     imageUrl: p.sizes?.card?.url ?? p.url ?? null,
+    fullUrl: p.sizes?.hero?.url ?? p.url ?? null,
     category: p.category ?? 'portraits',
   }))
 

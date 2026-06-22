@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
@@ -19,6 +19,7 @@ export type PortfolioPhoto = {
   title?: string | null
   alt?: string | null
   imageUrl: string | null
+  fullUrl: string | null
   category: string
 }
 
@@ -39,6 +40,24 @@ type Props = {
   galleries: PortfolioGallery[]
 }
 
+const NAV_BTN: React.CSSProperties = {
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  background: 'rgba(255,255,255,0.07)',
+  border: '1px solid rgba(255,255,255,0.14)',
+  color: '#d6d1ce',
+  width: 48,
+  height: 48,
+  borderRadius: '50%',
+  cursor: 'pointer',
+  fontSize: '1.1rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backdropFilter: 'blur(4px)',
+}
+
 export default function PortfolioGrid({ photos, galleries }: Props) {
   const router = useRouter()
   const pathname = usePathname()
@@ -46,6 +65,30 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
   const paramCategory = searchParams.get('category') ?? 'all'
   const initialCategory = CATEGORIES.some(c => c.value === paramCategory) ? paramCategory : 'all'
   const [activeCategory, setActiveCategory] = useState(initialCategory)
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+
+  const visiblePhotos = activeCategory === 'all'
+    ? photos
+    : photos.filter(p => p.category === activeCategory)
+
+  const closeLightbox = useCallback(() => setLightboxIdx(null), [])
+  const prevPhoto = useCallback(() => setLightboxIdx(i => i !== null ? (i - 1 + visiblePhotos.length) % visiblePhotos.length : null), [visiblePhotos.length])
+  const nextPhoto = useCallback(() => setLightboxIdx(i => i !== null ? (i + 1) % visiblePhotos.length : null), [visiblePhotos.length])
+
+  useEffect(() => {
+    if (lightboxIdx === null) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox()
+      else if (e.key === 'ArrowLeft') prevPhoto()
+      else if (e.key === 'ArrowRight') nextPhoto()
+    }
+    window.addEventListener('keydown', handler)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', handler)
+      document.body.style.overflow = ''
+    }
+  }, [lightboxIdx, closeLightbox, prevPhoto, nextPhoto])
 
   function handleFilter(value: string) {
     setActiveCategory(value)
@@ -61,11 +104,10 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
 
   const showAlbums = activeCategory === 'weddings'
 
-  const filteredPhotos = activeCategory === 'all'
-    ? photos
-    : photos.filter(p => p.category === activeCategory)
+  const filteredPhotos = visiblePhotos
 
   const weddingGalleries = galleries.filter(g => g.category === 'weddings')
+  const currentLightboxPhoto = lightboxIdx !== null ? visiblePhotos[lightboxIdx] : null
 
   return (
     <>
@@ -137,7 +179,16 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
           <div className={styles.masonry}>
             {filteredPhotos.map((photo, i) =>
               photo.imageUrl ? (
-                <div key={photo.id} className={`${styles.masonryItem} ${styles[`aspect${i % 5}`]}`}>
+                <div
+                  key={photo.id}
+                  className={`${styles.masonryItem} ${styles[`aspect${i % 5}`]}`}
+                  style={{ cursor: 'zoom-in' }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View photo${photo.alt ? `: ${photo.alt}` : photo.title ? `: ${photo.title}` : ''}`}
+                  onClick={() => setLightboxIdx(i)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxIdx(i) } }}
+                >
                   <ProtectedImage
                     src={photo.imageUrl}
                     alt={photo.alt ?? photo.title ?? ''}
@@ -157,6 +208,102 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
         ) : (
           <p className={styles.empty}>No photos in this category yet.</p>
         )
+      )}
+
+      {/* Lightbox */}
+      {currentLightboxPhoto !== null && lightboxIdx !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photo ${lightboxIdx + 1} of ${visiblePhotos.length}`}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(0,0,0,0.96)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={closeLightbox}
+        >
+          {visiblePhotos.length > 1 && (
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); prevPhoto() }}
+              aria-label="Previous photo"
+              style={{ ...NAV_BTN, left: '1rem' }}
+            >
+              &#8592;
+            </button>
+          )}
+          <div
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: '90vw', maxHeight: '90vh' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={currentLightboxPhoto.fullUrl ?? currentLightboxPhoto.imageUrl ?? ''}
+              alt={currentLightboxPhoto.alt ?? currentLightboxPhoto.title ?? ''}
+              draggable={false}
+              onContextMenu={e => e.preventDefault()}
+              style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', display: 'block', userSelect: 'none' }}
+            />
+          </div>
+          {visiblePhotos.length > 1 && (
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); nextPhoto() }}
+              aria-label="Next photo"
+              style={{ ...NAV_BTN, right: '1rem' }}
+            >
+              &#8594;
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={closeLightbox}
+            aria-label="Close lightbox"
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              right: '1rem',
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              color: '#d6d1ce',
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              cursor: 'pointer',
+              fontSize: '1.4rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            &times;
+          </button>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '1.5rem',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              textAlign: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            {currentLightboxPhoto.title && (
+              <p style={{ color: 'rgba(214,209,206,0.8)', fontFamily: 'var(--font-body)', fontSize: '0.75rem', letterSpacing: '0.08em', margin: '0 0 0.4rem' }}>
+                {currentLightboxPhoto.title}
+              </p>
+            )}
+            <p style={{ color: 'rgba(155,154,154,0.6)', fontFamily: 'var(--font-body)', fontSize: '0.62rem', letterSpacing: '0.14em', textTransform: 'uppercase', margin: 0 }}>
+              {lightboxIdx + 1} / {visiblePhotos.length}
+            </p>
+          </div>
+        </div>
       )}
     </>
   )
