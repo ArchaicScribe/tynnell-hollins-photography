@@ -541,9 +541,20 @@ export function GalleryEditorClient({
                   </label>
                 </div>
 
-                {coverThumb && (
-                  <div>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui, marginBottom: '0.5rem' }}>Cover photo</div>
+                <div>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span>Cover photo</span>
+                    {coverId && (
+                      <button
+                        type="button"
+                        onClick={() => { setCoverId(null); setCoverThumb(null); markChanged() }}
+                        style={{ background: 'none', border: 'none', color: '#5a5a5a', fontSize: '0.67rem', cursor: 'pointer', fontFamily: ui, padding: 0 }}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  {coverThumb ? (
                     <button
                       type="button"
                       onClick={() => gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
@@ -558,8 +569,16 @@ export function GalleryEditorClient({
                         <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', fontFamily: ui }}>Change cover</span>
                       </div>
                     </button>
-                  </div>
-                )}
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', aspectRatio: '16/10', background: '#1a1a1a', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 6, cursor: photos.length > 0 ? 'pointer' : 'default', color: '#3a3a3a', fontSize: '0.72rem', fontFamily: ui }}
+                    >
+                      {photos.length > 0 ? 'Hover a photo and click Set as cover' : 'Add photos first'}
+                    </button>
+                  )}
+                </div>
 
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0.5rem 0' }} />
 
