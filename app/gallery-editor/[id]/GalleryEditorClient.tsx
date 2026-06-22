@@ -421,6 +421,7 @@ export function GalleryEditorClient({
               <div style={{ flex: 1, overflowY: 'auto', padding: '0.25rem 0' }}>
               {allGalleries.filter(g => !gallerySearch || g.title.toLowerCase().includes(gallerySearch.toLowerCase())).map(g => {
                 const isCurrent = g.id === galleryId
+                const position = allGalleries.indexOf(g) + 1
                 return (
                   <Link
                     key={g.id}
@@ -431,11 +432,14 @@ export function GalleryEditorClient({
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={g.coverThumb} alt="" style={{ width: 38, height: 28, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
                     ) : (
-                      <div style={{ width: 38, height: 28, borderRadius: 4, background: '#1e1e1e', flexShrink: 0, border: '1px solid rgba(255,255,255,0.06)' }} />
+                      <div style={{ width: 38, height: 28, borderRadius: 4, background: '#1e1e1e', flexShrink: 0, border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: '0.6rem', color: '#3a3a3a', fontFamily: ui }}>{position}</span>
+                      </div>
                     )}
                     <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '0.82rem', fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#e6e1de' : '#9b9a9a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: ui, lineHeight: 1.3 }}>{g.title}</div>
                       <div style={{ fontSize: '0.67rem', color: '#3a3a3a', display: 'flex', gap: '0.35rem', marginTop: '0.1rem', fontFamily: ui }}>
+                        <span style={{ color: '#2e2e2e' }}>#{position}</span>
                         {g.status === 'draft' && <span style={{ color: '#5a5a5a' }}>Draft</span>}
                         {g.photoCount != null && g.photoCount > 0 && <span>{g.photoCount} photo{g.photoCount !== 1 ? 's' : ''}</span>}
                       </div>
@@ -640,6 +644,19 @@ export function GalleryEditorClient({
               )}
               {selectMode && (
                 <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedIds.size === photos.length) {
+                        setSelectedIds(new Set())
+                      } else {
+                        setSelectedIds(new Set(photos.map(p => p.id)))
+                      }
+                    }}
+                    style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9b9a9a', borderRadius: 6, padding: '0.42rem 0.9rem', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer', fontFamily: ui }}
+                  >
+                    {selectedIds.size === photos.length ? 'Deselect all' : 'Select all'}
+                  </button>
                   <button
                     type="button"
                     onClick={() => { setSelectMode(false); setSelectedIds(new Set()) }}
