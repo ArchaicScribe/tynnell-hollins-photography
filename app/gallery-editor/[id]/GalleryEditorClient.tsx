@@ -192,11 +192,22 @@ export function GalleryEditorClient({
   useEffect(() => () => { if (saveMsgTimer.current) clearTimeout(saveMsgTimer.current) }, [])
 
   const font = "var(--font-heading, Archivo, sans-serif)"
-  const mono = "var(--font-body, 'Roboto Mono', monospace)"
-  // UI chrome uses Archivo (clean sans-serif) to match the Pixieset aesthetic
   const ui = font
 
   const isDraft = status === 'draft'
+
+  // Cmd/Ctrl+S to save
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault()
+        if (!saving) void save()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saving, title, category, status, featured, tapedStyle, coverId, photos])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
@@ -305,7 +316,7 @@ export function GalleryEditorClient({
               {allGalleries.map(g => {
                 const isCurrent = g.id === galleryId
                 return (
-                  <a
+                  <Link
                     key={g.id}
                     href={`/gallery-editor/${g.id}`}
                     style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.45rem 0.75rem', textDecoration: 'none', background: isCurrent ? 'rgba(29,185,84,0.08)' : 'transparent', borderLeft: `2px solid ${isCurrent ? '#1db954' : 'transparent'}`, transition: 'background .1s' }}
@@ -323,7 +334,7 @@ export function GalleryEditorClient({
                         {g.photoCount != null && g.photoCount > 0 && <span>{g.photoCount} photo{g.photoCount !== 1 ? 's' : ''}</span>}
                       </div>
                     </div>
-                  </a>
+                  </Link>
                 )
               })}
               </div>
@@ -449,15 +460,15 @@ export function GalleryEditorClient({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={heroUrl} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '0.8rem', fontFamily: mono }}>
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '0.8rem', fontFamily: ui }}>
                 No cover photo set
               </div>
             )}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)' }} aria-hidden="true" />
             <div style={{ position: 'absolute', bottom: '2rem', left: '2.5rem' }}>
-              <p style={{ margin: 0, fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(230,225,222,0.65)', fontFamily: mono }}>{category}</p>
+              <p style={{ margin: 0, fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(230,225,222,0.65)', fontFamily: ui }}>{category}</p>
               <h1 style={{ margin: '0.25rem 0 0.4rem', fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontFamily: font, color: '#e6e1de', fontWeight: 400, letterSpacing: '0.02em' }}>{title}</h1>
-              <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(230,225,222,0.55)', fontFamily: mono }}>{photos.length} photos</p>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(230,225,222,0.55)', fontFamily: ui }}>{photos.length} photos</p>
             </div>
           </div>
 
@@ -592,7 +603,7 @@ export function GalleryEditorClient({
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={photo.url} alt={photo.alt ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }} />
                       ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '0.75rem', fontFamily: mono }}>{photo.filename ?? 'Photo'}</div>
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '0.75rem', fontFamily: ui }}>{photo.filename ?? 'Photo'}</div>
                       )}
 
                       {/* Dark overlay on hover */}
@@ -650,18 +661,19 @@ export function GalleryEditorClient({
 
       {/* BOTTOM BAR */}
       <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', height: 58, borderTop: '1px solid rgba(255,255,255,0.07)', background: '#0e0e0e', flexShrink: 0 }}>
-        <span style={{ fontSize: '0.78rem', fontWeight: 500, color: hasChanges ? '#6b6a6a' : '#3a3a3a', fontFamily: ui, transition: 'color .2s' }}>
+        <span style={{ fontSize: '0.78rem', fontWeight: 500, color: hasChanges ? '#d4a44c' : '#3a3a3a', fontFamily: ui, transition: 'color .2s' }}>
           {hasChanges ? 'Unsaved changes' : 'All changes saved'}
         </span>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.67rem', color: '#3a3a3a', fontFamily: ui }}>&#8984;S</span>
           <button
             type="button"
-            onClick={() => void save('draft')}
+            onClick={() => void save(isDraft ? 'draft' : undefined)}
             disabled={saving}
             aria-busy={saving}
             style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 6, padding: '0.5rem 1.2rem', fontSize: '0.82rem', fontWeight: 500, cursor: saving ? 'wait' : 'pointer', fontFamily: ui, opacity: saving ? 0.5 : 1 }}
           >
-            Save draft
+            {isDraft ? 'Save draft' : 'Save'}
           </button>
           <button
             type="button"
@@ -670,7 +682,7 @@ export function GalleryEditorClient({
             aria-busy={saving}
             style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.5rem 1.4rem', fontSize: '0.82rem', fontWeight: 600, cursor: saving ? 'wait' : 'pointer', fontFamily: ui, opacity: saving ? 0.6 : 1 }}
           >
-            {saving ? 'Saving...' : 'Publish'}
+            {saving ? 'Saving...' : isDraft ? 'Publish' : 'Save & publish'}
           </button>
         </div>
       </footer>
