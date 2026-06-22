@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
@@ -76,14 +77,24 @@ export default async function PortfolioPage() {
   return (
     <main className={styles.main}>
       <JsonLd data={portfolioSchema} />
-      <div className={styles.header}>
-        <p className={styles.eyebrow}>The Work</p>
-        <h1 className={styles.heading}>Portfolio</h1>
-        <p className={styles.subheading}>Every story, every moment, every face</p>
+      <div className={styles.inner}>
+        <div className={styles.header}>
+          <p className={styles.eyebrow}>The Work</p>
+          <h1 className={styles.heading}>Portfolio</h1>
+          <p className={styles.subheading}>Every story, every moment, every face</p>
+        </div>
+        <Suspense fallback={null}>
+          <PortfolioGrid photos={photos} galleries={galleries} />
+        </Suspense>
       </div>
-      <Suspense fallback={null}>
-        <PortfolioGrid photos={photos} galleries={galleries} />
-      </Suspense>
+      <section className={styles.cta}>
+        <p className={styles.ctaEyebrow}>{"Let's make something beautiful"}</p>
+        <h2 className={styles.ctaHeading}>{"Book your"}<br />{"session."}</h2>
+        <div className={styles.ctaActions}>
+          <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
+          <Link href="/contact" className={styles.ctaBtnSecondary}>Get in touch</Link>
+        </div>
+      </section>
     </main>
   )
 }
