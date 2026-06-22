@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import styles from './Testimonials.module.css'
 
 export interface Testimonial {
@@ -52,6 +53,9 @@ export default function Testimonials({ testimonials }: Props) {
             </figcaption>
           </figure>
         ))}
+      </div>
+      <div className={styles.footer}>
+        <Link href="/testimonials" className={styles.cta}>Read more kind words</Link>
       </div>
     </section>
   )

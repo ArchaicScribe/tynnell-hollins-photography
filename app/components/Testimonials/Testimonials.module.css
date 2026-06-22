@@ -84,6 +84,28 @@
   color: var(--color-detail);
 }
 
+.footer {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.cta {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+  transition: color 0.2s;
+}
+
+.cta:hover {
+  color: var(--color-heading);
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
