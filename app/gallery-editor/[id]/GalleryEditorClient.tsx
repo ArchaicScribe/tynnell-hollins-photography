@@ -317,7 +317,7 @@ export function GalleryEditorClient({
                     <div style={{ fontSize: '0.68rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b6a6a', fontFamily: mono, marginBottom: '0.4rem' }}>Cover Photo</div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={coverThumb} alt="Cover" style={{ width: '100%', aspectRatio: '16/10', objectFit: 'cover', borderRadius: 4, border: '1px solid rgba(201,162,39,0.4)' }} />
-                    <div style={{ fontSize: '0.65rem', color: '#9b9a9a', marginTop: '0.3rem' }}>Hover a photo in the canvas and click "Set as cover" to change.</div>
+                    <div style={{ fontSize: '0.65rem', color: '#9b9a9a', marginTop: '0.3rem' }}>Hover a photo in the canvas and click Set as cover to change.</div>
                   </div>
                 )}
               </div>
