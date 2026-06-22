@@ -95,6 +95,18 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
 
   useEffect(() => { setLightboxIdx(null) }, [activeCategory])
 
+  useEffect(() => {
+    if (lightboxIdx === null || visiblePhotos.length < 2) return
+    const adjacentIdxs = [
+      (lightboxIdx + 1) % visiblePhotos.length,
+      (lightboxIdx - 1 + visiblePhotos.length) % visiblePhotos.length,
+    ]
+    adjacentIdxs.forEach(i => {
+      const url = visiblePhotos[i]?.fullUrl ?? visiblePhotos[i]?.imageUrl
+      if (url) { const img = new window.Image(); img.src = url }
+    })
+  }, [lightboxIdx, visiblePhotos])
+
   function handleFilter(value: string) {
     setActiveCategory(value)
     const params = new URLSearchParams(searchParams.toString())

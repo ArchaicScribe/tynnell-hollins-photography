@@ -62,6 +62,18 @@ export function GalleryViewer({ photos, taped }: Props) {
     }
   }, [lightboxIdx, close, prev, next])
 
+  useEffect(() => {
+    if (lightboxIdx === null || photos.length < 2) return
+    const adjacentIdxs = [
+      (lightboxIdx + 1) % photos.length,
+      (lightboxIdx - 1 + photos.length) % photos.length,
+    ]
+    adjacentIdxs.forEach(i => {
+      const url = photos[i]?.fullUrl ?? photos[i]?.thumbUrl
+      if (url) { const img = new window.Image(); img.src = url }
+    })
+  }, [lightboxIdx, photos])
+
   if (photos.length === 0) {
     return <p className={styles.empty}>Photos coming soon.</p>
   }
