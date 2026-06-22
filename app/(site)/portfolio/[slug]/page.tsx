@@ -17,6 +17,7 @@ export async function generateStaticParams() {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'galleries',
+    where: { status: { not_equals: 'draft' } },
     depth: 0,
     limit: 1000,
   })
@@ -68,7 +69,8 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   })
   const gallery = docs[0]
 
-  if (!gallery) notFound()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!gallery || (gallery as any).status === 'draft') notFound()
 
   const cover = typeof gallery.coverPhoto === 'object' && gallery.coverPhoto !== null
     ? gallery.coverPhoto as Photo
