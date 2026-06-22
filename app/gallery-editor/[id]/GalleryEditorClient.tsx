@@ -437,11 +437,11 @@ export function GalleryEditorClient({
                       </div>
                     )}
                     <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.82rem', fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#e6e1de' : '#9b9a9a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: ui, lineHeight: 1.3 }}>{g.title}</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: isCurrent ? 600 : 400, color: isCurrent ? '#e6e1de' : '#9b9a9a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: ui, lineHeight: 1.3 }}>{isCurrent ? title : g.title}</div>
                       <div style={{ fontSize: '0.67rem', color: '#3a3a3a', display: 'flex', gap: '0.35rem', marginTop: '0.1rem', fontFamily: ui }}>
                         <span style={{ color: '#2e2e2e' }}>#{position}</span>
                         {g.status === 'draft' && <span style={{ color: '#5a5a5a' }}>Draft</span>}
-                        {g.photoCount != null && g.photoCount > 0 && <span>{g.photoCount} photo{g.photoCount !== 1 ? 's' : ''}</span>}
+                        {(() => { const count = isCurrent ? photos.length : (g.photoCount ?? 0); return count > 0 ? <span>{count} photo{count !== 1 ? 's' : ''}</span> : null })()}
                       </div>
                     </div>
                   </Link>
