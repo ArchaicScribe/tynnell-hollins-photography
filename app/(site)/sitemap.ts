@@ -61,9 +61,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  // Dynamic gallery pages
+  // Dynamic gallery pages (published only)
   const { docs: galleries } = await payload.find({
     collection: 'galleries',
+    where: { status: { not_equals: 'draft' } },
     depth: 0,
     limit: 1000,
   })
