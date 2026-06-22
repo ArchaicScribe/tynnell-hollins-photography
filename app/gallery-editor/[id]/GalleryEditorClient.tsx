@@ -273,6 +273,7 @@ export function GalleryEditorClient({
     }
     if (newPhotos.length) {
       setPhotos(prev => [...prev, ...newPhotos])
+      setLibraryLoaded(false)
       markChanged()
     }
     setUploading(false)
@@ -896,9 +897,14 @@ export function GalleryEditorClient({
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               {uploadProgress && (
-                <span style={{ fontSize: '0.78rem', color: '#6b6a6a', fontFamily: ui }}>
-                  Uploading {uploadProgress.done}/{uploadProgress.total}...
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'flex-end', minWidth: 120 }}>
+                  <span style={{ fontSize: '0.7rem', color: '#6b6a6a', fontFamily: ui, whiteSpace: 'nowrap' }}>
+                    {uploadProgress.done}/{uploadProgress.total} uploaded
+                  </span>
+                  <div style={{ width: 120, height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#1db954', borderRadius: 2, width: `${Math.round((uploadProgress.done / uploadProgress.total) * 100)}%`, transition: 'width .3s ease' }} />
+                  </div>
+                </div>
               )}
               {photos.length > 0 && !selectMode && (
                 <button
