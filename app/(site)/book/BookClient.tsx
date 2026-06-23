@@ -23,19 +23,7 @@ function slugify(title: string): string {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-function getMinDate(): string {
-  const d = new Date()
-  d.setDate(d.getDate() + 2)
-  return d.toISOString().split('T')[0]
-}
-
-function getMaxDate(): string {
-  const d = new Date()
-  d.setMonth(d.getMonth() + 24)
-  return d.toISOString().split('T')[0]
-}
-
-export default function BookClient({ packages }: { packages: BookingPackage[] }) {
+export default function BookClient({ packages, minDate, maxDate }: { packages: BookingPackage[]; minDate: string; maxDate: string }) {
   const searchParams = useSearchParams()
   const packageParam = searchParams.get('package')
   const matched = packageParam ? packages.find(p => slugify(p.title) === packageParam) : null
@@ -163,8 +151,8 @@ export default function BookClient({ packages }: { packages: BookingPackage[] })
                       id={`date-${pkg.id}`}
                       type="date"
                       required
-                      min={getMinDate()}
-                      max={getMaxDate()}
+                      min={minDate}
+                      max={maxDate}
                       value={fields.sessionDate}
                       onChange={(e) => setFields((f) => ({ ...f, sessionDate: e.target.value }))}
                     />

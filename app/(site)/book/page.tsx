@@ -6,6 +6,7 @@ import config from '@payload-config'
 import BookClient, { type BookingPackage } from './BookClient'
 import styles from './page.module.css'
 import { getActiveOoo } from '@/app/lib/availability'
+import { MIN_LEAD_TIME_HOURS, MAX_BOOKING_MONTHS } from '@/app/lib/validation'
 
 // OOO banner is time-sensitive - shorter revalidate so it appears within 1 minute of being set
 export const revalidate = 60
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 export default async function BookPage() {
   const payload = await getPayload({ config })
 
-  const [{ docs }, availability] = await Promise.all([
+  const [{ docs }, availability, bookingSettings] = await Promise.all([
     payload.find({
       collection: 'services',
       where: { depositAmount: { exists: true } },
@@ -27,6 +28,7 @@ export default async function BookPage() {
       limit: 50,
     }),
     payload.findGlobal({ slug: 'availability' }).catch(() => null),
+    payload.findGlobal({ slug: 'booking-settings' }).catch(() => null),
   ])
 
   const packages: BookingPackage[] = docs.map(s => ({
@@ -40,6 +42,24 @@ export default async function BookPage() {
   const ooo = Array.isArray(availability?.blockedRanges)
     ? getActiveOoo(availability.blockedRanges)
     : null
+
+  const minLeadHours = typeof bookingSettings?.minLeadTimeHours === 'number'
+    ? bookingSettings.minLeadTimeHours
+    : MIN_LEAD_TIME_HOURS
+  const maxMonths = typeof bookingSettings?.maxBookingMonths === 'number'
+    ? bookingSettings.maxBookingMonths
+    : MAX_BOOKING_MONTHS
+
+  const minDate = (() => {
+    const d = new Date()
+    d.setTime(d.getTime() + minLeadHours * 60 * 60 * 1000)
+    return d.toISOString().split('T')[0]
+  })()
+  const maxDate = (() => {
+    const d = new Date()
+    d.setMonth(d.getMonth() + maxMonths)
+    return d.toISOString().split('T')[0]
+  })()
 
   return (
     <main className={styles.page}>
@@ -59,7 +79,7 @@ export default async function BookPage() {
       </div>
 
       <Suspense fallback={null}>
-        <BookClient packages={packages} />
+        <BookClient packages={packages} minDate={minDate} maxDate={maxDate} />
       </Suspense>
     </main>
   )
