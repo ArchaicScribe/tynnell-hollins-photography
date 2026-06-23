@@ -241,19 +241,20 @@ export interface ClientReceiptEmailFields {
 }
 
 export function clientReceiptEmailHtml(f: ClientReceiptEmailFields): string {
+  const dateNote = f.sessionDate
+    ? body(`Your requested date is <strong>${f.sessionDate}</strong>.`)
+    : ''
+
   const followUpNote = f.oooMessage
     ? body(f.oooMessage)
     : body("I'll be reaching out shortly to confirm all the details and start planning your session together.")
-
-  const dateNote = f.sessionDate
-    ? body(`Your requested date is <strong>${f.sessionDate}</strong>. I&rsquo;ll be in touch to confirm availability and next steps.`)
-    : ''
 
   return emailWrapper(`
     ${eyebrow("You're officially booked")}
     ${heading("Your date is held.")}
     ${body(`Hi ${f.clientName}, your <strong>${f.amountPaid}</strong> deposit for a <strong>${f.packageName}</strong> session has been received. I&rsquo;m so excited to work with you.`)}
-    ${dateNote || followUpNote}
+    ${dateNote}
+    ${followUpNote}
     ${divider()}
     ${signature()}
   `)
