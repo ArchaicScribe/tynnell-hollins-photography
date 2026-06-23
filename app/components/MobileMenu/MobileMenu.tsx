@@ -81,7 +81,7 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks }: Mobile
       aria-label="Navigation menu"
       aria-hidden={!isOpen ? 'true' : undefined}
     >
-      <nav>
+      <nav aria-label="Mobile navigation">
         <ul className={styles.links}>
           {links.map((link) => (
             <li key={link.href} className={styles.item}>
