@@ -85,10 +85,8 @@ export default async function Home() {
     previewBio: aboutData?.previewBio ?? undefined,
   }
 
-  // Revamp background (temporary): show this single photo as the homepage hero
-  // while the site is being rebuilt. To restore Hero Slides management, pass
-  // `slides` to <Hero/> again and delete this constant.
-  const revampHero: HeroSlide[] = [
+  // Fall back to the static hero image if no slides have been configured in the admin yet.
+  const fallbackSlide: HeroSlide[] = [
     { id: 'revamp-bg', imageUrl: '/hero-background.jpg', alt: 'Tynnell Hollins Photography' },
   ]
 
@@ -124,7 +122,7 @@ export default async function Home() {
   return (
     <main>
       <JsonLd data={localBusinessSchema} />
-      <Hero slides={revampHero.length ? revampHero : slides} />
+      <Hero slides={slides.length ? slides : fallbackSlide} />
       <PortfolioTeaser photos={photos} />
       <AboutPreview about={about} />
       <Testimonials testimonials={testimonialItems} />
