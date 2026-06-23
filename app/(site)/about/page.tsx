@@ -105,6 +105,7 @@ export default async function AboutPage() {
                 src={headshotUrl}
                 alt={about?.headshotAlt ?? 'Tynnell Hollins'}
                 fill
+                priority
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className={styles.headshotImg}
               />
