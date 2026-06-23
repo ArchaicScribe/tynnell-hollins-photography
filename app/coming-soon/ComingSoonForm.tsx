@@ -61,7 +61,6 @@ export default function ComingSoonForm() {
         <div className={styles.field}>
           <label htmlFor="cs-name" className={styles.label}>Name</label>
           <input
-            ref={nameRef}
             id="cs-name"
             name="name"
             type="text"
