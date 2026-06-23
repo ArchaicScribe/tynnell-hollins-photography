@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Tangerine, Archivo, Roboto_Mono } from 'next/font/google'
 import './globals.css'
 import './styles/tokens.css'
@@ -51,6 +51,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+}
+
+export const viewport: Viewport = {
   themeColor: '#0C0C0C',
 }
 
