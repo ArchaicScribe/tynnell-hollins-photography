@@ -4,7 +4,7 @@ import { isValidEmail, isValidPhone, escapeHtml } from '@/app/lib/validation'
 import { comingSoonRatelimit, getClientIp } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { comingSoonInquiryEmailHtml } from '@/app/lib/emails'
-import { CONTACT_EMAIL, EMAIL_FROM, RATE_LIMIT_ERROR } from '@/app/lib/constants'
+import { EMAIL_FROM, RATE_LIMIT_ERROR } from '@/app/lib/constants'
 
 export const dynamic = 'force-dynamic'
 

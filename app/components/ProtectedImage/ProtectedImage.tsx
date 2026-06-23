@@ -8,6 +8,7 @@ const prevent = (e: React.SyntheticEvent) => e.preventDefault()
 
 export function ProtectedImage({ className, ...props }: ImageProps) {
   return (
+    // eslint-disable-next-line jsx-a11y/alt-text
     <Image
       {...props}
       draggable={false}
