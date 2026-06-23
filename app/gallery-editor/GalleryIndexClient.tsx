@@ -285,7 +285,6 @@ function NavItem({ icon, label, href, active, collapsed, external }: {
     color: active ? '#e6e1de' : '#5a5a5a',
     background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
     textDecoration: 'none', cursor: 'pointer', transition: 'background 0.12s, color 0.12s',
-    title: collapsed ? label : undefined,
   }
   const inner = (
     <>
