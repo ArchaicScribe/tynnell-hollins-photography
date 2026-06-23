@@ -68,6 +68,8 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [imgLoading, setImgLoading] = useState(false)
   const touchStartX = useRef<number | null>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const closeBtnRef = useRef<HTMLButtonElement>(null)
 
   const visiblePhotos = activeCategory === 'all'
     ? photos
@@ -76,7 +78,19 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
   const closeLightbox = useCallback(() => setLightboxIdx(null), [])
   const prevPhoto = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + visiblePhotos.length) % visiblePhotos.length : null) }, [visiblePhotos.length])
   const nextPhoto = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % visiblePhotos.length : null) }, [visiblePhotos.length])
-  const openPhoto = useCallback((i: number) => { setImgLoading(true); setLightboxIdx(i) }, [])
+  const openPhoto = useCallback((i: number) => {
+    previousFocusRef.current = document.activeElement as HTMLElement
+    setImgLoading(true)
+    setLightboxIdx(i)
+  }, [])
+
+  useEffect(() => {
+    if (lightboxIdx !== null) {
+      closeBtnRef.current?.focus()
+    } else {
+      previousFocusRef.current?.focus()
+    }
+  }, [lightboxIdx])
 
   useEffect(() => {
     if (lightboxIdx === null) return
@@ -294,6 +308,7 @@ export default function PortfolioGrid({ photos, galleries }: Props) {
             </button>
           )}
           <button
+            ref={closeBtnRef}
             type="button"
             onClick={closeLightbox}
             aria-label="Close lightbox"

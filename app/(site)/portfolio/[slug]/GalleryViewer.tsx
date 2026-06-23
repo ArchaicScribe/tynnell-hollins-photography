@@ -40,12 +40,26 @@ export function GalleryViewer({ photos, taped }: Props) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [imgLoading, setImgLoading] = useState(false)
   const touchStartX = useRef<number | null>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const closeBtnRef = useRef<HTMLButtonElement>(null)
 
   const close = useCallback(() => setLightboxIdx(null), [])
   const prev = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null) }, [photos.length])
   const next = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % photos.length : null) }, [photos.length])
 
-  const open = useCallback((i: number) => { setImgLoading(true); setLightboxIdx(i) }, [])
+  const open = useCallback((i: number) => {
+    previousFocusRef.current = document.activeElement as HTMLElement
+    setImgLoading(true)
+    setLightboxIdx(i)
+  }, [])
+
+  useEffect(() => {
+    if (lightboxIdx !== null) {
+      closeBtnRef.current?.focus()
+    } else {
+      previousFocusRef.current?.focus()
+    }
+  }, [lightboxIdx])
 
   useEffect(() => {
     if (lightboxIdx === null) return
@@ -188,6 +202,7 @@ export function GalleryViewer({ photos, taped }: Props) {
           )}
 
           <button
+            ref={closeBtnRef}
             type="button"
             onClick={close}
             aria-label="Close lightbox"
