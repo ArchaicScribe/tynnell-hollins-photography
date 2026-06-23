@@ -4,6 +4,7 @@ import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
 const revalidateBooking: GlobalAfterChangeHook = () => {
   try {
     revalidatePath('/book')
+    revalidatePath('/contact')
   } catch {
     // no-op outside Next.js request context
   }
