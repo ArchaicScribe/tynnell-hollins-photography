@@ -8,7 +8,7 @@ type FormState = 'idle' | 'submitting' | 'success' | 'error'
 export default function ComingSoonForm() {
   const [state, setState] = useState<FormState>('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const nameRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -35,6 +35,7 @@ export default function ComingSoonForm() {
         setErrorMsg(data.error ?? 'Something went wrong. Please try again.')
         setState('error')
       } else {
+        formRef.current?.reset()
         setState('success')
       }
     } catch {
@@ -55,7 +56,7 @@ export default function ComingSoonForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form ref={formRef} className={styles.form} onSubmit={handleSubmit} noValidate>
       <div className={styles.fieldRow}>
         <div className={styles.field}>
           <label htmlFor="cs-name" className={styles.label}>Name</label>
