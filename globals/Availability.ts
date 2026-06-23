@@ -1,8 +1,20 @@
-import type { GlobalConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
+import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
+
+const revalidateAvailability: GlobalAfterChangeHook = () => {
+  try {
+    revalidatePath('/book')
+    revalidatePath('/contact')
+    revalidatePath('/services')
+  } catch {
+    // no-op outside Next.js request context
+  }
+}
 
 export const Availability: GlobalConfig = {
   slug: 'availability',
   label: 'Availability',
+  hooks: { afterChange: [revalidateAvailability] },
   admin: {
     group: 'Services & Booking',
     description:

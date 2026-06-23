@@ -1,8 +1,18 @@
-import type { GlobalConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
+import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
+
+const revalidateHero: GlobalAfterChangeHook = () => {
+  try {
+    revalidatePath('/')
+  } catch {
+    // no-op outside Next.js request context
+  }
+}
 
 export const HeroSlides: GlobalConfig = {
   slug: 'hero-slides',
   label: 'Hero Slides',
+  hooks: { afterChange: [revalidateHero] },
   admin: {
     group: 'Site Settings',
     description:

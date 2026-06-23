@@ -1,4 +1,13 @@
-import type { GlobalConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
+import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
+
+const revalidateBooking: GlobalAfterChangeHook = () => {
+  try {
+    revalidatePath('/book')
+  } catch {
+    // no-op outside Next.js request context
+  }
+}
 
 export const BookingSettings: GlobalConfig = {
   slug: 'booking-settings',
@@ -8,6 +17,7 @@ export const BookingSettings: GlobalConfig = {
     description:
       'Controls how far in advance clients can request sessions. Changes take effect immediately - no code change needed.',
   },
+  hooks: { afterChange: [revalidateBooking] },
   fields: [
     {
       name: 'minLeadTimeHours',
