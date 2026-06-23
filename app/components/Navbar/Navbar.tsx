@@ -72,9 +72,9 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
           aria-expanded={menuOpen ? 'true' : 'false'}
           aria-controls="mobile-menu"
         >
-          <span className={styles.bar} />
-          <span className={styles.bar} />
-          <span className={styles.bar} />
+          <span className={styles.bar} aria-hidden="true" />
+          <span className={styles.bar} aria-hidden="true" />
+          <span className={styles.bar} aria-hidden="true" />
         </button>
       </nav>
 
