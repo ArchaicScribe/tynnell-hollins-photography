@@ -45,6 +45,10 @@ export async function POST(request: Request) {
     const clientEmail = escapeHtml(session.metadata?.clientEmail ?? session.customer_email ?? '')
     const packageName = escapeHtml(session.metadata?.packageName ?? 'Session')
     const amountPaid  = session.amount_total ? `$${(session.amount_total / 100).toFixed(0)}` : ''
+    const rawDate     = session.metadata?.sessionDate
+    const sessionDate = rawDate
+      ? new Date(rawDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : undefined
 
     // Check OOO status - non-fatal if unavailable
     let oooMessage: string | undefined
@@ -66,7 +70,7 @@ export async function POST(request: Request) {
       from: EMAIL_FROM,
       to: process.env.CONTACT_TO_EMAIL!,
       subject: `New Booking Deposit: ${packageName} - ${clientName}`,
-      html: bookingConfirmEmailHtml({ clientName, clientEmail, packageName, amountPaid }),
+      html: bookingConfirmEmailHtml({ clientName, clientEmail, packageName, amountPaid, sessionDate }),
     })
     if (notifyResult.error) {
       console.error('[stripe-webhook] booking notification email failed:', JSON.stringify(notifyResult.error))
@@ -80,7 +84,7 @@ export async function POST(request: Request) {
         to: rawClientEmail,
         replyTo: process.env.CONTACT_TO_EMAIL,
         subject: `Your deposit is confirmed - ${packageName}`,
-        html: clientReceiptEmailHtml({ clientName, packageName, amountPaid, oooMessage }),
+        html: clientReceiptEmailHtml({ clientName, packageName, amountPaid, sessionDate, oooMessage }),
       })
       if (receiptResult.error) {
         console.error('[stripe-webhook] client receipt email failed:', JSON.stringify(receiptResult.error))

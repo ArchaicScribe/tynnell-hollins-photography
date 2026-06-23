@@ -210,17 +210,20 @@ export interface BookingConfirmEmailFields {
   clientEmail: string
   packageName: string
   amountPaid: string
+  sessionDate?: string
 }
 
 export function bookingConfirmEmailHtml(f: BookingConfirmEmailFields): string {
+  const rows = [
+    tableRow('Client', f.clientName),
+    tableRow('Email', `<a href="mailto:${f.clientEmail}" style="color:#333;">${f.clientEmail}</a>`),
+    tableRow('Package', f.packageName),
+    tableRow('Deposit Paid', f.amountPaid),
+    ...(f.sessionDate ? [tableRow('Requested Date', f.sessionDate)] : []),
+  ]
   return internalWrapper(`
     <h2 style="margin:0 0 16px;font-size:20px;">New Booking Deposit Received</h2>
-    ${table([
-      tableRow('Client', f.clientName),
-      tableRow('Email', `<a href="mailto:${f.clientEmail}" style="color:#333;">${f.clientEmail}</a>`),
-      tableRow('Package', f.packageName),
-      tableRow('Deposit Paid', f.amountPaid),
-    ].join(''))}
+    ${table(rows.join(''))}
     <p style="margin:20px 0 0;font-size:14px;color:#555;">Reach out to ${f.clientName} to confirm the date and next steps.</p>
   `)
 }
@@ -233,6 +236,7 @@ export interface ClientReceiptEmailFields {
   clientName: string
   packageName: string
   amountPaid: string
+  sessionDate?: string
   oooMessage?: string
 }
 
@@ -241,11 +245,15 @@ export function clientReceiptEmailHtml(f: ClientReceiptEmailFields): string {
     ? body(f.oooMessage)
     : body("I'll be reaching out shortly to confirm all the details and start planning your session together.")
 
+  const dateNote = f.sessionDate
+    ? body(`Your requested date is <strong>${f.sessionDate}</strong>. I&rsquo;ll be in touch to confirm availability and next steps.`)
+    : ''
+
   return emailWrapper(`
     ${eyebrow("You're officially booked")}
     ${heading("Your date is held.")}
     ${body(`Hi ${f.clientName}, your <strong>${f.amountPaid}</strong> deposit for a <strong>${f.packageName}</strong> session has been received. I&rsquo;m so excited to work with you.`)}
-    ${followUpNote}
+    ${dateNote || followUpNote}
     ${divider()}
     ${signature()}
   `)
