@@ -1,40 +1,15 @@
 'use client'
-// Dashboard: collection counts, recent activity, OOO status.
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { type BlockedRange } from '@/app/lib/availability'
 
-interface CollectionStat {
-  slug: string
-  label: string
-  singularLabel: string
-  emoji: string
-  count: number | null
-  publishedCount?: number
-  addPath: string
-  listPath: string
-}
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
-interface RecentPhoto {
-  id: number
-  url?: string | null
-  alt?: string | null
-  filename?: string | null
-}
-
-interface RecentPost {
-  id: number
-  title?: string | null
-  status?: string | null
-  updatedAt?: string | null
-}
-
-interface GlobalLink {
-  slug: string
-  label: string
-  emoji: string
-  path: string
-}
+interface RecentPhoto { id: number; url?: string | null; alt?: string | null; filename?: string | null }
+interface RecentGallery { id: number; title?: string | null; status?: string | null; updatedAt?: string | null; coverPhoto?: { url?: string | null } | null; photos?: unknown[] }
+interface RecentOrder { id: string; orderNum: string; status: string; customer: string; date: string; amount: string | null }
 
 interface OooState {
   status: 'ooo' | 'upcoming' | 'available'
@@ -42,11 +17,14 @@ interface OooState {
   nextRange?: { label: string; start: Date; end: Date; effectiveEnd: Date }
 }
 
+// ---------------------------------------------------------------------------
+// OOO helpers
+// ---------------------------------------------------------------------------
+
 function getEffectiveEnd(range: BlockedRange): Date {
   if (!range.endDate) return new Date(0)
   const end = new Date(range.endDate)
   const bufferDays = range.applyReturnBuffer ? (range.returnBufferDays ?? 0) : 0
-  // Add buffer in UTC millis to avoid local-timezone day-boundary issues
   return new Date(end.getTime() + bufferDays * 24 * 60 * 60 * 1000)
 }
 
@@ -54,677 +32,588 @@ function fmtDate(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
+function fmtLongDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  const month = d.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' })
+  const day = d.getUTCDate()
+  const year = d.getUTCFullYear()
+  const suffix = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th'
+  return `${month} ${day}${suffix}, ${year}`
+}
+
 function computeOooState(ranges: BlockedRange[]): OooState {
   const now = new Date()
-  // Normalize to start of today in UTC
   const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-
   let activeRange: OooState['activeRange'] | undefined
   let nextRange: OooState['nextRange'] | undefined
-
   for (const r of ranges) {
     if (!r.startDate || !r.endDate) continue
     const start = new Date(r.startDate)
     const end = new Date(r.endDate)
     const effectiveEnd = getEffectiveEnd(r)
-    // End of the effective end day
-    const effectiveEndDay = new Date(Date.UTC(effectiveEnd.getUTCFullYear(), effectiveEnd.getUTCMonth(), effectiveEnd.getUTCDate() + 1))
-
-    if (todayStart >= new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())) && todayStart < effectiveEndDay) {
-      // Currently in this blocked range
+    const endDay = new Date(Date.UTC(effectiveEnd.getUTCFullYear(), effectiveEnd.getUTCMonth(), effectiveEnd.getUTCDate() + 1))
+    if (todayStart >= new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())) && todayStart < endDay) {
       activeRange = { label: r.internalLabel ?? '', start, end, effectiveEnd }
     } else if (start > todayStart) {
-      // Future range -- track the soonest upcoming
-      if (!nextRange || start < nextRange.start) {
-        nextRange = { label: r.internalLabel ?? '', start, end, effectiveEnd }
-      }
+      if (!nextRange || start < nextRange.start) nextRange = { label: r.internalLabel ?? '', start, end, effectiveEnd }
     }
   }
-
   if (activeRange) return { status: 'ooo', activeRange, nextRange }
   if (nextRange) return { status: 'upcoming', nextRange }
   return { status: 'available' }
 }
 
-const COLLECTIONS: Omit<CollectionStat, 'count'>[] = [
-  {
-    slug: 'photos',
-    label: 'Photos',
-    singularLabel: 'Photo',
-    emoji: '📷',
-    addPath: '/admin/collections/photos',
-    listPath: '/admin/collections/photos',
-  },
-  {
-    slug: 'galleries',
-    label: 'Galleries',
-    singularLabel: 'Gallery',
-    emoji: '🖼️',
-    addPath: '/admin/collections/galleries/create',
-    listPath: '/admin/collections/galleries',
-  },
-  {
-    slug: 'posts',
-    label: 'Blog Posts',
-    singularLabel: 'Post',
-    emoji: '✍️',
-    addPath: '/admin/collections/posts/create',
-    listPath: '/admin/collections/posts',
-  },
-  {
-    slug: 'testimonials',
-    label: 'Testimonials',
-    singularLabel: 'Testimonial',
-    emoji: '💬',
-    addPath: '/admin/collections/testimonials/create',
-    listPath: '/admin/collections/testimonials',
-  },
-  {
-    slug: 'services',
-    label: 'Services',
-    singularLabel: 'Service',
-    emoji: '📋',
-    addPath: '/admin/collections/services/create',
-    listPath: '/admin/collections/services',
-  },
-  {
-    slug: 'users',
-    label: 'Users',
-    singularLabel: 'User',
-    emoji: '👥',
-    addPath: '/admin/collections/users/create',
-    listPath: '/admin/collections/users',
-  },
-]
+// ---------------------------------------------------------------------------
+// Product definitions
+// ---------------------------------------------------------------------------
 
-const GLOBALS: GlobalLink[] = [
-  {
-    slug: 'hero-slides',
-    label: 'Hero Slides',
-    emoji: '🎞️',
-    path: '/admin/globals/hero-slides',
-  },
-  {
-    slug: 'about-page',
-    label: 'About Page',
-    emoji: '👤',
-    path: '/admin/globals/about-page',
-  },
-  {
-    slug: 'site-config',
-    label: 'Site Config',
-    emoji: '⚙️',
-    path: '/admin/globals/site-config',
-  },
-  {
-    slug: 'booking-settings',
-    label: 'Booking Settings',
-    emoji: '📅',
-    path: '/admin/globals/booking-settings',
-  },
-  {
-    slug: 'availability',
-    label: 'Availability / OOO',
-    emoji: '🗓️',
-    path: '/admin/globals/availability',
-  },
-]
-
-const css = {
-  wrap: {
-    padding: '2rem 2.5rem',
-    maxWidth: '1200px',
-    fontFamily: "'Roboto Mono', monospace",
-  } as React.CSSProperties,
-  welcome: {
-    marginBottom: '2.5rem',
-  } as React.CSSProperties,
-  welcomeHeading: {
-    fontSize: '1.6rem',
-    fontWeight: 400,
-    color: '#D6D1CE',
-    marginBottom: '0.4rem',
-    fontFamily: "'Archivo', sans-serif",
-  } as React.CSSProperties,
-  welcomeSub: {
-    fontSize: '0.75rem',
-    color: '#9B9A9A',
-    letterSpacing: '0.05em',
-  } as React.CSSProperties,
-  sectionLabel: {
-    fontSize: '0.62rem',
-    letterSpacing: '0.22em',
-    textTransform: 'uppercase' as const,
-    color: '#9B9A9A',
-    marginBottom: '1rem',
-    marginTop: '2.5rem',
-  } as React.CSSProperties,
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-    gap: '1rem',
-  } as React.CSSProperties,
-  card: {
-    background: '#2c2c2c',
-    border: '1px solid rgba(155,154,154,0.18)',
-    borderRadius: '6px',
-    padding: '1.25rem 1.5rem',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.75rem',
-  } as React.CSSProperties,
-  cardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.6rem',
-  } as React.CSSProperties,
-  emoji: {
-    fontSize: '1.15rem',
-    lineHeight: 1,
-  } as React.CSSProperties,
-  cardLabel: {
-    fontSize: '0.78rem',
-    color: '#D6D1CE',
-    fontWeight: 500,
-    fontFamily: "'Archivo', sans-serif",
-    letterSpacing: '0.02em',
-  } as React.CSSProperties,
-  count: {
-    fontSize: '2rem',
-    fontWeight: 300,
-    color: '#E6E1DE',
-    lineHeight: 1,
-    fontFamily: "'Archivo', sans-serif",
-  } as React.CSSProperties,
-  countLoading: {
-    fontSize: '1.6rem',
-    color: '#9B9A9A',
-    fontWeight: 300,
-    lineHeight: 1,
-  } as React.CSSProperties,
-  publishedSplit: {
-    fontSize: '0.62rem',
-    color: '#9B9A9A',
-    fontFamily: "'Roboto Mono', monospace",
-    letterSpacing: '0.03em',
-    marginTop: '-0.1rem',
-  } as React.CSSProperties,
-  actions: {
-    display: 'flex',
-    gap: '0.5rem',
-    marginTop: '0.25rem',
-  } as React.CSSProperties,
-  btnPrimary: {
-    flex: 1,
-    padding: '0.5rem 0.75rem',
-    background: '#9B9A9A',
-    color: '#0C0C0C',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '0.7rem',
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase' as const,
-    cursor: 'pointer',
-    textDecoration: 'none',
-    textAlign: 'center' as const,
-    fontFamily: "'Archivo', sans-serif",
-    fontWeight: 600,
-    display: 'block',
-    lineHeight: '1.5',
-  } as React.CSSProperties,
-  btnSecondary: {
-    flex: 1,
-    padding: '0.5rem 0.75rem',
-    background: 'transparent',
-    color: '#9B9A9A',
-    border: '1px solid rgba(155,154,154,0.3)',
-    borderRadius: '4px',
-    fontSize: '0.7rem',
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase' as const,
-    cursor: 'pointer',
-    textDecoration: 'none',
-    textAlign: 'center' as const,
-    fontFamily: "'Archivo', sans-serif",
-    fontWeight: 500,
-    display: 'block',
-    lineHeight: '1.5',
-  } as React.CSSProperties,
-  globalGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-    gap: '0.75rem',
-  } as React.CSSProperties,
-  globalCard: {
-    background: '#232323',
-    border: '1px solid rgba(155,154,154,0.15)',
-    borderRadius: '6px',
-    padding: '1rem 1.25rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.6rem',
-    textDecoration: 'none',
-    color: '#D6D1CE',
-    fontSize: '0.75rem',
-    fontFamily: "'Archivo', sans-serif",
-    letterSpacing: '0.02em',
-    transition: 'border-color 0.15s, background 0.15s',
-  } as React.CSSProperties,
-  divider: {
-    height: '1px',
-    background: 'rgba(155,154,154,0.1)',
-    margin: '2.5rem 0 0',
-  } as React.CSSProperties,
-  recentSubLabel: {
-    fontSize: '0.62rem',
-    letterSpacing: '0.12em',
-    textTransform: 'uppercase' as const,
-    color: 'rgba(155,154,154,0.55)',
-    marginBottom: '0.65rem',
-    fontFamily: "'Roboto Mono', monospace",
-  } as React.CSSProperties,
-  photoStrip: {
-    display: 'flex',
-    gap: '0.4rem',
-    overflowX: 'auto' as const,
-    paddingBottom: '0.25rem',
-  } as React.CSSProperties,
-  photoThumb: {
-    flexShrink: 0,
-    width: '72px',
-    height: '72px',
-    borderRadius: '4px',
-    overflow: 'hidden',
-    display: 'block',
-    border: '1px solid rgba(155,154,154,0.12)',
-    background: '#232323',
-  } as React.CSSProperties,
-  recentPostRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0.55rem 0',
-    borderBottom: '1px solid rgba(155,154,154,0.07)',
-    textDecoration: 'none',
-    color: '#D6D1CE',
-    gap: '1rem',
-  } as React.CSSProperties,
-  recentPostTitle: {
-    fontSize: '0.78rem',
-    fontFamily: "'Archivo', sans-serif",
-    flex: 1,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap' as const,
-  } as React.CSSProperties,
-  recentPostMeta: {
-    fontSize: '0.65rem',
-    color: '#9B9A9A',
-    fontFamily: "'Roboto Mono', monospace",
-    whiteSpace: 'nowrap' as const,
-    flexShrink: 0,
-  } as React.CSSProperties,
-  oooCard: (status: string) => ({
-    padding: '1rem 1.25rem',
-    borderRadius: '6px',
-    border: `1px solid ${status === 'ooo' ? 'rgba(251,146,60,0.35)' : status === 'upcoming' ? 'rgba(155,154,154,0.25)' : 'rgba(74,222,128,0.25)'}`,
-    background: status === 'ooo' ? 'rgba(251,146,60,0.06)' : status === 'upcoming' ? 'rgba(155,154,154,0.05)' : 'rgba(74,222,128,0.04)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '1rem',
-    flexWrap: 'wrap' as const,
-    marginBottom: '2rem',
-  }),
-  oooLeft: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.25rem',
-  } as React.CSSProperties,
-  oooStatus: (status: string) => ({
-    fontSize: '0.7rem',
-    letterSpacing: '0.16em',
-    textTransform: 'uppercase' as const,
-    fontFamily: "'Roboto Mono', monospace",
-    color: status === 'ooo' ? '#fb923c' : status === 'upcoming' ? '#9B9A9A' : '#4ade80',
-    fontWeight: 600,
-  }),
-  oooDetail: {
-    fontSize: '0.78rem',
-    color: '#D6D1CE',
-    fontFamily: "'Archivo', sans-serif",
-    fontWeight: 400,
-  } as React.CSSProperties,
-  oooSub: {
-    fontSize: '0.67rem',
-    color: '#9B9A9A',
-    fontFamily: "'Roboto Mono', monospace",
-    letterSpacing: '0.03em',
-  } as React.CSSProperties,
-  oooLink: {
-    padding: '0.45rem 0.9rem',
-    border: '1px solid rgba(155,154,154,0.3)',
-    borderRadius: '4px',
-    fontSize: '0.68rem',
-    letterSpacing: '0.1em',
-    textTransform: 'uppercase' as const,
-    color: '#9B9A9A',
-    textDecoration: 'none',
-    fontFamily: "'Roboto Mono', monospace",
-    whiteSpace: 'nowrap' as const,
-    flexShrink: 0,
-  } as React.CSSProperties,
-  quickUpload: {
-    marginTop: '2.5rem',
-    padding: '1.5rem',
-    background: 'linear-gradient(135deg, #2c2c2c 0%, #232323 100%)',
-    border: '1px solid rgba(155,154,154,0.2)',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '1.5rem',
-    flexWrap: 'wrap' as const,
-  } as React.CSSProperties,
-  quickUploadText: {
-    flex: 1,
-  } as React.CSSProperties,
-  quickUploadHeading: {
-    fontSize: '0.9rem',
-    color: '#D6D1CE',
-    fontFamily: "'Archivo', sans-serif",
-    marginBottom: '0.3rem',
-  } as React.CSSProperties,
-  quickUploadSub: {
-    fontSize: '0.7rem',
-    color: '#9B9A9A',
-  } as React.CSSProperties,
-  quickUploadBtn: {
-    padding: '0.65rem 1.5rem',
-    background: '#9B9A9A',
-    color: '#0C0C0C',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '0.72rem',
-    letterSpacing: '0.1em',
-    textTransform: 'uppercase' as const,
-    cursor: 'pointer',
-    textDecoration: 'none',
-    fontFamily: "'Roboto Mono', monospace",
-    whiteSpace: 'nowrap' as const,
-    display: 'inline-block',
-    lineHeight: '1.5',
-  } as React.CSSProperties,
+interface Product {
+  id: string
+  label: string
+  color: string
+  icon: React.ReactNode
+  links: { label: string; href: string; external?: boolean }[]
 }
 
-export function Dashboard() {
-  const [stats, setStats] = useState<CollectionStat[]>(
-    COLLECTIONS.map((c) => ({ ...c, count: null }))
+function CameraIcon() {
+  return (
+    <svg width="28" height="24" viewBox="0 0 28 24" fill="none">
+      <path d="M10 3H18L20.5 7H25C26.1 7 27 7.9 27 9V21C27 22.1 26.1 23 25 23H3C1.9 23 1 22.1 1 21V9C1 7.9 1.9 7 3 7H7.5L10 3Z" stroke="white" strokeWidth="1.6" strokeLinejoin="round"/>
+      <circle cx="14" cy="15" r="4.5" stroke="white" strokeWidth="1.6"/>
+    </svg>
   )
+}
+
+function GlobeIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <circle cx="13" cy="13" r="11" stroke="white" strokeWidth="1.6"/>
+      <path d="M13 2C13 2 9 7 9 13C9 19 13 24 13 24M13 2C13 2 17 7 17 13C17 19 13 24 13 24M2 13H24" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function PenIcon() {
+  return (
+    <svg width="24" height="26" viewBox="0 0 24 26" fill="none">
+      <path d="M16 3L21 8L8 21L2 23L4 17L16 3Z" stroke="white" strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M14 5L19 10" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function CalendarIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <rect x="2" y="4" width="22" height="20" rx="2.5" stroke="white" strokeWidth="1.6"/>
+      <path d="M2 10H24M8 2V6M18 2V6" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+      <rect x="6" y="14" width="3" height="3" rx="0.5" fill="white"/>
+      <rect x="11.5" y="14" width="3" height="3" rx="0.5" fill="white"/>
+      <rect x="17" y="14" width="3" height="3" rx="0.5" fill="white"/>
+    </svg>
+  )
+}
+
+function QuoteIcon() {
+  return (
+    <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
+      <path d="M2 2H12V12H7C7 14.5 8.5 16 11 16V20C5 20 2 17 2 12V2Z" stroke="white" strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M16 2H26V12H21C21 14.5 22.5 16 25 16V20C19 20 16 17 16 12V2Z" stroke="white" strokeWidth="1.6" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function UsersIcon() {
+  return (
+    <svg width="28" height="24" viewBox="0 0 28 24" fill="none">
+      <circle cx="10" cy="8" r="5" stroke="white" strokeWidth="1.6"/>
+      <path d="M1 22C1 17.6 5 14 10 14C15 14 19 17.6 19 22" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M20 10C21.7 10 23 8.7 23 7C23 5.3 21.7 4 20 4" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M20 13C23.3 13 27 15.1 27 19" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function PageBuilderIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <rect x="2" y="2" width="22" height="22" rx="2.5" stroke="white" strokeWidth="1.6"/>
+      <rect x="6" y="6" width="14" height="5" rx="1" fill="white" opacity="0.7"/>
+      <rect x="6" y="14" width="6" height="6" rx="1" fill="white" opacity="0.5"/>
+      <rect x="14" y="14" width="6" height="6" rx="1" fill="white" opacity="0.5"/>
+    </svg>
+  )
+}
+
+const PRODUCTS: Product[] = [
+  {
+    id: 'portfolio',
+    label: 'Portfolio',
+    color: '#0d9488',
+    icon: <CameraIcon />,
+    links: [
+      { label: 'Manage Collections', href: '/admin/collections/galleries' },
+      { label: 'New Collection', href: '/admin/collections/galleries/create' },
+      { label: 'Photo Library', href: '/admin/collections/photos' },
+      { label: 'Gallery Editor', href: '/gallery-editor', external: true },
+      { label: 'View Portfolio', href: 'https://tynnellhollinsphotography.com/portfolio', external: true },
+    ],
+  },
+  {
+    id: 'website',
+    label: 'Website',
+    color: '#2563eb',
+    icon: <GlobeIcon />,
+    links: [
+      { label: 'Website Editor', href: '/builder' },
+      { label: 'New Page', href: '/builder' },
+      { label: 'Hero Slides', href: '/admin/globals/hero-slides' },
+      { label: 'About Page', href: '/admin/globals/about-page' },
+      { label: 'Site Config', href: '/admin/globals/site-config' },
+      { label: 'View Website', href: 'https://tynnellhollinsphotography.com', external: true },
+    ],
+  },
+  {
+    id: 'blog',
+    label: 'Blog',
+    color: '#7c3aed',
+    icon: <PenIcon />,
+    links: [
+      { label: 'All Posts', href: '/admin/collections/posts' },
+      { label: 'New Post', href: '/admin/collections/posts/create' },
+      { label: 'View Blog', href: 'https://tynnellhollinsphotography.com/blog', external: true },
+    ],
+  },
+  {
+    id: 'bookings',
+    label: 'Bookings',
+    color: '#b45309',
+    icon: <CalendarIcon />,
+    links: [
+      { label: 'Services', href: '/admin/collections/services' },
+      { label: 'New Service', href: '/admin/collections/services/create' },
+      { label: 'Booking Settings', href: '/admin/globals/booking-settings' },
+      { label: 'Availability / OOO', href: '/admin/globals/availability' },
+    ],
+  },
+  {
+    id: 'testimonials',
+    label: 'Testimonials',
+    color: '#059669',
+    icon: <QuoteIcon />,
+    links: [
+      { label: 'All Testimonials', href: '/admin/collections/testimonials' },
+      { label: 'New Testimonial', href: '/admin/collections/testimonials/create' },
+      { label: 'View Testimonials', href: 'https://tynnellhollinsphotography.com/testimonials', external: true },
+    ],
+  },
+  {
+    id: 'studio',
+    label: 'Studio',
+    color: '#475569',
+    icon: <UsersIcon />,
+    links: [
+      { label: 'Users', href: '/admin/collections/users' },
+      { label: 'Page Builder', href: '/builder', external: true },
+    ],
+  },
+]
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+function ExternalArrow() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true" style={{ opacity: 0.35, flexShrink: 0 }}>
+      <path d="M2 8L8 2M8 2H4.5M8 2V5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ProductCard({ product }: { product: Product }) {
+  return (
+    <div style={{
+      background: '#1a1a1a',
+      border: '1px solid rgba(255,255,255,0.07)',
+      borderRadius: '8px',
+      padding: '1.5rem 1.5rem 1.25rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 0,
+    }}>
+      {/* Icon circle */}
+      <div style={{
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        background: product.color,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '1rem',
+        flexShrink: 0,
+      }}>
+        {product.icon}
+      </div>
+
+      {/* Section name + divider */}
+      <p style={{
+        fontSize: '1rem',
+        fontWeight: 600,
+        color: '#E6E1DE',
+        fontFamily: "'Archivo', sans-serif",
+        marginBottom: '0.65rem',
+        paddingBottom: '0.65rem',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+      }}>
+        {product.label}
+      </p>
+
+      {/* Sub-links */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+        {product.links.map(link => (
+          link.external
+            ? (
+              // eslint-disable-next-line @next/next/no-html-link-for-pages
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={linkStyle}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#E6E1DE' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '' }}
+              >
+                {link.label}
+                <ExternalArrow />
+              </a>
+            )
+            : (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={linkStyle}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#E6E1DE' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '' }}
+              >
+                {link.label}
+              </Link>
+            )
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const linkStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.35rem',
+  padding: '0.3rem 0',
+  fontSize: '0.8rem',
+  color: '#8A8480',
+  textDecoration: 'none',
+  fontFamily: "'Archivo', sans-serif",
+  transition: 'color 0.1s',
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard
+// ---------------------------------------------------------------------------
+
+export function Dashboard() {
   const [oooState, setOooState] = useState<OooState | null>(null)
   const [recentPhotos, setRecentPhotos] = useState<RecentPhoto[]>([])
-  const [recentPosts, setRecentPosts] = useState<RecentPost[]>([])
+  const [recentGalleries, setRecentGalleries] = useState<RecentGallery[]>([])
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
+  const [ordersLoaded, setOrdersLoaded] = useState(false)
 
   useEffect(() => {
-    const fetchAvailability = async () => {
-      try {
-        const res = await fetch('/api/globals/availability?depth=0', { credentials: 'include' })
-        if (!res.ok) return
-        const data = await res.json()
+    fetch('/api/globals/availability?depth=0', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return
         const ranges: BlockedRange[] = Array.isArray(data.blockedRanges) ? data.blockedRanges : []
         setOooState(computeOooState(ranges))
-      } catch {
-        // Silently ignore -- OOO card is non-critical
-      }
-    }
-    fetchAvailability()
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
     fetch('/api/photos?limit=8&depth=0&sort=-updatedAt', { credentials: 'include' })
       .then(r => r.json())
-      .then((data: { docs?: RecentPhoto[] }) => setRecentPhotos(data.docs ?? []))
-      .catch(() => { /* non-critical */ })
+      .then((d: { docs?: RecentPhoto[] }) => setRecentPhotos(d.docs ?? []))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
-    fetch('/api/posts?limit=5&depth=0&sort=-updatedAt', { credentials: 'include' })
+    fetch('/api/galleries?limit=5&depth=1&sort=-updatedAt', { credentials: 'include' })
       .then(r => r.json())
-      .then((data: { docs?: RecentPost[] }) => setRecentPosts(data.docs ?? []))
-      .catch(() => { /* non-critical */ })
+      .then((d: { docs?: RecentGallery[] }) => setRecentGalleries(d.docs ?? []))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
-    const fetchCounts = async () => {
-      const results = await Promise.allSettled(
-        COLLECTIONS.map(async (col) => {
-          const res = await fetch(`/api/${col.slug}?limit=0&depth=0`, {
-            credentials: 'include',
-          })
-          if (!res.ok) return { slug: col.slug, count: 0, publishedCount: undefined }
-          const data = await res.json()
-          const count: number = data.totalDocs ?? 0
-
-          // Fetch a sub-count for certain collections to surface on the dashboard card
-          if (col.slug === 'posts') {
-            // Posts: published vs. draft split
-            const pubRes = await fetch(
-              '/api/posts?limit=0&depth=0&where[status][equals]=published',
-              { credentials: 'include' },
-            )
-            const publishedCount = pubRes.ok
-              ? ((await pubRes.json()).totalDocs ?? 0)
-              : undefined
-            return { slug: col.slug, count, publishedCount }
-          }
-
-          if (col.slug === 'photos' || col.slug === 'galleries' || col.slug === 'testimonials') {
-            // Featured (or on-homepage) count
-            const featRes = await fetch(
-              `/api/${col.slug}?limit=0&depth=0&where[featured][equals]=true`,
-              { credentials: 'include' },
-            )
-            const publishedCount = featRes.ok
-              ? ((await featRes.json()).totalDocs ?? 0)
-              : undefined
-            return { slug: col.slug, count, publishedCount }
-          }
-
-          return { slug: col.slug, count, publishedCount: undefined }
-        })
-      )
-      setStats((prev) =>
-        prev.map((col, i) => {
-          const result = results[i]
-          if (result.status === 'fulfilled') {
-            return { ...col, count: result.value.count, publishedCount: result.value.publishedCount }
-          }
-          return { ...col, count: 0 }
-        })
-      )
-    }
-    fetchCounts()
+    fetch('/api/admin/recent-orders', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : { orders: [] })
+      .then((d: { orders?: RecentOrder[] }) => setRecentOrders(d.orders ?? []))
+      .catch(() => {})
+      .finally(() => setOrdersLoaded(true))
   }, [])
+
+  const oooPillColor = oooState?.status === 'ooo' ? '#fb923c' : oooState?.status === 'upcoming' ? '#9B9A9A' : '#4ade80'
+  const oooPillLabel = oooState?.status === 'ooo'
+    ? `Out of Office - returns ${fmtDate(oooState.activeRange!.effectiveEnd)}`
+    : oooState?.status === 'upcoming'
+    ? `Next unavailable ${fmtDate(oooState.nextRange!.start)}`
+    : 'Available for Bookings'
 
   return (
-    <div style={css.wrap}>
-      {/* Welcome */}
-      <div style={css.welcome}>
-        <h1 style={css.welcomeHeading}>Tynnell Hollins Photography</h1>
-        <p style={css.welcomeSub}>Studio Dashboard</p>
-      </div>
+    <div style={{ padding: '2.5rem 3rem', fontFamily: "'Archivo', sans-serif", maxWidth: '1200px' }}>
 
-      {/* OOO Status Card */}
-      {oooState && (() => {
-        const { status, activeRange, nextRange } = oooState
-        if (status === 'ooo' && activeRange) {
-          const returnsLabel = `Returns ${fmtDate(activeRange.effectiveEnd)}`
-          const rangeLabel = `${fmtDate(activeRange.start)} - ${fmtDate(activeRange.end)}`
-          return (
-            <div style={css.oooCard(status)}>
-              <div style={css.oooLeft}>
-                <span style={css.oooStatus(status)}>Out of Office</span>
-                <span style={css.oooDetail}>{activeRange.label || rangeLabel}</span>
-                <span style={css.oooSub}>{activeRange.label ? rangeLabel + ' ' : ''}{returnsLabel}</span>
-              </div>
-              <Link href="/admin/globals/availability" style={css.oooLink}>Edit Availability</Link>
-            </div>
-          )
-        }
-        if (status === 'upcoming' && nextRange) {
-          const rangeLabel = `${fmtDate(nextRange.start)} - ${fmtDate(nextRange.effectiveEnd)}`
-          return (
-            <div style={css.oooCard(status)}>
-              <div style={css.oooLeft}>
-                <span style={css.oooStatus(status)}>Next Unavailable</span>
-                <span style={css.oooDetail}>{rangeLabel}{nextRange.label ? ` (${nextRange.label})` : ''}</span>
-              </div>
-              <Link href="/admin/globals/availability" style={css.oooLink}>Edit Availability</Link>
-            </div>
-          )
-        }
-        // Available
-        return (
-          <div style={css.oooCard(status)}>
-            <div style={css.oooLeft}>
-              <span style={css.oooStatus(status)}>Available for Bookings</span>
-              <span style={css.oooSub}>No blocked dates set.</span>
-            </div>
-            <Link href="/admin/globals/availability" style={css.oooLink}>Edit Availability</Link>
-          </div>
-        )
-      })()}
+      {/* Header */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 400, color: '#D6D1CE', marginBottom: '0.75rem' }}>
+          Dashboard
+        </h1>
 
-      {/* Quick Upload CTA */}
-      <div style={css.quickUpload}>
-        <div style={css.quickUploadText}>
-          <p style={css.quickUploadHeading}>Ready to add new photos?</p>
-          <p style={css.quickUploadSub}>Drag and drop images to bulk upload in one go.</p>
-        </div>
-        <Link href="/admin/collections/photos" style={css.quickUploadBtn}>
-          Upload Photos
-        </Link>
-      </div>
-
-      {/* Page Builder CTA */}
-      <div style={css.quickUpload}>
-        <div style={css.quickUploadText}>
-          <p style={css.quickUploadHeading}>Build a page</p>
-          <p style={css.quickUploadSub}>Design pages visually with drag-and-drop sections.</p>
-        </div>
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- cross root-layout: hard nav avoids the RSC-payload fetch error */}
-        <a href="/builder" style={css.quickUploadBtn}>
-          Open Page Builder
-        </a>
-      </div>
-
-      {/* Collections */}
-      <p style={css.sectionLabel}>Collections</p>
-      <div style={css.grid}>
-        {stats.map((col) => (
-          <div key={col.slug} style={css.card}>
-            <div style={css.cardHeader}>
-              <span style={css.emoji} aria-hidden="true">{col.emoji}</span>
-              <span style={css.cardLabel}>{col.label}</span>
-            </div>
-            {col.count === null ? (
-              <span style={css.countLoading} aria-label="Loading">...</span>
-            ) : (
-              <>
-                <span style={css.count}>{col.count}</span>
-                {col.publishedCount !== undefined && col.count > 0 && (
-                  <span style={css.publishedSplit}>
-                    {col.slug === 'posts'
-                      ? `${col.publishedCount} published · ${col.count - col.publishedCount} draft${col.count - col.publishedCount !== 1 ? 's' : ''}`
-                      : col.slug === 'testimonials'
-                        ? `${col.publishedCount} on homepage`
-                        : `${col.publishedCount} featured`}
-                  </span>
-                )}
-              </>
-            )}
-            <div style={css.actions}>
-              <Link href={col.addPath} style={css.btnPrimary}>
-                + Add
-              </Link>
-              <Link href={col.listPath} style={css.btnSecondary}>
-                View All
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Globals */}
-      <p style={css.sectionLabel}>Site Globals</p>
-      <div style={css.globalGrid}>
-        {GLOBALS.map((g) => (
-          <Link key={g.slug} href={g.path} style={css.globalCard}>
-            <span style={css.emoji} aria-hidden="true">{g.emoji}</span>
-            <span>{g.label}</span>
+        {/* OOO status banner */}
+        {oooState && (
+          <Link
+            href="/admin/globals/availability"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.4rem 1rem',
+              borderRadius: '999px',
+              border: `1px solid ${oooPillColor}44`,
+              background: `${oooPillColor}11`,
+              fontSize: '0.72rem',
+              color: oooPillColor,
+              textDecoration: 'none',
+              fontFamily: "'Roboto Mono', monospace",
+              letterSpacing: '0.04em',
+            }}
+          >
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: oooPillColor, flexShrink: 0 }} />
+            {oooPillLabel}
           </Link>
-        ))}
+        )}
       </div>
 
-      {/* Recent Activity */}
-      {(recentPhotos.length > 0 || recentPosts.length > 0) && (
-        <>
-          <p style={css.sectionLabel}>Recent Activity</p>
+      {/* Products grid */}
+      <p style={sectionLabelStyle}>PRODUCTS</p>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+        gap: '1rem',
+        marginBottom: '3rem',
+      }}>
+        {PRODUCTS.map(p => <ProductCard key={p.id} product={p} />)}
+      </div>
 
-          {recentPhotos.length > 0 && (
-            <div style={{ marginBottom: '1.75rem' }}>
-              <div style={css.recentSubLabel}>Recent Photos</div>
-              <div style={css.photoStrip}>
-                {recentPhotos.map(photo => (
+      {/* Quick Access */}
+      <p style={sectionLabelStyle}>QUICK ACCESS</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+
+        {/* Recent Collections - Pixieset style rows */}
+        <div style={quickCardStyle}>
+          <div style={quickCardHeader}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0d9488', display: 'inline-block' }} />
+            <span style={quickCardTitle}>RECENT COLLECTIONS</span>
+          </div>
+          {recentGalleries.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {recentGalleries.map((g, i) => {
+                const photoCount = Array.isArray(g.photos) ? g.photos.length : 0
+                const isPublished = g.status !== 'draft'
+                return (
                   <Link
-                    key={photo.id}
-                    href={`/admin/collections/photos/${photo.id}`}
-                    style={css.photoThumb}
-                    aria-label={photo.alt ?? photo.filename ?? `Photo ${photo.id}`}
-                    title={photo.alt ?? photo.filename ?? `Photo ${photo.id}`}
+                    key={g.id}
+                    href={`/gallery-editor/${g.id}`}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.85rem',
+                      padding: '0.75rem 0',
+                      borderBottom: i < recentGalleries.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                      textDecoration: 'none',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                   >
-                    {photo.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={photo.url}
-                        alt=""
-                        loading="lazy"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                      />
-                    ) : (
-                      <div aria-hidden="true" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: '#444' }}>
-                        &#128247;
+                    {/* Thumbnail */}
+                    <div style={{ width: 64, height: 48, borderRadius: 4, overflow: 'hidden', flexShrink: 0, background: '#232323', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      {g.coverPhoto?.url
+                        // eslint-disable-next-line @next/next/no-img-element
+                        ? <img src={g.coverPhoto.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: '#333' }} aria-hidden="true">&#128247;</div>
+                      }
+                    </div>
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: 600, color: '#C4BFB9', fontFamily: "'Archivo', sans-serif", textTransform: 'uppercase', letterSpacing: '0.03em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {g.title ?? 'Untitled'}
+                      </p>
+                      {g.updatedAt && (
+                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.68rem', color: '#555', fontFamily: "'Roboto Mono', monospace" }}>
+                          {fmtLongDate(g.updatedAt)}
+                        </p>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
+                        <svg width="11" height="10" viewBox="0 0 14 12" fill="none" aria-hidden="true"><path d="M5 2H9L10.5 4H13C13.6 4 14 4.4 14 5V11C14 11.6 13.6 12 13 12H1C0.4 12 0 11.6 0 11V5C0 4.4 0.4 4 1 4H3.5L5 2Z" stroke="#555" strokeWidth="1.3" strokeLinejoin="round"/><circle cx="7" cy="8" r="2.2" stroke="#555" strokeWidth="1.3"/></svg>
+                        <span style={{ fontSize: '0.67rem', color: '#555', fontFamily: "'Roboto Mono', monospace" }}>{photoCount}</span>
                       </div>
-                    )}
+                    </div>
+                    {/* Status */}
+                    <span style={{ fontSize: '0.65rem', color: isPublished ? '#4ade80' : '#666', fontFamily: "'Roboto Mono', monospace", whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {isPublished ? 'Published' : 'Draft'}
+                    </span>
                   </Link>
-                ))}
-              </div>
+                )
+              })}
             </div>
+          ) : (
+            <p style={{ fontSize: '0.8rem', color: '#555', fontFamily: "'Roboto Mono', monospace" }}>No collections yet.</p>
           )}
+          <Link href="/gallery-editor" style={quickFooterLink}>View all collections</Link>
+        </div>
 
-          {recentPosts.length > 0 && (
-            <div style={{ marginBottom: '2rem' }}>
-              <div style={css.recentSubLabel}>Recent Posts</div>
-              {recentPosts.map(post => (
+        {/* Recent Orders */}
+        <div style={quickCardStyle}>
+          <div style={quickCardHeader}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#b45309', display: 'inline-block' }} />
+            <span style={quickCardTitle}>RECENT ORDERS</span>
+          </div>
+          {!ordersLoaded ? (
+            <p style={{ fontSize: '0.75rem', color: '#444', fontFamily: "'Roboto Mono', monospace" }}>Loading...</p>
+          ) : recentOrders.length > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  {['Order', 'Status', 'Customer', 'Date'].map(h => (
+                    <th key={h} style={thStyle}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {recentOrders.map(o => (
+                  <tr key={o.id}>
+                    <td style={{ ...tdStyle, fontFamily: "'Roboto Mono', monospace", fontSize: '0.72rem', color: '#9b9a9a' }}>
+                      {o.orderNum}
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ fontSize: '0.65rem', color: '#4ade80', fontFamily: "'Roboto Mono', monospace" }}>
+                        {o.status}
+                      </span>
+                    </td>
+                    <td style={{ ...tdStyle, color: '#C4BFB9', fontSize: '0.78rem', fontFamily: "'Archivo', sans-serif", maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {o.customer}
+                    </td>
+                    <td style={{ ...tdStyle, color: '#555', fontFamily: "'Roboto Mono', monospace", fontSize: '0.68rem', whiteSpace: 'nowrap' }}>
+                      {o.date}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ fontSize: '0.78rem', color: '#555', fontFamily: "'Roboto Mono', monospace" }}>No orders yet.</p>
+          )}
+        </div>
+
+        {/* Recent Photos strip */}
+        {recentPhotos.length > 0 && (
+          <div style={{ ...quickCardStyle, gridColumn: '1 / -1' }}>
+            <div style={quickCardHeader}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0d9488', display: 'inline-block' }} />
+              <span style={quickCardTitle}>RECENT PHOTOS</span>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+              {recentPhotos.map(photo => (
                 <Link
-                  key={post.id}
-                  href={`/admin/collections/posts/${post.id}`}
-                  style={css.recentPostRow}
-                  className="recent-post-row"
+                  key={photo.id}
+                  href={`/admin/collections/photos/${photo.id}`}
+                  style={{ flexShrink: 0, width: '80px', height: '80px', borderRadius: '5px', overflow: 'hidden', display: 'block', border: '1px solid rgba(155,154,154,0.1)', background: '#232323' }}
+                  aria-label={photo.alt ?? photo.filename ?? `Photo ${photo.id}`}
                 >
-                  <span style={css.recentPostTitle}>{post.title ?? 'Untitled'}</span>
-                  <span style={css.recentPostMeta}>
-                    {post.status ?? 'draft'}
-                    {post.updatedAt ? ` · ${fmtDate(new Date(post.updatedAt))}` : ''}
-                  </span>
+                  {photo.url
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={photo.url} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    : <div aria-hidden="true" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', color: '#333' }}>&#128247;</div>
+                  }
                 </Link>
               ))}
             </div>
-          )}
-        </>
-      )}
-
-      <div style={css.divider} />
+            <Link href="/admin/collections/photos" style={quickFooterLink}>View photo library</Link>
+          </div>
+        )}
+      </div>
     </div>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Shared styles
+// ---------------------------------------------------------------------------
+
+const sectionLabelStyle: React.CSSProperties = {
+  fontSize: '0.62rem',
+  letterSpacing: '0.18em',
+  color: '#555',
+  fontFamily: "'Roboto Mono', monospace",
+  marginBottom: '1rem',
+  marginTop: 0,
+}
+
+const quickCardStyle: React.CSSProperties = {
+  background: '#1a1a1a',
+  border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: '8px',
+  padding: '1.25rem 1.5rem',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.75rem',
+}
+
+const quickCardHeader: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  marginBottom: '0.25rem',
+}
+
+const quickCardTitle: React.CSSProperties = {
+  fontSize: '0.62rem',
+  letterSpacing: '0.14em',
+  color: '#666',
+  fontFamily: "'Roboto Mono', monospace",
+}
+
+const thStyle: React.CSSProperties = {
+  textAlign: 'left',
+  fontSize: '0.62rem',
+  letterSpacing: '0.08em',
+  color: '#555',
+  fontFamily: "'Roboto Mono', monospace",
+  paddingBottom: '0.5rem',
+  borderBottom: '1px solid rgba(255,255,255,0.06)',
+  fontWeight: 400,
+}
+
+const tdStyle: React.CSSProperties = {
+  padding: '0.55rem 0.5rem 0.55rem 0',
+  borderBottom: '1px solid rgba(255,255,255,0.04)',
+  verticalAlign: 'middle',
+  color: '#C4BFB9',
+  fontSize: '0.8rem',
+}
+
+const quickFooterLink: React.CSSProperties = {
+  fontSize: '0.72rem',
+  color: '#555',
+  textDecoration: 'none',
+  fontFamily: "'Roboto Mono', monospace",
+  marginTop: '0.25rem',
+  display: 'inline-block',
 }

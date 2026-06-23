@@ -35,8 +35,8 @@ const revalidateGallery: CollectionAfterChangeHook = ({ doc }) => {
 export const Galleries: CollectionConfig = {
   slug: 'galleries',
   labels: {
-    singular: 'Gallery',
-    plural: 'Galleries',
+    singular: 'Collection',
+    plural: 'Collections',
   },
   hooks: {
     beforeValidate: [autoSlugFromTitle],
