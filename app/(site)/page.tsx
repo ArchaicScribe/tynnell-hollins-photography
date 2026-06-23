@@ -21,10 +21,6 @@ import type { Photo } from '@/payload-types'
 export const revalidate = 120
 
 export default async function Home() {
-  // Preload the hero background so the browser fetches it early (LCP boost).
-  // CSS background-image is not auto-preloaded; this emits a <link rel="preload">.
-  preload('/hero-background.jpg', { as: 'image', fetchPriority: 'high' })
-
   const payload = await getPayload({ config })
 
   // A builder page can be promoted to the site homepage (TYN-227). When one is
@@ -89,6 +85,11 @@ export default async function Home() {
   const fallbackSlide: HeroSlide[] = [
     { id: 'revamp-bg', imageUrl: '/hero-background.jpg', alt: 'Tynnell Hollins Photography' },
   ]
+
+  // Preload the actual first hero image (admin slide or fallback) for LCP.
+  // CSS background-image is not auto-preloaded; this emits a <link rel="preload">.
+  const firstHeroUrl = slides.find(s => s.imageUrl)?.imageUrl ?? '/hero-background.jpg'
+  preload(firstHeroUrl, { as: 'image', fetchPriority: 'high' })
 
   const localBusinessSchema = {
     '@context': 'https://schema.org',
