@@ -6,6 +6,7 @@ import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
+import { MIN_LEAD_TIME_HOURS, MAX_BOOKING_MONTHS } from '@/app/lib/validation'
 
 // OOO banner is time-sensitive - shorter revalidate so it appears within 1 minute of being set
 export const revalidate = 60
@@ -45,14 +46,38 @@ function findActiveOrUpcoming(ranges: BlockedRange[]): string | null {
 export default async function ContactPage() {
   let oooMessage: string | null = null
 
+  let minDate: string
+  let maxDate: string
+
   try {
     const payload = await getPayload({ config })
-    const availability = await payload.findGlobal({ slug: 'availability' })
+    const [availability, bookingSettings] = await Promise.all([
+      payload.findGlobal({ slug: 'availability' }),
+      payload.findGlobal({ slug: 'booking-settings' }).catch(() => null),
+    ])
     if (Array.isArray(availability?.blockedRanges)) {
       oooMessage = findActiveOrUpcoming(availability.blockedRanges)
     }
+    const minLeadHours = typeof bookingSettings?.minLeadTimeHours === 'number'
+      ? bookingSettings.minLeadTimeHours
+      : MIN_LEAD_TIME_HOURS
+    const maxMonths = typeof bookingSettings?.maxBookingMonths === 'number'
+      ? bookingSettings.maxBookingMonths
+      : MAX_BOOKING_MONTHS
+    const minD = new Date()
+    minD.setTime(minD.getTime() + minLeadHours * 60 * 60 * 1000)
+    minDate = minD.toISOString().split('T')[0]
+    const maxD = new Date()
+    maxD.setMonth(maxD.getMonth() + maxMonths)
+    maxDate = maxD.toISOString().split('T')[0]
   } catch {
-    // Non-fatal: banner simply won't show if globals are unavailable
+    // Non-fatal: fall back to defaults
+    const minD = new Date()
+    minD.setTime(minD.getTime() + MIN_LEAD_TIME_HOURS * 60 * 60 * 1000)
+    minDate = minD.toISOString().split('T')[0]
+    const maxD = new Date()
+    maxD.setMonth(maxD.getMonth() + MAX_BOOKING_MONTHS)
+    maxDate = maxD.toISOString().split('T')[0]
   }
 
   const contactPageSchema = {
@@ -100,7 +125,7 @@ export default async function ContactPage() {
 
         {/* Right - form */}
         <div className={styles.formColumn}>
-          <ContactForm />
+          <ContactForm minDate={minDate} maxDate={maxDate} />
         </div>
 
       </div>

@@ -61,7 +61,7 @@ const EMPTY_FORM: FormFields = {
   howHeard: '',
 }
 
-export default function ContactForm() {
+export default function ContactForm({ minDate, maxDate }: { minDate: string; maxDate: string }) {
   const [fields, setFields] = useState<FormFields>(EMPTY_FORM)
   const [status, setStatus] = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<ReactNode>('')
@@ -262,6 +262,8 @@ export default function ContactForm() {
             className={styles.input}
             value={fields.date}
             onChange={update('date')}
+            min={minDate}
+            max={maxDate}
             required
           />
         </div>
