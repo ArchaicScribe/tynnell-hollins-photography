@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { name, email, phone, message } = body
+  const { name, email, phone, eventDate, message } = body
 
   if (!name || !email || !message) {
     return NextResponse.json({ error: 'Please fill in all required fields.' }, { status: 400 })
@@ -42,10 +42,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Please enter a valid phone number.' }, { status: 400 })
   }
 
-  const safeName    = escapeHtml(name)
-  const safeEmail   = escapeHtml(email)
-  const safePhone   = phone ? escapeHtml(phone) : undefined
-  const safeMessage = escapeHtml(message)
+  const safeName      = escapeHtml(name)
+  const safeEmail     = escapeHtml(email)
+  const safePhone     = phone ? escapeHtml(phone) : undefined
+  const safeEventDate = eventDate ? escapeHtml(eventDate) : undefined
+  const safeMessage   = escapeHtml(message)
 
   try {
     const contactTo = process.env.CONTACT_TO_EMAIL
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       to: contactTo,
       replyTo: email,
       subject: `Pre-Launch Inquiry from ${safeName}`,
-      html: comingSoonInquiryEmailHtml({ name: safeName, email: safeEmail, phone: safePhone, message: safeMessage }),
+      html: comingSoonInquiryEmailHtml({ name: safeName, email: safeEmail, phone: safePhone, eventDate: safeEventDate, message: safeMessage }),
     })
 
     if (error) {

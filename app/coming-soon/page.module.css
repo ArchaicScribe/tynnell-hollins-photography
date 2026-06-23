@@ -162,6 +162,10 @@
   min-height: 7rem;
 }
 
+.dateInput {
+  color-scheme: dark;
+}
+
 .errorMsg {
   font-family: var(--font-body);
   font-size: 0.75rem;

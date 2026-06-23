@@ -20,6 +20,7 @@ export default function ComingSoonForm() {
       name: fd.get('name') as string,
       email: fd.get('email') as string,
       phone: fd.get('phone') as string,
+      eventDate: fd.get('eventDate') as string,
       message: fd.get('message') as string,
     }
 
@@ -85,19 +86,33 @@ export default function ComingSoonForm() {
         </div>
       </div>
 
-      <div className={styles.field}>
-        <label htmlFor="cs-phone" className={styles.label}>
-          Phone <span className={styles.optional}>(optional)</span>
-        </label>
-        <input
-          id="cs-phone"
-          name="phone"
-          type="tel"
-          maxLength={30}
-          autoComplete="tel"
-          className={styles.input}
-          disabled={state === 'submitting'}
-        />
+      <div className={styles.fieldRow}>
+        <div className={styles.field}>
+          <label htmlFor="cs-phone" className={styles.label}>
+            Phone <span className={styles.optional}>(optional)</span>
+          </label>
+          <input
+            id="cs-phone"
+            name="phone"
+            type="tel"
+            maxLength={30}
+            autoComplete="tel"
+            className={styles.input}
+            disabled={state === 'submitting'}
+          />
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="cs-event-date" className={styles.label}>
+            Event Date <span className={styles.optional}>(optional)</span>
+          </label>
+          <input
+            id="cs-event-date"
+            name="eventDate"
+            type="date"
+            className={`${styles.input} ${styles.dateInput}`}
+            disabled={state === 'submitting'}
+          />
+        </div>
       </div>
 
       <div className={styles.field}>

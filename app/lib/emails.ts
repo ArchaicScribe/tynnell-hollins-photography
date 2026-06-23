@@ -188,18 +188,22 @@ export interface ComingSoonInquiryFields {
   name: string
   email: string
   phone?: string
+  eventDate?: string
   message: string
 }
 
 export function comingSoonInquiryEmailHtml(f: ComingSoonInquiryFields): string {
-  const phoneRow = f.phone ? tableRow('Phone', f.phone) : ''
+  const optionalRows = [
+    f.phone ? tableRow('Phone', f.phone) : '',
+    f.eventDate ? tableRow('Event Date', f.eventDate) : '',
+  ].join('')
   return internalWrapper(`
     <h2 style="margin:0 0 16px;font-size:20px;">Pre-Launch Inquiry</h2>
     <p style="margin:0 0 16px;font-size:13px;color:#888;">Someone reached out via the coming-soon page.</p>
     ${table([
       tableRow('Name', f.name),
       tableRow('Email', `<a href="mailto:${f.email}" style="color:#333;">${f.email}</a>`),
-      phoneRow,
+      optionalRows,
     ].join(''))}
     <h3 style="margin:20px 0 8px;font-size:15px;">Message</h3>
     <p style="margin:0;white-space:pre-wrap;background:#f9f9f9;padding:16px;border-left:3px solid #ddd;font-size:14px;line-height:1.7;color:#444;">${f.message}</p>
