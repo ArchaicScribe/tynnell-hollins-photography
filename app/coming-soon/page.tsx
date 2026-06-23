@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import styles from './page.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
+import ComingSoonForm from './ComingSoonForm'
 
 export const metadata: Metadata = {
   title: 'Coming Soon | Tynnell Hollins Photography',
@@ -18,6 +19,11 @@ export default function ComingSoonPage() {
         <a href={`mailto:${CONTACT_EMAIL}`} className={styles.email}>
           {CONTACT_EMAIL}
         </a>
+
+        <div className={styles.divider} aria-hidden="true" />
+
+        <p className={styles.formHeading}>Inquire about a session</p>
+        <ComingSoonForm />
       </div>
     </main>
   )

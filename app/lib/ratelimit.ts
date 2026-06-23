@@ -17,6 +17,13 @@ export const checkoutRatelimit = new Ratelimit({
   prefix: 'rl:checkout',
 })
 
+// 3 submissions per IP per hour - coming-soon inquiry form
+export const comingSoonRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(3, '1 h'),
+  prefix: 'rl:coming-soon',
+})
+
 /**
  * Extracts the real client IP from the request headers.
  * x-forwarded-for is set by Vercel's edge network.
