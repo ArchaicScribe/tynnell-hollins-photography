@@ -94,10 +94,12 @@ export function GalleryEditorClient({
       } else {
         setShowDeleteConfirm(false)
         setDeleting(false)
+        setError('Could not delete gallery. Please try again.')
       }
     } catch {
       setShowDeleteConfirm(false)
       setDeleting(false)
+      setError('Delete failed. Check your connection.')
     }
   }
 
@@ -119,9 +121,11 @@ export function GalleryEditorClient({
         const data = await res.json()
         const newId = data?.doc?.id ?? data?.id
         if (newId) window.location.href = `/gallery-editor/${newId}`
+      } else {
+        setError('Could not duplicate gallery. Please try again.')
       }
     } catch {
-      // ignore
+      setError('Duplicate failed. Check your connection.')
     } finally {
       setDuplicating(false)
     }
