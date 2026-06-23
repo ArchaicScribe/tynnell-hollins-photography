@@ -6,6 +6,8 @@ export async function GET() {
   const body = `User-agent: *
 Disallow: /admin
 Disallow: /api/
+Disallow: /gallery-editor
+Disallow: /builder
 Allow: /
 
 Sitemap: https://tynnellhollinsphotography.com/sitemap.xml
