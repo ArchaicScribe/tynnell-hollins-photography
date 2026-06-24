@@ -228,7 +228,7 @@ function PageRow({ page, onDelete, onToggleNav, onRefresh }: {
 // New page modal
 // ---------------------------------------------------------------------------
 
-function NewPageModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+function NewPageModal({ onClose }: { onClose: () => void }) {
   const [title, setTitle] = useState('')
   const [template, setTemplate] = useState('blank')
   const [creating, setCreating] = useState(false)
@@ -344,7 +344,7 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0e0e0e', color: '#e6e1de' }}>
 
-      {showModal && <NewPageModal onClose={() => setShowModal(false)} onCreated={() => { setShowModal(false); reload() }} />}
+      {showModal && <NewPageModal onClose={() => setShowModal(false)} />}
 
       {/* ---- Left sidebar ---- */}
       <div style={{ width: 260, flexShrink: 0, background: '#111', borderRight: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -406,7 +406,7 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
             )}
 
             {pages.length === 0 && (
-              <p style={{ fontFamily: mono, fontSize: '0.75rem', color: '#2a2a2a', padding: '0 0.75rem' }}>No pages yet. Click "Add Page" to create one.</p>
+              <p style={{ fontFamily: mono, fontSize: '0.75rem', color: '#2a2a2a', padding: '0 0.75rem' }}>No pages yet. Click &quot;Add Page&quot; to create one.</p>
             )}
           </div>
         )}
@@ -415,6 +415,7 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
         {activeTab === 'styles' && (
           <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <p style={{ margin: 0, fontFamily: ui, fontSize: '0.85rem', color: '#9b9a9a' }}>Design tokens and global styles are managed in code.</p>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/admin/globals/site-config" style={{ color: '#2563eb', fontSize: '0.8rem', fontFamily: ui }}>Open Site Config</a>
           </div>
         )}
@@ -422,9 +423,11 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
         {/* Settings tab */}
         {activeTab === 'settings' && (
           <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {/* eslint-disable @next/next/no-html-link-for-pages */}
             <a href="/admin/globals/site-config" style={{ color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.85rem', padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Site Config</a>
             <a href="/admin/globals/hero-slides" style={{ color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.85rem', padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Hero Slides</a>
             <a href="/admin/globals/about-page" style={{ color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.85rem', padding: '0.5rem 0' }}>About Page</a>
+            {/* eslint-enable @next/next/no-html-link-for-pages */}
           </div>
         )}
 
@@ -460,7 +463,7 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
           </div>
           <h1 style={{ fontFamily: ui, fontSize: '1.4rem', fontWeight: 600, color: '#d6d1ce', margin: '0 0 0.75rem' }}>Website Editor</h1>
           <p style={{ fontFamily: mono, fontSize: '0.78rem', color: '#4a4a4a', margin: '0 0 2rem', lineHeight: 1.7 }}>
-            Select a page from the sidebar to open it in the visual builder, or click "Add Page" to create a new one.
+            Select a page from the sidebar to open it in the visual builder, or click &quot;Add Page&quot; to create a new one.
           </p>
           <button
             type="button" onClick={() => setShowModal(true)}

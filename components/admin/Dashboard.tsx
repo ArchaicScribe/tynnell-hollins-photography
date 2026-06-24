@@ -134,16 +134,7 @@ function UsersIcon() {
   )
 }
 
-function PageBuilderIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-      <rect x="2" y="2" width="22" height="22" rx="2.5" stroke="white" strokeWidth="1.6"/>
-      <rect x="6" y="6" width="14" height="5" rx="1" fill="white" opacity="0.7"/>
-      <rect x="6" y="14" width="6" height="6" rx="1" fill="white" opacity="0.5"/>
-      <rect x="14" y="14" width="6" height="6" rx="1" fill="white" opacity="0.5"/>
-    </svg>
-  )
-}
+
 
 const PRODUCTS: Product[] = [
   {
