@@ -7,7 +7,6 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-// Blog listing - posts are published infrequently, revalidate every 2 minutes
 export const revalidate = 120
 
 export const metadata: Metadata = {
@@ -26,16 +25,13 @@ export default async function BlogPage() {
   })
 
   const featuredPost = posts[0] ?? null
-  const remainingPosts = posts.slice(1)
-
-  // Pre-compute featured post data outside JSX to keep template readable
   const featuredCover =
     featuredPost && typeof featuredPost.coverImage === 'object' && featuredPost.coverImage !== null
       ? (featuredPost.coverImage as Photo)
       : null
   const featuredCoverUrl = featuredCover?.sizes?.hero?.url ?? featuredCover?.url ?? null
   const featuredSlug = featuredPost
-    ? typeof featuredPost.slug === 'string' ? featuredPost.slug : ''
+    ? (typeof featuredPost.slug === 'string' ? featuredPost.slug : '')
     : ''
 
   const blogSchema = posts.length > 0 ? {
@@ -58,124 +54,128 @@ export default async function BlogPage() {
     <main className={styles.main}>
       {blogSchema && <JsonLd data={blogSchema} />}
 
-      {/* Hero */}
-      <section className={styles.hero}>
-        <p className={styles.eyebrow}>Journal</p>
-        <h1 className={styles.heroHeading}>Stories from<br />Behind the Lens</h1>
+      {/* Hero - featured post cover fills the viewport width */}
+      <section
+        className={`${styles.hero} ${!featuredCoverUrl ? styles.heroFallback : ''}`}
+        aria-label="Journal"
+      >
+        {featuredCoverUrl && featuredPost && (
+          <Link
+            href={`/blog/${featuredSlug}`}
+            className={styles.heroImageLink}
+            tabIndex={-1}
+            aria-hidden="true"
+          >
+            <Image
+              src={featuredCoverUrl}
+              alt={featuredCover?.alt ?? featuredPost.title}
+              fill
+              priority
+              sizes="100vw"
+              className={styles.heroPhoto}
+            />
+          </Link>
+        )}
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
+          <p className={styles.heroEyebrow}>Journal</p>
+          {featuredPost ? (
+            <>
+              <h1 className={styles.heroTitle}>
+                <Link href={`/blog/${featuredSlug}`} className={styles.heroTitleLink}>
+                  {featuredPost.title}
+                </Link>
+              </h1>
+              <div className={styles.heroMeta}>
+                {featuredPost.publishedAt && (
+                  <time className={styles.heroDate} dateTime={featuredPost.publishedAt}>
+                    {new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'long', day: 'numeric',
+                    })}
+                  </time>
+                )}
+                <Link href={`/blog/${featuredSlug}`} className={styles.heroCta}>
+                  Read Article
+                </Link>
+              </div>
+            </>
+          ) : (
+            <h1 className={styles.heroTitle}>{"Stories from Behind the Lens"}</h1>
+          )}
+        </div>
       </section>
 
+      {/* Journal bar */}
+      <div className={styles.journalBar}>
+        <span className={styles.journalLabel}>The Journal</span>
+        {posts.length > 0 && (
+          <span className={styles.journalCount}>
+            {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+          </span>
+        )}
+      </div>
+
+      {/* Posts grid */}
       {posts.length === 0 ? (
         <p className={styles.emptyState}>New posts are on their way. Check back soon.</p>
       ) : (
-        <>
-          {/* Featured post - most recent, full width with cover hero */}
-          {featuredPost && (
-            <article className={styles.featured}>
-              {featuredCoverUrl && (
+        <section className={styles.grid} aria-label="All posts">
+          {posts.map((post) => {
+            const cover =
+              typeof post.coverImage === 'object' && post.coverImage !== null
+                ? (post.coverImage as Photo)
+                : null
+            const coverUrl = cover?.sizes?.card?.url ?? cover?.url ?? null
+            const slug = typeof post.slug === 'string' ? post.slug : ''
+
+            return (
+              <article key={post.id} className={styles.card}>
                 <Link
-                  href={`/blog/${featuredSlug}`}
-                  className={styles.featuredImageLink}
+                  href={`/blog/${slug}`}
+                  className={styles.cardImageLink}
                   tabIndex={-1}
                   aria-hidden="true"
                 >
-                  <div className={styles.featuredImage}>
-                    <Image
-                      src={featuredCoverUrl}
-                      alt={featuredCover?.alt ?? featuredPost.title}
-                      fill
-                      priority
-                      sizes="100vw"
-                      className={styles.featuredPhoto}
-                    />
-                    <div className={styles.featuredOverlay} />
+                  <div className={styles.cardImage}>
+                    {coverUrl ? (
+                      <Image
+                        src={coverUrl}
+                        alt={cover?.alt ?? post.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className={styles.cardPhoto}
+                      />
+                    ) : (
+                      <div className={styles.cardPlaceholder} />
+                    )}
                   </div>
                 </Link>
-              )}
-              <div className={styles.featuredContent}>
-                <p className={styles.featuredEyebrow}>Latest Post</p>
-                <h2 className={styles.featuredTitle}>
-                  <Link href={`/blog/${featuredSlug}`} className={styles.featuredLink}>
-                    {featuredPost.title}
-                  </Link>
-                </h2>
-                {featuredPost.excerpt && (
-                  <p className={styles.featuredExcerpt}>{featuredPost.excerpt}</p>
-                )}
-                <div className={styles.featuredMeta}>
-                  {featuredPost.publishedAt && (
-                    <time className={styles.featuredDate} dateTime={featuredPost.publishedAt}>
-                      {new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
+                <div className={styles.cardBody}>
+                  {post.publishedAt && (
+                    <time className={styles.cardDate} dateTime={post.publishedAt}>
+                      {new Date(post.publishedAt).toLocaleDateString('en-US', {
                         year: 'numeric', month: 'long', day: 'numeric',
                       })}
                     </time>
                   )}
-                  <Link href={`/blog/${featuredSlug}`} className={styles.featuredCta}>
-                    Read Article
+                  <h2 className={styles.cardTitle}>
+                    <Link href={`/blog/${slug}`} className={styles.cardLink}>
+                      {post.title}
+                    </Link>
+                  </h2>
+                  {post.excerpt && <p className={styles.cardExcerpt}>{post.excerpt}</p>}
+                  <Link
+                    href={`/blog/${slug}`}
+                    className={styles.readMore}
+                    aria-label={`Read: ${post.title}`}
+                  >
+                    Read More
                   </Link>
                 </div>
-              </div>
-            </article>
-          )}
-
-          {/* Remaining posts grid */}
-          {remainingPosts.length > 0 && (
-            <section className={styles.grid} aria-label="More posts">
-              {remainingPosts.map((post) => {
-                const cover =
-                  typeof post.coverImage === 'object' && post.coverImage !== null
-                    ? (post.coverImage as Photo)
-                    : null
-                const coverUrl = cover?.sizes?.card?.url ?? cover?.url ?? null
-                const slug = typeof post.slug === 'string' ? post.slug : ''
-
-                return (
-                  <article key={post.id} className={styles.card}>
-                    {coverUrl && (
-                      <Link
-                        href={`/blog/${slug}`}
-                        className={styles.cardImageLink}
-                        tabIndex={-1}
-                        aria-hidden="true"
-                      >
-                        <div className={styles.cardImage}>
-                          <Image
-                            src={coverUrl}
-                            alt={cover?.alt ?? post.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                            className={styles.cardPhoto}
-                          />
-                        </div>
-                      </Link>
-                    )}
-                    <div className={styles.cardBody}>
-                      {post.publishedAt && (
-                        <time className={styles.cardDate} dateTime={post.publishedAt}>
-                          {new Date(post.publishedAt).toLocaleDateString('en-US', {
-                            year: 'numeric', month: 'long', day: 'numeric',
-                          })}
-                        </time>
-                      )}
-                      <h2 className={styles.cardTitle}>
-                        <Link href={`/blog/${slug}`} className={styles.cardLink}>
-                          {post.title}
-                        </Link>
-                      </h2>
-                      {post.excerpt && <p className={styles.cardExcerpt}>{post.excerpt}</p>}
-                      <Link
-                        href={`/blog/${slug}`}
-                        className={styles.readMore}
-                        aria-label={`Read: ${post.title}`}
-                      >
-                        Read More
-                      </Link>
-                    </div>
-                  </article>
-                )
-              })}
-            </section>
-          )}
-        </>
+              </article>
+            )
+          })}
+        </section>
       )}
 
       {/* CTA */}
@@ -187,7 +187,6 @@ export default async function BlogPage() {
           <Link href="/portfolio" className={styles.ctaBtnSecondary}>View Portfolio</Link>
         </div>
       </section>
-
     </main>
   )
 }

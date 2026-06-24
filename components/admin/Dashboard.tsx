@@ -409,7 +409,7 @@ export function Dashboard() {
       <p style={sectionLabelStyle}>QUICK ACCESS</p>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
 
-        {/* Recent Collections - Pixieset style rows */}
+        {/* Recent Collections */}
         <div style={quickCardStyle}>
           <div style={quickCardHeader}>
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0d9488', display: 'inline-block' }} />
