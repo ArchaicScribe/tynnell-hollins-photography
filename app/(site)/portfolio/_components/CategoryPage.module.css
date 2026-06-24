@@ -1,0 +1,112 @@
+.hero {
+  position: relative;
+  height: 85vh;
+  min-height: 520px;
+  overflow: hidden;
+}
+
+.heroImg {
+  object-fit: cover;
+  object-position: center;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.heroContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 2.5rem var(--padding-x);
+  gap: 2rem;
+}
+
+.titleBox {
+  background: var(--color-bg-overlay);
+  padding: 1.25rem 2rem;
+  backdrop-filter: blur(8px);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.descBox {
+  background: var(--color-bg-overlay);
+  padding: 1.25rem 1.75rem;
+  backdrop-filter: blur(8px);
+  max-width: 400px;
+}
+
+.desc {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: rgba(214, 209, 206, 0.9);
+  line-height: 1.8;
+}
+
+/* ── CTA ─────────────────────────────────────────────────── */
+
+.cta {
+  padding: 5rem var(--padding-x);
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+}
+
+.ctaText {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin-bottom: 1.5rem;
+}
+
+.ctaBtn {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  padding: 0.9rem 2.5rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.ctaBtn:hover {
+  background: var(--color-heading);
+  color: var(--color-bg);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .hero { height: 65vh; }
+
+  .heroContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1.5rem var(--padding-x);
+  }
+
+  .descBox {
+    max-width: 100%;
+  }
+}

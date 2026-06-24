@@ -1,121 +1,172 @@
 .footer {
-  background: var(--color-bg-accent);
-  border-top: 1px solid rgba(214, 209, 206, 0.08);
-  padding: 4rem var(--padding-x) 2.5rem;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
   margin-top: auto;
 }
 
-.inner {
-  max-width: 1200px;
-  margin: 0 auto;
-}
+/* ── CTA row ─────────────────────────────────────────────── */
 
-.top {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 3rem;
-  align-items: start;
-  padding-bottom: 3rem;
-  border-bottom: 1px solid rgba(214, 209, 206, 0.08);
-}
-
-/* Brand */
-.brand {
+.cta {
+  padding: 4rem var(--padding-x);
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.brandName {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 400;
+.ctaText {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-body);
+  line-height: 2;
+  max-width: 520px;
+}
+
+.ctaLink {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--color-heading);
-  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  padding-bottom: 0.5rem;
+  transition: color 0.2s ease;
 }
 
-.brandSub {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+.ctaLink::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: currentColor;
+}
+
+.ctaLink:hover {
   color: var(--color-detail);
 }
 
-/* Nav links */
-.nav {
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: 0.5rem 3rem;
-  list-style: none;
-  text-align: right;
+/* ── Instagram strip ─────────────────────────────────────── */
+
+.instagram {
+  padding: 2.5rem var(--padding-x);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 3rem;
 }
 
-.navLink {
+.igInfo {
+  flex-shrink: 0;
+}
+
+.igLabel {
   font-family: var(--font-body);
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-detail);
+  margin-bottom: 0.5rem;
+}
+
+.igHandle {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-heading);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
-.navLink:hover {
-  color: var(--color-heading);
+.igHandle:hover {
+  color: var(--color-detail);
 }
 
-/* Bottom bar */
+.igPhotos {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 560px;
+}
+
+.igPhoto {
+  flex: 1;
+  aspect-ratio: 1;
+  position: relative;
+  overflow: hidden;
+  max-width: 130px;
+}
+
+.igPhotoImg {
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.igPhoto:hover .igPhotoImg {
+  transform: scale(1.04);
+}
+
+/* ── Bottom bar ──────────────────────────────────────────── */
+
 .bottom {
+  padding: 1.5rem var(--padding-x);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 2rem;
-  gap: 2rem;
-  flex-wrap: wrap;
+  gap: 1.5rem;
 }
 
-.contact {
+.socials {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.25rem;
 }
 
-.contactLink {
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
+.socialLink {
   color: var(--color-detail);
-  text-decoration: none;
-  transition: color 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  transition: color 0.2s ease;
 }
 
-.contactLink:hover {
+.socialLink:hover {
   color: var(--color-heading);
 }
 
 .copy {
   font-family: var(--font-body);
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  color: rgba(155, 154, 154, 0.5);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--color-detail);
+  opacity: 0.5;
 }
 
-/* Responsive */
-@media (max-width: 640px) {
-  .top {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    padding-bottom: 2rem;
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .cta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 3rem var(--padding-x);
   }
 
-  .nav {
-    grid-template-columns: repeat(3, auto);
-    text-align: left;
-    gap: 0.5rem 1.5rem;
+  .instagram {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .igPhotos {
+    max-width: 100%;
   }
 
   .bottom {
