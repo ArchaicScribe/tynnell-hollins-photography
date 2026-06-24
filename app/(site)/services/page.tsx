@@ -52,10 +52,32 @@ export default async function ServicesPage() {
       {/* Hero */}
       <section className={styles.hero}>
         <p className={styles.eyebrow}>Services</p>
-        <h1 className={styles.heroHeading}>{"Let's Create"}<br />{"Something Beautiful"}</h1>
+        <h1 className={styles.heroHeading}>{"Every Session,"}<br />{"Crafted for You"}</h1>
         <p className={styles.heroSub}>
-          {"Every package is crafted to give you images you'll treasure for a lifetime."}
+          {"Packages designed to give you images you'll treasure for a lifetime. Choose the experience that fits your story."}
         </p>
+      </section>
+
+      {/* How It Works */}
+      <section className={styles.process} aria-label="How it works">
+        <p className={styles.processEyebrow}>How It Works</p>
+        <ol className={styles.steps}>
+          <li className={styles.step}>
+            <span className={styles.stepNum}>01</span>
+            <h2 className={styles.stepHeading}>Connect</h2>
+            <p className={styles.stepBody}>Fill out the inquiry form or send a message. We talk through your vision, your people, and what this session means to you.</p>
+          </li>
+          <li className={styles.step}>
+            <span className={styles.stepNum}>02</span>
+            <h2 className={styles.stepHeading}>Plan Together</h2>
+            <p className={styles.stepBody}>Choose your date and package. We walk through every detail so you feel relaxed and ready before we ever pick up a camera.</p>
+          </li>
+          <li className={styles.step}>
+            <span className={styles.stepNum}>03</span>
+            <h2 className={styles.stepHeading}>Remember Forever</h2>
+            <p className={styles.stepBody}>Your gallery arrives beautifully edited and ready to keep, share, and print. These images belong to you. Always.</p>
+          </li>
+        </ol>
       </section>
 
       {/* Service cards */}
