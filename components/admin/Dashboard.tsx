@@ -156,8 +156,7 @@ const PRODUCTS: Product[] = [
     color: '#2563eb',
     icon: <GlobeIcon />,
     links: [
-      { label: 'Website Editor', href: '/builder' },
-      { label: 'New Page', href: '/builder' },
+      { label: 'Website Editor', href: '/builder', external: true },
       { label: 'Hero Slides', href: '/admin/globals/hero-slides' },
       { label: 'About Page', href: '/admin/globals/about-page' },
       { label: 'Site Config', href: '/admin/globals/site-config' },
@@ -263,35 +262,36 @@ function ProductCard({ product }: { product: Product }) {
 
       {/* Sub-links */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
-        {product.links.map(link => (
-          link.external
-            ? (
+        {product.links.map(link => {
+          const isHttp = link.href.startsWith('http')
+          if (link.external) {
+            return (
               // eslint-disable-next-line @next/next/no-html-link-for-pages
               <a
-                key={link.href}
+                key={link.label}
                 href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...(isHttp ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 style={linkStyle}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#E6E1DE' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '' }}
               >
                 {link.label}
-                <ExternalArrow />
+                {isHttp && <ExternalArrow />}
               </a>
             )
-            : (
-              <Link
-                key={link.href}
-                href={link.href}
-                style={linkStyle}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#E6E1DE' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '' }}
-              >
-                {link.label}
-              </Link>
-            )
-        ))}
+          }
+          return (
+            <Link
+              key={link.label}
+              href={link.href}
+              style={linkStyle}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#E6E1DE' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '' }}
+            >
+              {link.label}
+            </Link>
+          )
+        })}
       </div>
     </div>
   )
@@ -421,7 +421,8 @@ export function Dashboard() {
                 const photoCount = Array.isArray(g.photos) ? g.photos.length : 0
                 const isPublished = g.status !== 'draft'
                 return (
-                  <Link
+                  // eslint-disable-next-line @next/next/no-html-link-for-pages
+                  <a
                     key={g.id}
                     href={`/gallery-editor/${g.id}`}
                     style={{
@@ -460,14 +461,15 @@ export function Dashboard() {
                     <span style={{ fontSize: '0.65rem', color: isPublished ? '#4ade80' : '#666', fontFamily: "'Roboto Mono', monospace", whiteSpace: 'nowrap', flexShrink: 0 }}>
                       {isPublished ? 'Published' : 'Draft'}
                     </span>
-                  </Link>
+                  </a>
                 )
               })}
             </div>
           ) : (
             <p style={{ fontSize: '0.8rem', color: '#555', fontFamily: "'Roboto Mono', monospace" }}>No collections yet.</p>
           )}
-          <Link href="/gallery-editor" style={quickFooterLink}>View all collections</Link>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/gallery-editor" style={quickFooterLink}>View all collections</a>
         </div>
 
         {/* Recent Orders */}
