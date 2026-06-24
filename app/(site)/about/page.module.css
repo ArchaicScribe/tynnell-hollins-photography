@@ -1,33 +1,71 @@
 .main {
   background: var(--color-bg);
-  padding-top: 5rem; /* navbar height */
 }
 
 /* ── Hero ─────────────────────────────────────────────────── */
 
 .hero {
-  padding: 6rem var(--padding-x) 5rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.heroImg {
+  object-fit: cover;
+  object-position: center top;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(12, 12, 12, 0.88) 0%,
+    rgba(12, 12, 12, 0.25) 50%,
+    rgba(12, 12, 12, 0.1) 100%
+  );
+  z-index: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  padding: 4rem var(--padding-x);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
   font-weight: 400;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--color-detail);
-  margin: 0 0 1.25rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
 }
 
 .heroHeading {
   font-family: var(--font-display);
-  font-size: clamp(4rem, 8vw, 7rem);
+  font-size: clamp(5rem, 12vw, 10rem);
   font-weight: 400;
-  line-height: 1.05;
-  color: var(--color-heading);
+  line-height: 0.95;
+  color: #fff;
   margin: 0;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.4);
+}
+
+.heroSub {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 0.5rem;
 }
 
 /* ── Story ────────────────────────────────────────────────── */
@@ -35,7 +73,7 @@
 .story {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem var(--padding-x) 6rem;
+  padding: 6rem var(--padding-x) 6rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6rem;

@@ -1,40 +1,40 @@
 .section {
-  background-color: var(--color-bg);
-  padding: var(--padding-block) var(--padding-x);
+  background-color: #0C0C0C;
+  padding: 8rem var(--padding-x);
+  text-align: center;
 }
 
 .inner {
-  max-width: 640px;
+  max-width: 700px;
   margin: 0 auto;
-  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 .eyebrow {
   font-family: var(--font-body);
   font-size: 0.7rem;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--color-detail);
+  color: rgba(214, 209, 206, 0.45);
 }
 
 .heading {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  color: var(--color-heading);
+  font-size: clamp(3.5rem, 7vw, 6.5rem);
+  color: #D6D1CE;
   font-weight: 400;
-  line-height: 1.15;
+  line-height: 1.05;
 }
 
 .body {
   font-family: var(--font-prose);
-  font-size: 0.9375rem;
-  line-height: 1.75;
-  color: var(--color-body);
-  max-width: 420px;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: rgba(214, 209, 206, 0.6);
+  max-width: 400px;
 }
 
 .actions {
@@ -46,10 +46,11 @@
 }
 
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 0.9rem 2.5rem;
-  background-color: var(--color-btn-bg);
-  color: var(--color-btn-text);
+  background-color: #9B9A9A;
+  color: #0C0C0C;
   font-family: var(--font-body);
   font-size: 0.7rem;
   letter-spacing: 0.18em;
@@ -57,12 +58,10 @@
   text-decoration: none;
   transition: background-color 0.2s ease;
   min-height: 44px;
-  display: flex;
-  align-items: center;
 }
 
 .btn:hover {
-  background-color: var(--color-btn-hover);
+  background-color: #D6D1CE;
 }
 
 .btnSecondary {
@@ -70,8 +69,8 @@
   align-items: center;
   padding: 0.9rem 2.5rem;
   background: transparent;
-  color: var(--color-detail);
-  border: 1px solid rgba(155, 154, 154, 0.3);
+  color: rgba(214, 209, 206, 0.55);
+  border: 1px solid rgba(214, 209, 206, 0.18);
   font-family: var(--font-body);
   font-size: 0.7rem;
   letter-spacing: 0.18em;
@@ -82,6 +81,6 @@
 }
 
 .btnSecondary:hover {
-  color: var(--color-heading);
-  border-color: var(--color-detail);
+  color: #D6D1CE;
+  border-color: rgba(214, 209, 206, 0.4);
 }

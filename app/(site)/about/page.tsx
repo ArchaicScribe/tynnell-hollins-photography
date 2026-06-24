@@ -55,6 +55,7 @@ export default async function AboutPage() {
   const headshotPhoto = typeof about?.headshot === 'object' && about.headshot !== null
     ? about.headshot as Photo
     : null
+  const headshotHeroUrl = headshotPhoto?.sizes?.hero?.url ?? headshotPhoto?.url ?? null
   const headshotUrl = headshotPhoto?.sizes?.card?.url ?? headshotPhoto?.url ?? null
 
   type RawValue = { heading?: string | null; body?: string | null }
@@ -90,10 +91,22 @@ export default async function AboutPage() {
 
       {/* Hero */}
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>About Tynnell</p>
-        <h1 className={styles.heroHeading}>
-          The Woman<br />Behind the Lens
-        </h1>
+        {headshotHeroUrl && (
+          <Image
+            src={headshotHeroUrl}
+            alt="Tynnell Hollins"
+            fill
+            priority
+            sizes="100vw"
+            className={styles.heroImg}
+          />
+        )}
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
+          <p className={styles.eyebrow}>About</p>
+          <h1 className={styles.heroHeading}>Tynnell Hollins</h1>
+          <p className={styles.heroSub}>The Woman Behind the Lens</p>
+        </div>
       </section>
 
       {/* Story */}

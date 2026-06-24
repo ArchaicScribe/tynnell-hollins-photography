@@ -40,18 +40,28 @@
 
 .eyebrow {
   font-family: var(--font-body);
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--color-detail);
 }
 
-.heading {
+.greeting {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 4vw, 4rem);
-  font-weight: 700;
+  font-size: clamp(3rem, 5vw, 5rem);
+  font-weight: 400;
   color: var(--color-heading);
-  line-height: 1.15;
+  line-height: 1;
+  margin: -0.25rem 0 0;
+}
+
+.heading {
+  font-family: var(--font-display-bold);
+  font-size: clamp(1.6rem, 2.4vw, 2.4rem);
+  font-weight: 400;
+  color: var(--color-body);
+  line-height: 1.25;
+  margin-top: 0.25rem;
 }
 
 .body {
