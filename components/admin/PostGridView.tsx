@@ -352,64 +352,66 @@ export function PostGridView() {
           {posts.map(post => {
             const coverUrl = getCoverUrl(post)
             return (
-              <Link
-                key={post.id}
-                href={`/admin/collections/posts/${post.id}`}
-                style={css.card}
-                className="post-card"
-                title={post.title}
-              >
-                <div style={css.imgWrap}>
-                  {coverUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={coverUrl} alt={post.title} style={css.img} loading="lazy" />
-                  ) : (
-                    <div style={css.placeholder}>&#9998;</div>
-                  )}
-                  {/* Publish/Draft quick-toggle */}
-                  <button
-                    type="button"
-                    onClick={(e) => { void toggleStatus(e, post) }}
-                    disabled={togglingIds.has(post.id)}
-                    aria-busy={togglingIds.has(post.id)}
-                    title={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
-                    aria-label={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
-                    aria-pressed={post.status === 'published'}
-                    style={{
-                      position: 'absolute',
-                      top: '0.5rem',
-                      right: '0.5rem',
-                      padding: '0.18rem 0.5rem',
-                      background: post.status === 'published'
-                        ? 'rgba(16,185,129,0.85)'
-                        : 'rgba(100,100,100,0.75)',
-                      backdropFilter: 'blur(4px)',
-                      borderRadius: '3px',
-                      fontSize: '0.58rem',
-                      letterSpacing: '0.12em',
-                      textTransform: 'uppercase' as const,
-                      color: '#fff',
-                      fontWeight: 600,
-                      border: 'none',
-                      cursor: togglingIds.has(post.id) ? 'wait' : 'pointer',
-                      opacity: togglingIds.has(post.id) ? 0.5 : 1,
-                      fontFamily: 'inherit',
-                      transition: 'background 0.15s',
-                    }}
-                  >
-                    {post.status ?? 'draft'}
-                  </button>
-                </div>
-                <div style={css.cardBody}>
-                  <div style={css.cardTitle}>{post.title}</div>
-                  {post.publishedAt && (
-                    <div style={css.cardDate}>{formatDate(post.publishedAt)}</div>
-                  )}
-                  {post.excerpt && (
-                    <div style={css.cardExcerpt}>{post.excerpt}</div>
-                  )}
-                </div>
-              </Link>
+              <div key={post.id} style={{ ...css.card, position: 'relative' }} className="post-card">
+                {/* Full-card nav link — button sits above it via z-index */}
+                <Link
+                  href={`/admin/collections/posts/${post.id}`}
+                  style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+                  title={post.title}
+                >
+                  <div style={css.imgWrap}>
+                    {coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={coverUrl} alt={post.title} style={css.img} loading="lazy" />
+                    ) : (
+                      <div style={css.placeholder}>&#9998;</div>
+                    )}
+                  </div>
+                  <div style={css.cardBody}>
+                    <div style={css.cardTitle}>{post.title}</div>
+                    {post.publishedAt && (
+                      <div style={css.cardDate}>{formatDate(post.publishedAt)}</div>
+                    )}
+                    {post.excerpt && (
+                      <div style={css.cardExcerpt}>{post.excerpt}</div>
+                    )}
+                  </div>
+                </Link>
+                {/* Publish/Draft quick-toggle — sibling of <a>, not child */}
+                <button
+                  type="button"
+                  onClick={(e) => { void toggleStatus(e, post) }}
+                  disabled={togglingIds.has(post.id)}
+                  aria-busy={togglingIds.has(post.id)}
+                  title={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
+                  aria-label={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
+                  aria-pressed={post.status === 'published'}
+                  style={{
+                    position: 'absolute',
+                    top: '0.5rem',
+                    right: '0.5rem',
+                    zIndex: 1,
+                    padding: '0.18rem 0.5rem',
+                    background: post.status === 'published'
+                      ? 'rgba(16,185,129,0.85)'
+                      : 'rgba(100,100,100,0.75)',
+                    backdropFilter: 'blur(4px)',
+                    borderRadius: '3px',
+                    fontSize: '0.58rem',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase' as const,
+                    color: '#fff',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: togglingIds.has(post.id) ? 'wait' : 'pointer',
+                    opacity: togglingIds.has(post.id) ? 0.5 : 1,
+                    fontFamily: 'inherit',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  {post.status ?? 'draft'}
+                </button>
+              </div>
             )
           })}
         </div>
