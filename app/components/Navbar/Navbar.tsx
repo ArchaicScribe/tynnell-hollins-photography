@@ -51,7 +51,7 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
 
   const navClass = [
     styles.navbar,
-    !isHome || scrolled ? styles.scrolled : '',
+    scrolled ? styles.scrolled : '',
     menuOpen ? styles.menuOpen : '',
   ].filter(Boolean).join(' ')
 
