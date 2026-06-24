@@ -39,21 +39,3 @@
   --padding-block:        4vmax;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg:             #f4efe8;
-    --color-bg-accent:      #ede8de;
-    --color-bg-card:        #e4dfd6;
-    --color-bg-hover:       #ddd6cc;
-    --color-heading:        #1a1a1a;
-    --color-body:           #2a2a2a;
-    --color-detail:         #6b6a6a;
-    --color-btn-bg:         #6b6a6a;
-    --color-btn-text:       #f4efe8;
-    --color-btn-hover:      #4a4a4a;
-    --color-border:         rgba(26, 26, 26, 0.10);
-    --color-border-subtle:  rgba(26, 26, 26, 0.06);
-    --color-border-solid:   #ccc4ba;
-    --color-error:          #c0392b;
-  }
-}
