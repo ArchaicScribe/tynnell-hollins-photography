@@ -53,19 +53,12 @@ export default async function BlogPage() {
   return (
     <main className={styles.main}>
       {blogSchema && <JsonLd data={blogSchema} />}
+      <h1 className={styles.srOnly}>The Journal</h1>
 
-      {/* Hero - featured post cover fills the viewport width */}
-      <section
-        className={`${styles.hero} ${!featuredCoverUrl ? styles.heroFallback : ''}`}
-        aria-label="Journal"
-      >
+      {/* Cover image - sits below the fixed nav */}
+      <section className={`${styles.hero} ${!featuredCoverUrl ? styles.heroFallback : ''}`} aria-label="Journal">
         {featuredCoverUrl && featuredPost && (
-          <Link
-            href={`/blog/${featuredSlug}`}
-            className={styles.heroImageLink}
-            tabIndex={-1}
-            aria-hidden="true"
-          >
+          <Link href={`/blog/${featuredSlug}`} className={styles.heroImageLink} tabIndex={-1} aria-hidden="true">
             <Image
               src={featuredCoverUrl}
               alt={featuredCover?.alt ?? featuredPost.title}
@@ -76,43 +69,21 @@ export default async function BlogPage() {
             />
           </Link>
         )}
-        <div className={styles.heroOverlay} />
-        <div className={styles.heroContent}>
-          <p className={styles.heroEyebrow}>Journal</p>
-          {featuredPost ? (
-            <>
-              <h1 className={styles.heroTitle}>
-                <Link href={`/blog/${featuredSlug}`} className={styles.heroTitleLink}>
-                  {featuredPost.title}
-                </Link>
-              </h1>
-              <div className={styles.heroMeta}>
-                {featuredPost.publishedAt && (
-                  <time className={styles.heroDate} dateTime={featuredPost.publishedAt}>
-                    {new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
-                      year: 'numeric', month: 'long', day: 'numeric',
-                    })}
-                  </time>
-                )}
-                <Link href={`/blog/${featuredSlug}`} className={styles.heroCta}>
-                  Read Article
-                </Link>
-              </div>
-            </>
-          ) : (
-            <h1 className={styles.heroTitle}>{"Stories from Behind the Lens"}</h1>
-          )}
-        </div>
+        {featuredCoverUrl && <div className={styles.heroOverlay} />}
+        <span className={styles.blogLabel} aria-hidden="true">Blog</span>
       </section>
 
-      {/* Journal bar */}
-      <div className={styles.journalBar}>
-        <span className={styles.journalLabel}>The Journal</span>
-        {posts.length > 0 && (
-          <span className={styles.journalCount}>
-            {posts.length} {posts.length === 1 ? 'post' : 'posts'}
-          </span>
-        )}
+      {/* Filter bar */}
+      <div className={styles.filterBar}>
+        <div className={styles.filterCats}>
+          <span className={styles.filterCatActive}>All</span>
+        </div>
+        <button className={styles.filterSearchBtn} aria-label="Search posts">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.25" />
+            <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+          </svg>
+        </button>
       </div>
 
       {/* Posts grid */}
@@ -130,19 +101,14 @@ export default async function BlogPage() {
 
             return (
               <article key={post.id} className={styles.card}>
-                <Link
-                  href={`/blog/${slug}`}
-                  className={styles.cardImageLink}
-                  tabIndex={-1}
-                  aria-hidden="true"
-                >
+                <Link href={`/blog/${slug}`} className={styles.cardImageLink} tabIndex={-1} aria-hidden="true">
                   <div className={styles.cardImage}>
                     {coverUrl ? (
                       <Image
                         src={coverUrl}
                         alt={cover?.alt ?? post.title}
                         fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className={styles.cardPhoto}
                       />
                     ) : (
@@ -164,11 +130,7 @@ export default async function BlogPage() {
                     </Link>
                   </h2>
                   {post.excerpt && <p className={styles.cardExcerpt}>{post.excerpt}</p>}
-                  <Link
-                    href={`/blog/${slug}`}
-                    className={styles.readMore}
-                    aria-label={`Read: ${post.title}`}
-                  >
+                  <Link href={`/blog/${slug}`} className={styles.readMore} aria-label={`Read: ${post.title}`}>
                     Read More
                   </Link>
                 </div>
