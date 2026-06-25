@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { isValidEmail, anyFieldTooLong, CHECKOUT_MAX_LENGTHS, isValidSessionDate, MIN_LEAD_TIME_HOURS, MAX_BOOKING_MONTHS } from '@/app/lib/validation'
-import { checkoutRatelimit, getClientIp } from '@/app/lib/ratelimit'
+import { checkoutRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { RATE_LIMIT_ERROR, CONTACT_EMAIL } from '@/app/lib/constants'
 import { getBlockedDateResult } from '@/app/lib/availability'
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { success } = await checkoutRatelimit.limit(getClientIp(request))
+  const { success } = await safeLimit(checkoutRatelimit, getClientIp(request))
   if (!success) {
     return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 })
   }

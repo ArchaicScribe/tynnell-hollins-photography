@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { isValidEmail, isValidPhone, escapeHtml } from '@/app/lib/validation'
-import { comingSoonRatelimit, getClientIp } from '@/app/lib/ratelimit'
+import { comingSoonRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { comingSoonInquiryEmailHtml } from '@/app/lib/emails'
 import { EMAIL_FROM, RATE_LIMIT_ERROR } from '@/app/lib/constants'
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { success } = await comingSoonRatelimit.limit(getClientIp(request))
+  const { success } = await safeLimit(comingSoonRatelimit, getClientIp(request))
   if (!success) {
     return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 })
   }
