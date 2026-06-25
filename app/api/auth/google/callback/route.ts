@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { SignJWT } from 'jose'
-import { v4 as uuid } from 'uuid'
 
 export const runtime = 'nodejs'
 
@@ -109,7 +108,7 @@ export async function GET(request: NextRequest) {
 
     // Payload v3 requires a session ID (sid) in the JWT, stored in the user's sessions array.
     // Without it, Payload's JWT strategy returns { user: null } even if the JWT signature is valid.
-    const sid = uuid()
+    const sid = crypto.randomUUID()
     const now = new Date()
     const expiresAt = new Date(now.getTime() + TOKEN_EXPIRATION_SECONDS * 1000)
 
