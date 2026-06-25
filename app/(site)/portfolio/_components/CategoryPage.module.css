@@ -3,6 +3,13 @@
   height: 85vh;
   min-height: 520px;
   overflow: hidden;
+  background: var(--color-bg-accent);
+}
+
+.heroFallback {
+  background-image: url('/hero-background.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 .heroImg {

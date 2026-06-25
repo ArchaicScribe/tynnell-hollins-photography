@@ -75,7 +75,17 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
   const currentPhoto = lightboxIdx !== null ? photos[lightboxIdx] : null
 
   if (!photos.length) {
-    return <p className={styles.empty}>No photos in this category yet.</p>
+    return (
+      <div className={styles.emptySection}>
+        <p className={styles.emptyEyebrow}>Coming Soon</p>
+        <p className={styles.emptyHeading}>Photos on the Way</p>
+        <p className={styles.emptyBody}>This gallery is being curated. Check back soon, or explore the full portfolio in the meantime.</p>
+        <div className={styles.emptyActions}>
+          <a href="/portfolio" className={styles.emptyBtn}>View All Work</a>
+          <a href="/contact" className={styles.emptyBtnSecondary}>Book a Session</a>
+        </div>
+      </div>
+    )
   }
 
   return (

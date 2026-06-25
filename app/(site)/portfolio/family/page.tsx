@@ -41,7 +41,7 @@ export default async function FamilyPage() {
   return (
     <main>
       {/* Hero */}
-      <section className={styles.hero}>
+      <section className={`${styles.hero}${!heroUrl ? ` ${styles.heroFallback}` : ''}`}>
         {heroUrl && (
           <Image
             src={heroUrl}
