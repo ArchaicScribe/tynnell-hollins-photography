@@ -14,7 +14,6 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
   const [menuOpen, setMenuOpen] = useState(false)
   const [portfolioOpen, setPortfolioOpen] = useState(false)
   const pathname = usePathname()
-  const isHome = pathname === '/'
   const dropdownRef = useRef<HTMLLIElement>(null)
 
   useScrollLock(menuOpen)

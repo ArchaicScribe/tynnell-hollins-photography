@@ -1,5 +1,6 @@
 'use client'
 import { useState, useCallback, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import styles from './CategoryPhotoGrid.module.css'
 
@@ -81,8 +82,8 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
         <p className={styles.emptyHeading}>Photos on the Way</p>
         <p className={styles.emptyBody}>This gallery is being curated. Check back soon, or explore the full portfolio in the meantime.</p>
         <div className={styles.emptyActions}>
-          <a href="/portfolio" className={styles.emptyBtn}>View All Work</a>
-          <a href="/contact" className={styles.emptyBtnSecondary}>Book a Session</a>
+          <Link href="/portfolio" className={styles.emptyBtn}>View All Work</Link>
+          <Link href="/contact" className={styles.emptyBtnSecondary}>Book a Session</Link>
         </div>
       </div>
     )
