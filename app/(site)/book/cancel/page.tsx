@@ -10,9 +10,14 @@ export const metadata: Metadata = {
 export default function BookCancelPage() {
   return (
     <main className={styles.page}>
+      <section className={styles.hero} aria-label="Payment cancelled">
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
+          <p className={styles.heroEyebrow}>No worries</p>
+          <h1 className={styles.heroHeading}>Payment Cancelled.</h1>
+        </div>
+      </section>
       <div className={styles.content}>
-        <p className={styles.eyebrow}>No worries</p>
-        <h1 className={styles.heading}>Payment Cancelled.</h1>
         <p className={styles.body}>
           Your booking wasn&apos;t completed. Nothing was charged. Your date hasn&apos;t been held yet.
         </p>

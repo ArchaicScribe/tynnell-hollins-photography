@@ -10,11 +10,16 @@ export const metadata: Metadata = {
 export default function BookSuccessPage() {
   return (
     <main className={styles.page}>
+      <section className={styles.hero} aria-label="Booking confirmed">
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
+          <p className={styles.heroEyebrow}>You&apos;re on the calendar</p>
+          <h1 className={styles.heroHeading}>Deposit Received.</h1>
+        </div>
+      </section>
       <div className={styles.content}>
-        <p className={styles.eyebrow}>You&apos;re on the calendar</p>
-        <h1 className={styles.heading}>Deposit Received.</h1>
         <p className={styles.body}>
-          Your date is officially held. Check your inbox for a confirmation email;
+          Your date is officially held. Check your inbox for a confirmation email.
           I&apos;ll be in touch shortly to finalize the details and start planning your session.
         </p>
         <p className={styles.body}>

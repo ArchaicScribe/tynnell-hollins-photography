@@ -13,6 +13,12 @@
   overflow: hidden;
 }
 
+.heroFallback {
+  background-image: url('/hero-background.jpg');
+  background-size: cover;
+  background-position: center top;
+}
+
 .heroImg {
   object-fit: cover;
   object-position: center top;

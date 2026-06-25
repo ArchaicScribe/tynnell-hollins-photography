@@ -1,43 +1,67 @@
 .page {
   min-height: 100vh;
   background: var(--color-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6rem var(--padding-x);
 }
 
+/* ── Hero ────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  width: 100%;
+  height: clamp(260px, 42vh, 480px);
+  background-image: url('/hero-background.jpg');
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12,12,12,0.75) 0%, rgba(12,12,12,0.2) 55%, transparent 100%);
+  z-index: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  padding: 3rem var(--padding-x);
+}
+
+.heroEyebrow {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(214,209,206,0.65);
+  margin: 0 0 0.5rem;
+}
+
+.heroHeading {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 400;
+  color: #fff;
+  margin: 0;
+  line-height: 1.05;
+}
+
+/* ── Content ────────────────────────────────────────────── */
+
 .content {
-  max-width: 520px;
-  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 5rem var(--padding-x) 7rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 1.5rem;
 }
 
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 400;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-  margin: 0;
-}
-
-.heading {
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 8vw, 5rem);
-  font-weight: 400;
-  color: var(--color-heading);
-  margin: 0;
-  line-height: 1.1;
-}
-
 .body {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
   font-weight: 300;
   line-height: 1.85;
   color: var(--color-body);
@@ -46,22 +70,23 @@
 
 .actions {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  flex-wrap: wrap;
   margin-top: 0.5rem;
 }
 
 .homeBtn {
-  font-family: var(--font-mono);
+  font-family: var(--font-heading);
   font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.2em;
+  font-weight: 600;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-btn-text);
   background: var(--color-btn-bg);
   padding: 0.9rem 2.5rem;
   text-decoration: none;
+  display: inline-block;
   transition: background 0.2s ease;
 }
 
@@ -70,10 +95,10 @@
 }
 
 .contactLink {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
   font-weight: 300;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--color-detail);
   text-decoration: underline;
   text-underline-offset: 3px;

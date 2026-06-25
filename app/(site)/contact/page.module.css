@@ -1,14 +1,64 @@
 .main {
   min-height: 100vh;
-  padding: 8rem var(--padding-x) 5rem;
   background: var(--color-bg);
+}
+
+/* ── Hero ────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  width: 100%;
+  height: clamp(240px, 38vh, 420px);
+  background-image: url('/hero-background.jpg');
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12,12,12,0.65) 0%, transparent 60%);
+  z-index: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  padding: 2.5rem var(--padding-x);
+}
+
+.heroEyebrow {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(214,209,206,0.65);
+  margin: 0 0 0.4rem;
+}
+
+.heroHeading {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 400;
+  color: #fff;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 5rem var(--padding-x);
 }
 
 /* ── OOO banner ──────────────────────────────────────────── */
 
 .oooBanner {
   max-width: 1200px;
-  margin: 0 auto 3rem;
+  margin: 2rem auto 0;
   padding: 1rem 1.5rem;
   border: 1px solid rgba(214, 209, 206, 0.15);
   border-left: 3px solid var(--color-detail);
@@ -25,8 +75,6 @@
 }
 
 .grid {
-  max-width: 1200px;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   gap: 6rem;
@@ -37,7 +85,7 @@
 
 .editorial {
   position: sticky;
-  top: 8rem;
+  top: 6rem;
 }
 
 .eyebrow {
@@ -47,16 +95,7 @@
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--color-detail);
-  margin: 0 0 1.25rem;
-}
-
-.heading {
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 6vw, 5rem);
-  font-weight: 400;
-  line-height: 1.1;
-  color: var(--color-heading);
-  margin: 0 0 1.75rem;
+  margin: 0 0 1.5rem;
 }
 
 .body {
@@ -105,15 +144,15 @@
   .grid {
     gap: 3rem;
   }
-
-  .heading {
-    font-size: clamp(2.5rem, 5vw, 4rem);
-  }
 }
 
 @media (max-width: 768px) {
-  .main {
-    padding: 6rem 1.5rem 4rem;
+  .hero {
+    height: clamp(200px, 30vh, 320px);
+  }
+
+  .content {
+    padding: 3rem var(--padding-x) 4rem;
   }
 
   .grid {
@@ -123,10 +162,6 @@
 
   .editorial {
     position: static;
-  }
-
-  .heading {
-    font-size: clamp(2.5rem, 10vw, 3.5rem);
   }
 
   .body {

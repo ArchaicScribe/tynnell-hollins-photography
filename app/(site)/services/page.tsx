@@ -50,12 +50,19 @@ export default async function ServicesPage() {
       {servicesSchema && <JsonLd data={servicesSchema} />}
 
       {/* Hero */}
-      <section className={styles.hero}>
-        <p className={styles.eyebrow}>Services</p>
-        <h1 className={styles.heroHeading}>{"Every Session,"}<br />{"Crafted for You"}</h1>
-        <p className={styles.heroSub}>
-          {"Packages designed to give you images you'll treasure for a lifetime. Choose the experience that fits your story."}
-        </p>
+      <section className={styles.hero} aria-label="Services">
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
+          <div className={styles.heroTextBox}>
+            <p className={styles.eyebrow}>Services</p>
+            <h1 className={styles.heroHeading}>{"Every Session,"}<br />{"Crafted for You"}</h1>
+          </div>
+          <div className={styles.heroDescBox}>
+            <p className={styles.heroSub}>
+              {"Packages designed to give you images you'll treasure for a lifetime. Choose the experience that fits your story."}
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* How It Works */}

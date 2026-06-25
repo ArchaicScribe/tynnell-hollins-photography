@@ -6,38 +6,74 @@
 /* ── Hero ────────────────────────────────────────────────── */
 
 .hero {
-  padding: calc(var(--padding-block) * 2) var(--padding-x) 5rem;
-  max-width: 860px;
-  margin: 0 auto;
-  text-align: center;
-  border-bottom: 1px solid var(--color-border-solid);
+  position: relative;
+  width: 100%;
+  height: clamp(320px, 55vh, 580px);
+  background-image: url('/hero-background.jpg');
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12,12,12,0.72) 0%, rgba(12,12,12,0.18) 55%, transparent 100%);
+  z-index: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  padding: 3rem var(--padding-x);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  width: 100%;
+}
+
+.heroTextBox {
+  background: var(--color-bg-overlay);
+  padding: 1.25rem 2rem;
+  backdrop-filter: blur(8px);
 }
 
 .eyebrow {
   font-family: var(--font-body);
-  font-size: 0.7rem;
-  letter-spacing: 0.25em;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--color-detail);
-  margin-bottom: 1.25rem;
+  color: rgba(214,209,206,0.7);
+  margin: 0 0 0.5rem;
 }
 
 .heroHeading {
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 6vw, 5rem);
-  font-weight: 400;
-  color: var(--color-heading);
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.heroDescBox {
+  background: var(--color-bg-overlay);
+  padding: 1.25rem 1.75rem;
+  backdrop-filter: blur(8px);
+  max-width: 380px;
 }
 
 .heroSub {
-  font-family: var(--font-prose);
-  font-size: 1rem;
-  line-height: 1.75;
-  color: var(--color-detail);
-  max-width: 520px;
-  margin: 0 auto;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1.8;
+  color: rgba(214,209,206,0.9);
+  margin: 0;
+  letter-spacing: 0.03em;
 }
 
 /* ── How It Works ────────────────────────────────────────── */
@@ -359,10 +395,20 @@
 
 /* ── Responsive ──────────────────────────────────────────── */
 
-@media (max-width: 768px) {
-  .hero {
-    padding-bottom: 3.5rem;
+@media (max-width: 640px) {
+  .heroContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1.5rem var(--padding-x);
   }
+
+  .heroDescBox {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
 
   .process {
     padding: 4rem var(--padding-x);

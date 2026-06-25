@@ -97,37 +97,47 @@ export default async function ContactPage() {
   return (
     <main className={styles.main}>
       <JsonLd data={contactPageSchema} />
-      {oooMessage && (
-        <div className={styles.oooBanner} role="note" aria-label="Availability notice">
-          <p className={styles.oooMessage}>{oooMessage}</p>
-        </div>
-      )}
-      <div className={styles.grid}>
 
-        {/* Left - editorial */}
-        <div className={styles.editorial}>
-          <p className={styles.eyebrow}>Let&apos;s Connect</p>
-          <h1 className={styles.heading}>Let&apos;s Create<br />Something<br />Beautiful</h1>
-          <p className={styles.body}>
-            Every love story, milestone, and moment deserves to be told with intention.
-            Fill out the form and I&apos;ll be in touch within 48 hours.
-          </p>
-          <div className={styles.directContact}>
-            <a href={`mailto:${CONTACT_EMAIL}`} className={styles.contactLink}>
-              {CONTACT_EMAIL}
-            </a>
-            <span className={styles.contactDivider}>·</span>
-            <a href="https://instagram.com/tynnellhollinsphotography" className={styles.contactLink} target="_blank" rel="noopener noreferrer">
-              @tynnellhollinsphotography
-            </a>
+      {/* Hero */}
+      <section className={styles.hero} aria-label="Contact">
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
+          <p className={styles.heroEyebrow}>Let&apos;s Connect</p>
+          <p className={styles.heroHeading}>Let&apos;s Create Something Beautiful</p>
+        </div>
+      </section>
+
+      <div className={styles.content}>
+        {oooMessage && (
+          <div className={styles.oooBanner} role="note" aria-label="Availability notice">
+            <p className={styles.oooMessage}>{oooMessage}</p>
           </div>
-        </div>
+        )}
+        <div className={styles.grid}>
 
-        {/* Right - form */}
-        <div className={styles.formColumn}>
-          <ContactForm minDate={minDate} maxDate={maxDate} />
-        </div>
+          {/* Left - editorial */}
+          <div className={styles.editorial}>
+            <p className={styles.eyebrow}>Send an Inquiry</p>
+            <p className={styles.body}>
+              Every love story, milestone, and moment deserves to be told with intention.
+              Fill out the form and I&apos;ll be in touch within 48 hours.
+            </p>
+            <div className={styles.directContact}>
+              <a href={`mailto:${CONTACT_EMAIL}`} className={styles.contactLink}>
+                {CONTACT_EMAIL}
+              </a>
+              <a href="https://instagram.com/tynnellhollinsphotography" className={styles.contactLink} target="_blank" rel="noopener noreferrer">
+                @tynnellhollinsphotography
+              </a>
+            </div>
+          </div>
 
+          {/* Right - form */}
+          <div className={styles.formColumn}>
+            <ContactForm minDate={minDate} maxDate={maxDate} />
+          </div>
+
+        </div>
       </div>
     </main>
   )

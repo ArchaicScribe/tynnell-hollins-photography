@@ -90,7 +90,7 @@ export default async function AboutPage() {
       <JsonLd data={personSchema} />
 
       {/* Hero */}
-      <section className={styles.hero}>
+      <section className={`${styles.hero}${!headshotHeroUrl ? ` ${styles.heroFallback}` : ''}`}>
         {headshotHeroUrl && (
           <Image
             src={headshotHeroUrl}
