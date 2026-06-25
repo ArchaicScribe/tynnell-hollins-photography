@@ -112,19 +112,19 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const expiresAt = new Date(now.getTime() + TOKEN_EXPIRATION_SECONDS * 1000)
 
-    const currentSessions: Array<{ id: string; createdAt: Date; expiresAt: Date }> =
-      Array.isArray((user as Record<string, unknown>).sessions)
-        ? ((user as Record<string, unknown>).sessions as Array<{ id: string; createdAt: Date; expiresAt: Date }>).filter(
-            (s) => s.expiresAt && new Date(s.expiresAt) > now
-          )
-        : []
+    type SessionEntry = { id: string; createdAt: Date; expiresAt: Date }
+    const userAny = user as unknown as { sessions?: SessionEntry[] }
+    const currentSessions: SessionEntry[] = Array.isArray(userAny.sessions)
+      ? userAny.sessions.filter((s) => s.expiresAt && new Date(s.expiresAt) > now)
+      : []
 
     currentSessions.push({ id: sid, createdAt: now, expiresAt })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await payload.update({
       collection: 'users',
       id: user.id,
-      data: { sessions: currentSessions } as Record<string, unknown>,
+      data: { sessions: currentSessions } as any,
     })
 
     console.log(`[google-sso] session created sid=${sid}, signing token`)
