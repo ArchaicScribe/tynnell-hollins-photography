@@ -85,9 +85,17 @@ export default function BookClient({ packages, minDate, maxDate }: { packages: B
 
   if (packages.length === 0) {
     return (
-      <p className={styles.emptyState}>
-        Packages coming soon. <Link href="/contact" className={styles.noteLink}>Reach out directly</Link> to discuss your vision.
-      </p>
+      <div className={styles.emptySection}>
+        <p className={styles.emptyEyebrow}>Sessions Now Open</p>
+        <h2 className={styles.emptyHeading}>{"Let's Plan Your Session"}</h2>
+        <p className={styles.emptyBody}>
+          Package details are being finalized. In the meantime, reach out and we will talk through your vision, your budget, and find the perfect fit.
+        </p>
+        <div className={styles.emptyActions}>
+          <Link href="/contact" className={styles.emptyBtn}>Send an Inquiry</Link>
+          <Link href="/services" className={styles.emptyBtnSecondary}>View Services</Link>
+        </div>
+      </div>
     )
   }
 

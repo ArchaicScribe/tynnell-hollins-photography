@@ -63,14 +63,21 @@ export default async function BookPage() {
 
   return (
     <main className={styles.page}>
+      <section className={styles.hero} aria-label="Book a Session">
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
+          <p className={styles.eyebrow}>Reserve Your Date</p>
+          <h1 className={styles.heading}>Book a Session</h1>
+        </div>
+      </section>
+
       {ooo && (
         <div className={styles.oooBanner} role="note" aria-label="Availability notice">
           <p className={styles.oooMessage}>{ooo.message}</p>
         </div>
       )}
-      <div className={styles.header}>
-        <p className={styles.eyebrow}>Reserve Your Date</p>
-        <h1 className={styles.heading}>Book a Session</h1>
+
+      <div className={styles.intro}>
         <p className={styles.subheading}>
           A deposit secures your date. The remaining balance is due before your session.
           Have questions first?{' '}
