@@ -17,8 +17,10 @@ export async function GET(request: NextRequest) {
   const storedState = request.cookies.get('google_oauth_state')?.value
   const origin = request.nextUrl.origin
 
-  const fail = (reason: string) =>
-    NextResponse.redirect(new URL(`/admin?sso_error=${reason}`, origin))
+  const fail = (reason: string) => {
+    console.error(`[google-sso] fail: ${reason}`)
+    return NextResponse.redirect(new URL(`/admin/login?sso_error=${reason}`, origin))
+  }
 
   if (!code || !state || !storedState || state !== storedState) {
     return fail('invalid_state')
@@ -63,25 +65,40 @@ export async function GET(request: NextRequest) {
       return fail('invalid_token')
     }
 
-    const email = (userInfo.email ?? '').toLowerCase()
+    const rawEmail = userInfo.email ?? ''
+    const email = rawEmail.toLowerCase()
+
+    console.log(`[google-sso] email from Google: ${rawEmail}`)
 
     if (!ALLOWED_EMAILS.has(email)) {
       return fail('unauthorized')
     }
 
-    // Find the Payload user by email
+    // Find the Payload user - try both the exact Google email and lowercase
     const payload = await getPayload({ config })
-    const { docs } = await payload.find({
+    let { docs } = await payload.find({
       collection: 'users',
-      where: { email: { equals: email } },
+      where: { email: { equals: rawEmail } },
       limit: 1,
     })
+
+    if (!docs.length) {
+      const result = await payload.find({
+        collection: 'users',
+        where: { email: { equals: email } },
+        limit: 1,
+      })
+      docs = result.docs
+    }
+
+    console.log(`[google-sso] user lookup found: ${docs.length} docs`)
 
     if (!docs.length) {
       return fail('user_not_found')
     }
 
     const user = docs[0]
+    console.log(`[google-sso] signing token for user id=${user.id} email=${user.email}`)
 
     // Sign a JWT in the same format Payload uses internally
     const secret = new TextEncoder().encode(process.env.PAYLOAD_SECRET ?? '')
@@ -94,6 +111,8 @@ export async function GET(request: NextRequest) {
       .setIssuedAt()
       .setExpirationTime('2h')
       .sign(secret)
+
+    console.log(`[google-sso] token signed, redirecting to /admin`)
 
     const response = NextResponse.redirect(new URL('/admin', origin))
 
