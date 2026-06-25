@@ -112,6 +112,8 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const expiresAt = new Date(now.getTime() + TOKEN_EXPIRATION_SECONDS * 1000)
 
+    // Use payload.db.updateOne directly - same pattern as Payload's internal addSessionToUser.
+    // payload.update strips the sessions field (access.update = false) even with overrideAccess.
     type SessionEntry = { id: string; createdAt: Date; expiresAt: Date }
     const userAny = user as unknown as { sessions?: SessionEntry[] }
     const currentSessions: SessionEntry[] = Array.isArray(userAny.sessions)
@@ -120,13 +122,12 @@ export async function GET(request: NextRequest) {
 
     currentSessions.push({ id: sid, createdAt: now, expiresAt })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await payload.update({
-      collection: 'users',
+    await payload.db.updateOne({
       id: user.id,
-      overrideAccess: true,
+      collection: 'users',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: { sessions: currentSessions } as any,
+      data: { ...(user as any), sessions: currentSessions, updatedAt: null },
+      returning: false,
     })
 
     console.log(`[google-sso] session created sid=${sid}, signing token`)
