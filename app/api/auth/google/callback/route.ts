@@ -120,10 +120,10 @@ export async function GET(request: NextRequest) {
 
     currentSessions.push({ id: sid, createdAt: now, expiresAt })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await payload.update({
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ await payload.update({
       collection: 'users',
       id: user.id,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: { sessions: currentSessions } as any,
     })
 
