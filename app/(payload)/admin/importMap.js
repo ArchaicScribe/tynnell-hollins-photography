@@ -40,6 +40,7 @@ import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c
 import { OooWarnings as OooWarnings_24882b9d221e8df452e06e4f5a939af9 } from '../../../components/admin/OooWarnings'
 import { AdminIcon as AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c } from '../../../components/admin/AdminIcon'
 import { AdminLogo as AdminLogo_56b58cfdfd9d12efeac26d6201d62c94 } from '../../../components/admin/AdminLogo'
+import { GoogleSignInButton as GoogleSignInButton_61e8baa09a72c73bfc7f6c4c790b8986 } from '../../../components/admin/GoogleSignInButton'
 import { ForcePasswordChange as ForcePasswordChange_81ef321150d17489172d7270011dd4ba } from '../../../components/admin/ForcePasswordChange'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { Dashboard as Dashboard_f0f8d4a7080efd2cd25bb6be37c094c0 } from '../../../components/admin/Dashboard'
@@ -89,6 +90,7 @@ export const importMap = {
   "./components/admin/OooWarnings#OooWarnings": OooWarnings_24882b9d221e8df452e06e4f5a939af9,
   "./components/admin/AdminIcon#AdminIcon": AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c,
   "./components/admin/AdminLogo#AdminLogo": AdminLogo_56b58cfdfd9d12efeac26d6201d62c94,
+  "./components/admin/GoogleSignInButton#GoogleSignInButton": GoogleSignInButton_61e8baa09a72c73bfc7f6c4c790b8986,
   "./components/admin/ForcePasswordChange#ForcePasswordChange": ForcePasswordChange_81ef321150d17489172d7270011dd4ba,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "./components/admin/Dashboard#Dashboard": Dashboard_f0f8d4a7080efd2cd25bb6be37c094c0,
