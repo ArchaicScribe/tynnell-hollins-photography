@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Tangerine, Archivo, Roboto_Mono } from 'next/font/google'
+import { Tangerine, Archivo, Roboto_Mono, Abril_Fatface } from 'next/font/google'
 import './globals.css'
 import './styles/tokens.css'
 import Navbar from '../components/Navbar/Navbar'
@@ -16,9 +16,16 @@ const tangerine = Tangerine({
 })
 
 const archivo = Archivo({
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700', '800'],
   subsets: ['latin'],
   variable: '--font-heading',
+  display: 'swap',
+})
+
+const abrialFatface = Abril_Fatface({
+  weight: ['400'],
+  subsets: ['latin'],
+  variable: '--font-display-bold',
   display: 'swap',
 })
 
@@ -65,7 +72,7 @@ export default async function RootLayout({
   const builderLinks = await getBuilderNavLinks()
 
   return (
-    <html lang="en" className={`${tangerine.variable} ${archivo.variable} ${robotoMono.variable}`}>
+    <html lang="en" className={`${tangerine.variable} ${archivo.variable} ${robotoMono.variable} ${abrialFatface.variable}`}>
       <body suppressHydrationWarning>
         <a href="#main-content" className="skipLink">Skip to content</a>
         <Navbar builderLinks={builderLinks} />

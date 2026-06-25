@@ -1,0 +1,84 @@
+.albums {
+  padding: 4rem var(--padding-x);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.albumsHeading {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin-bottom: 2rem;
+}
+
+.albumGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.albumCard {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.albumCard:hover .albumImg {
+  transform: scale(1.03);
+}
+
+.albumCover {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--color-bg-card);
+  margin-bottom: 0.75rem;
+}
+
+.albumImg {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.noCover {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-card);
+}
+
+.albumFooter {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.albumTitle {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-heading);
+  letter-spacing: 0.02em;
+}
+
+.albumMeta {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--color-detail);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .albumGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .albumGrid {
+    grid-template-columns: 1fr;
+  }
+}

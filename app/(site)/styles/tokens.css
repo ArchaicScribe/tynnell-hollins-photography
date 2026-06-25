@@ -1,8 +1,10 @@
 :root {
-  /* Colors */
+  /* ── Colors: dark mode (default) ─────────────────────────── */
   --color-bg:             #0C0C0C;
   --color-bg-accent:      #131313;
   --color-bg-card:        #1a1a1a;
+  --color-bg-overlay:     rgba(12, 12, 12, 0.76);   /* dark boxes over photos - same in both modes */
+  --color-bg-hover:       #222222;
   --color-heading:        #D6D1CE;
   --color-body:           #E6E1DE;
   --color-detail:         #9B9A9A;
@@ -11,30 +13,29 @@
   --color-btn-hover:      #807F7F;
   --color-border:         rgba(214, 209, 206, 0.08);
   --color-border-subtle:  rgba(214, 209, 206, 0.06);
-  --color-border-solid:   #1e1e1e;  /* solid dividers/card borders on dark surfaces */
-  --color-bg-hover:       #222222;  /* hover highlight on dark card surfaces */
-  --color-error:          #c87171;  /* inline validation errors */
+  --color-border-solid:   #1e1e1e;
+  --color-error:          #c87171;
 
-  /* Taped-photo treatment (TYN-230). The cream-polaroid look's identity lives
-     here so it can be tuned in one place. Used by the gallery pages, the home
-     portfolio teaser, the About headshot, and the builder Photo Gallery block.
-     Per-surface tape geometry (size/offset/tilt) stays in each stylesheet since
-     it scales with context. */
+  /* ── Colors: light mode override ─────────────────────────── */
+  /* Overlay boxes (--color-bg-overlay) intentionally stay dark since they
+     sit on top of photos in both modes. */
+
+  /* ── Tape treatment ───────────────────────────────────────── */
   --tape-mat:             #f4efe8;
   --tape-color:           rgba(214, 209, 206, 0.42);
   --tape-shadow:          0 10px 26px rgba(0, 0, 0, 0.45);
 
-  /* Typography - values are overridden by next/font CSS variables on <html>.
-     Fallbacks here ensure nothing breaks if the variable is unset. */
-  --font-display:      'Tangerine', cursive;
-  --font-heading:      'Archivo', sans-serif;
-  --font-prose:        var(--font-heading); /* readable paragraphs and body copy - same Archivo family, inherits Next.js self-hosted font */
-  --font-body:         'Roboto Mono', monospace;
-  --font-mono:         var(--font-body); /* alias - resolves to Roboto Mono */
+  /* ── Typography ───────────────────────────────────────────── */
+  --font-display:         'Tangerine', cursive;
+  --font-display-bold:    'Abril Fatface', cursive;
+  --font-heading:         'Archivo', sans-serif;
+  --font-prose:           var(--font-heading);
+  --font-body:            'Roboto Mono', monospace;
+  --font-mono:            var(--font-body);
 
-  /* Spacing */
-  --max-width:         1680px;
-  /* min 1.25rem (20px) so small phones never get less than 20px side padding */
-  --padding-x:         max(1.25rem, 2.5vw);
-  --padding-block:     4vmax;
+  /* ── Spacing ──────────────────────────────────────────────── */
+  --max-width:            1680px;
+  --padding-x:            max(1.25rem, 2.5vw);
+  --padding-block:        4vmax;
 }
+

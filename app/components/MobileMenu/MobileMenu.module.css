@@ -9,9 +9,7 @@
   opacity: 0;
   pointer-events: none;
   transform: translateY(-8px);
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .overlay.open {
@@ -27,27 +25,82 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2.5rem;
+  gap: 2rem;
 }
 
 .item {
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .link {
   font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 400;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--color-heading);
   text-decoration: none;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   transition: color 0.2s ease;
-  display: block;
 }
 
 .link:hover,
 .link:focus-visible {
   color: var(--color-detail);
+  outline: none;
+}
+
+/* Expand button (Portfolio with children) */
+.expandBtn {
+  font-family: var(--font-heading);
+}
+
+.chevron {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid currentColor;
+  transition: transform 0.2s ease;
+  margin-top: 2px;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Sub-items */
+.subLinks {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.subLink {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.subLink:hover,
+.subLink:focus-visible {
+  color: var(--color-heading);
   outline: none;
 }

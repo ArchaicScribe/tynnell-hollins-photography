@@ -30,13 +30,14 @@ export default function AboutPreview({ about }: Props) {
         )}
       </div>
       <div className={styles.content}>
-        <p className={styles.eyebrow}>About Tynnell</p>
+        <p className={styles.eyebrow}>About</p>
+        <p className={styles.greeting}>{"Hey, I'm Tynnell Hollins"}</p>
         <h2 className={styles.heading}>{about?.tagline ?? 'Every Moment Deserves to Last Forever'}</h2>
         <p className={styles.body}>
           {about?.previewBio ??
-            'Based in New Mexico, Tynnell Hollins is a photographer who believes the best images are the ones that feel like a memory. Warm, honest, and full of life. From weddings to family portraits, she brings the same quiet attention to every shoot.'}
+            'Based in New Mexico, I believe the best images are the ones that feel like a memory. Warm, honest, and full of life. From weddings to family portraits, I bring the same quiet attention to every session.'}
         </p>
-        <Link href="/about" className={styles.cta}>Meet Tynnell</Link>
+        <Link href="/about" className={styles.cta}>My Story</Link>
       </div>
     </section>
   )

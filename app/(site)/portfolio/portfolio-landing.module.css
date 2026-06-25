@@ -1,0 +1,99 @@
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  min-height: 100vh;
+  padding-top: 0;
+}
+
+.tile {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  text-decoration: none;
+  color: inherit;
+}
+
+.tileImg {
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.7s ease;
+}
+
+.tile:hover .tileImg {
+  transform: scale(1.04);
+}
+
+.tileOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.18) 40%,
+    transparent 70%
+  );
+  transition: background 0.4s ease;
+}
+
+.tile:hover .tileOverlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.28) 45%,
+    transparent 70%
+  );
+}
+
+.tileContent {
+  position: relative;
+  z-index: 1;
+  padding: 2.5rem var(--padding-x);
+  width: 100%;
+}
+
+.tileTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 3.5vw, 3.5rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.tileDesc {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.7;
+  max-width: 260px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.tile:hover .tileDesc {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .tiles {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .tile {
+    min-height: 60vw;
+  }
+
+  .tileDesc {
+    opacity: 1;
+    transform: none;
+  }
+}

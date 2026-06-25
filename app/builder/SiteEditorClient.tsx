@@ -1,8 +1,10 @@
 'use client'
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-const ui = "var(--font-heading, Archivo, sans-serif)"
-const mono = "var(--font-body, 'Roboto Mono', monospace)"
+// System font stack matches Pixieset's clean UI look
+const ui = "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+const mono = "'Roboto Mono', monospace"
+const teal = '#1db48e'
 
 export interface SitePage {
   id: number | string
@@ -16,147 +18,254 @@ export interface SitePage {
 }
 
 // ---------------------------------------------------------------------------
+// Hardcoded site navigation - mirrors the actual public site structure
+// ---------------------------------------------------------------------------
+
+type NavChild = { key: string; label: string; href: string }
+type NavItem  = { key: string; label: string; href: string; children?: NavChild[] }
+
+const SITE_NAV: NavItem[] = [
+  { key: 'home',         label: 'Home',         href: '/' },
+  { key: 'about',        label: 'About',         href: '/about' },
+  {
+    key: 'portfolio', label: 'Portfolio', href: '/portfolio',
+    children: [
+      { key: 'portraits', label: 'Portraits', href: '/portfolio/portraits' },
+      { key: 'family',    label: 'Family',    href: '/portfolio/family'    },
+      { key: 'weddings',  label: 'Weddings',  href: '/portfolio/weddings'  },
+    ],
+  },
+  { key: 'services',     label: 'Services',      href: '/services'      },
+  { key: 'testimonials', label: 'Testimonials',  href: '/testimonials'  },
+  { key: 'contact',      label: 'Contact',       href: '/contact'       },
+  { key: 'book',         label: 'Book',          href: '/book'          },
+  { key: 'blog',         label: 'Blog',          href: '/blog'          },
+]
+
+// ---------------------------------------------------------------------------
 // Icons
 // ---------------------------------------------------------------------------
 
-function PageIcon() {
+function IconPages() {
   return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-      <rect x="2" y="1" width="11" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <rect x="2" y="2" width="10" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+      <rect x="6" y="4" width="10" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4" fill="none"/>
     </svg>
   )
 }
 
-function HomeIcon() {
+function IconBrush() {
   return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-      <path d="M1.5 7L7.5 1.5L13.5 7V13.5H10V9.5H5V13.5H1.5V7Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M3 15c1.5 0 3-1.5 3-3S4.5 9 3 9c-.8 0-1.5.7-1.5 1.5S2 12 3 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M6 12L14 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M11.5 2.5l4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
     </svg>
   )
 }
 
-function PlusIcon() {
+function IconPen() {
   return (
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-      <path d="M6.5 2v9M2 6.5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M3 13l9-9 3 3-9 9H3v-3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      <path d="M10.5 5.5l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
     </svg>
   )
 }
 
-function DotsIcon() {
+function IconSettings() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M14.3 3.7l-1.4 1.4M5.1 12.9l-1.4 1.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function IconPage() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <circle cx="3" cy="7" r="1.2" fill="currentColor" />
-      <circle cx="7" cy="7" r="1.2" fill="currentColor" />
-      <circle cx="11" cy="7" r="1.2" fill="currentColor" />
+      <rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M4.5 4.5h5M4.5 7h5M4.5 9.5h3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
     </svg>
   )
 }
 
-function ExternalIcon() {
+function IconHome() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M1.5 6.5L7 1.5l5.5 5V13H9.5V9H4.5v4H1.5V6.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function IconDots() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <circle cx="3" cy="7" r="1.2" fill="currentColor"/>
+      <circle cx="7" cy="7" r="1.2" fill="currentColor"/>
+      <circle cx="11" cy="7" r="1.2" fill="currentColor"/>
+    </svg>
+  )
+}
+
+function IconExternal() {
   return (
     <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
-      <path d="M2 9L9 2M9 2H5.5M9 2V5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 9L9 2M9 2H5.5M9 2V5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
-function GlobeIcon() {
+function IconChevronDown({ rotated }: { rotated?: boolean }) {
   return (
-    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
-      <circle cx="8.5" cy="8.5" r="7" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M8.5 1.5C8.5 1.5 6 5 6 8.5s2.5 7 2.5 7M8.5 1.5C8.5 1.5 11 5 11 8.5s-2.5 7-2.5 7M1.5 8.5h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <svg
+      width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"
+      style={{ transition: 'transform 0.18s', transform: rotated ? 'rotate(180deg)' : 'none', flexShrink: 0 }}
+    >
+      <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
-function StylesIcon() {
+function IconDashboard() {
   return (
-    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
-      <circle cx="5" cy="5" r="3" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="12" cy="5" r="3" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="5" cy="12" r="3" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.3" />
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+      <rect x="1" y="1" width="4.5" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="7.5" y="1" width="4.5" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="1" y="7.5" width="4.5" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="7.5" y="7.5" width="4.5" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
     </svg>
   )
 }
 
-function SettingsIcon() {
+function IconPlus() {
   return (
-    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
-      <circle cx="8.5" cy="8.5" r="2.5" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M8.5 1v2M8.5 14v2M1 8.5h2M14 8.5h2M3.2 3.2l1.4 1.4M12.4 12.4l1.4 1.4M14.8 3.2l-1.4 1.4M5.6 12.4l-1.4 1.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function DashboardIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-      <rect x="1" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-      <rect x="8.5" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-      <rect x="1" y="8.5" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-      <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.2" />
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+      <path d="M6.5 2v9M2 6.5h9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
     </svg>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Page context menu
+// Hardcoded nav page row (Home, About, Portfolio, etc.)
 // ---------------------------------------------------------------------------
 
-function PageMenu({ page, onDelete, onToggleNav, onClose }: {
-  page: SitePage
-  onDelete: () => void
-  onToggleNav: () => void
-  onClose: () => void
+function NavPageRow({
+  item, selectedKey, onSelect, expanded, onToggleExpand,
+}: {
+  item: NavItem
+  selectedKey: string
+  onSelect: (key: string, href: string) => void
+  expanded: boolean
+  onToggleExpand: () => void
 }) {
-  const ref = useRef<HTMLDivElement>(null)
+  const [hovered, setHovered] = useState(false)
+  const isActive   = selectedKey === item.key
+  const hasChildren = (item.children?.length ?? 0) > 0
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [onClose])
+  return (
+    <>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => { if (hasChildren) onToggleExpand(); onSelect(item.key, item.href) }}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { if (hasChildren) onToggleExpand(); onSelect(item.key, item.href) } }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '0.55rem',
+          padding: '0.45rem 0.75rem', borderRadius: 6, cursor: 'pointer',
+          background: isActive ? 'rgba(255,255,255,0.08)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+          transition: 'background 0.1s',
+        }}
+      >
+        <span style={{ color: isActive ? '#9b9a9a' : '#4a4a4a', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          {item.key === 'home' ? <IconHome /> : <IconPage />}
+        </span>
 
+        <span style={{
+          flex: 1, fontSize: '0.875rem', fontFamily: ui,
+          fontWeight: isActive ? 500 : 400,
+          color: isActive ? '#ffffff' : '#c8c4c0',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+        }}>
+          {item.label}
+        </span>
+
+        {hasChildren && (
+          <span style={{ color: '#4a4a4a', display: 'flex', alignItems: 'center' }}>
+            <IconChevronDown rotated={expanded} />
+          </span>
+        )}
+
+        {!hasChildren && hovered && (
+          <a
+            href={item.href} target="_blank" rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
+            style={{ color: '#4a4a4a', display: 'flex', alignItems: 'center', flexShrink: 0, lineHeight: 1 }}
+            title={`View ${item.label} live`}
+          >
+            <IconExternal />
+          </a>
+        )}
+      </div>
+
+      {/* Sub-pages (Portfolio children) */}
+      {hasChildren && expanded && item.children?.map(child => (
+        <SubPageRow
+          key={child.key}
+          child={child}
+          isActive={selectedKey === child.key}
+          onSelect={onSelect}
+        />
+      ))}
+    </>
+  )
+}
+
+function SubPageRow({ child, isActive, onSelect }: {
+  child: NavChild
+  isActive: boolean
+  onSelect: (key: string, href: string) => void
+}) {
+  const [hovered, setHovered] = useState(false)
   return (
     <div
-      ref={ref}
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(child.key, child.href)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onSelect(child.key, child.href) }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        position: 'absolute', right: 0, top: '100%', zIndex: 100,
-        background: '#1e1e1e', border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 7, padding: '0.3rem', minWidth: 160,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+        display: 'flex', alignItems: 'center', gap: '0.55rem',
+        padding: '0.4rem 0.75rem 0.4rem 2.35rem',
+        borderRadius: 6, cursor: 'pointer',
+        background: isActive ? 'rgba(255,255,255,0.08)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+        transition: 'background 0.1s',
       }}
     >
-      {[
-        { label: 'Edit in Builder', action: () => { window.location.href = `/builder/${page.slug ?? ''}` } },
-        { label: page.showInNav ? 'Remove from menu' : 'Add to menu', action: onToggleNav },
-        { label: 'Delete', action: onDelete, danger: true },
-      ].map(item => (
-        <button
-          key={item.label}
-          type="button"
-          onClick={() => { item.action(); onClose() }}
-          style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.45rem 0.65rem', background: 'none', border: 'none', borderRadius: 5, fontSize: '0.8rem', fontFamily: ui, color: item.danger ? '#f87171' : '#c4bfb9', cursor: 'pointer' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
-        >
-          {item.label}
-        </button>
-      ))}
+      <span style={{ color: isActive ? '#9b9a9a' : '#4a4a4a', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+        <IconPage />
+      </span>
+      <span style={{
+        flex: 1, fontSize: '0.85rem', fontFamily: ui,
+        fontWeight: isActive ? 500 : 400,
+        color: isActive ? '#ffffff' : '#c0bcb8',
+      }}>
+        {child.label}
+      </span>
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Single page row
+// Custom Puck page row (NOT IN MENU section)
 // ---------------------------------------------------------------------------
 
-function PageRow({ page, onDelete, onToggleNav, onRefresh }: {
+function PuckPageRow({ page, onDelete, onToggleNav, onRefresh }: {
   page: SitePage
   onDelete: (id: string | number) => void
   onToggleNav: (id: string | number, current: boolean) => void
@@ -164,61 +273,69 @@ function PageRow({ page, onDelete, onToggleNav, onRefresh }: {
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
-  const isLive = Boolean(page.published)
-  const isHome = Boolean(page.isHomepage)
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
 
   return (
     <div
-      style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.55rem', padding: '0.55rem 0.75rem', borderRadius: 7, cursor: 'pointer', background: hovered ? 'rgba(255,255,255,0.05)' : 'transparent', transition: 'background 0.1s' }}
+      style={{
+        position: 'relative', display: 'flex', alignItems: 'center', gap: '0.55rem',
+        padding: '0.45rem 0.75rem', borderRadius: 6, cursor: 'pointer',
+        background: hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+        transition: 'background 0.1s',
+      }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false) }}
+      onMouseLeave={() => { if (!menuOpen) setHovered(false) }}
       onClick={() => { if (!menuOpen) window.location.href = `/builder/${page.slug ?? ''}` }}
     >
-      {/* Status dot */}
-      <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: isLive ? '#4ade80' : 'transparent', border: isLive ? 'none' : '1.5px solid #4a4a4a', display: 'inline-block' }} />
-
-      {/* Icon */}
-      <span style={{ color: '#4a4a4a', flexShrink: 0 }}>
-        {isHome ? <HomeIcon /> : <PageIcon />}
-      </span>
-
-      {/* Title */}
-      <span style={{ flex: 1, fontSize: '0.85rem', fontFamily: ui, color: '#c4bfb9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+      <span style={{ color: '#4a4a4a', flexShrink: 0, display: 'flex', alignItems: 'center' }}><IconPage /></span>
+      <span style={{ flex: 1, fontSize: '0.875rem', fontFamily: ui, color: '#c0bcb8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
         {page.title ?? 'Untitled'}
       </span>
-
-      {/* External link for live pages */}
-      {isLive && page.slug && hovered && !menuOpen && (
-        <a
-          href={`/${page.slug}`} target="_blank" rel="noopener noreferrer"
-          onClick={e => e.stopPropagation()}
-          style={{ color: '#5a5a5a', flexShrink: 0, display: 'flex', alignItems: 'center', lineHeight: 1 }}
-          title="View live page"
-        >
-          <ExternalIcon />
-        </a>
-      )}
-
-      {/* Dots menu button */}
       {hovered && (
         <button
           type="button"
           onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
-          style={{ background: 'none', border: 'none', color: '#5a5a5a', cursor: 'pointer', padding: '0.1rem', borderRadius: 4, display: 'flex', alignItems: 'center', flexShrink: 0, lineHeight: 1 }}
+          style={{ background: 'none', border: 'none', color: '#4a4a4a', cursor: 'pointer', padding: '0.1rem 0.2rem', borderRadius: 4, display: 'flex', alignItems: 'center', flexShrink: 0 }}
+          aria-label={`Options for ${page.title ?? 'page'}`}
         >
-          <DotsIcon />
+          <IconDots />
         </button>
       )}
-
-      {/* Context menu */}
       {menuOpen && (
-        <PageMenu
-          page={page}
-          onDelete={() => onDelete(page.id)}
-          onToggleNav={() => { onToggleNav(page.id, Boolean(page.showInNav)); onRefresh() }}
-          onClose={() => setMenuOpen(false)}
-        />
+        <div
+          ref={menuRef}
+          style={{
+            position: 'absolute', right: 4, top: '100%', zIndex: 200,
+            background: '#232323', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 8, padding: '0.3rem', minWidth: 170,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+          }}
+        >
+          {[
+            { label: 'Edit in builder', action: () => { window.location.href = `/builder/${page.slug ?? ''}` } },
+            { label: page.showInNav ? 'Remove from menu' : 'Add to menu', action: () => { void onToggleNav(page.id, Boolean(page.showInNav)); onRefresh(); setMenuOpen(false); setHovered(false) } },
+            { label: 'Delete', danger: true, action: () => { onDelete(page.id); setMenuOpen(false); setHovered(false) } },
+          ].map(item => (
+            <button
+              key={item.label} type="button"
+              onClick={() => { item.action(); setMenuOpen(false) }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.7rem', background: 'none', border: 'none', borderRadius: 5, fontSize: '0.8rem', fontFamily: ui, color: item.danger ? '#f87171' : '#c4bfb9', cursor: 'pointer' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   )
@@ -244,7 +361,7 @@ function NewPageModal({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/pages', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), slug, published: false, displayOrder: Date.now() }),
+        body: JSON.stringify({ title: title.trim(), slug, published: false, displayOrder: Date.now(), template }),
       })
       if (res.ok) {
         window.location.href = `/builder/${slug}`
@@ -258,27 +375,27 @@ function NewPageModal({ onClose }: { onClose: () => void }) {
   return (
     <div
       role="dialog" aria-modal="true" aria-labelledby="new-page-label"
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
       onKeyDown={e => { if (e.key === 'Escape') onClose() }}
     >
-      <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '1.75rem', width: 360, display: 'flex', flexDirection: 'column', gap: '1.1rem', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
-        <h2 id="new-page-label" style={{ margin: 0, fontFamily: ui, fontSize: '1rem', fontWeight: 600, color: '#e6e1de' }}>New page</h2>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-          <span style={{ fontFamily: mono, fontSize: '0.7rem', color: '#9b9a9a' }}>Page title</span>
+      <div style={{ background: '#1c1c1c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '1.75rem', width: 380, display: 'flex', flexDirection: 'column', gap: '1.1rem', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}>
+        <h2 id="new-page-label" style={{ margin: 0, fontFamily: ui, fontSize: '1rem', fontWeight: 600, color: '#e6e1de' }}>New custom page</h2>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <span style={{ fontFamily: mono, fontSize: '0.68rem', color: '#7a7a7a', letterSpacing: '0.06em' }}>Page title</span>
           <input
             autoFocus type="text" value={title}
             onChange={e => setTitle(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') void create() }}
-            placeholder="e.g. About Me"
-            style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.88rem', outline: 'none', fontFamily: ui }}
+            placeholder="e.g. FAQ"
+            style={{ background: '#111', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 7, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.88rem', outline: 'none', fontFamily: ui }}
           />
         </label>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-          <span style={{ fontFamily: mono, fontSize: '0.7rem', color: '#9b9a9a' }}>Template</span>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <span style={{ fontFamily: mono, fontSize: '0.68rem', color: '#7a7a7a', letterSpacing: '0.06em' }}>Template</span>
           <select
             value={template} onChange={e => setTemplate(e.target.value)}
-            style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.85rem', outline: 'none', fontFamily: ui }}
+            style={{ background: '#111', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 7, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.85rem', outline: 'none', fontFamily: ui }}
           >
             <option value="blank">Blank</option>
             <option value="landing">Landing Page</option>
@@ -288,10 +405,10 @@ function NewPageModal({ onClose }: { onClose: () => void }) {
         </label>
         {error && <p role="alert" style={{ margin: 0, fontFamily: mono, fontSize: '0.75rem', color: '#f87171' }}>{error}</p>}
         <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
-          <button type="button" onClick={onClose} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 6, padding: '0.45rem 1rem', fontSize: '0.82rem', fontFamily: ui, cursor: 'pointer' }}>Cancel</button>
+          <button type="button" onClick={onClose} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 7, padding: '0.5rem 1rem', fontSize: '0.82rem', fontFamily: ui, cursor: 'pointer' }}>Cancel</button>
           <button
             type="button" onClick={() => void create()} disabled={!title.trim() || creating} aria-busy={creating}
-            style={{ background: '#2563eb', border: 'none', color: '#fff', borderRadius: 6, padding: '0.45rem 1.2rem', fontSize: '0.82rem', fontWeight: 600, fontFamily: ui, cursor: !title.trim() || creating ? 'not-allowed' : 'pointer', opacity: !title.trim() || creating ? 0.5 : 1 }}
+            style={{ background: teal, border: 'none', color: '#fff', borderRadius: 7, padding: '0.5rem 1.2rem', fontSize: '0.82rem', fontWeight: 600, fontFamily: ui, cursor: !title.trim() || creating ? 'not-allowed' : 'pointer', opacity: !title.trim() || creating ? 0.5 : 1 }}
           >
             {creating ? 'Creating...' : 'Create page'}
           </button>
@@ -302,13 +419,81 @@ function NewPageModal({ onClose }: { onClose: () => void }) {
 }
 
 // ---------------------------------------------------------------------------
+// Product switcher dropdown
+// ---------------------------------------------------------------------------
+
+const SWITCHER_ITEMS = [
+  { label: 'Portfolio',     desc: 'Galleries and photos',    href: '/gallery-editor',                    color: '#0d9488' },
+  { label: 'Website',       desc: 'Pages and content',       href: '/builder',                           color: '#2563eb', active: true },
+  { label: 'Blog',          desc: 'Posts and articles',      href: '/admin/collections/posts',           color: '#7c3aed' },
+  { label: 'Bookings',      desc: 'Services and availability', href: '/admin/globals/booking-settings', color: '#b45309' },
+  { label: 'Testimonials',  desc: 'Client reviews',          href: '/admin/collections/testimonials',    color: '#059669' },
+  { label: 'Studio',        desc: 'Site settings',           href: '/admin',                             color: '#475569' },
+]
+
+function ProductSwitcher({ onClose, anchorRef }: { onClose: () => void; anchorRef: React.RefObject<HTMLButtonElement | null> }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ top: 52, left: 12 })
+
+  useEffect(() => {
+    if (anchorRef.current) {
+      const r = anchorRef.current.getBoundingClientRect()
+      setPos({ top: r.bottom + 6, left: r.left })
+    }
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node) &&
+          anchorRef.current && !anchorRef.current.contains(e.target as Node)) onClose()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [onClose, anchorRef])
+
+  return (
+    <div
+      ref={ref}
+      style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 500, background: '#1c1c1c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '0.5rem', width: 240, boxShadow: '0 12px 40px rgba(0,0,0,0.7)' }}
+    >
+      {SWITCHER_ITEMS.map(item => (
+        // eslint-disable-next-line @next/next/no-html-link-for-pages
+        <a
+          key={item.label} href={item.href} onClick={onClose}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 0.75rem', borderRadius: 7, textDecoration: 'none', background: item.active ? 'rgba(255,255,255,0.06)' : 'none', transition: 'background 0.1s' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = item.active ? 'rgba(255,255,255,0.06)' : 'none' }}
+        >
+          <span style={{ width: 28, height: 28, borderRadius: 7, background: item.color, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ width: 12, height: 12, background: 'rgba(255,255,255,0.8)', borderRadius: 2, display: 'block' }} />
+          </span>
+          <span>
+            <span style={{ display: 'block', fontFamily: ui, fontSize: '0.82rem', fontWeight: item.active ? 600 : 400, color: item.active ? '#e6e1de' : '#c4bfb9' }}>{item.label}</span>
+            <span style={{ display: 'block', fontFamily: mono, fontSize: '0.68rem', color: '#5a5a5a', marginTop: 1 }}>{item.desc}</span>
+          </span>
+        </a>
+      ))}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
+type Tab = 'pages' | 'design' | 'blog' | 'settings'
+
 export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] }) {
   const [pages, setPages] = useState<SitePage[]>(initialPages)
-  const [activeTab, setActiveTab] = useState<'pages' | 'styles' | 'settings'>('pages')
+  const [activeTab, setActiveTab] = useState<Tab>('pages')
   const [showModal, setShowModal] = useState(false)
+  const [publishing, setPublishing] = useState(false)
+  const [showSwitcher, setShowSwitcher] = useState(false)
+  const switcherBtnRef = useRef<HTMLButtonElement>(null)
+
+  // Which page is selected and shown in the preview pane
+  const [selectedKey, setSelectedKey] = useState('home')
+  const [previewHref, setPreviewHref] = useState('/')
+
+  // Portfolio sub-pages expand/collapse
+  const [portfolioExpanded, setPortfolioExpanded] = useState(false)
 
   const reload = useCallback(() => {
     fetch('/api/pages?sort=displayOrder&limit=100&depth=0', { credentials: 'include' })
@@ -316,6 +501,12 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
       .then((d: { docs?: SitePage[] }) => setPages(d.docs ?? []))
       .catch(() => {})
   }, [])
+
+  const handleSelect = (key: string, href: string) => {
+    setSelectedKey(key)
+    setPreviewHref(href)
+    if (key === 'portfolio') setPortfolioExpanded(true)
+  }
 
   const deletePage = async (id: string | number) => {
     if (!confirm('Delete this page? This cannot be undone.')) return
@@ -332,145 +523,242 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
     reload()
   }
 
-  const inMenu = pages.filter(p => p.showInNav)
-  const notInMenu = pages.filter(p => !p.showInNav)
+  const publishAll = async () => {
+    setPublishing(true)
+    await Promise.all(
+      pages.filter(p => !p.published).map(p =>
+        fetch(`/api/pages/${p.id}`, {
+          method: 'PATCH', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ published: true }),
+        })
+      )
+    )
+    reload()
+    setPublishing(false)
+  }
 
-  const tabs: { id: 'pages' | 'styles' | 'settings'; icon: React.ReactNode; label: string }[] = [
-    { id: 'pages', icon: <GlobeIcon />, label: 'Pages' },
-    { id: 'styles', icon: <StylesIcon />, label: 'Styles' },
-    { id: 'settings', icon: <SettingsIcon />, label: 'Settings' },
+  // Custom Puck builder pages always go in NOT IN MENU
+  const customPages = pages.filter(p => !p.showInNav)
+
+  const tabs: { id: Tab; icon: React.ReactNode; label: string }[] = [
+    { id: 'pages',    icon: <IconPages />,   label: 'Pages'    },
+    { id: 'design',   icon: <IconBrush />,   label: 'Design'   },
+    { id: 'blog',     icon: <IconPen />,     label: 'Blog'     },
+    { id: 'settings', icon: <IconSettings />, label: 'Settings' },
   ]
 
+  const previewLabel = previewHref === '/' ? 'tynnellhollinsphotography.com' : `tynnellhollinsphotography.com${previewHref}`
+
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#0e0e0e', color: '#e6e1de' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', color: '#d4d0cc', fontFamily: ui }}>
 
       {showModal && <NewPageModal onClose={() => setShowModal(false)} />}
+      {showSwitcher && <ProductSwitcher onClose={() => setShowSwitcher(false)} anchorRef={switcherBtnRef} />}
 
-      {/* ---- Left sidebar ---- */}
-      <div style={{ width: 260, flexShrink: 0, background: '#111', borderRight: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* ---- Top bar ---- */}
+      <div style={{ height: 52, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#141414' }}>
+        <button
+          ref={switcherBtnRef}
+          type="button"
+          onClick={() => setShowSwitcher(s => !s)}
+          aria-expanded={showSwitcher}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: showSwitcher ? 'rgba(255,255,255,0.06)' : 'none', border: 'none', cursor: 'pointer', color: '#d4d0cc', fontFamily: ui, fontSize: '0.9rem', fontWeight: 500, padding: '0.3rem 0.5rem', borderRadius: 6 }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
+          onMouseLeave={e => { if (!showSwitcher) (e.currentTarget as HTMLElement).style.background = 'none' }}
+        >
+          Website <IconChevronDown />
+        </button>
 
-        {/* Brand header */}
-        <div style={{ padding: '1rem 1rem 0.75rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <p style={{ margin: 0, fontFamily: ui, fontSize: '0.72rem', fontWeight: 600, color: '#3a3a3a', letterSpacing: '0.14em', textTransform: 'uppercase' }}>Tynnell Hollins</p>
-          <p style={{ margin: '0.2rem 0 0', fontFamily: ui, fontSize: '0.8rem', fontWeight: 500, color: '#9b9a9a' }}>Website Editor</p>
-        </div>
-
-        {/* Tab icons */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 0.5rem' }}>
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setActiveTab(t.id)}
-              aria-pressed={activeTab === t.id}
-              title={t.label}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.7rem 0.5rem', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === t.id ? '#e6e1de' : '#3a3a3a', borderBottom: `2px solid ${activeTab === t.id ? '#e6e1de' : 'transparent'}`, transition: 'color 0.12s, border-color 0.12s' }}
-            >
-              {t.icon}
-            </button>
-          ))}
-        </div>
-
-        {/* Pages tab content */}
-        {activeTab === 'pages' && (
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem 0.5rem' }}>
-
-            {/* Add Page button */}
-            <button
-              type="button"
-              onClick={() => setShowModal(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.5rem 0.75rem', background: 'none', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: 7, color: '#5a5a5a', fontSize: '0.8rem', fontFamily: ui, cursor: 'pointer', marginBottom: '1rem', transition: 'border-color 0.12s, color 0.12s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.25)'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)'; (e.currentTarget as HTMLElement).style.color = '#5a5a5a' }}
-            >
-              <PlusIcon /> Add Page
-            </button>
-
-            {/* SITE MENU */}
-            <p style={{ margin: '0 0 0.4rem 0.75rem', fontFamily: mono, fontSize: '0.6rem', letterSpacing: '0.14em', color: '#3a3a3a', textTransform: 'uppercase' }}>Site Menu</p>
-            {inMenu.length > 0
-              ? inMenu.map(p => (
-                  <PageRow key={String(p.id)} page={p} onDelete={deletePage} onToggleNav={toggleNav} onRefresh={reload} />
-                ))
-              : <p style={{ margin: '0 0 0.75rem 0.75rem', fontFamily: mono, fontSize: '0.72rem', color: '#2a2a2a' }}>No pages in menu</p>
-            }
-
-            {/* NOT IN MENU */}
-            {notInMenu.length > 0 && (
-              <>
-                <p style={{ margin: '1rem 0 0.4rem 0.75rem', fontFamily: mono, fontSize: '0.6rem', letterSpacing: '0.14em', color: '#3a3a3a', textTransform: 'uppercase' }}>Not in Menu</p>
-                {notInMenu.map(p => (
-                  <PageRow key={String(p.id)} page={p} onDelete={deletePage} onToggleNav={toggleNav} onRefresh={reload} />
-                ))}
-              </>
-            )}
-
-            {pages.length === 0 && (
-              <p style={{ fontFamily: mono, fontSize: '0.75rem', color: '#2a2a2a', padding: '0 0.75rem' }}>No pages yet. Click &quot;Add Page&quot; to create one.</p>
-            )}
-          </div>
-        )}
-
-        {/* Styles tab */}
-        {activeTab === 'styles' && (
-          <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p style={{ margin: 0, fontFamily: ui, fontSize: '0.85rem', color: '#9b9a9a' }}>Design tokens and global styles are managed in code.</p>
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href="/admin/globals/site-config" style={{ color: '#2563eb', fontSize: '0.8rem', fontFamily: ui }}>Open Site Config</a>
-          </div>
-        )}
-
-        {/* Settings tab */}
-        {activeTab === 'settings' && (
-          <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {/* eslint-disable @next/next/no-html-link-for-pages */}
-            <a href="/admin/globals/site-config" style={{ color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.85rem', padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Site Config</a>
-            <a href="/admin/globals/hero-slides" style={{ color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.85rem', padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Hero Slides</a>
-            <a href="/admin/globals/about-page" style={{ color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.85rem', padding: '0.5rem 0' }}>About Page</a>
-            {/* eslint-enable @next/next/no-html-link-for-pages */}
-          </div>
-        )}
-
-        {/* Bottom: Preview + Publish + Back */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '0.75rem 0.75rem' }}>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <a
-              href="https://tynnellhollinsphotography.com" target="_blank" rel="noopener noreferrer"
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', padding: '0.5rem', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#9b9a9a', fontSize: '0.78rem', fontFamily: ui, textDecoration: 'none', transition: 'border-color 0.12s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.25)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
-            >
-              Preview <ExternalIcon />
-            </a>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/admin"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.4rem 0.5rem', color: '#2e2e2e', fontSize: '0.75rem', fontFamily: ui, textDecoration: 'none', borderRadius: 6, transition: 'color 0.12s' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#5a5a5a' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#2e2e2e' }}
+            title="Back to dashboard"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#9b9a9a', fontSize: '0.75rem', fontFamily: ui, textDecoration: 'none' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.09)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)' }}
           >
-            <DashboardIcon /> Back to Dashboard
+            <IconDashboard /> Dashboard
           </a>
+          <div style={{ width: 30, height: 30, borderRadius: '50%', background: teal, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#fff', fontFamily: ui, flexShrink: 0 }}>
+            T
+          </div>
         </div>
       </div>
 
-      {/* ---- Right: main content ---- */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', background: '#0a0a0a' }}>
-        <div style={{ maxWidth: 480, textAlign: 'center' }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <GlobeIcon />
+      {/* ---- Body ---- */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+        {/* ---- Sidebar ---- */}
+        <div style={{ width: 300, flexShrink: 0, background: '#141414', borderRight: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+          {/* Tab icon row */}
+          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            {tabs.map(t => (
+              <button
+                key={t.id} type="button"
+                onClick={() => setActiveTab(t.id)}
+                aria-pressed={activeTab === t.id}
+                title={t.label}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.85rem 0.5rem', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === t.id ? teal : '#4a4a4a', borderBottom: `2px solid ${activeTab === t.id ? teal : 'transparent'}`, transition: 'color 0.12s, border-color 0.12s' }}
+                onMouseEnter={e => { if (activeTab !== t.id) (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}
+                onMouseLeave={e => { if (activeTab !== t.id) (e.currentTarget as HTMLElement).style.color = '#4a4a4a' }}
+              >
+                {t.icon}
+              </button>
+            ))}
           </div>
-          <h1 style={{ fontFamily: ui, fontSize: '1.4rem', fontWeight: 600, color: '#d6d1ce', margin: '0 0 0.75rem' }}>Website Editor</h1>
-          <p style={{ fontFamily: mono, fontSize: '0.78rem', color: '#4a4a4a', margin: '0 0 2rem', lineHeight: 1.7 }}>
-            Select a page from the sidebar to open it in the visual builder, or click &quot;Add Page&quot; to create a new one.
-          </p>
-          <button
-            type="button" onClick={() => setShowModal(true)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#2563eb', border: 'none', color: '#fff', borderRadius: 7, padding: '0.65rem 1.4rem', fontSize: '0.85rem', fontWeight: 600, fontFamily: ui, cursor: 'pointer' }}
-          >
-            <PlusIcon /> Add Page
-          </button>
+
+          {/* Pages tab */}
+          {activeTab === 'pages' && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1rem 0.5rem' }}>
+                <span style={{ fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#e0dcd8' }}>Pages</span>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', cursor: 'pointer', color: teal, fontSize: '0.82rem', fontFamily: ui, fontWeight: 500, padding: '0.25rem 0.4rem', borderRadius: 5 }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(29,180,142,0.08)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+                >
+                  <IconPlus /> Add Page
+                </button>
+              </div>
+
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0.25rem 0.5rem' }}>
+
+                {/* SITE MENU - hardcoded real pages */}
+                <p style={{ margin: '0.5rem 0 0.3rem 0.75rem', fontFamily: mono, fontSize: '0.58rem', letterSpacing: '0.12em', color: '#4a4a4a', textTransform: 'uppercase' }}>Site Menu</p>
+                {SITE_NAV.map(item => (
+                  <NavPageRow
+                    key={item.key}
+                    item={item}
+                    selectedKey={selectedKey}
+                    onSelect={handleSelect}
+                    expanded={item.key === 'portfolio' ? portfolioExpanded : false}
+                    onToggleExpand={() => { if (item.key === 'portfolio') setPortfolioExpanded(x => !x) }}
+                  />
+                ))}
+
+                {/* NOT IN MENU - custom Puck builder pages */}
+                {customPages.length > 0 && (
+                  <>
+                    <p style={{ margin: '1.25rem 0 0.3rem 0.75rem', fontFamily: mono, fontSize: '0.58rem', letterSpacing: '0.12em', color: '#4a4a4a', textTransform: 'uppercase' }}>Not in Menu</p>
+                    {customPages.map(p => (
+                      <PuckPageRow key={String(p.id)} page={p} onDelete={deletePage} onToggleNav={toggleNav} onRefresh={reload} />
+                    ))}
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Design tab */}
+          {activeTab === 'design' && (
+            <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <p style={{ margin: 0, fontFamily: ui, fontSize: '0.82rem', color: '#6b6b6b', lineHeight: 1.6 }}>
+                Global design tokens are managed in code at <code style={{ color: '#9b9a9a', fontSize: '0.78rem' }}>tokens.css</code>.
+              </p>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+              <a href="/admin/globals/site-config" style={{ color: teal, fontSize: '0.8rem', fontFamily: ui, textDecoration: 'none' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'none' }}
+              >
+                Open Site Config
+              </a>
+            </div>
+          )}
+
+          {/* Blog tab */}
+          {activeTab === 'blog' && (
+            <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <p style={{ margin: '0 0 0.75rem', fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#e0dcd8' }}>Blog</p>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+              {[
+                { label: 'All Posts',  href: '/admin/collections/posts'        },
+                { label: 'New Post',   href: '/admin/collections/posts/create' },
+              ].map(item => (
+                <a key={item.href} href={item.href}
+                  style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 7, color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.83rem' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)' }}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* Settings tab */}
+          {activeTab === 'settings' && (
+            <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <p style={{ margin: '0 0 0.75rem', fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#e0dcd8' }}>Settings</p>
+              {/* eslint-disable @next/next/no-html-link-for-pages */}
+              {[
+                { label: 'Site Config', href: '/admin/globals/site-config' },
+                { label: 'Hero Slides', href: '/admin/globals/hero-slides'  },
+                { label: 'About Page',  href: '/admin/globals/about-page'   },
+              ].map(item => (
+                <a key={item.href} href={item.href}
+                  style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 7, color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.83rem' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)' }}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {/* eslint-enable @next/next/no-html-link-for-pages */}
+            </div>
+          )}
+
+          {/* ---- Bottom: Preview + Publish ---- */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+            <a
+              href="https://tynnellhollinsphotography.com" target="_blank" rel="noopener noreferrer"
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.6rem', background: 'none', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 7, color: '#9b9a9a', fontSize: '0.82rem', fontFamily: ui, textDecoration: 'none', fontWeight: 500, transition: 'border-color 0.12s, color 0.12s' }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.28)'; el.style.color = '#d4d0cc' }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.14)'; el.style.color = '#9b9a9a' }}
+            >
+              Preview
+            </a>
+            <button
+              type="button"
+              onClick={() => void publishAll()}
+              disabled={publishing} aria-busy={publishing}
+              style={{ flex: 1, padding: '0.6rem', background: teal, border: 'none', borderRadius: 7, color: '#fff', fontSize: '0.82rem', fontFamily: ui, fontWeight: 600, cursor: publishing ? 'wait' : 'pointer', opacity: publishing ? 0.7 : 1, transition: 'opacity 0.12s' }}
+              onMouseEnter={e => { if (!publishing) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none' }}
+            >
+              {publishing ? 'Publishing...' : 'Publish'}
+            </button>
+          </div>
+        </div>
+
+        {/* ---- Right: live page preview ---- */}
+        <div style={{ flex: 1, background: '#0e0e0e', position: 'relative', overflow: 'hidden' }}>
+          {/* Address bar */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem', background: '#0a0a0a', borderBottom: '1px solid rgba(255,255,255,0.06)', zIndex: 10 }}>
+            <span style={{ fontFamily: mono, fontSize: '0.72rem', color: '#4a4a4a', letterSpacing: '0.02em' }}>
+              {previewLabel}
+            </span>
+            <a
+              href={previewHref} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#4a4a4a', fontSize: '0.72rem', fontFamily: ui, textDecoration: 'none', padding: '0.2rem 0.5rem', borderRadius: 4, background: 'rgba(255,255,255,0.04)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#4a4a4a' }}
+            >
+              <IconExternal /> Open
+            </a>
+          </div>
+
+          {/* Live preview iframe - key changes force a reload when page changes */}
+          <iframe
+            key={previewHref}
+            src={previewHref}
+            style={{ position: 'absolute', top: 36, left: 0, right: 0, bottom: 0, width: '100%', height: 'calc(100% - 36px)', border: 'none' }}
+            title={`Preview: ${previewLabel}`}
+          />
         </div>
       </div>
     </div>

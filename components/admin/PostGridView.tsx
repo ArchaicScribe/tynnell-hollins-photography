@@ -6,8 +6,9 @@ import Link from 'next/link'
 type CoverImage = {
   url?: string | null
   sizes?: {
-    thumbnail?: { url?: string | null } | null
+    hero?: { url?: string | null } | null
     card?: { url?: string | null } | null
+    thumbnail?: { url?: string | null } | null
   } | null
 }
 
@@ -23,170 +24,20 @@ type PostDoc = {
 
 type StatusFilter = 'all' | 'published' | 'draft'
 
-const css = {
-  root: {
-    padding: '1.5rem',
-    fontFamily: 'var(--font-body, system-ui, sans-serif)',
-    color: 'var(--theme-text, #e6e1de)',
-    minHeight: '100vh',
-  } as React.CSSProperties,
-  toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    marginBottom: '1rem',
-    flexWrap: 'wrap' as const,
-  } as React.CSSProperties,
-  search: {
-    flex: '1 1 200px',
-    minWidth: '140px',
-    padding: '0.5rem 0.75rem',
-    background: 'var(--theme-elevation-100, #131313)',
-    border: '1px solid var(--theme-elevation-300, #2a2a2a)',
-    borderRadius: '4px',
-    color: 'var(--theme-text, #e6e1de)',
-    fontSize: '0.875rem',
-    outline: 'none',
-  } as React.CSSProperties,
-  newBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '0.4rem',
-    padding: '0.5rem 1rem',
-    background: 'var(--theme-success-500, #10B981)',
-    color: '#fff',
-    borderRadius: '4px',
-    fontSize: '0.875rem',
-    fontWeight: 600,
-    textDecoration: 'none',
-    whiteSpace: 'nowrap' as const,
-    marginLeft: 'auto',
-  } as React.CSSProperties,
-  count: {
-    fontSize: '0.8rem',
-    color: 'var(--theme-text-dim, #9b9a9a)',
-    whiteSpace: 'nowrap' as const,
-  } as React.CSSProperties,
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-    gap: '1rem',
-  } as React.CSSProperties,
-  card: {
-    background: 'var(--theme-elevation-100, #131313)',
-    borderRadius: '6px',
-    overflow: 'hidden',
-    textDecoration: 'none',
-    color: 'inherit',
-    display: 'block',
-    border: '1px solid var(--theme-elevation-200, #1a1a1a)',
-    transition: 'border-color 0.15s, transform 0.15s',
-  } as React.CSSProperties,
-  imgWrap: {
-    width: '100%',
-    paddingBottom: '52%',
-    position: 'relative' as const,
-    background: 'var(--theme-elevation-200, #1a1a1a)',
-    overflow: 'hidden',
-  } as React.CSSProperties,
-  img: {
-    position: 'absolute' as const,
-    inset: 0,
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover' as const,
-  } as React.CSSProperties,
-  placeholder: {
-    position: 'absolute' as const,
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '2.5rem',
-    color: 'var(--theme-elevation-400, #3a3a3a)',
-  } as React.CSSProperties,
-  statusBadge: (status: 'draft' | 'published' | null | undefined): React.CSSProperties => ({
-    position: 'absolute',
-    top: '0.5rem',
-    right: '0.5rem',
-    padding: '0.18rem 0.5rem',
-    background: status === 'published' ? 'rgba(16,185,129,0.85)' : 'rgba(100,100,100,0.75)',
-    backdropFilter: 'blur(4px)',
-    borderRadius: '3px',
-    fontSize: '0.58rem',
-    letterSpacing: '0.12em',
-    textTransform: 'uppercase',
-    color: '#fff',
-    fontWeight: 600,
-  }),
-  cardBody: {
-    padding: '0.75rem',
-  } as React.CSSProperties,
-  cardTitle: {
-    fontSize: '0.875rem',
-    fontWeight: 500,
-    fontFamily: 'Archivo, sans-serif',
-    lineHeight: 1.35,
-    color: 'var(--theme-text, #e6e1de)',
-    marginBottom: '0.3rem',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical' as const,
-    overflow: 'hidden',
-  } as React.CSSProperties,
-  cardDate: {
-    fontSize: '0.68rem',
-    color: 'var(--theme-text-dim, #9b9a9a)',
-    fontFamily: 'Roboto Mono, monospace',
-  } as React.CSSProperties,
-  cardExcerpt: {
-    fontSize: '0.72rem',
-    color: 'var(--theme-text-dim, #9b9a9a)',
-    marginTop: '0.35rem',
-    lineHeight: 1.5,
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical' as const,
-    overflow: 'hidden',
-  } as React.CSSProperties,
-  empty: {
-    textAlign: 'center' as const,
-    padding: '4rem 2rem',
-    color: 'var(--theme-text-dim, #9b9a9a)',
-    fontSize: '0.9rem',
-  } as React.CSSProperties,
-  skeleton: {
-    background: 'var(--theme-elevation-200, #1a1a1a)',
-    borderRadius: '6px',
-    paddingBottom: '52%',
-    position: 'relative' as const,
-    animation: 'pulse 1.5s infinite',
-  } as React.CSSProperties,
-}
-
-const filterBtn = (active: boolean): React.CSSProperties => ({
-  padding: '0.3rem 0.7rem',
-  background: active ? 'var(--theme-elevation-500, #9B9A9A)' : 'var(--theme-elevation-100, #131313)',
-  border: `1px solid ${active ? 'transparent' : 'var(--theme-elevation-300, #2a2a2a)'}`,
-  borderRadius: '20px',
-  color: active ? '#fff' : 'var(--theme-text-dim, #9b9a9a)',
-  fontSize: '0.68rem',
-  letterSpacing: '0.08em',
-  textTransform: 'capitalize',
-  cursor: 'pointer',
-  fontWeight: active ? 600 : 400,
-  whiteSpace: 'nowrap',
-})
-
 const LIMIT = 48
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return ''
   try {
-    return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-  } catch {
-    return ''
-  }
+    return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch { return '' }
+}
+
+function getCoverUrl(post: PostDoc, size: 'hero' | 'card' = 'card'): string | null {
+  if (!post.coverImage || typeof post.coverImage === 'number') return null
+  const ci = post.coverImage as CoverImage
+  if (size === 'hero') return ci.sizes?.hero?.url ?? ci.url ?? null
+  return ci.sizes?.card?.url ?? ci.sizes?.thumbnail?.url ?? ci.url ?? null
 }
 
 export function PostGridView() {
@@ -200,239 +51,208 @@ export function PostGridView() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
-  const [loadError, setLoadError] = useState('')
   const [toggleError, setToggleError] = useState('')
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search) {
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+  }, [])
+
+  useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
-    searchTimeout.current = setTimeout(() => {
-      setDebouncedSearch(search)
-      setPage(1)
-    }, 300)
+    searchTimeout.current = setTimeout(() => { setDebouncedSearch(search); setPage(1) }, 300)
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current) }
   }, [search])
 
   useEffect(() => {
     setLoading(true)
-    const params = new URLSearchParams({
-      limit: String(LIMIT),
-      page: String(page),
-      depth: '1',
-      sort: '-publishedAt',
-    })
-    if (debouncedSearch) {
-      params.append('where[title][contains]', debouncedSearch)
-    }
-    if (statusFilter !== 'all') {
-      params.append('where[status][equals]', statusFilter)
-    }
-
+    const params = new URLSearchParams({ limit: String(LIMIT), page: String(page), depth: '1', sort: '-publishedAt' })
+    if (debouncedSearch) params.append('where[title][contains]', debouncedSearch)
+    if (statusFilter !== 'all') params.append('where[status][equals]', statusFilter)
     fetch(`/api/posts?${params.toString()}`, { credentials: 'include' })
       .then(r => r.json())
-      .then(data => {
-        setPosts(data.docs ?? [])
-        setTotal(data.totalDocs ?? 0)
-        setTotalPages(data.totalPages ?? 1)
-        setLoading(false)
-      })
-      .catch(() => { setLoading(false); setLoadError("Couldn't load posts. Check your connection and try again.") })
+      .then(data => { setPosts(data.docs ?? []); setTotal(data.totalDocs ?? 0); setTotalPages(data.totalPages ?? 1); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [debouncedSearch, statusFilter, page])
 
   const toggleStatus = useCallback(async (e: React.MouseEvent, post: PostDoc) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault(); e.stopPropagation()
     if (togglingIds.has(post.id)) return
     setTogglingIds(prev => new Set([...prev, post.id]))
     const newStatus = post.status === 'published' ? 'draft' : 'published'
     const body: Record<string, unknown> = { status: newStatus }
-    // Set publishedAt on first publish if not already set
-    if (newStatus === 'published' && !post.publishedAt) {
-      body.publishedAt = new Date().toISOString()
-    }
+    if (newStatus === 'published' && !post.publishedAt) body.publishedAt = new Date().toISOString()
     try {
-      const res = await fetch(`/api/posts/${post.id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
+      const res = await fetch(`/api/posts/${post.id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (res.ok) {
-        setPosts(prev => prev.map(p =>
-          p.id === post.id
-            ? { ...p, status: newStatus, publishedAt: body.publishedAt as string | undefined ?? p.publishedAt }
-            : p
-        ))
-        // Remove from list if status filter is active and no longer matches
-        if (statusFilter !== 'all') {
-          setPosts(prev => prev.filter(p => p.id !== post.id || p.status === statusFilter))
-          setTotal(n => n - 1)
-        }
-      } else {
-        setToggleError("Couldn't save - please try again.")
-        setTimeout(() => setToggleError(''), 3500)
-      }
-    } catch {
-      setToggleError("Couldn't save - please try again.")
-      setTimeout(() => setToggleError(''), 3500)
-    } finally {
-      setTogglingIds(prev => {
-        const next = new Set(prev)
-        next.delete(post.id)
-        return next
-      })
-    }
+        setPosts(prev => prev.map(p => p.id === post.id ? { ...p, status: newStatus, publishedAt: body.publishedAt as string ?? p.publishedAt } : p))
+        if (statusFilter !== 'all') { setPosts(prev => prev.filter(p => p.id !== post.id || p.status === statusFilter)); setTotal(n => n - 1) }
+      } else { setToggleError("Couldn't save - please try again."); setTimeout(() => setToggleError(''), 3500) }
+    } catch { setToggleError("Couldn't save - please try again."); setTimeout(() => setToggleError(''), 3500) }
+    finally { setTogglingIds(prev => { const n = new Set(prev); n.delete(post.id); return n }) }
   }, [togglingIds, statusFilter])
 
-  const getCoverUrl = (post: PostDoc): string | null => {
-    if (!post.coverImage || typeof post.coverImage === 'number') return null
-    const ci = post.coverImage as CoverImage
-    return ci.sizes?.card?.url ?? ci.sizes?.thumbnail?.url ?? ci.url ?? null
-  }
+  const featuredPost = posts[0] ?? null
+  const heroCover = featuredPost ? getCoverUrl(featuredPost, 'hero') : null
+
+  const filters: { value: StatusFilter; label: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'published', label: 'Published' },
+    { value: 'draft', label: 'Draft' },
+  ]
 
   return (
-    <div style={css.root}>
+    <div style={{ fontFamily: 'Roboto Mono, monospace', color: 'var(--theme-text, #e6e1de)', minHeight: '100vh', background: 'var(--theme-bg, #0c0c0c)' }}>
       <style>{`
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .post-card:hover { border-color: var(--theme-elevation-400, #3a3a3a) !important; transform: translateY(-2px); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .pgv-card:hover { border-color: var(--theme-elevation-300,#2a2a2a) !important; }
+        .pgv-card:hover .pgv-card-img img { transform: scale(1.04); }
+        .pgv-hero-img:hover img { transform: scale(1.025); }
       `}</style>
 
-      {/* Toolbar */}
-      <div style={css.toolbar}>
-        <input
-          type="search"
-          placeholder="Search posts..."
-          aria-label="Search posts"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={css.search}
-        />
-        {!loading && (
-          <span style={css.count}>{total} {total === 1 ? 'post' : 'posts'}</span>
+      {/* ── Hero cover image (matches public /blog layout) ── */}
+      <div style={{ position: 'relative', width: '100%', height: '260px', overflow: 'hidden', background: 'var(--theme-elevation-100, #131313)', flexShrink: 0 }}>
+        {heroCover && (
+          <div className="pgv-hero-img" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={heroCover} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.9s ease' }} />
+          </div>
         )}
-        <Link href="/admin/collections/posts/create" style={css.newBtn}>
+        {heroCover && (
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(12,12,12,0.05) 0%, rgba(12,12,12,0) 30%, rgba(12,12,12,0.65) 100%)' }} />
+        )}
+        {/* BLOG label */}
+        <span style={{ position: 'absolute', bottom: '1.25rem', right: '1.5rem', fontFamily: 'Roboto Mono, monospace', fontSize: '0.55rem', letterSpacing: '0.45em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', writingMode: 'vertical-rl', pointerEvents: 'none', zIndex: 2 }} aria-hidden="true">Blog</span>
+        {/* New Post button — top right */}
+        <Link href="/admin/collections/posts/create" style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.4rem 0.9rem', background: 'rgba(16,185,129,0.9)', backdropFilter: 'blur(4px)', color: '#fff', borderRadius: '3px', fontSize: '0.6rem', fontFamily: 'Roboto Mono, monospace', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, textDecoration: 'none', zIndex: 3 }}>
           + New Post
         </Link>
       </div>
 
-      {/* Status filter */}
-      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.25rem' }}>
-        {(['all', 'published', 'draft'] as StatusFilter[]).map(s => (
-          <button
-            key={s}
-            style={{
-              ...filterBtn(statusFilter === s),
-              ...(s === 'published' && statusFilter === s ? { background: 'rgba(16,185,129,0.2)', color: '#10B981', borderColor: 'transparent' } : {}),
-            }}
-            aria-pressed={statusFilter === s}
-            onClick={() => { setStatusFilter(s); setPage(1) }}
-          >
-            {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
+      {/* ── Filter bar (matches public /blog filter bar) ── */}
+      <div style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'space-between', borderBottom: '1px solid var(--theme-elevation-200, #1e1e1e)', padding: '0 1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
+          {filters.map((f, i) => {
+            const active = statusFilter === f.value
+            return (
+              <React.Fragment key={f.value}>
+                {i > 0 && <span style={{ color: '#2a2a2a', fontSize: '0.55rem', padding: '0 0.6rem', userSelect: 'none' }}>·</span>}
+                <button
+                  onClick={() => { setStatusFilter(f.value); setPage(1) }}
+                  aria-pressed={active}
+                  style={{ background: 'none', border: 'none', borderBottom: active ? '1px solid var(--theme-text, #d6d1ce)' : '1px solid transparent', marginBottom: '-1px', padding: '0.9rem 0.15rem', fontFamily: 'Roboto Mono, monospace', fontSize: '0.6rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: active ? 'var(--theme-text, #d6d1ce)' : 'var(--theme-text-dim, #9b9a9a)', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'color 0.15s' }}
+                >
+                  {f.label}
+                </button>
+              </React.Fragment>
+            )
+          })}
+          {!loading && (
+            <span style={{ fontSize: '0.55rem', letterSpacing: '0.1em', color: 'var(--theme-text-dim, #9b9a9a)', opacity: 0.5, marginLeft: '1.25rem' }}>
+              {total} {total === 1 ? 'post' : 'posts'}
+            </span>
+          )}
+        </div>
+        {/* Search */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '0.6rem 0' }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ position: 'absolute', left: '0.5rem', color: 'var(--theme-text-dim, #9b9a9a)', pointerEvents: 'none' }}>
+              <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.25" />
+              <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search..."
+              aria-label="Search posts"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ padding: '0.35rem 0.6rem 0.35rem 1.7rem', background: 'var(--theme-elevation-100, #131313)', border: '1px solid var(--theme-elevation-200, #1a1a1a)', borderRadius: '2px', color: 'var(--theme-text, #e6e1de)', fontSize: '0.6rem', fontFamily: 'Roboto Mono, monospace', letterSpacing: '0.05em', outline: 'none', width: '140px' }}
+            />
+          </div>
+        </div>
       </div>
 
-      {loadError && <div role="alert" style={{ marginBottom: '0.75rem', padding: '0.55rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, fontSize: '0.8rem', color: '#f0a3a3' }}>{loadError}</div>}
-      {toggleError && <div role="alert" style={{ marginBottom: '0.75rem', padding: '0.55rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, fontSize: '0.8rem', color: '#f0a3a3' }}>{toggleError}</div>}
+      {toggleError && (
+        <div role="alert" style={{ margin: '0.75rem 1.5rem', padding: '0.5rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 2, fontSize: '0.72rem', color: '#f0a3a3' }}>{toggleError}</div>
+      )}
 
-      {/* Grid */}
-      {loading ? (
-        <div style={css.grid}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={css.skeleton} />
-          ))}
-        </div>
-      ) : posts.length === 0 ? (
-        <div style={css.empty}>
-          {debouncedSearch || statusFilter !== 'all'
-            ? 'No posts match your filters.'
-            : 'No blog posts yet. Click New Post above to write your first one.'}
-        </div>
-      ) : (
-        <div style={css.grid}>
-          {posts.map(post => {
-            const coverUrl = getCoverUrl(post)
-            return (
-              <Link
-                key={post.id}
-                href={`/admin/collections/posts/${post.id}`}
-                style={css.card}
-                className="post-card"
-                title={post.title}
-              >
-                <div style={css.imgWrap}>
-                  {coverUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={coverUrl} alt={post.title} style={css.img} loading="lazy" />
-                  ) : (
-                    <div style={css.placeholder}>&#9998;</div>
-                  )}
-                  {/* Publish/Draft quick-toggle */}
+      {/* ── 2-column post grid (matches public /blog grid) ── */}
+      <div style={{ padding: '2rem 1.5rem' }}>
+        {loading ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem 1.5rem' }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i}>
+                <div style={{ width: '100%', paddingBottom: '66%', background: 'var(--theme-elevation-200, #1a1a1a)', borderRadius: '2px', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ height: '0.75rem', background: 'var(--theme-elevation-200,#1a1a1a)', borderRadius: 2, marginTop: '0.85rem', animation: 'pulse 1.5s infinite', width: '70%' }} />
+                <div style={{ height: '0.6rem', background: 'var(--theme-elevation-200,#1a1a1a)', borderRadius: 2, marginTop: '0.5rem', animation: 'pulse 1.5s infinite', width: '40%' }} />
+              </div>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--theme-text-dim, #9b9a9a)', fontSize: '0.72rem', letterSpacing: '0.08em' }}>
+            {debouncedSearch || statusFilter !== 'all' ? 'No posts match your filters.' : 'No blog posts yet. Click + New Post above to write your first one.'}
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2.5rem 1.5rem' }}>
+            {posts.map(post => {
+              const coverUrl = getCoverUrl(post)
+              return (
+                <div key={post.id} className="pgv-card" style={{ position: 'relative', border: '1px solid transparent', transition: 'border-color 0.15s', borderRadius: '2px', overflow: 'hidden' }}>
+                  <Link href={`/admin/collections/posts/${post.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                    {/* Cover image — 3:2 ratio matching public blog cards */}
+                    <div className="pgv-card-img" style={{ position: 'relative', width: '100%', paddingBottom: '66%', overflow: 'hidden', background: 'var(--theme-elevation-100, #131313)' }}>
+                      {coverUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={coverUrl} alt={post.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s ease' }} loading="lazy" />
+                      ) : (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', color: 'var(--theme-elevation-400, #3a3a3a)' }}>&#9998;</div>
+                      )}
+                    </div>
+                    {/* Card body */}
+                    <div style={{ paddingTop: '0.85rem' }}>
+                      {post.publishedAt && (
+                        <div style={{ fontSize: '0.58rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--theme-text-dim, #9b9a9a)', opacity: 0.65, marginBottom: '0.4rem' }}>
+                          {formatDate(post.publishedAt)}
+                        </div>
+                      )}
+                      <div style={{ fontFamily: 'Archivo, sans-serif', fontSize: '1rem', fontWeight: 400, lineHeight: 1.25, color: 'var(--theme-text, #d6d1ce)', marginBottom: '0.4rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {post.title}
+                      </div>
+                      {post.excerpt && (
+                        <div style={{ fontSize: '0.72rem', lineHeight: 1.6, color: 'var(--theme-text-dim, #9b9a9a)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {post.excerpt}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* Publish/draft quick-toggle on cover image */}
                   <button
                     type="button"
                     onClick={(e) => { void toggleStatus(e, post) }}
                     disabled={togglingIds.has(post.id)}
                     aria-busy={togglingIds.has(post.id)}
-                    title={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
-                    aria-label={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
                     aria-pressed={post.status === 'published'}
-                    style={{
-                      position: 'absolute',
-                      top: '0.5rem',
-                      right: '0.5rem',
-                      padding: '0.18rem 0.5rem',
-                      background: post.status === 'published'
-                        ? 'rgba(16,185,129,0.85)'
-                        : 'rgba(100,100,100,0.75)',
-                      backdropFilter: 'blur(4px)',
-                      borderRadius: '3px',
-                      fontSize: '0.58rem',
-                      letterSpacing: '0.12em',
-                      textTransform: 'uppercase' as const,
-                      color: '#fff',
-                      fontWeight: 600,
-                      border: 'none',
-                      cursor: togglingIds.has(post.id) ? 'wait' : 'pointer',
-                      opacity: togglingIds.has(post.id) ? 0.5 : 1,
-                      fontFamily: 'inherit',
-                      transition: 'background 0.15s',
-                    }}
+                    aria-label={post.status === 'published' ? 'Published - click to revert to draft' : 'Draft - click to publish'}
+                    style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', zIndex: 1, padding: '0.2rem 0.55rem', background: post.status === 'published' ? 'rgba(16,185,129,0.85)' : 'rgba(80,80,80,0.8)', backdropFilter: 'blur(4px)', borderRadius: '2px', fontSize: '0.52rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#fff', fontWeight: 600, border: 'none', cursor: togglingIds.has(post.id) ? 'wait' : 'pointer', opacity: togglingIds.has(post.id) ? 0.5 : 1, fontFamily: 'Roboto Mono, monospace', transition: 'background 0.15s' }}
                   >
                     {post.status ?? 'draft'}
                   </button>
                 </div>
-                <div style={css.cardBody}>
-                  <div style={css.cardTitle}>{post.title}</div>
-                  {post.publishedAt && (
-                    <div style={css.cardDate}>{formatDate(post.publishedAt)}</div>
-                  )}
-                  {post.excerpt && (
-                    <div style={css.cardExcerpt}>{post.excerpt}</div>
-                  )}
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
 
-      {/* Pagination */}
-      {totalPages > 1 && !loading && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '2rem' }}>
-          <button
-            style={{ padding: '0.375rem 0.75rem', background: 'var(--theme-elevation-100,#131313)', border: '1px solid var(--theme-elevation-300,#2a2a2a)', borderRadius: '4px', color: 'var(--theme-text,#e6e1de)', fontSize: '0.8rem', cursor: page === 1 ? 'default' : 'pointer', opacity: page === 1 ? 0.4 : 1 }}
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >Prev</button>
-          <span style={{ fontSize: '0.8rem', color: 'var(--theme-text-dim,#9b9a9a)' }}>
-            {page} / {totalPages}
-          </span>
-          <button
-            style={{ padding: '0.375rem 0.75rem', background: 'var(--theme-elevation-100,#131313)', border: '1px solid var(--theme-elevation-300,#2a2a2a)', borderRadius: '4px', color: 'var(--theme-text,#e6e1de)', fontSize: '0.8rem', cursor: page === totalPages ? 'default' : 'pointer', opacity: page === totalPages ? 0.4 : 1 }}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >Next</button>
-        </div>
-      )}
+        {totalPages > 1 && !loading && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '2.5rem' }}>
+            <button style={{ padding: '0.35rem 0.7rem', background: 'var(--theme-elevation-100,#131313)', border: '1px solid var(--theme-elevation-200,#1a1a1a)', borderRadius: '2px', color: 'var(--theme-text,#e6e1de)', fontSize: '0.65rem', fontFamily: 'Roboto Mono, monospace', letterSpacing: '0.08em', cursor: page === 1 ? 'default' : 'pointer', opacity: page === 1 ? 0.4 : 1 }} onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Prev</button>
+            <span style={{ fontSize: '0.65rem', fontFamily: 'Roboto Mono, monospace', color: 'var(--theme-text-dim,#9b9a9a)' }}>{page} / {totalPages}</span>
+            <button style={{ padding: '0.35rem 0.7rem', background: 'var(--theme-elevation-100,#131313)', border: '1px solid var(--theme-elevation-200,#1a1a1a)', borderRadius: '2px', color: 'var(--theme-text,#e6e1de)', fontSize: '0.65rem', fontFamily: 'Roboto Mono, monospace', letterSpacing: '0.08em', cursor: page === totalPages ? 'default' : 'pointer', opacity: page === totalPages ? 0.4 : 1 }} onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

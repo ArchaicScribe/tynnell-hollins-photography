@@ -1,100 +1,108 @@
-import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
-import PortfolioGrid from './PortfolioGrid'
-import type { PortfolioPhoto, PortfolioGallery } from './PortfolioGrid'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
-import styles from './page.module.css'
+import styles from './portfolio-landing.module.css'
 
-// Portfolio updates occasionally as photos are added - revalidate every 2 minutes
 export const revalidate = 120
 
 export const metadata: Metadata = {
   title: 'Portfolio',
-  description: 'Browse the full portfolio: weddings, portraits, families, couples, and more.',
+  description: 'Browse portraits, family sessions, and weddings by Tynnell Hollins Photography.',
 }
+
+const CATEGORIES = [
+  {
+    label: 'Portraits',
+    href: '/portfolio/portraits',
+    dbCategory: 'portraits',
+    description: 'Intimate portraits that capture who you really are.',
+  },
+  {
+    label: 'Family',
+    href: '/portfolio/family',
+    dbCategory: 'families',
+    description: 'Real connection, easy laughter, bonds that tell your story.',
+  },
+  {
+    label: 'Weddings',
+    href: '/portfolio/weddings',
+    dbCategory: 'weddings',
+    description: 'Every wedding is a love story all its own.',
+  },
+]
 
 export default async function PortfolioPage() {
   const payload = await getPayload({ config })
 
-  const [{ docs: rawPhotos }, { docs: rawGalleries }] = await Promise.all([
-    payload.find({ collection: 'photos', sort: 'displayOrder', depth: 0, limit: 1000 }),
-    payload.find({ collection: 'galleries', sort: 'displayOrder', depth: 1, limit: 200, where: { status: { not_equals: 'draft' } } }),
-  ])
+  const coverPhotos = await Promise.all(
+    CATEGORIES.map(async cat => {
+      const { docs } = await payload.find({
+        collection: 'photos',
+        where: {
+          and: [
+            { category: { equals: cat.dbCategory } },
+            { featured: { equals: true } },
+          ],
+        },
+        sort: '-updatedAt',
+        limit: 1,
+        depth: 0,
+      })
+      if (docs.length) return docs[0]
 
-  const photos: PortfolioPhoto[] = rawPhotos.map(p => ({
-    id: String(p.id),
-    title: p.title,
-    alt: p.alt ?? undefined,
-    imageUrl: p.sizes?.card?.url ?? p.url ?? null,
-    fullUrl: p.sizes?.hero?.url ?? p.url ?? null,
-    category: p.category ?? 'portraits',
-  }))
-
-  const galleries: PortfolioGallery[] = rawGalleries.map(g => {
-    const cover = typeof g.coverPhoto === 'object' && g.coverPhoto !== null
-      ? g.coverPhoto as Photo
-      : null
-
-    // gallery.photos is an ordered array of { photo: Photo | number } rows
-    const previewUrls: string[] = Array.isArray(g.photos)
-      ? g.photos
-          .slice(0, 4)
-          .map(item => {
-            const p = item.photo
-            return typeof p === 'object' && p !== null
-              ? (p as Photo).sizes?.card?.url ?? (p as Photo).url ?? null
-              : null
-          })
-          .filter((url): url is string => url !== null)
-      : []
-
-    return {
-      id: String(g.id),
-      title: g.title,
-      slug: typeof g.slug === 'string' ? g.slug : '',
-      category: g.category ?? 'weddings',
-      featured: g.featured ?? false,
-      coverImageUrl: cover?.sizes?.card?.url ?? cover?.url ?? null,
-      coverImageAlt: cover?.alt ?? undefined,
-      photoCount: Array.isArray(g.photos) ? g.photos.length : 0,
-      previewUrls,
-    }
-  })
+      const { docs: fallback } = await payload.find({
+        collection: 'photos',
+        where: { category: { equals: cat.dbCategory } },
+        sort: 'displayOrder',
+        limit: 1,
+        depth: 0,
+      })
+      return fallback[0] ?? null
+    })
+  )
 
   const portfolioSchema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: 'Portfolio',
-    description: 'Browse the full portfolio: weddings, portraits, families, couples, and more.',
+    description: 'Browse portraits, family sessions, and weddings by Tynnell Hollins Photography.',
     url: 'https://tynnellhollinsphotography.com/portfolio',
     author: { '@type': 'Person', name: 'Tynnell Hollins', url: 'https://tynnellhollinsphotography.com/about' },
   }
 
   return (
-    <main className={styles.main}>
+    <main>
       <JsonLd data={portfolioSchema} />
-      <div className={styles.inner}>
-        <div className={styles.header}>
-          <p className={styles.eyebrow}>The Work</p>
-          <h1 className={styles.heading}>Portfolio</h1>
-          <p className={styles.subheading}>Every story, every moment, every face</p>
-        </div>
-        <Suspense fallback={null}>
-          <PortfolioGrid photos={photos} galleries={galleries} />
-        </Suspense>
+      <div className={styles.tiles}>
+        {CATEGORIES.map((cat, i) => {
+          const photo = coverPhotos[i] as (Photo & { url?: string | null }) | null
+          const imgUrl = photo?.sizes?.hero?.url ?? photo?.url ?? null
+
+          return (
+            <Link key={cat.href} href={cat.href} className={styles.tile} aria-label={cat.label}>
+              {imgUrl && (
+                <Image
+                  src={imgUrl}
+                  alt={cat.label}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className={styles.tileImg}
+                  priority={i === 0}
+                />
+              )}
+              <div className={styles.tileOverlay} />
+              <div className={styles.tileContent}>
+                <h2 className={styles.tileTitle}>{cat.label}</h2>
+                <p className={styles.tileDesc}>{cat.description}</p>
+              </div>
+            </Link>
+          )
+        })}
       </div>
-      <section className={styles.cta}>
-        <p className={styles.ctaEyebrow}>{"Let's make something beautiful"}</p>
-        <h2 className={styles.ctaHeading}>{"Book your"}<br />{"session."}</h2>
-        <div className={styles.ctaActions}>
-          <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
-          <Link href="/contact" className={styles.ctaBtnSecondary}>Get in touch</Link>
-        </div>
-      </section>
     </main>
   )
 }
