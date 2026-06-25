@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import jwt from 'jsonwebtoken'
+import { SignJWT } from 'jose'
+import { v4 as uuid } from 'uuid'
 
 export const runtime = 'nodejs'
 
@@ -9,6 +10,9 @@ const ALLOWED_EMAILS = new Set([
   'hello@tynnellhollinsphotography.com',
   'xandermv2@gmail.com',
 ])
+
+// Payload v3 default token expiration is 7200 seconds (2 hours)
+const TOKEN_EXPIRATION_SECONDS = 7200
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
@@ -98,14 +102,46 @@ export async function GET(request: NextRequest) {
     }
 
     const user = docs[0]
-    console.log(`[google-sso] signing token for user id=${user.id} email=${user.email}`)
+    console.log(`[google-sso] creating session for user id=${user.id}`)
 
-    // Sign using jsonwebtoken (same library Payload uses) so the token is identical
-    const token = jwt.sign(
-      { id: user.id, collection: 'users', email: user.email },
-      process.env.PAYLOAD_SECRET!,
-      { expiresIn: 7200 }
-    )
+    // Payload v3 requires a session ID (sid) in the JWT, stored in the user's sessions array.
+    // Without it, Payload's JWT strategy returns { user: null } even if the JWT signature is valid.
+    const sid = uuid()
+    const now = new Date()
+    const expiresAt = new Date(now.getTime() + TOKEN_EXPIRATION_SECONDS * 1000)
+
+    const currentSessions: Array<{ id: string; createdAt: Date; expiresAt: Date }> =
+      Array.isArray((user as Record<string, unknown>).sessions)
+        ? ((user as Record<string, unknown>).sessions as Array<{ id: string; createdAt: Date; expiresAt: Date }>).filter(
+            (s) => s.expiresAt && new Date(s.expiresAt) > now
+          )
+        : []
+
+    currentSessions.push({ id: sid, createdAt: now, expiresAt })
+
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: { sessions: currentSessions } as Record<string, unknown>,
+    })
+
+    console.log(`[google-sso] session created sid=${sid}, signing token`)
+
+    // Sign using jose (same library Payload v3 uses internally)
+    const secretKey = new TextEncoder().encode(process.env.PAYLOAD_SECRET ?? '')
+    const issuedAt = Math.floor(Date.now() / 1000)
+    const exp = issuedAt + TOKEN_EXPIRATION_SECONDS
+
+    const token = await new SignJWT({
+      id: user.id,
+      collection: 'users',
+      email: user.email,
+      sid,
+    })
+      .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
+      .setIssuedAt(issuedAt)
+      .setExpirationTime(exp)
+      .sign(secretKey)
 
     console.log(`[google-sso] token signed, redirecting to /admin`)
 
@@ -114,7 +150,7 @@ export async function GET(request: NextRequest) {
     response.cookies.set('payload-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 2, // 2 hours
+      maxAge: TOKEN_EXPIRATION_SECONDS,
       path: '/',
       sameSite: 'lax',
     })
