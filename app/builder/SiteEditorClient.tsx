@@ -38,6 +38,7 @@ const SITE_NAV: NavItem[] = [
   { key: 'services',     label: 'Services',      href: '/services'      },
   { key: 'testimonials', label: 'Testimonials',  href: '/testimonials'  },
   { key: 'contact',      label: 'Contact',       href: '/contact'       },
+  { key: 'book',         label: 'Book',          href: '/book'          },
   { key: 'blog',         label: 'Blog',          href: '/blog'          },
 ]
 
@@ -504,6 +505,7 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
   const handleSelect = (key: string, href: string) => {
     setSelectedKey(key)
     setPreviewHref(href)
+    if (key === 'portfolio') setPortfolioExpanded(true)
   }
 
   const deletePage = async (id: string | number) => {

@@ -140,15 +140,6 @@ export default async function BlogPage() {
         </section>
       )}
 
-      {/* CTA */}
-      <section className={styles.cta}>
-        <p className={styles.ctaEyebrow}>{"Let's work together"}</p>
-        <h2 className={styles.ctaHeading}>{"Ready to book"}<br />{"your session?"}</h2>
-        <div className={styles.ctaActions}>
-          <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
-          <Link href="/portfolio" className={styles.ctaBtnSecondary}>View Portfolio</Link>
-        </div>
-      </section>
     </main>
   )
 }
