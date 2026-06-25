@@ -20,7 +20,7 @@
 | Hosting | Vercel (production + preview deployments) |
 | Email | Resend |
 | Payments | Stripe (live mode on Vercel, test mode locally) |
-| Rate limiting | Upstash Redis |
+| Rate limiting | Upstash Redis (Regional, US East 1) |
 
 ---
 
@@ -304,6 +304,7 @@ The Payload admin sidebar is organized into four groups:
 - **React hydration error #418** — text node mismatch (`args[]=text&args[]=`) in the admin, source not yet identified. The `PayloadCssGuard` component prevents CSS loss when it fires. Root cause is still open (TYN-179).
 - **R2 custom domain (TYN-144)** — media URLs still use `r2.dev`. CNAME `media` is Active in Cloudflare. Remaining step: update `R2_PUBLIC_URL` in Vercel env vars to `https://media.tynnellhollinsphotography.com`. No code change needed.
 - **Stripe webhook secret (TYN-182)** — Vercel flags "Needs Attention." Rotate secret in Stripe dashboard and update `STRIPE_WEBHOOK_SECRET` in Vercel env vars.
+- **Upstash Redis** — Rate limits contact form, coming-soon inquiry, and checkout. Credentials live in 1Password under `op://Personal/Tynnell_Hollins_Photography/UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`. If the database is deleted or the URL changes: (1) create a new Regional database at console.upstash.com/redis (US East 1), (2) copy the REST URL and token, (3) add/update both env vars in Vercel, (4) redeploy. The `safeLimit()` wrapper in `app/lib/ratelimit.ts` fails open if Redis is unreachable, so forms still work without rate limiting -- but fix Upstash promptly. Do NOT remove or comment out the Upstash env vars; use dummy placeholder values locally if needed.
 - **Gallery bulk photo adding** — resolved (TYN-197). `GalleryBulkPhotoPicker` modal lets Tynnell multi-select photos. Single-row "Add Row" still works for one-off additions.
 - **Local admin photos 500 + uploads fail on this machine (DEV ONLY, not a code bug)** - Payload's `/api/photos/file/...` thumbnail proxy and the browser R2 upload PUT fail in LOCAL dev with a TLS handshake error (`write EPROTO ... SSL alert number 40`). This is a machine/network issue (almost certainly antivirus or a proxy doing SSL inspection on the R2 endpoint), NOT the code. Photo previews do not render and uploads may fail locally. Everything works on Vercel. Verify anything photo-related on a preview deploy.
 - **Local dev secrets:** 1Password is often NOT signed in locally. `npm run dev:secure` / `.\dev.ps1` need `op signin` first. To run plain `next dev`, override the 9 `op://` keys in `.env.local` with dummies (only those are `op://` refs; `DATABASE_URI`, `PAYLOAD_SECRET`, and the R2 keys are literal). Minimum set: `UPSTASH_REDIS_REST_URL/TOKEN` (Redis client validates the URL at import). Middleware only gates when `COMING_SOON=true`, so localhost is not auth-walled. See MEMORY.md for the full dummy set.
