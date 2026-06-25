@@ -130,6 +130,13 @@ export async function GET(request: NextRequest) {
       returning: false,
     })
 
+    // Diagnostic: read the user back to confirm sessions were actually persisted
+    const readBack = await payload.findByID({ id: user.id, collection: 'users' })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const storedSessions = (readBack as any)?.sessions
+    console.log(`[google-sso] sessions after updateOne: ${JSON.stringify(storedSessions)}`)
+    console.log(`[google-sso] target sid=${sid}`)
+
     console.log(`[google-sso] session created sid=${sid}, signing token`)
 
     // Sign using jose (same library Payload v3 uses internally)
