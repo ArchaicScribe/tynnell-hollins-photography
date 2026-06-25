@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { SignJWT } from 'jose'
+import jwt from 'jsonwebtoken'
 
 export const runtime = 'nodejs'
 
@@ -100,17 +100,12 @@ export async function GET(request: NextRequest) {
     const user = docs[0]
     console.log(`[google-sso] signing token for user id=${user.id} email=${user.email}`)
 
-    // Sign a JWT in the same format Payload uses internally
-    const secret = new TextEncoder().encode(process.env.PAYLOAD_SECRET ?? '')
-    const token = await new SignJWT({
-      id: user.id,
-      collection: 'users',
-      email: user.email,
-    })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setExpirationTime('2h')
-      .sign(secret)
+    // Sign using jsonwebtoken (same library Payload uses) so the token is identical
+    const token = jwt.sign(
+      { id: user.id, collection: 'users', email: user.email },
+      process.env.PAYLOAD_SECRET!,
+      { expiresIn: 7200 }
+    )
 
     console.log(`[google-sso] token signed, redirecting to /admin`)
 
