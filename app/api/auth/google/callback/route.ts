@@ -26,8 +26,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`/admin/login?sso_error=${reason}`, origin))
   }
 
+  console.log(`[google-sso] callback code=${!!code} state=${state?.slice(0, 8)} storedState=${storedState?.slice(0, 8) ?? 'MISSING'}`)
+
   if (!code || !state || !storedState || state !== storedState) {
-    return fail('invalid_state')
+    const reason = !code ? 'no_code' : !state ? 'no_state' : !storedState ? 'no_cookie' : 'state_mismatch'
+    return fail(`invalid_state:${reason}`)
   }
 
   try {
