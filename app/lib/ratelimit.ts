@@ -34,3 +34,20 @@ export function getClientIp(request: Request): string {
   const forwarded = (request.headers as Headers).get('x-forwarded-for')
   return forwarded?.split(',')[0].trim() ?? 'unknown'
 }
+
+/**
+ * Calls limiter.limit() and returns { success: true } if Redis is
+ * unreachable rather than crashing the route handler. This keeps
+ * forms functional when Upstash has a connectivity issue.
+ */
+export async function safeLimit(
+  limiter: Ratelimit,
+  identifier: string,
+): Promise<{ success: boolean }> {
+  try {
+    return await limiter.limit(identifier)
+  } catch (e) {
+    console.error('[ratelimit] Redis unreachable, failing open:', e)
+    return { success: true }
+  }
+}

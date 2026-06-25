@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { isValidEmail, isValidPhone, isValidSessionDate, escapeHtml, anyFieldTooLong, CONTACT_MAX_LENGTHS, MIN_LEAD_TIME_HOURS, MAX_BOOKING_MONTHS } from '@/app/lib/validation'
-import { contactRatelimit, getClientIp } from '@/app/lib/ratelimit'
+import { contactRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { inquiryEmailHtml, clientAcknowledgmentEmailHtml } from '@/app/lib/emails'
 import { CONTACT_EMAIL, EMAIL_FROM, RATE_LIMIT_ERROR } from '@/app/lib/constants'
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const body = await request.json()
   const { name, email, phone, contactPreference, sessionType, date, location, message, howHeard } = body
 
-  const { success } = await contactRatelimit.limit(getClientIp(request))
+  const { success } = await safeLimit(contactRatelimit, getClientIp(request))
   if (!success) {
     return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 })
   }
