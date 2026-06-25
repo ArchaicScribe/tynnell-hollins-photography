@@ -183,7 +183,7 @@ const PRODUCTS: Product[] = [
       { label: 'Services', href: '/admin/collections/services' },
       { label: 'New Service', href: '/admin/collections/services/create' },
       { label: 'Booking Settings', href: '/admin/globals/booking-settings' },
-      { label: 'Availability / OOO', href: '/admin/globals/availability' },
+      { label: 'Availability / OOO', href: '/availability' },
     ],
   },
   {
@@ -373,7 +373,7 @@ export function Dashboard() {
         {/* OOO status banner */}
         {oooState && (
           <Link
-            href="/admin/globals/availability"
+            href="/availability"
             style={{
               display: 'inline-flex',
               alignItems: 'center',

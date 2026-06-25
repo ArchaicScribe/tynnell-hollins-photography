@@ -426,7 +426,7 @@ const SWITCHER_ITEMS = [
   { label: 'Portfolio',     desc: 'Galleries and photos',    href: '/gallery-editor',                    color: '#0d9488' },
   { label: 'Website',       desc: 'Pages and content',       href: '/builder',                           color: '#2563eb', active: true },
   { label: 'Blog',          desc: 'Posts and articles',      href: '/admin/collections/posts',           color: '#7c3aed' },
-  { label: 'Bookings',      desc: 'Services and availability', href: '/admin/globals/booking-settings', color: '#b45309' },
+  { label: 'Bookings',      desc: 'Services and availability', href: '/availability',                   color: '#b45309' },
   { label: 'Testimonials',  desc: 'Client reviews',          href: '/admin/collections/testimonials',    color: '#059669' },
   { label: 'Studio',        desc: 'Site settings',           href: '/admin',                             color: '#475569' },
 ]
