@@ -146,7 +146,7 @@ const PRODUCTS: Product[] = [
       { label: 'Manage Collections', href: '/admin/collections/galleries' },
       { label: 'New Collection', href: '/admin/collections/galleries/create' },
       { label: 'Photo Library', href: '/admin/collections/photos' },
-      { label: 'Gallery Editor', href: '/gallery-editor', external: true },
+      { label: 'Portfolio Editor', href: '/gallery-editor', external: true },
       { label: 'View Portfolio', href: 'https://tynnellhollinsphotography.com/portfolio', external: true },
     ],
   },
@@ -270,13 +270,14 @@ function ProductCard({ product }: { product: Product }) {
               <a
                 key={link.label}
                 href={link.href}
-                {...(isHttp ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={linkStyle}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#E6E1DE' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '' }}
               >
                 {link.label}
-                {isHttp && <ExternalArrow />}
+                <ExternalArrow />
               </a>
             )
           }
@@ -409,7 +410,7 @@ export function Dashboard() {
       <p style={sectionLabelStyle}>QUICK ACCESS</p>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
 
-        {/* Recent Collections */}
+        {/* Recent Portfolios */}
         <div style={quickCardStyle}>
           <div style={quickCardHeader}>
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0d9488', display: 'inline-block' }} />
@@ -469,7 +470,7 @@ export function Dashboard() {
             <p style={{ fontSize: '0.8rem', color: '#555', fontFamily: "'Roboto Mono', monospace" }}>No collections yet.</p>
           )}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a href="/gallery-editor" style={quickFooterLink}>View all collections</a>
+          <a href="/gallery-editor" style={quickFooterLink}>View all portfolios</a>
         </div>
 
         {/* Recent Orders */}

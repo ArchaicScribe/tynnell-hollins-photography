@@ -399,9 +399,9 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
           onKeyDown={e => { if (e.key === 'Escape') setShowModal(false) }}
         >
           <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '2rem', width: 380, display: 'flex', flexDirection: 'column', gap: '1.25rem', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
-            <h2 id="new-col-title" style={{ margin: 0, fontFamily: ui, fontSize: '1.1rem', fontWeight: 600, color: '#e6e1de' }}>New collection</h2>
+            <h2 id="new-col-title" style={{ margin: 0, fontFamily: ui, fontSize: '1.1rem', fontWeight: 600, color: '#e6e1de' }}>New portfolio</h2>
             <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Collection name</span>
+              <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Portfolio name</span>
               <input
                 type="text" value={newTitle} autoFocus
                 onChange={e => setNewTitle(e.target.value)}
@@ -427,7 +427,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
                 disabled={!newTitle.trim() || creating} aria-busy={creating}
                 style={{ background: '#0d9488', border: 'none', color: '#fff', borderRadius: 6, padding: '0.5rem 1.3rem', fontSize: '0.85rem', fontWeight: 600, cursor: (!newTitle.trim() || creating) ? 'not-allowed' : 'pointer', fontFamily: ui, opacity: (!newTitle.trim() || creating) ? 0.5 : 1 }}
               >
-                {creating ? 'Creating...' : 'Create collection'}
+                {creating ? 'Creating...' : 'Create portfolio'}
               </button>
             </div>
           </div>
@@ -482,7 +482,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
 
         {/* Nav items */}
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', flex: 1 }}>
-          <NavItem icon={<CollectionsIcon />} label="Collections" href="/gallery-editor" active collapsed={collapsed} />
+          <NavItem icon={<CollectionsIcon />} label="Portfolio" href="/gallery-editor" active collapsed={collapsed} />
           <NavItem icon={<LibraryIcon />} label="Photo Library" href="/admin/collections/photos" external collapsed={collapsed} />
           <NavItem icon={<StarIcon />} label="Featured" href="/admin/collections/galleries?where[featured][equals]=true" external collapsed={collapsed} />
           <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.75rem 0' }} />
@@ -517,7 +517,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
 
         {/* Top bar */}
         <header style={{ height: 58, borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', flexShrink: 0, gap: '1rem' }}>
-          <h1 style={{ margin: 0, fontFamily: ui, fontSize: '1.2rem', fontWeight: 600, color: '#d6d1ce', letterSpacing: '-0.01em' }}>Collections</h1>
+          <h1 style={{ margin: 0, fontFamily: ui, fontSize: '1.2rem', fontWeight: 600, color: '#d6d1ce', letterSpacing: '-0.01em' }}>Portfolio</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
             <input
               type="search" placeholder="Search..."
@@ -528,7 +528,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
               type="button" onClick={openModal}
               style={{ background: '#0d9488', border: 'none', color: '#fff', borderRadius: 6, padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui, whiteSpace: 'nowrap' }}
             >
-              New Collection
+              New Portfolio
             </button>
           </div>
         </header>
@@ -563,7 +563,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
               ? <span style={{ fontSize: '0.72rem', color: '#4b4b4b', fontFamily: ui }}>Saving order...</span>
               : <span style={{ fontSize: '0.75rem', color: '#3a3a3a', fontFamily: ui }}>
                   {filtered.length === orderedGalleries.length
-                    ? `${orderedGalleries.length} ${orderedGalleries.length === 1 ? 'collection' : 'collections'}`
+                    ? `${orderedGalleries.length} ${orderedGalleries.length === 1 ? 'portfolio' : 'portfolios'}`
                     : `${filtered.length} of ${orderedGalleries.length}`}
                 </span>
             }
@@ -579,20 +579,20 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
         {/* Grid */}
         <main style={{ padding: '2rem', flex: 1 }}>
           {!isFiltered && orderedGalleries.length > 1 && (
-            <p style={{ margin: '0 0 1rem', fontSize: '0.7rem', color: '#2a2a2a', fontFamily: ui }}>Drag to reorder collections</p>
+            <p style={{ margin: '0 0 1rem', fontSize: '0.7rem', color: '#2a2a2a', fontFamily: ui }}>Drag to reorder portfolios</p>
           )}
 
           {orderedGalleries.length === 0 ? (
             <div style={{ textAlign: 'center', paddingTop: '6rem' }}>
               <div style={{ fontSize: '3.5rem', opacity: 0.06, marginBottom: '1.25rem' }} aria-hidden="true">&#128444;</div>
-              <p style={{ fontFamily: ui, fontSize: '1rem', fontWeight: 500, color: '#4b4b4b', margin: '0 0 1.5rem' }}>No collections yet</p>
+              <p style={{ fontFamily: ui, fontSize: '1rem', fontWeight: 500, color: '#4b4b4b', margin: '0 0 1.5rem' }}>No portfolios yet</p>
               <button type="button" onClick={openModal} style={{ background: '#0d9488', border: 'none', color: '#fff', borderRadius: 6, padding: '0.6rem 1.4rem', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui }}>
-                Create your first collection
+                Create your first portfolio
               </button>
             </div>
           ) : filtered.length === 0 ? (
             <div style={{ textAlign: 'center', paddingTop: '4rem', color: '#4b4b4b', fontFamily: ui, fontSize: '0.9rem' }}>
-              No collections match your filters.
+              No portfolios match your filters.
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
