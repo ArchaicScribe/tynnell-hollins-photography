@@ -27,8 +27,10 @@
 }
 
 .heroFallback {
-  height: clamp(180px, 28vh, 320px);
-  border-bottom: 1px solid var(--color-border-solid);
+  height: clamp(280px, 48vh, 560px);
+  background-image: url('/hero-background.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 .heroImageLink {
