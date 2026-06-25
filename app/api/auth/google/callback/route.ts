@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { SignJWT } from 'jose'
+import { SignJWT, jwtVerify } from 'jose'
 
 export const runtime = 'nodejs'
 
@@ -154,6 +154,16 @@ export async function GET(request: NextRequest) {
       .setIssuedAt(issuedAt)
       .setExpirationTime(exp)
       .sign(secretKey)
+
+    // Self-verify using payload.secret (same key Payload's JWT strategy uses)
+    const verifyKey = new TextEncoder().encode(payload.secret)
+    try {
+      const { payload: decoded } = await jwtVerify(token, verifyKey)
+      console.log(`[google-sso] self-verify OK id=${decoded.id} sid=${decoded.sid} col=${decoded.collection}`)
+    } catch (verifyErr) {
+      console.error(`[google-sso] self-verify FAILED`, verifyErr)
+    }
+    console.log(`[google-sso] secret len: payload.secret=${payload.secret?.length} env=${(process.env.PAYLOAD_SECRET ?? '').length}`)
 
     console.log(`[google-sso] token signed, redirecting to /admin`)
 
