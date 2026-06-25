@@ -21,13 +21,82 @@
   transform: scale(1.03);
 }
 
-.empty {
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
-  color: var(--color-detail);
-  padding: 4rem var(--padding-x);
+.emptySection {
+  max-width: 520px;
+  margin: 5rem auto 6rem;
   text-align: center;
+  padding: 0 var(--padding-x);
+}
+
+.emptyEyebrow {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0 0 1.25rem;
+}
+
+.emptyHeading {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 400;
+  color: var(--color-heading);
+  margin: 0 0 1.25rem;
+  line-height: 1.2;
+}
+
+.emptyBody {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.85;
+  color: var(--color-body);
+  margin: 0 0 2.25rem;
+}
+
+.emptyActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.emptyBtn {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-btn-text);
+  background: var(--color-btn-bg);
+  padding: 0.9rem 2.25rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s ease;
+}
+
+.emptyBtn:hover {
+  background: var(--color-btn-hover);
+}
+
+.emptyBtnSecondary {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-body);
+  background: transparent;
+  border: 1px solid rgba(214, 209, 206, 0.25);
+  padding: 0.9rem 2.25rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.emptyBtnSecondary:hover {
+  border-color: var(--color-detail);
+  color: var(--color-heading);
 }
 
 @media (max-width: 640px) {
