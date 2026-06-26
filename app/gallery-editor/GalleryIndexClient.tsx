@@ -13,6 +13,7 @@ export type GalleryCard = {
   status: string
   photoCount: number
   coverThumb: string | null
+  updatedAt: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -27,6 +28,12 @@ const SWITCHER = [
   { label: 'Testimonials', desc: 'Client reviews', color: '#059669', href: '/admin/collections/testimonials', icon: '💬' },
   { label: 'Studio', desc: 'Settings and users', color: '#475569', href: '/admin/globals/site-config', icon: '⚙️' },
 ]
+
+function fmtDate(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
 
 // ---------------------------------------------------------------------------
 // Icons
@@ -46,9 +53,9 @@ function CollectionsIcon() {
 function LibraryIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <rect x="1" y="4" width="16" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M1 7h16" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M5 1v3M9 1v3M13 1v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <rect x="2" y="5" width="14" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h3A1.5 1.5 0 0 1 12 3.5V5" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="9" cy="11" r="2" stroke="currentColor" strokeWidth="1.3" />
     </svg>
   )
 }
@@ -61,11 +68,11 @@ function StarIcon() {
   )
 }
 
-function GlobeIcon() {
+function HomeIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M9 1.5C9 1.5 6.5 5 6.5 9s2.5 7.5 2.5 7.5M9 1.5C9 1.5 11.5 5 11.5 9S9 16.5 9 16.5M1.5 9H16.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M2 8.5L9 2l7 6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 7.5V15a1 1 0 0 0 1 1h3v-4h2v4h3a1 1 0 0 0 1-1V7.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -75,6 +82,16 @@ function GearIcon() {
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
       <circle cx="9" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.4" />
       <path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.1 3.1l1.4 1.4M13.5 13.5l1.4 1.4M14.9 3.1l-1.4 1.4M4.5 13.5l-1.4 1.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function MegaphoneIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M3 11V7l10-4v12L3 11Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M3 7H1.5A1.5 1.5 0 0 0 0 8.5v1A1.5 1.5 0 0 0 1.5 11H3" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M3 11l1.5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   )
 }
@@ -106,9 +123,9 @@ function ChevronRightIcon() {
   )
 }
 
-function ChevronDownIcon() {
+function ChevronDownIcon({ size = 11 }: { size?: number }) {
   return (
-    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true" style={{ opacity: 0.55 }}>
+    <svg width={size} height={size} viewBox="0 0 11 11" fill="none" aria-hidden="true" style={{ opacity: 0.55 }}>
       <path d="M2 4L5.5 7.5L9 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
@@ -116,8 +133,8 @@ function ChevronDownIcon() {
 
 function SortIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
+      <path d="M2 4.5h13M4.5 8.5h8M7 12.5h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   )
 }
@@ -154,12 +171,12 @@ function FilterDropdown({ label, value, options, onChange }: {
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
         style={{
-          display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-          padding: '0.38rem 0.75rem',
+          display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+          padding: '0.38rem 0.8rem',
           background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
-          border: `1px solid ${isActive ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.12)'}`,
+          border: `1px solid ${isActive ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.13)'}`,
           borderRadius: 6, color: isActive ? '#e6e1de' : '#9b9a9a',
-          fontSize: '0.78rem', fontFamily: ui, cursor: 'pointer',
+          fontSize: '0.8rem', fontFamily: ui, cursor: 'pointer',
           whiteSpace: 'nowrap', transition: 'border-color 0.12s, background 0.12s',
         }}
       >
@@ -238,7 +255,6 @@ function DashboardSwitcher({ onClose, anchorTop, anchorLeft }: { onClose: () => 
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
           >
-            {/* Colored icon circle */}
             <div style={{ width: 40, height: 40, borderRadius: '50%', background: s.color, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
               {s.icon}
             </div>
@@ -250,13 +266,10 @@ function DashboardSwitcher({ onClose, anchorTop, anchorLeft }: { onClose: () => 
         ))}
       </div>
 
-      {/* View Dashboard footer */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '0.5rem' }}>
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a
-          href="/admin"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/studio"
           style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.55rem 0.75rem', borderRadius: 7, textDecoration: 'none', color: '#9b9a9a', fontSize: '0.82rem', fontFamily: ui, transition: 'background 0.1s' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.color = '#d6d1ce' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}
@@ -264,7 +277,6 @@ function DashboardSwitcher({ onClose, anchorTop, anchorLeft }: { onClose: () => 
           <DashboardIcon />
           View Dashboard
         </a>
-
       </div>
     </div>
   )
@@ -274,17 +286,18 @@ function DashboardSwitcher({ onClose, anchorTop, anchorLeft }: { onClose: () => 
 // Sidebar nav item
 // ---------------------------------------------------------------------------
 
-function NavItem({ icon, label, href, active, collapsed, external }: {
-  icon: React.ReactNode; label: string; href: string; active?: boolean; collapsed?: boolean; external?: boolean
+function NavItem({ icon, label, href, active, collapsed, external, disabled }: {
+  icon: React.ReactNode; label: string; href: string; active?: boolean; collapsed?: boolean; external?: boolean; disabled?: boolean
 }) {
-  const style: React.CSSProperties = {
+  const baseStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: collapsed ? 0 : '0.65rem',
-    padding: collapsed ? '0.6rem' : '0.55rem 0.75rem',
+    padding: collapsed ? '0.6rem' : '0.5rem 0.75rem',
     justifyContent: collapsed ? 'center' : 'flex-start',
-    borderRadius: 7, fontSize: '0.85rem', fontFamily: ui, fontWeight: active ? 500 : 400,
-    color: active ? '#e6e1de' : '#5a5a5a',
-    background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
-    textDecoration: 'none', cursor: 'pointer', transition: 'background 0.12s, color 0.12s',
+    borderRadius: 7, fontSize: '0.875rem', fontFamily: ui, fontWeight: active ? 500 : 400,
+    color: disabled ? '#3a3a3a' : active ? '#e6e1de' : '#7a7a7a',
+    background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+    textDecoration: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+    transition: 'background 0.12s, color 0.12s',
   }
   const inner = (
     <>
@@ -292,19 +305,24 @@ function NavItem({ icon, label, href, active, collapsed, external }: {
       {!collapsed && <span>{label}</span>}
     </>
   )
+  if (disabled) {
+    return (
+      <span style={baseStyle} title={collapsed ? label : undefined}>{inner}</span>
+    )
+  }
   if (external) {
     return (
       // eslint-disable-next-line @next/next/no-html-link-for-pages
-      <a href={href} style={style} title={collapsed ? label : undefined}
-        onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' } }}
-        onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#5a5a5a' } }}
+      <a href={href} style={baseStyle} title={collapsed ? label : undefined}
+        onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.color = '#b0aba8' } }}
+        onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#7a7a7a' } }}
       >{inner}</a>
     )
   }
   return (
-    <Link href={href} style={style} title={collapsed ? label : undefined}
-      onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' } }}
-      onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#5a5a5a' } }}
+    <Link href={href} style={baseStyle} title={collapsed ? label : undefined}
+      onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.color = '#b0aba8' } }}
+      onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#7a7a7a' } }}
     >{inner}</Link>
   )
 }
@@ -325,6 +343,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
   const [createError, setCreateError] = useState('')
   const [filterCat, setFilterCat] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
   const [orderedGalleries, setOrderedGalleries] = useState<GalleryCard[]>(galleries)
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
@@ -379,13 +398,14 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
     setCreating(false)
   }
 
-  const isFiltered = !!(filterCat || filterStatus)
+  const isFiltered = !!(filterCat || filterStatus || search.trim())
   const filtered = orderedGalleries.filter(g =>
     (!filterCat || g.category === filterCat) &&
-    (!filterStatus || (filterStatus === 'published' ? g.status !== 'draft' : g.status === 'draft'))
+    (!filterStatus || (filterStatus === 'published' ? g.status !== 'draft' : g.status === 'draft')) &&
+    (!search.trim() || g.title.toLowerCase().includes(search.trim().toLowerCase()))
   )
 
-  const sidebarWidth = collapsed ? 56 : 220
+  const sidebarWidth = collapsed ? 56 : 232
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0e0e0e', color: '#e6e1de' }}>
@@ -399,9 +419,9 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
           onKeyDown={e => { if (e.key === 'Escape') setShowModal(false) }}
         >
           <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '2rem', width: 380, display: 'flex', flexDirection: 'column', gap: '1.25rem', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
-            <h2 id="new-col-title" style={{ margin: 0, fontFamily: ui, fontSize: '1.1rem', fontWeight: 600, color: '#e6e1de' }}>New portfolio</h2>
+            <h2 id="new-col-title" style={{ margin: 0, fontFamily: ui, fontSize: '1.1rem', fontWeight: 600, color: '#e6e1de' }}>New collection</h2>
             <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Portfolio name</span>
+              <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Collection name</span>
               <input
                 type="text" value={newTitle} autoFocus
                 onChange={e => setNewTitle(e.target.value)}
@@ -427,7 +447,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
                 disabled={!newTitle.trim() || creating} aria-busy={creating}
                 style={{ background: '#0d9488', border: 'none', color: '#fff', borderRadius: 6, padding: '0.5rem 1.3rem', fontSize: '0.85rem', fontWeight: 600, cursor: (!newTitle.trim() || creating) ? 'not-allowed' : 'pointer', fontFamily: ui, opacity: (!newTitle.trim() || creating) ? 0.5 : 1 }}
               >
-                {creating ? 'Creating...' : 'Create portfolio'}
+                {creating ? 'Creating...' : 'Create collection'}
               </button>
             </div>
           </div>
@@ -440,12 +460,11 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
         borderRight: '1px solid rgba(255,255,255,0.07)',
         background: '#0a0a0a',
         display: 'flex', flexDirection: 'column',
-        padding: collapsed ? '1.25rem 0.35rem 1rem' : '1.25rem 0.75rem 1rem',
+        padding: collapsed ? '1rem 0.35rem 1rem' : '1rem 0.6rem 1rem',
         transition: 'width 0.2s ease',
         overflow: 'hidden', position: 'relative',
       }}>
 
-        {/* Top: dashboard switcher trigger */}
         {showSwitcher && (
           <DashboardSwitcher
             onClose={() => setShowSwitcher(false)}
@@ -453,53 +472,75 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
             anchorLeft={switcherPos.left}
           />
         )}
+
+        {/* Top: Client Gallery product switcher */}
         <button
           ref={switcherBtnRef}
           type="button"
           onClick={toggleSwitcher}
           aria-expanded={showSwitcher}
-          title={collapsed ? 'View Dashboard' : undefined}
+          title={collapsed ? 'Switch product' : undefined}
           style={{
-            display: 'flex', alignItems: 'center', gap: collapsed ? 0 : '0.5rem',
+            display: 'flex', alignItems: 'center', gap: collapsed ? 0 : '0.6rem',
             justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: collapsed ? '0.55rem' : '0.5rem 0.75rem',
+            padding: collapsed ? '0.5rem' : '0.5rem 0.6rem',
             marginBottom: '0.5rem',
             background: showSwitcher ? 'rgba(255,255,255,0.07)' : 'transparent',
-            border: 'none', borderRadius: 7, cursor: 'pointer', width: '100%',
+            border: 'none', borderRadius: 8, cursor: 'pointer', width: '100%',
             transition: 'background 0.12s',
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = showSwitcher ? 'rgba(255,255,255,0.07)' : 'transparent' }}
         >
-          <DashboardIcon />
+          {/* Teal circle with grid icon */}
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: '#0d9488', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <rect x="1" y="1" width="5.5" height="5.5" rx="1" fill="white" fillOpacity="0.9" />
+              <rect x="8.5" y="1" width="5.5" height="5.5" rx="1" fill="white" fillOpacity="0.9" />
+              <rect x="1" y="8.5" width="5.5" height="5.5" rx="1" fill="white" fillOpacity="0.9" />
+              <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1" fill="white" fillOpacity="0.9" />
+            </svg>
+          </div>
           {!collapsed && (
-            <span style={{ fontFamily: ui, fontSize: '0.72rem', fontWeight: 600, color: '#4a4a4a', letterSpacing: '0.12em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-              Tynnell Hollins
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1, minWidth: 0 }}>
+              <span style={{ fontFamily: ui, fontSize: '0.88rem', fontWeight: 600, color: '#d6d1ce', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                Client Gallery
+              </span>
+              <ChevronDownIcon size={13} />
+            </div>
           )}
         </button>
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: '0.75rem' }} />
 
-        {/* Nav items */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', flex: 1 }}>
-          <NavItem icon={<CollectionsIcon />} label="Portfolio" href="/gallery-editor" active collapsed={collapsed} />
-          <NavItem icon={<LibraryIcon />} label="Photo Library" href="/admin/collections/photos" external collapsed={collapsed} />
-          <NavItem icon={<StarIcon />} label="Featured" href="/admin/collections/galleries?where[featured][equals]=true" external collapsed={collapsed} />
-          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.75rem 0' }} />
-          <NavItem icon={<GlobeIcon />} label="View Website" href="https://tynnellhollinsphotography.com" external collapsed={collapsed} />
-          <NavItem icon={<GearIcon />} label="Site Settings" href="/admin/globals/site-config" external collapsed={collapsed} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: '0.5rem' }} />
+
+        {/* Main nav */}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', flex: 1 }}>
+          <NavItem icon={<CollectionsIcon />} label="Collections" href="/gallery-editor" active collapsed={collapsed} />
+          <NavItem icon={<LibraryIcon />} label="Library" href="/admin/collections/photos" external collapsed={collapsed} />
+          <NavItem icon={<StarIcon />} label="Starred" href="/admin/collections/galleries?where[featured][equals]=true" external collapsed={collapsed} />
+          <NavItem icon={<HomeIcon />} label="Homepage" href="/studio" external collapsed={collapsed} />
+          <NavItem icon={<GearIcon />} label="Settings" href="/admin/globals/site-config" external collapsed={collapsed} />
+
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.65rem 0 0.5rem' }} />
+
+          {!collapsed && (
+            <p style={{ margin: '0 0 0.25rem 0.75rem', fontSize: '0.68rem', fontWeight: 600, color: '#3a3a3a', fontFamily: ui, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Tools
+            </p>
+          )}
+          <NavItem icon={<MegaphoneIcon />} label="Marketing" href="#" disabled collapsed={collapsed} />
         </nav>
 
         {/* Bottom: collapse toggle */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.75rem' }}>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.65rem' }}>
           <button
             type="button"
             onClick={() => setCollapsed(c => !c)}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             style={{
-              display: 'flex', alignItems: 'center', gap: collapsed ? 0 : '0.55rem',
+              display: 'flex', alignItems: 'center', gap: collapsed ? 0 : '0.5rem',
               justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? '0.55rem' : '0.5rem 0.75rem',
+              padding: collapsed ? '0.5rem' : '0.45rem 0.75rem',
               background: 'transparent', border: 'none', borderRadius: 7,
               cursor: 'pointer', color: '#3a3a3a', fontSize: '0.78rem', fontFamily: ui,
               width: '100%', transition: 'background 0.12s, color 0.12s',
@@ -507,7 +548,12 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.color = '#6b6663' }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#3a3a3a' }}
           >
-            {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            {collapsed ? <ChevronRightIcon /> : (
+              <>
+                <ChevronLeftIcon />
+                <ChevronLeftIcon />
+              </>
+            )}
           </button>
         </div>
       </aside>
@@ -515,55 +561,109 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
       {/* ---- Main content ---- */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
-        {/* Top bar */}
-        <header style={{ height: 58, borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', flexShrink: 0, gap: '1rem' }}>
-          <h1 style={{ margin: 0, fontFamily: ui, fontSize: '1.2rem', fontWeight: 600, color: '#d6d1ce', letterSpacing: '-0.01em' }}>Portfolio</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
-            <input
-              type="search" placeholder="Search..."
-              aria-label="Search collections"
-              style={{ padding: '0.4rem 0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#d6d1ce', fontSize: '0.82rem', fontFamily: ui, outline: 'none', width: 180 }}
-            />
+        {/* Top bar: Collections heading + search + actions */}
+        <header style={{ height: 64, borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', padding: '0 2rem', flexShrink: 0, gap: '1rem' }}>
+          <h1 style={{ margin: 0, fontFamily: ui, fontSize: '1.35rem', fontWeight: 700, color: '#d6d1ce', letterSpacing: '-0.02em', flexShrink: 0 }}>Collections</h1>
+
+          {/* Search - center */}
+          <div style={{ flex: 1, maxWidth: 320, marginLeft: '1.5rem' }}>
+            <div style={{ position: 'relative' }}>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true" style={{ position: 'absolute', left: '0.65rem', top: '50%', transform: 'translateY(-50%)', color: '#5a5a5a' }}>
+                <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+              <input
+                type="search" placeholder="Search..."
+                aria-label="Search collections"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{ width: '100%', padding: '0.42rem 0.75rem 0.42rem 2rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#d6d1ce', fontSize: '0.83rem', fontFamily: ui, outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+          </div>
+
+          {/* Right: View Presets + New Collection */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginLeft: 'auto' }}>
             <button
-              type="button" onClick={openModal}
-              style={{ background: '#0d9488', border: 'none', color: '#fff', borderRadius: 6, padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui, whiteSpace: 'nowrap' }}
+              type="button"
+              style={{ padding: '0.45rem 0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#9b9a9a', fontSize: '0.83rem', fontFamily: ui, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.28)'; (e.currentTarget as HTMLElement).style.color = '#d6d1ce' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}
             >
-              New Portfolio
+              View Presets
             </button>
+
+            {/* Split-style New Collection button */}
+            <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
+              <button
+                type="button" onClick={openModal}
+                style={{ padding: '0.45rem 1rem', background: '#0d9488', border: 'none', color: '#fff', fontSize: '0.83rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui, whiteSpace: 'nowrap' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#0b8078' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#0d9488' }}
+              >
+                New Collection
+              </button>
+              <button
+                type="button"
+                aria-label="More options"
+                style={{ padding: '0.45rem 0.55rem', background: '#0b8078', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#0a706a' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#0b8078' }}
+              >
+                <ChevronDownIcon size={13} />
+              </button>
+            </div>
           </div>
         </header>
 
         {/* Filter bar */}
-        <div style={{ padding: '0.75rem 2rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div style={{ padding: '0.6rem 2rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
           <FilterDropdown
-            label="Status" value={filterStatus} onChange={v => setFilterStatus(v)}
+            label="Status"
+            value={filterStatus}
+            onChange={v => setFilterStatus(v)}
             options={[
-              { label: 'All Status', value: null },
+              { label: 'Status', value: null },
               { label: 'Published', value: 'published' },
               { label: 'Draft', value: 'draft' },
             ]}
           />
           <FilterDropdown
-            label="Category" value={filterCat} onChange={v => setFilterCat(v)}
+            label="Category Tag"
+            value={filterCat}
+            onChange={v => setFilterCat(v)}
             options={[
-              { label: 'All Categories', value: null },
+              { label: 'Category Tag', value: null },
               ...CATEGORIES.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c })),
             ]}
           />
+          {/* Visual-only dropdowns matching Pixieset */}
+          {(['Event Date', 'Expiry Date', 'Starred'] as const).map(label => (
+            <button
+              key={label}
+              type="button"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.38rem 0.8rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.13)', borderRadius: 6, color: '#9b9a9a', fontSize: '0.8rem', fontFamily: ui, cursor: 'default', whiteSpace: 'nowrap' }}
+            >
+              {label}
+              <ChevronDownIcon />
+            </button>
+          ))}
+
           {isFiltered && (
             <button
-              type="button" onClick={() => { setFilterCat(null); setFilterStatus(null) }}
+              type="button" onClick={() => { setFilterCat(null); setFilterStatus(null); setSearch('') }}
               style={{ padding: '0.32rem 0.65rem', background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, color: '#6b6663', fontSize: '0.72rem', fontFamily: ui, cursor: 'pointer' }}
             >
               Clear filters
             </button>
           )}
+
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {reordering
               ? <span style={{ fontSize: '0.72rem', color: '#4b4b4b', fontFamily: ui }}>Saving order...</span>
-              : <span style={{ fontSize: '0.75rem', color: '#3a3a3a', fontFamily: ui }}>
+              : <span style={{ fontSize: '0.75rem', color: '#4a4a4a', fontFamily: ui }}>
                   {filtered.length === orderedGalleries.length
-                    ? `${orderedGalleries.length} ${orderedGalleries.length === 1 ? 'portfolio' : 'portfolios'}`
+                    ? `${orderedGalleries.length} ${orderedGalleries.length === 1 ? 'collection' : 'collections'}`
                     : `${filtered.length} of ${orderedGalleries.length}`}
                 </span>
             }
@@ -579,27 +679,29 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
         {/* Grid */}
         <main style={{ padding: '2rem', flex: 1 }}>
           {!isFiltered && orderedGalleries.length > 1 && (
-            <p style={{ margin: '0 0 1rem', fontSize: '0.7rem', color: '#2a2a2a', fontFamily: ui }}>Drag to reorder portfolios</p>
+            <p style={{ margin: '0 0 1.25rem', fontSize: '0.72rem', color: '#2a2a2a', fontFamily: ui }}>Drag to reorder collections</p>
           )}
 
           {orderedGalleries.length === 0 ? (
             <div style={{ textAlign: 'center', paddingTop: '6rem' }}>
               <div style={{ fontSize: '3.5rem', opacity: 0.06, marginBottom: '1.25rem' }} aria-hidden="true">&#128444;</div>
-              <p style={{ fontFamily: ui, fontSize: '1rem', fontWeight: 500, color: '#4b4b4b', margin: '0 0 1.5rem' }}>No portfolios yet</p>
+              <p style={{ fontFamily: ui, fontSize: '1rem', fontWeight: 500, color: '#4b4b4b', margin: '0 0 1.5rem' }}>No collections yet</p>
               <button type="button" onClick={openModal} style={{ background: '#0d9488', border: 'none', color: '#fff', borderRadius: 6, padding: '0.6rem 1.4rem', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui }}>
-                Create your first portfolio
+                Create your first collection
               </button>
             </div>
           ) : filtered.length === 0 ? (
             <div style={{ textAlign: 'center', paddingTop: '4rem', color: '#4b4b4b', fontFamily: ui, fontSize: '0.9rem' }}>
-              No portfolios match your filters.
+              No collections match your filters.
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
               {filtered.map(g => {
                 const realIdx = orderedGalleries.indexOf(g)
                 const isDragging = dragIdx === realIdx
                 const isOver = overIdx === realIdx && dragIdx !== null && dragIdx !== realIdx
+                const isPublished = g.status !== 'draft'
+                const dateStr = fmtDate(g.updatedAt)
                 return (
                   <Link
                     key={g.id}
@@ -610,26 +712,50 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
                     onDragOver={e => { if (!isFiltered) { e.preventDefault(); e.dataTransfer.dropEffect = 'move' } }}
                     onDrop={e => { if (!isFiltered && dragIdx !== null) { e.preventDefault(); moveGallery(dragIdx, realIdx); setDragIdx(null); setOverIdx(null) } }}
                     onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
-                    style={{ textDecoration: 'none', display: 'block', borderRadius: 8, overflow: 'hidden', background: '#141414', border: `1px solid ${isOver ? 'rgba(13,148,136,0.5)' : 'rgba(255,255,255,0.06)'}`, transition: 'border-color .15s, transform .15s, opacity .12s', opacity: isDragging ? 0.35 : 1, cursor: !isFiltered ? 'grab' : 'pointer' }}
-                    onMouseEnter={e => { if (!isDragging) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.14)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' } }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
+                    style={{
+                      textDecoration: 'none', display: 'block', borderRadius: 10, overflow: 'hidden',
+                      background: '#141414',
+                      border: `1px solid ${isOver ? 'rgba(13,148,136,0.4)' : 'rgba(255,255,255,0.07)'}`,
+                      transition: 'border-color .15s, transform .15s, opacity .12s, box-shadow .15s',
+                      opacity: isDragging ? 0.35 : 1,
+                      cursor: !isFiltered ? 'grab' : 'pointer',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    }}
+                    onMouseEnter={e => { if (!isDragging) { (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.14)' } }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)'; (e.currentTarget as HTMLElement).style.borderColor = isOver ? 'rgba(13,148,136,0.4)' : 'rgba(255,255,255,0.07)' }}
                   >
-                    <div style={{ aspectRatio: '16/10', background: '#1a1a1a', overflow: 'hidden', position: 'relative' }}>
+                    {/* Cover image - full bleed, 4:3 */}
+                    <div style={{ aspectRatio: '4/3', background: '#1c1c1c', overflow: 'hidden', position: 'relative' }}>
                       {g.coverThumb
                         // eslint-disable-next-line @next/next/no-img-element
                         ? <img src={g.coverThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span aria-hidden="true" style={{ fontSize: '2rem', opacity: 0.08 }}>&#128444;</span></div>
+                        : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1a1a1a 0%, #141414 100%)' }}>
+                            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true" style={{ opacity: 0.1 }}>
+                              <rect x="3" y="8" width="30" height="22" rx="3" stroke="currentColor" strokeWidth="2" />
+                              <circle cx="13" cy="17" r="3.5" stroke="currentColor" strokeWidth="2" />
+                              <path d="M3 24l7-6 5 5 6-7 12 9" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                            </svg>
+                          </div>
+                        )
                       }
                     </div>
+
+                    {/* Card footer: title + meta */}
                     <div style={{ padding: '0.85rem 1rem 0.9rem' }}>
-                      <p style={{ margin: '0 0 0.35rem', fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#d6d1ce', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ margin: '0 0 0.3rem', fontFamily: ui, fontSize: '0.92rem', fontWeight: 600, color: '#e6e1de', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {g.title}
                       </p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', color: '#5a5a5a', fontFamily: ui }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: g.status !== 'draft' ? '#4ade80' : 'transparent', border: g.status !== 'draft' ? 'none' : '1.5px solid #4a4a4a', display: 'inline-block' }} />
-                        <span style={{ textTransform: 'capitalize', color: '#4a4a4a' }}>{g.category ?? 'uncategorized'}</span>
-                        <span style={{ opacity: 0.35 }}>&#8226;</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#6b6663', fontFamily: ui }}>
+                        {/* Status indicator */}
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, display: 'inline-block', background: isPublished ? '#4ade80' : 'transparent', border: isPublished ? 'none' : '1.5px solid #4a4a4a' }} />
                         <span>{g.photoCount} {g.photoCount === 1 ? 'item' : 'items'}</span>
+                        {dateStr && (
+                          <>
+                            <span style={{ opacity: 0.4 }}>&#8226;</span>
+                            <span>{dateStr}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </Link>

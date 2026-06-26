@@ -32,6 +32,7 @@ export default async function GalleryEditorHome() {
       status: gAny.status ?? 'published',
       photoCount: Array.isArray(g.photos) ? g.photos.length : 0,
       coverThumb: cover?.sizes?.card?.url ?? cover?.url ?? null,
+      updatedAt: typeof g.updatedAt === 'string' ? g.updatedAt : null,
     }
   })
 
