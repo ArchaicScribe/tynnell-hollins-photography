@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Redirect bare /admin to the standalone studio dashboard
+  if (pathname === '/admin' || pathname === '/admin/') {
+    return NextResponse.redirect(new URL('/studio', request.url))
+  }
+
   if (process.env.COMING_SOON !== 'true') return NextResponse.next()
   if (pathname.startsWith('/coming-soon')) return NextResponse.next()
   // Logged-in admins bypass Coming Soon everywhere, so they can QA the real
@@ -12,6 +17,9 @@ export function middleware(request: NextRequest) {
   // so the presence of the Payload session cookie is enough.
   if (request.cookies.get('payload-token')) return NextResponse.next()
   if (pathname.startsWith('/admin')) return NextResponse.next()
+  if (pathname.startsWith('/studio')) return NextResponse.next()
+  if (pathname.startsWith('/gallery-editor')) return NextResponse.next()
+  if (pathname.startsWith('/availability')) return NextResponse.next()
   // The page builder is admin-only and auth-gated, so let it through during
   // Coming Soon mode (same as /admin) instead of rewriting it to /coming-soon.
   if (pathname.startsWith('/builder')) return NextResponse.next()

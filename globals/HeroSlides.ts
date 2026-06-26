@@ -14,6 +14,7 @@ export const HeroSlides: GlobalConfig = {
   label: 'Hero Slides',
   hooks: { afterChange: [revalidateHero] },
   admin: {
+    hidden: true,
     group: 'Site Settings',
     description:
       'The full-screen photo carousel on your homepage. Add, remove, or reorder slides here.',
