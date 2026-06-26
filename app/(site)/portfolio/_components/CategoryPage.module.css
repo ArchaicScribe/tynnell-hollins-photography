@@ -37,9 +37,7 @@
 }
 
 .titleBox {
-  background: var(--color-bg-overlay);
-  padding: 1.25rem 2rem;
-  backdrop-filter: blur(8px);
+  padding: 0;
 }
 
 .title {
@@ -49,12 +47,10 @@
   color: #fff;
   letter-spacing: -0.01em;
   line-height: 1;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.55);
 }
 
 .descBox {
-  background: var(--color-bg-overlay);
-  padding: 1.25rem 1.75rem;
-  backdrop-filter: blur(8px);
   max-width: 400px;
 }
 
@@ -64,6 +60,7 @@
   letter-spacing: 0.04em;
   color: rgba(214, 209, 206, 0.9);
   line-height: 1.8;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
 
 /* ── CTA ─────────────────────────────────────────────────── */
