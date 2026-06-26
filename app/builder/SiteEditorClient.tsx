@@ -434,12 +434,12 @@ const SWITCHER_ITEMS = [
 
 function ProductSwitcher({ onClose, anchorRef }: { onClose: () => void; anchorRef: React.RefObject<HTMLButtonElement | null> }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState({ top: 52, right: 12 })
+  const [pos, setPos] = useState({ top: 52, left: 12 })
 
   useEffect(() => {
     if (anchorRef.current) {
       const r = anchorRef.current.getBoundingClientRect()
-      setPos({ top: r.bottom + 6, right: window.innerWidth - r.right })
+      setPos({ top: r.bottom + 6, left: r.left })
     }
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node) &&
@@ -452,7 +452,7 @@ function ProductSwitcher({ onClose, anchorRef }: { onClose: () => void; anchorRe
   return (
     <div
       ref={ref}
-      style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 500, background: '#1c1c1c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '0.5rem', width: 240, boxShadow: '0 12px 40px rgba(0,0,0,0.7)' }}
+      style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 500, background: '#1c1c1c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '0.5rem', width: 240, boxShadow: '0 12px 40px rgba(0,0,0,0.7)' }}
     >
       {SWITCHER_ITEMS.map(item => (
         // eslint-disable-next-line @next/next/no-html-link-for-pages
@@ -581,12 +581,37 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
       {/* ---- Top bar ---- */}
       <div style={{ height: 52, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#141414' }}>
 
-        {/* Left: brand monogram + product tabs */}
+        {/* Left: brand monogram + studio dropdown + product tabs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a href="/admin" style={{ width: 30, height: 30, borderRadius: '50%', background: teal, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 700, color: '#fff', fontFamily: ui, flexShrink: 0, textDecoration: 'none', marginRight: '0.75rem' }}>
+          <a href="/admin" style={{ width: 30, height: 30, borderRadius: '50%', background: teal, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 700, color: '#fff', fontFamily: ui, flexShrink: 0, textDecoration: 'none' }}>
             TH
           </a>
+
+          {/* Studio product switcher - Pixieset-style left dropdown */}
+          <button
+            ref={switcherBtnRef}
+            type="button"
+            onClick={() => setShowSwitcher(s => !s)}
+            aria-expanded={showSwitcher}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.3rem',
+              background: showSwitcher ? 'rgba(255,255,255,0.06)' : 'none',
+              border: 'none', borderRadius: 6, cursor: 'pointer',
+              color: showSwitcher ? '#e6e1de' : '#9b9a9a',
+              fontFamily: ui, fontSize: '0.85rem', fontWeight: 500,
+              padding: '0.35rem 0.6rem',
+              transition: 'background 0.1s, color 0.1s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = '#e6e1de' }}
+            onMouseLeave={e => { if (!showSwitcher) { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' } }}
+          >
+            Studio
+            <IconChevronDown rotated={showSwitcher} />
+          </button>
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', margin: '0 0.35rem', flexShrink: 0 }} />
 
           {(['portfolio', 'website'] as Product[]).map(p => (
             <button
@@ -609,20 +634,8 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
           ))}
         </div>
 
-        {/* Right: more products + dashboard */}
+        {/* Right: dashboard link */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <button
-            ref={switcherBtnRef}
-            type="button"
-            onClick={() => setShowSwitcher(s => !s)}
-            aria-expanded={showSwitcher}
-            title="More products"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: showSwitcher ? 'rgba(255,255,255,0.06)' : 'none', border: 'none', cursor: 'pointer', color: '#5a5a5a', fontFamily: ui, padding: '0.3rem 0.4rem', borderRadius: 6 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}
-            onMouseLeave={e => { if (!showSwitcher) { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#5a5a5a' } }}
-          >
-            <IconDots />
-          </button>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/admin"
