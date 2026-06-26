@@ -1,5 +1,6 @@
 'use client'
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { PortfolioTab } from './PortfolioTab'
 
 // System font stack matches Pixieset's clean UI look
 const ui = "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -423,7 +424,7 @@ function NewPageModal({ onClose }: { onClose: () => void }) {
 // ---------------------------------------------------------------------------
 
 const SWITCHER_ITEMS = [
-  { label: 'Portfolio',     desc: 'Galleries and photos',    href: '/gallery-editor',                    color: '#0d9488' },
+  { label: 'Portfolio',     desc: 'Galleries and photos',    href: '/builder?product=portfolio',         color: '#0d9488' },
   { label: 'Website',       desc: 'Pages and content',       href: '/builder',                           color: '#2563eb', active: true },
   { label: 'Blog',          desc: 'Posts and articles',      href: '/admin/collections/posts',           color: '#7c3aed' },
   { label: 'Bookings',      desc: 'Services and availability', href: '/availability',                   color: '#b45309' },
@@ -490,14 +491,24 @@ function ProductSwitcher({ onClose, anchorRef }: { onClose: () => void; anchorRe
 // ---------------------------------------------------------------------------
 
 type Tab = 'pages' | 'design' | 'blog' | 'settings'
+type Product = 'portfolio' | 'website'
 
-export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] }) {
+export function SiteEditorClient({ initialPages, initialProduct = 'website' }: { initialPages: SitePage[]; initialProduct?: Product }) {
   const [pages, setPages] = useState<SitePage[]>(initialPages)
   const [activeTab, setActiveTab] = useState<Tab>('pages')
+  const [product, setProduct] = useState<Product>(initialProduct)
   const [showModal, setShowModal] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [showSwitcher, setShowSwitcher] = useState(false)
   const switcherBtnRef = useRef<HTMLButtonElement>(null)
+
+  const switchProduct = (p: Product) => {
+    setProduct(p)
+    const url = new URL(window.location.href)
+    if (p === 'website') url.searchParams.delete('product')
+    else url.searchParams.set('product', p)
+    window.history.replaceState(null, '', url.toString())
+  }
 
   // Which page is selected and shown in the preview pane
   const [selectedKey, setSelectedKey] = useState('home')
@@ -569,19 +580,49 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
 
       {/* ---- Top bar ---- */}
       <div style={{ height: 52, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#141414' }}>
-        <button
-          ref={switcherBtnRef}
-          type="button"
-          onClick={() => setShowSwitcher(s => !s)}
-          aria-expanded={showSwitcher}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: showSwitcher ? 'rgba(255,255,255,0.06)' : 'none', border: 'none', cursor: 'pointer', color: '#d4d0cc', fontFamily: ui, fontSize: '0.9rem', fontWeight: 500, padding: '0.3rem 0.5rem', borderRadius: 6 }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
-          onMouseLeave={e => { if (!showSwitcher) (e.currentTarget as HTMLElement).style.background = 'none' }}
-        >
-          Website <IconChevronDown />
-        </button>
 
+        {/* Left: brand monogram + product tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/admin" style={{ width: 30, height: 30, borderRadius: '50%', background: teal, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 700, color: '#fff', fontFamily: ui, flexShrink: 0, textDecoration: 'none', marginRight: '0.75rem' }}>
+            TH
+          </a>
+
+          {(['portfolio', 'website'] as Product[]).map(p => (
+            <button
+              key={p} type="button"
+              onClick={() => switchProduct(p)}
+              aria-pressed={product === p}
+              style={{
+                background: product === p ? 'rgba(255,255,255,0.08)' : 'none',
+                border: 'none', borderRadius: 6,
+                color: product === p ? '#e6e1de' : '#6b6663',
+                fontSize: '0.85rem', fontFamily: ui, fontWeight: product === p ? 600 : 400,
+                padding: '0.35rem 0.75rem', cursor: 'pointer',
+                transition: 'background 0.1s, color 0.1s',
+              }}
+              onMouseEnter={e => { if (product !== p) { (e.currentTarget as HTMLElement).style.color = '#c4bfb9'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)' } }}
+              onMouseLeave={e => { if (product !== p) { (e.currentTarget as HTMLElement).style.color = '#6b6663'; (e.currentTarget as HTMLElement).style.background = 'none' } }}
+            >
+              {p.charAt(0).toUpperCase() + p.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Right: more products + dashboard */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button
+            ref={switcherBtnRef}
+            type="button"
+            onClick={() => setShowSwitcher(s => !s)}
+            aria-expanded={showSwitcher}
+            title="More products"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: showSwitcher ? 'rgba(255,255,255,0.06)' : 'none', border: 'none', cursor: 'pointer', color: '#5a5a5a', fontFamily: ui, padding: '0.3rem 0.4rem', borderRadius: 6 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}
+            onMouseLeave={e => { if (!showSwitcher) { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#5a5a5a' } }}
+          >
+            <IconDots />
+          </button>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/admin"
@@ -592,13 +633,13 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
           >
             <IconDashboard /> Dashboard
           </a>
-          <div style={{ width: 30, height: 30, borderRadius: '50%', background: teal, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#fff', fontFamily: ui, flexShrink: 0 }}>
-            T
-          </div>
         </div>
       </div>
 
       {/* ---- Body ---- */}
+      {product === 'portfolio' ? (
+        <PortfolioTab />
+      ) : (
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
         {/* ---- Sidebar ---- */}
@@ -772,6 +813,7 @@ export function SiteEditorClient({ initialPages }: { initialPages: SitePage[] })
           />
         </div>
       </div>
+      )}
     </div>
   )
 }
