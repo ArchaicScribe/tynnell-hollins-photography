@@ -93,6 +93,13 @@ export default async function WeddingsPage() {
               const coverUrl = cover?.sizes?.card?.url ?? cover?.url ?? null
               const photoCount = Array.isArray(gallery.photos) ? gallery.photos.length : 0
 
+              const previewUrls = (Array.isArray(gallery.photos) ? gallery.photos.slice(0, 5) : [])
+                .map(item => {
+                  const p = typeof item.photo === 'object' && item.photo !== null ? item.photo as Photo : null
+                  return p?.sizes?.card?.url ?? p?.url ?? null
+                })
+                .filter((u): u is string => u !== null)
+
               return (
                 <Link key={gallery.id} href={`/portfolio/${gallery.slug}`} className={albumStyles.albumCard}>
                   <div className={albumStyles.albumCover}>
@@ -108,6 +115,21 @@ export default async function WeddingsPage() {
                       <div className={albumStyles.noCover} />
                     )}
                   </div>
+                  {previewUrls.length > 0 && (
+                    <div className={albumStyles.albumPreviews}>
+                      {previewUrls.slice(0, 3).map((url, i) => (
+                        <div key={i} className={albumStyles.albumPreview}>
+                          <ProtectedImage
+                            src={url}
+                            alt=""
+                            fill
+                            sizes="(max-width: 640px) 33vw, (max-width: 1024px) 17vw, 11vw"
+                            className={albumStyles.albumImg}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className={albumStyles.albumFooter}>
                     <span className={albumStyles.albumTitle}>{gallery.title}</span>
                     <span className={albumStyles.albumMeta}>{photoCount} photos</span>
