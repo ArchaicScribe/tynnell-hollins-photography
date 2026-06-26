@@ -135,8 +135,8 @@ const PRODUCTS: Product[] = [
     color: '#0d9488',
     icon: <CameraIcon />,
     links: [
-      { label: 'Manage Collections', href: '/gallery-editor' },
-      { label: 'Create Collection', href: '/gallery-editor?new=1' },
+      { label: 'Manage Collections', href: '/builder?product=portfolio' },
+      { label: 'Create Collection', href: '/builder?product=portfolio' },
       { label: 'Photo Library', href: '/admin/collections/photos' },
       { label: 'View Portfolio', href: 'https://tynnellhollinsphotography.com/portfolio', external: true },
     ],

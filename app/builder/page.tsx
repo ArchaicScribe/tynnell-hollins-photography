@@ -4,13 +4,21 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { SiteEditorClient, type SitePage } from './SiteEditorClient'
 
-export const metadata = { title: 'Website Editor' }
+export const dynamic = 'force-dynamic'
+export const metadata = { title: 'Studio' }
 
-export default async function BuilderHome() {
+export default async function BuilderHome({
+  searchParams,
+}: {
+  searchParams: Promise<{ product?: string }>
+}) {
   const payload = await getPayload({ config })
   const headersList = await headers()
   const { user } = await payload.auth({ headers: headersList })
   if (!user) redirect('/admin/login')
+
+  const { product } = await searchParams
+  const initialProduct = product === 'portfolio' ? 'portfolio' : 'website'
 
   const result = await payload.find({
     collection: 'pages',
@@ -30,5 +38,5 @@ export default async function BuilderHome() {
     updatedAt: p.updatedAt,
   }))
 
-  return <SiteEditorClient initialPages={pages} />
+  return <SiteEditorClient initialPages={pages} initialProduct={initialProduct} />
 }
