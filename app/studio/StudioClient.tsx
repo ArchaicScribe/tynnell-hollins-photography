@@ -72,18 +72,6 @@ function WebsiteIcon() {
   )
 }
 
-function BookingsIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-      <rect x="2" y="5" width="24" height="21" rx="2.5" stroke="white" strokeWidth="1.8" />
-      <path d="M2 12h24" stroke="white" strokeWidth="1.8" />
-      <path d="M8 2v4M20 2v4" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-      <rect x="7" y="16" width="4" height="4" rx="1" fill="white" />
-      <rect x="12" y="16" width="4" height="4" rx="1" fill="white" />
-    </svg>
-  )
-}
-
 function StudioIcon() {
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -98,14 +86,6 @@ function BlogIcon() {
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
       <rect x="3" y="3" width="22" height="22" rx="2.5" stroke="white" strokeWidth="1.8" />
       <path d="M8 9h12M8 14h12M8 19h7" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function TestimonialsIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-      <path d="M4 5h20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-6 4V7a2 2 0 0 1 2-2z" stroke="white" strokeWidth="1.8" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -369,6 +349,7 @@ function RecentCollections({ galleries }: { galleries: Gallery[] }) {
         </div>
       )}
 
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <a
         href="/gallery-editor"
         style={{ display: 'inline-block', marginTop: '0.85rem', fontSize: '0.78rem', color: '#1db48e', fontFamily: ui, textDecoration: 'none' }}
@@ -420,6 +401,7 @@ function RecentPhotos({ photos }: { photos: Photo[] }) {
         </div>
       )}
 
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <a
         href="/admin/collections/photos"
         style={{ display: 'inline-block', marginTop: '0.85rem', fontSize: '0.78rem', color: '#b45309', fontFamily: ui, textDecoration: 'none' }}

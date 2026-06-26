@@ -220,7 +220,6 @@ function ProductCard({ product }: { product: Product }) {
       {/* Sub-links */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
         {product.links.map(link => {
-          const isHttp = link.href.startsWith('http')
           if (link.external) {
             return (
               // eslint-disable-next-line @next/next/no-html-link-for-pages
