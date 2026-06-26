@@ -1,120 +1,173 @@
 .page {
   min-height: 100vh;
   background: var(--color-bg);
-  padding: 8rem var(--padding-x) 6rem;
 }
 
-/* ── Header ──────────────────────────────────────────────── */
+/* ── Hero ────────────────────────────────────────────────── */
 
-.header {
-  max-width: 680px;
-  margin: 0 auto 5rem;
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 10rem var(--padding-x) 7rem;
   text-align: center;
+  background: var(--color-bg);
 }
 
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-  margin: 0 0 1.25rem;
+/* Repeating handwritten-script background texture */
+.scriptBg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
 }
 
-.heading {
+.scriptLine {
   font-family: var(--font-display);
-  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
   font-weight: 400;
   color: var(--color-heading);
-  margin: 0 0 1.25rem;
+  opacity: 0.045;
+  white-space: nowrap;
+  line-height: 2.1;
+  display: block;
+  padding: 0 2rem;
+  letter-spacing: 0.02em;
+}
+
+.scriptLine:nth-child(even) {
+  margin-left: -6rem;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.heroHeading {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--color-heading);
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
-.subheading {
-  font-family: var(--font-prose);
-  font-size: 0.9375rem;
+.heroSub {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
   font-weight: 400;
-  line-height: 1.75;
-  color: var(--color-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-detail);
   margin: 0;
+  line-height: 1.8;
 }
 
-/* ── Grid ────────────────────────────────────────────────── */
+/* ── Cards ───────────────────────────────────────────────── */
 
-.grid {
-  max-width: 1200px;
-  margin: 0 auto 6rem;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+.cards {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 var(--padding-x) 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
-
-/* ── Card ────────────────────────────────────────────────── */
 
 .card {
-  background: var(--color-bg-accent);
-  border: 1px solid var(--color-border-solid);
-  padding: 2.5rem 2rem;
+  padding: 3.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.stars {
-  font-size: 0.85rem;
-  letter-spacing: 0.15em;
+.card:first-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.badge {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--color-detail);
   margin: 0;
 }
 
 .quote {
-  font-family: var(--font-prose);
-  font-size: 0.875rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.15rem, 2.5vw, 1.5rem);
   font-weight: 400;
-  line-height: 1.8;
-  color: var(--color-body);
-  margin: 0;
-  flex: 1;
-}
-
-.footer {
-  border-top: 1px solid var(--color-border-solid);
-  padding-top: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.name {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  line-height: 1.65;
   color: var(--color-heading);
   margin: 0;
+  font-style: italic;
+  position: relative;
 }
 
-.session {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.quoteOpen,
+.quoteClose {
+  font-family: var(--font-display);
+  font-size: 1.4em;
+  line-height: 0;
+  vertical-align: -0.25em;
   color: var(--color-detail);
-  margin: 0;
+  opacity: 0.6;
+}
+
+.quoteOpen {
+  margin-right: 0.1em;
+}
+
+.quoteClose {
+  margin-left: 0.1em;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cardFooter::before {
+  content: '';
+  display: block;
+  width: 2rem;
+  height: 1px;
+  background: var(--color-detail);
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+.clientName {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-body);
+  font-style: normal;
 }
 
 /* ── Empty state ─────────────────────────────────────────── */
 
 .empty {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 300;
   color: var(--color-detail);
   text-align: center;
-  margin: 0 auto 6rem;
+  padding: 4rem 0 6rem;
+  margin: 0;
 }
 
 /* ── CTA ─────────────────────────────────────────────────── */
@@ -122,6 +175,7 @@
 .cta {
   max-width: 480px;
   margin: 0 auto;
+  padding: 0 var(--padding-x) 6rem;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -130,7 +184,7 @@
 }
 
 .ctaEyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.65rem;
   font-weight: 400;
   letter-spacing: 0.25em;
@@ -149,7 +203,7 @@
 }
 
 .ctaBtn {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0.2em;
@@ -167,22 +221,20 @@
 
 /* ── Responsive ──────────────────────────────────────────── */
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 768px) {
-  .page {
-    padding: 6rem 1.5rem 5rem;
+  .hero {
+    padding: 7rem var(--padding-x) 5rem;
   }
 
-  .grid {
-    grid-template-columns: 1fr;
+  .cards {
+    padding-bottom: 4rem;
   }
 
-  .header {
-    margin-bottom: 3.5rem;
+  .card {
+    padding: 2.5rem 0;
+  }
+
+  .quote {
+    font-size: 1.1rem;
   }
 }

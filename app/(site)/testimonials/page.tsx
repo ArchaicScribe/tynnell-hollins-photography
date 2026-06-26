@@ -8,7 +8,7 @@ import styles from './page.module.css'
 export const revalidate = 120
 
 export const metadata: Metadata = {
-  title: 'Client Love',
+  title: 'Client Words | Tynnell Hollins Photography',
   description: 'Kind words from couples, families, and portrait clients who have worked with Tynnell Hollins Photography.',
 }
 
@@ -40,39 +40,52 @@ export default async function TestimonialsPage() {
     <main className={styles.page}>
       {reviewSchema && <JsonLd data={reviewSchema} />}
 
-      <div className={styles.header}>
-        <p className={styles.eyebrow}>Kind Words</p>
-        <h1 className={styles.heading}>Client Love</h1>
-        <p className={styles.subheading}>
-          Every session is built on trust. Here&apos;s what clients have to say.
-        </p>
-      </div>
-
-      {testimonials.length > 0 ? (
-        <div className={styles.grid}>
-          {testimonials.map((t) => (
-            <article key={t.id} className={styles.card} aria-label={`Review from ${t.clientName}`}>
-              <p className={styles.stars} aria-label="5 out of 5 stars">★★★★★</p>
-              <blockquote className={styles.quote}>&ldquo;{t.quote}&rdquo;</blockquote>
-              <footer className={styles.footer}>
-                <cite className={styles.name}>{t.clientName}</cite>
-                {t.sessionType && (
-                  <p className={styles.session}>{t.sessionType}</p>
-                )}
-              </footer>
-            </article>
+      {/* Hero with handwritten script background */}
+      <div className={styles.hero}>
+        <div className={styles.scriptBg} aria-hidden="true">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <span key={i} className={styles.scriptLine}>
+              {`Every moment captured in light and shadow, a story told through the lens of love and laughter, hearts intertwined in the dance of forever, treasured memories woven into the fabric of time, whispered promises and stolen glances preserved`}
+            </span>
           ))}
         </div>
-      ) : (
-        <p className={styles.empty}>More kind words coming soon.</p>
-      )}
+        <div className={styles.heroContent}>
+          <h1 className={styles.heroHeading}>Their Words Tell It Best</h1>
+          <p className={styles.heroSub}>
+            From big days to small breaths, these words echo the real life inside each photo.
+          </p>
+        </div>
+      </div>
 
+      {/* Testimonial cards */}
+      <div className={styles.cards}>
+        {testimonials.length > 0 ? (
+          testimonials.map((t) => (
+            <article key={t.id} className={styles.card} aria-label={`Review from ${t.clientName}`}>
+              {t.sessionType && (
+                <p className={styles.badge}>{t.sessionType} Testimonial</p>
+              )}
+              <blockquote className={styles.quote}>
+                <span className={styles.quoteOpen} aria-hidden="true">&ldquo;</span>
+                {t.quote}
+                <span className={styles.quoteClose} aria-hidden="true">&rdquo;</span>
+              </blockquote>
+              <footer className={styles.cardFooter}>
+                <cite className={styles.clientName}>{t.clientName}</cite>
+              </footer>
+            </article>
+          ))
+        ) : (
+          <p className={styles.empty}>Kind words are on their way.</p>
+        )}
+      </div>
+
+      {/* CTA */}
       <div className={styles.cta}>
         <p className={styles.ctaEyebrow}>Ready to create your story?</p>
         <h2 className={styles.ctaHeading}>Let&apos;s Work Together</h2>
         <Link href="/contact" className={styles.ctaBtn}>Book a Session</Link>
       </div>
-
     </main>
   )
 }

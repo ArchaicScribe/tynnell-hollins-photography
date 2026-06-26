@@ -480,16 +480,6 @@ export function StudioClient({ userName, galleries, photos }: Props) {
         { label: 'View Blog', href: 'https://tynnellhollinsphotography.com/blog', external: true },
       ],
     },
-    {
-      label: 'Testimonials',
-      color: '#0891b2',
-      icon: <TestimonialsIcon />,
-      links: [
-        { label: 'All Testimonials', href: '/admin/collections/testimonials' },
-        { label: 'New Testimonial', href: '/admin/collections/testimonials/create' },
-        { label: 'View Testimonials', href: 'https://tynnellhollinsphotography.com', external: true },
-      ],
-    },
   ]
 
   return (
@@ -509,7 +499,7 @@ export function StudioClient({ userName, galleries, photos }: Props) {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
+          gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '0.85rem',
           marginBottom: '3rem',
         }}>
