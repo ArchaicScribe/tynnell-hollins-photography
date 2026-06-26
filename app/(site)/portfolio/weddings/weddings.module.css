@@ -47,6 +47,21 @@
   background: var(--color-bg-card);
 }
 
+.albumPreviews {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  background: var(--color-bg);
+  padding: 2px 0 0;
+}
+
+.albumPreview {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--color-bg-accent);
+}
+
 .albumFooter {
   display: flex;
   align-items: baseline;
