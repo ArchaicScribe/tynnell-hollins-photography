@@ -317,8 +317,10 @@ export function PortfolioTab({ initialGalleries = [] }: { initialGalleries?: Gal
               New Collection
             </button>
             <button
-              type="button" aria-label="More collection options"
+              type="button" aria-label="More collection options" onClick={openModal}
               style={{ padding: '0.42rem 0.5rem', background: '#0b8078', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none' }}
             >
               <ChevronDown size={13} />
             </button>

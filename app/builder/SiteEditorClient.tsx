@@ -434,12 +434,12 @@ const SWITCHER_ITEMS = [
 
 function ProductSwitcher({ onClose, anchorRef }: { onClose: () => void; anchorRef: React.RefObject<HTMLButtonElement | null> }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState({ top: 52, left: 12 })
+  const [pos, setPos] = useState({ top: 52, right: 12 })
 
   useEffect(() => {
     if (anchorRef.current) {
       const r = anchorRef.current.getBoundingClientRect()
-      setPos({ top: r.bottom + 6, left: r.left })
+      setPos({ top: r.bottom + 6, right: window.innerWidth - r.right })
     }
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node) &&
@@ -452,7 +452,7 @@ function ProductSwitcher({ onClose, anchorRef }: { onClose: () => void; anchorRe
   return (
     <div
       ref={ref}
-      style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 500, background: '#1c1c1c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '0.5rem', width: 240, boxShadow: '0 12px 40px rgba(0,0,0,0.7)' }}
+      style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 500, background: '#1c1c1c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '0.5rem', width: 240, boxShadow: '0 12px 40px rgba(0,0,0,0.7)' }}
     >
       {SWITCHER_ITEMS.map(item => (
         // eslint-disable-next-line @next/next/no-html-link-for-pages
