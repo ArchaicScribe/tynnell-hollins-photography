@@ -1,7 +1,7 @@
 .main {
   background: var(--color-bg);
   min-height: 100vh;
-  padding-top: 5.75rem; /* nav clearance (92px) */
+  padding-top: 5.75rem;
 }
 
 .srOnly {
@@ -21,13 +21,13 @@
 .hero {
   position: relative;
   width: 100%;
-  height: clamp(280px, 48vh, 560px);
+  height: clamp(420px, 70vh, 780px);
   overflow: hidden;
   background: var(--color-bg-accent);
 }
 
 .heroFallback {
-  height: clamp(280px, 48vh, 560px);
+  height: clamp(420px, 70vh, 780px);
   background-image: url('/hero-background.jpg');
   background-size: cover;
   background-position: center;
@@ -51,9 +51,87 @@
 .heroOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(12, 12, 12, 0.22);
+  background: linear-gradient(
+    to bottom,
+    rgba(12, 12, 12, 0.1) 0%,
+    rgba(12, 12, 12, 0.15) 40%,
+    rgba(12, 12, 12, 0.72) 100%
+  );
   z-index: 1;
   pointer-events: none;
+}
+
+/* Featured post content overlaid at the bottom of the hero */
+.heroContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 3rem var(--padding-x) 3.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 860px;
+}
+
+.heroDate {
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.heroTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0;
+  color: #ffffff;
+}
+
+.heroTitleLink {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.heroTitleLink:hover {
+  opacity: 0.8;
+}
+
+.heroExcerpt {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  max-width: 520px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.heroReadMore {
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 2px;
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.heroReadMore:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
 /* "BLOG" label — bottom-right corner of cover image */
@@ -323,7 +401,19 @@
   }
 
   .hero {
-    height: clamp(220px, 38vh, 380px);
+    height: clamp(340px, 60vh, 540px);
+  }
+
+  .heroContent {
+    padding: 2rem var(--padding-x) 2.5rem;
+  }
+
+  .heroTitle {
+    font-size: clamp(1.8rem, 7vw, 2.8rem);
+  }
+
+  .heroExcerpt {
+    display: none;
   }
 
   .grid {
