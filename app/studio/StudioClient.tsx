@@ -225,8 +225,7 @@ function TopBar({ userName }: { userName: string }) {
 function ProductCard({ product }: { product: Product }) {
   return (
     <div style={{
-      background: '#161616', border: '1px solid rgba(255,255,255,0.07)',
-      borderRadius: 10, padding: '1.5rem 1.25rem',
+      padding: '1.25rem 1rem 1.25rem 0',
       display: 'flex', flexDirection: 'column', gap: 0,
     }}>
       {/* Icon */}
@@ -482,8 +481,10 @@ export function StudioClient({ userName, galleries, photos }: Props) {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '0.85rem',
+          gap: '0',
           marginBottom: '3rem',
+          borderTop: '1px solid rgba(255,255,255,0.07)',
+          paddingTop: '1.75rem',
         }}>
           {PRODUCTS.map(p => <ProductCard key={p.label} product={p} />)}
         </div>
