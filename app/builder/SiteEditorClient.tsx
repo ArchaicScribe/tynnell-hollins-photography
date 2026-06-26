@@ -470,6 +470,17 @@ function ProductSwitcher({ onClose, anchorRef }: { onClose: () => void; anchorRe
           </span>
         </a>
       ))}
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', margin: '0.35rem 0' }} />
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a
+        href="/studio" onClick={onClose}
+        style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.55rem 0.75rem', borderRadius: 7, textDecoration: 'none', color: '#9b9a9a', fontSize: '0.8rem', fontFamily: ui, transition: 'background 0.1s, color 0.1s' }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = '#e6e1de' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}
+      >
+        <IconDashboard />
+        Dashboard
+      </a>
     </div>
   )
 }
