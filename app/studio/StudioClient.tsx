@@ -455,18 +455,8 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       icon: <WebsiteIcon />,
       links: [
         { label: 'Edit Website', href: '/builder' },
-        { label: 'View Website', href: 'https://tynnellhollinsphotography.com', external: true },
-      ],
-    },
-    {
-      label: 'Bookings',
-      color: '#b45309',
-      icon: <BookingsIcon />,
-      links: [
-        { label: 'View Services', href: '/admin/collections/services' },
-        { label: 'New Service', href: '/admin/collections/services/create' },
-        { label: 'Booking Settings', href: '/admin/globals/booking-settings' },
         { label: 'Availability / OOO', href: '/availability' },
+        { label: 'View Website', href: 'https://tynnellhollinsphotography.com', external: true },
       ],
     },
     {
@@ -519,7 +509,7 @@ export function StudioClient({ userName, galleries, photos }: Props) {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
+          gridTemplateColumns: 'repeat(5, 1fr)',
           gap: '0.85rem',
           marginBottom: '3rem',
         }}>
