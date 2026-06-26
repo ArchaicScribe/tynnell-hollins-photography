@@ -7,7 +7,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-export const revalidate = 120
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -53,10 +53,9 @@ export default async function BlogPage() {
   return (
     <main className={styles.main}>
       {blogSchema && <JsonLd data={blogSchema} />}
-      <h1 className={styles.srOnly}>The Journal</h1>
 
-      {/* Cover image - sits below the fixed nav */}
-      <section className={`${styles.hero} ${!featuredCoverUrl ? styles.heroFallback : ''}`} aria-label="Journal">
+      {/* Featured post hero */}
+      <section className={`${styles.hero} ${!featuredCoverUrl ? styles.heroFallback : ''}`} aria-label="Featured post">
         {featuredCoverUrl && featuredPost && (
           <Link href={`/blog/${featuredSlug}`} className={styles.heroImageLink} tabIndex={-1} aria-hidden="true">
             <Image
@@ -69,7 +68,29 @@ export default async function BlogPage() {
             />
           </Link>
         )}
-        {featuredCoverUrl && <div className={styles.heroOverlay} />}
+        <div className={styles.heroOverlay} />
+        {featuredPost && (
+          <div className={styles.heroContent}>
+            {featuredPost.publishedAt && (
+              <time className={styles.heroDate} dateTime={featuredPost.publishedAt}>
+                {new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
+                  year: 'numeric', month: 'long', day: 'numeric',
+                })}
+              </time>
+            )}
+            <h1 className={styles.heroTitle}>
+              <Link href={`/blog/${featuredSlug}`} className={styles.heroTitleLink}>
+                {featuredPost.title}
+              </Link>
+            </h1>
+            {featuredPost.excerpt && (
+              <p className={styles.heroExcerpt}>{featuredPost.excerpt}</p>
+            )}
+            <Link href={`/blog/${featuredSlug}`} className={styles.heroReadMore}>
+              Read More
+            </Link>
+          </div>
+        )}
         <span className={styles.blogLabel} aria-hidden="true">Blog</span>
       </section>
 
@@ -91,7 +112,7 @@ export default async function BlogPage() {
         <p className={styles.emptyState}>New posts are on their way. Check back soon.</p>
       ) : (
         <section className={styles.grid} aria-label="All posts">
-          {posts.map((post) => {
+          {posts.slice(1).map((post) => {
             const cover =
               typeof post.coverImage === 'object' && post.coverImage !== null
                 ? (post.coverImage as Photo)
