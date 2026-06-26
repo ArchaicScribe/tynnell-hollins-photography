@@ -38,6 +38,7 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { PostGridView as PostGridView_14ec513780a751f079162e3480e8024b } from '../../../components/admin/PostGridView'
 import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe } from '../../../components/admin/AboutViewOnSiteButton'
 import { OooWarnings as OooWarnings_24882b9d221e8df452e06e4f5a939af9 } from '../../../components/admin/OooWarnings'
+import { EmptyNav as EmptyNav_82b891e66c2c3695aa54244888ed30ee } from '../../../components/admin/EmptyNav'
 import { AdminIcon as AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c } from '../../../components/admin/AdminIcon'
 import { AdminLogo as AdminLogo_56b58cfdfd9d12efeac26d6201d62c94 } from '../../../components/admin/AdminLogo'
 import { GoogleSignInButton as GoogleSignInButton_61e8baa09a72c73bfc7f6c4c790b8986 } from '../../../components/admin/GoogleSignInButton'
@@ -88,6 +89,7 @@ export const importMap = {
   "./components/admin/PostGridView#PostGridView": PostGridView_14ec513780a751f079162e3480e8024b,
   "./components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton": AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe,
   "./components/admin/OooWarnings#OooWarnings": OooWarnings_24882b9d221e8df452e06e4f5a939af9,
+  "./components/admin/EmptyNav#EmptyNav": EmptyNav_82b891e66c2c3695aa54244888ed30ee,
   "./components/admin/AdminIcon#AdminIcon": AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c,
   "./components/admin/AdminLogo#AdminLogo": AdminLogo_56b58cfdfd9d12efeac26d6201d62c94,
   "./components/admin/GoogleSignInButton#GoogleSignInButton": GoogleSignInButton_61e8baa09a72c73bfc7f6c4c790b8986,
