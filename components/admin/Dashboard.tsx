@@ -102,27 +102,6 @@ function PenIcon() {
   )
 }
 
-function CalendarIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-      <rect x="2" y="4" width="22" height="20" rx="2.5" stroke="white" strokeWidth="1.6"/>
-      <path d="M2 10H24M8 2V6M18 2V6" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
-      <rect x="6" y="14" width="3" height="3" rx="0.5" fill="white"/>
-      <rect x="11.5" y="14" width="3" height="3" rx="0.5" fill="white"/>
-      <rect x="17" y="14" width="3" height="3" rx="0.5" fill="white"/>
-    </svg>
-  )
-}
-
-function QuoteIcon() {
-  return (
-    <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
-      <path d="M2 2H12V12H7C7 14.5 8.5 16 11 16V20C5 20 2 17 2 12V2Z" stroke="white" strokeWidth="1.6" strokeLinejoin="round"/>
-      <path d="M16 2H26V12H21C21 14.5 22.5 16 25 16V20C19 20 16 17 16 12V2Z" stroke="white" strokeWidth="1.6" strokeLinejoin="round"/>
-    </svg>
-  )
-}
-
 function UsersIcon() {
   return (
     <svg width="28" height="24" viewBox="0 0 28 24" fill="none">
@@ -160,6 +139,7 @@ const PRODUCTS: Product[] = [
       { label: 'Hero Slides', href: '/admin/globals/hero-slides' },
       { label: 'About Page', href: '/admin/globals/about-page' },
       { label: 'Site Config', href: '/admin/globals/site-config' },
+      { label: 'Availability / OOO', href: '/availability', external: true },
       { label: 'View Website', href: 'https://tynnellhollinsphotography.com', external: true },
     ],
   },
@@ -172,29 +152,6 @@ const PRODUCTS: Product[] = [
       { label: 'All Posts', href: '/admin/collections/posts' },
       { label: 'New Post', href: '/admin/collections/posts/create' },
       { label: 'View Blog', href: 'https://tynnellhollinsphotography.com/blog', external: true },
-    ],
-  },
-  {
-    id: 'bookings',
-    label: 'Bookings',
-    color: '#b45309',
-    icon: <CalendarIcon />,
-    links: [
-      { label: 'Services', href: '/admin/collections/services' },
-      { label: 'New Service', href: '/admin/collections/services/create' },
-      { label: 'Booking Settings', href: '/admin/globals/booking-settings' },
-      { label: 'Availability / OOO', href: '/availability' },
-    ],
-  },
-  {
-    id: 'testimonials',
-    label: 'Testimonials',
-    color: '#059669',
-    icon: <QuoteIcon />,
-    links: [
-      { label: 'All Testimonials', href: '/admin/collections/testimonials' },
-      { label: 'New Testimonial', href: '/admin/collections/testimonials/create' },
-      { label: 'View Testimonials', href: 'https://tynnellhollinsphotography.com/testimonials', external: true },
     ],
   },
   {
