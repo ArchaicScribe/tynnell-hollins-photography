@@ -5,8 +5,7 @@ import config from '@payload-config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-// Service packages change rarely - revalidate every 2 minutes
-export const revalidate = 120
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Services',
@@ -49,103 +48,78 @@ export default async function ServicesPage() {
     <main className={styles.main}>
       {servicesSchema && <JsonLd data={servicesSchema} />}
 
-      {/* Hero */}
+      {/* Full-bleed hero */}
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>Services</p>
-        <h1 className={styles.heroHeading}>{"Every Session,"}<br />{"Crafted for You"}</h1>
-        <p className={styles.heroSub}>
-          {"Packages designed to give you images you'll treasure for a lifetime. Choose the experience that fits your story."}
-        </p>
-      </section>
-
-      {/* How It Works */}
-      <section className={styles.process} aria-label="How it works">
-        <p className={styles.processEyebrow}>How It Works</p>
-        <ol className={styles.steps}>
-          <li className={styles.step}>
-            <span className={styles.stepNum}>01</span>
-            <h2 className={styles.stepHeading}>Connect</h2>
-            <p className={styles.stepBody}>Fill out the inquiry form or send a message. We talk through your vision, your people, and what this session means to you.</p>
-          </li>
-          <li className={styles.step}>
-            <span className={styles.stepNum}>02</span>
-            <h2 className={styles.stepHeading}>Plan Together</h2>
-            <p className={styles.stepBody}>Choose your date and package. We walk through every detail so you feel relaxed and ready before we ever pick up a camera.</p>
-          </li>
-          <li className={styles.step}>
-            <span className={styles.stepNum}>03</span>
-            <h2 className={styles.stepHeading}>Remember Forever</h2>
-            <p className={styles.stepBody}>Your gallery arrives beautifully edited and ready to keep, share, and print. These images belong to you. Always.</p>
-          </li>
-        </ol>
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
+          <p className={styles.eyebrow}>From Portraits to Weddings</p>
+          <h1 className={styles.heroHeading}>Your Moments,<br />Beautifully Told</h1>
+        </div>
       </section>
 
       {/* Service cards */}
-      <section className={styles.grid} aria-label="Service packages">
-        {services.length > 0 ? services.map((service) => (
-          <article key={service.id} className={styles.card}>
-
-            <div className={styles.cardTop}>
+      <section className={styles.cards} aria-label="Service packages">
+        {services.length > 0 ? services.map((service, i) => (
+          <article key={service.id} className={`${styles.card} ${i % 2 === 1 ? styles.cardAlt : ''}`}>
+            <div className={styles.cardBody}>
               {service.eyebrow && (
                 <p className={styles.cardEyebrow}>{service.eyebrow}</p>
               )}
               <h2 className={styles.cardTitle}>{service.title}</h2>
 
-              <div className={styles.priceRow}>
-                {service.price && (
-                  <p className={styles.cardPrice}>{service.price}</p>
-                )}
+              {service.price && (
+                <p className={styles.cardPrice}>{service.price}</p>
+              )}
+
+              {service.description && (
+                <p className={styles.cardDescription}>{service.description}</p>
+              )}
+
+              {service.features && service.features.length > 0 && (
+                <ul className={styles.featureList}>
+                  {service.features.map((item, fi) => (
+                    <li key={fi} className={styles.featureItem}>
+                      <span className={styles.featureDot} aria-hidden="true" />
+                      {item.feature}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className={styles.cardActions}>
+                <Link
+                  href={`/book?package=${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
+                  className={styles.bookBtn}
+                  aria-label={`Book ${service.title} session`}
+                >
+                  Reserve Your Date
+                </Link>
                 {service.depositAmount != null && (
-                  <p className={styles.depositBadge}>
-                    ${service.depositAmount.toLocaleString()} deposit to reserve
+                  <p className={styles.depositNote}>
+                    ${service.depositAmount.toLocaleString()} deposit to secure
                   </p>
                 )}
               </div>
             </div>
-
-            {service.description && (
-              <p className={styles.cardDescription}>{service.description}</p>
-            )}
-
-            {service.features && service.features.length > 0 && (
-              <ul className={styles.featureList}>
-                {service.features.map((item, i) => (
-                  <li key={i} className={styles.featureItem}>
-                    {item.feature}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <Link
-              href={`/book?package=${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
-              className={styles.bookBtn}
-              aria-label={`Book ${service.title} session`}
-            >
-              Reserve Your Date
-            </Link>
-
           </article>
         )) : (
-          <p className={styles.emptyState}>
-            Packages coming soon. Reach out directly to discuss your vision.
-          </p>
+          <div className={styles.emptyState}>
+            <p className={styles.emptyEyebrow}>Coming Soon</p>
+            <p className={styles.emptyText}>Packages are being finalised. Reach out directly to discuss your vision.</p>
+            <Link href="/contact" className={styles.bookBtn}>Get in Touch</Link>
+          </div>
         )}
       </section>
 
       {/* Bottom CTA */}
       <section className={styles.cta}>
         <p className={styles.ctaEyebrow}>Ready to begin?</p>
-        <h2 className={styles.ctaHeading}>{"Reserve your date"}<br />{"before it's gone."}</h2>
-        <p className={styles.ctaBody}>
-          Dates fill quickly. Securing yours takes only a deposit.
-        </p>
+        <h2 className={styles.ctaHeading}>Let&apos;s Work Together</h2>
         <div className={styles.ctaActions}>
           <Link href="/book" className={styles.ctaBtn}>Book a Session</Link>
-          <Link href="/contact" className={styles.ctaBtnSecondary}>Have questions?</Link>
+          <Link href="/contact" className={styles.ctaBtnSecondary}>Have Questions?</Link>
         </div>
       </section>
-
     </main>
   )
 }
