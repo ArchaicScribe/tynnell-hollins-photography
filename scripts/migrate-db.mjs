@@ -382,6 +382,24 @@ async function run() {
     `)
 
     console.log('✓ galleries.status ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260629_100000: gallery password protection (TYN-10)
+    // is_password_protected: toggle requiring a password to view the gallery
+    // password: plaintext password visitors must enter
+    // Default false/null so all existing galleries remain publicly accessible.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries"
+        ADD COLUMN IF NOT EXISTS "is_password_protected" boolean DEFAULT false
+    `)
+    await client.query(`
+      ALTER TABLE "galleries"
+        ADD COLUMN IF NOT EXISTS "password" varchar
+    `)
+
+    console.log('✓ galleries password protection columns ready')
   } finally {
     client.release()
     await pool.end()

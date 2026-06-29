@@ -211,5 +211,18 @@ export const Galleries: CollectionConfig = {
         hidden: true,
       },
     },
+    {
+      name: 'isPasswordProtected',
+      type: 'checkbox',
+      label: 'Password Protected',
+      defaultValue: false,
+      admin: { hidden: true },
+    },
+    {
+      name: 'password',
+      type: 'text',
+      label: 'Gallery Password',
+      admin: { hidden: true },
+    },
   ],
 }
