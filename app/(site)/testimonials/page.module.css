@@ -70,9 +70,9 @@
   line-height: 1.8;
 }
 
-/* ── Cards ───────────────────────────────────────────────── */
+/* ── Testimonial list ─────────────────────────────────────── */
 
-.cards {
+.list {
   max-width: 860px;
   margin: 0 auto;
   padding: 0 var(--padding-x) 6rem;
@@ -81,16 +81,24 @@
   gap: 0;
 }
 
-.card {
+.item {
   padding: 3.5rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
-.card:first-child {
+.item:first-child {
   border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* ── Text block ───────────────────────────────────────────── */
+
+.textBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .badge {
@@ -103,15 +111,25 @@
   margin: 0;
 }
 
+.clientName {
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 600;
+  color: var(--color-heading);
+  font-style: normal;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  display: block;
+}
+
 .quote {
   font-family: var(--font-heading);
-  font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
   font-weight: 400;
   line-height: 1.65;
-  color: var(--color-heading);
+  color: var(--color-body);
   margin: 0;
   font-style: italic;
-  position: relative;
 }
 
 .quoteOpen,
@@ -132,30 +150,19 @@
   margin-left: 0.1em;
 }
 
-.cardFooter {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+/* ── Photo ────────────────────────────────────────────────── */
+
+.photoWrap {
+  width: 100%;
+  overflow: hidden;
 }
 
-.cardFooter::before {
-  content: '';
+.photo {
+  width: 100%;
+  height: auto;
   display: block;
-  width: 2rem;
-  height: 1px;
-  background: var(--color-detail);
-  opacity: 0.4;
-  flex-shrink: 0;
-}
-
-.clientName {
-  font-family: var(--font-body);
-  font-size: 0.72rem;
-  font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-body);
-  font-style: normal;
+  object-fit: cover;
+  max-height: 600px;
 }
 
 /* ── Empty state ─────────────────────────────────────────── */
@@ -226,15 +233,19 @@
     padding: 7rem var(--padding-x) 5rem;
   }
 
-  .cards {
+  .list {
     padding-bottom: 4rem;
   }
 
-  .card {
+  .item {
     padding: 2.5rem 0;
   }
 
   .quote {
-    font-size: 1.1rem;
+    font-size: 1rem;
+  }
+
+  .photo {
+    max-height: 400px;
   }
 }

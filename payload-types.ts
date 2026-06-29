@@ -308,6 +308,10 @@ export interface Testimonial {
    */
   sessionType?: ('Wedding' | 'Engagement' | 'Portrait' | 'Family' | 'Maternity' | 'Event') | null;
   /**
+   * Optional photo to show with this testimonial on the Testimonials page. Pick from your photo library.
+   */
+  photo?: (number | null) | Photo;
+  /**
    * When checked, this testimonial appears in the Testimonials section on your homepage. Uncheck to keep it off the homepage (it will still appear on your full Testimonials page).
    */
   featured?: boolean | null;
@@ -643,6 +647,7 @@ export interface TestimonialsSelect<T extends boolean = true> {
   clientName?: T;
   quote?: T;
   sessionType?: T;
+  photo?: T;
   featured?: T;
   displayOrder?: T;
   updatedAt?: T;

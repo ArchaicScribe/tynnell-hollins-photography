@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
+import type { Photo } from '@/payload-types'
 
 export const revalidate = 120
 
@@ -17,7 +18,7 @@ export default async function TestimonialsPage() {
   const { docs: testimonials } = await payload.find({
     collection: 'testimonials',
     sort: 'displayOrder',
-    depth: 0,
+    depth: 1,
     limit: 200,
   })
 
@@ -57,24 +58,43 @@ export default async function TestimonialsPage() {
         </div>
       </div>
 
-      {/* Testimonial cards */}
-      <div className={styles.cards}>
+      {/* Testimonials */}
+      <div className={styles.list}>
         {testimonials.length > 0 ? (
-          testimonials.map((t) => (
-            <article key={t.id} className={styles.card} aria-label={`Review from ${t.clientName}`}>
-              {t.sessionType && (
-                <p className={styles.badge}>{t.sessionType} Testimonial</p>
-              )}
-              <blockquote className={styles.quote}>
-                <span className={styles.quoteOpen} aria-hidden="true">&ldquo;</span>
-                {t.quote}
-                <span className={styles.quoteClose} aria-hidden="true">&rdquo;</span>
-              </blockquote>
-              <footer className={styles.cardFooter}>
-                <cite className={styles.clientName}>{t.clientName}</cite>
-              </footer>
-            </article>
-          ))
+          testimonials.map((t) => {
+            const photo = t.photo && typeof t.photo === 'object' ? t.photo as Photo : null
+            const photoUrl = photo?.sizes?.card?.url ?? photo?.sizes?.thumbnail?.url ?? photo?.url ?? null
+
+            return (
+              <article key={t.id} className={styles.item} aria-label={`Review from ${t.clientName}`}>
+                {/* Text block */}
+                <div className={styles.textBlock}>
+                  {t.sessionType && (
+                    <p className={styles.badge}>{t.sessionType} Testimonial</p>
+                  )}
+                  <cite className={styles.clientName}>{t.clientName}</cite>
+                  <blockquote className={styles.quote}>
+                    <span className={styles.quoteOpen} aria-hidden="true">&ldquo;</span>
+                    {t.quote}
+                    <span className={styles.quoteClose} aria-hidden="true">&rdquo;</span>
+                  </blockquote>
+                </div>
+
+                {/* Photo (when set) */}
+                {photoUrl && (
+                  <div className={styles.photoWrap}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photoUrl}
+                      alt={`${t.clientName} session`}
+                      className={styles.photo}
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+              </article>
+            )
+          })
         ) : (
           <p className={styles.empty}>Kind words are on their way.</p>
         )}

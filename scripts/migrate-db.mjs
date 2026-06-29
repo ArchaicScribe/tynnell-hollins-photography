@@ -400,6 +400,21 @@ async function run() {
     `)
 
     console.log('✓ galleries password protection columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260629_200000: testimonials.photo_id column
+    // Optional relationship to a Photo in the library. When set, the public
+    // /testimonials page displays the photo full-width with the testimonial.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "testimonials"
+        ADD COLUMN IF NOT EXISTS "photo_id" integer
+          REFERENCES "photos" ("id")
+          ON DELETE SET NULL
+    `)
+
+    console.log('✓ testimonials.photo_id ready')
   } finally {
     client.release()
     await pool.end()
