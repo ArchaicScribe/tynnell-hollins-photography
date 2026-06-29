@@ -606,7 +606,7 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = '#e6e1de' }}
             onMouseLeave={e => { if (!showSwitcher) { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' } }}
           >
-            Studio
+            {product === 'portfolio' ? 'Portfolio' : 'Website'}
             <IconChevronDown rotated={showSwitcher} />
           </button>
 
