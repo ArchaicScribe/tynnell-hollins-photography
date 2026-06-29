@@ -7,6 +7,7 @@ export const runtime = 'nodejs'
 
 const ALLOWED_EMAILS = new Set([
   'hello@tynnellhollinsphotography.com',
+  'tynnellh@gmail.com',
   'xandermv2@gmail.com',
 ])
 
