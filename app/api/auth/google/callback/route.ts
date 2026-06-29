@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const state = searchParams.get('state')
   const storedState = request.cookies.get('google_oauth_state')?.value
-  const origin = request.nextUrl.origin
+  const origin = process.env.APP_URL ?? request.nextUrl.origin
 
   const fail = (reason: string) => {
     console.error(`[google-sso] fail: ${reason}`)

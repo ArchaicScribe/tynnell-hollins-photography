@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
-  const origin = request.nextUrl.origin
+  const origin = process.env.APP_URL ?? request.nextUrl.origin
   const state = crypto.randomUUID()
 
   const params = new URLSearchParams({
