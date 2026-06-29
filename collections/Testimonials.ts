@@ -73,6 +73,15 @@ export const Testimonials: CollectionConfig = {
       ],
     },
     {
+      name: 'photo',
+      type: 'relationship',
+      relationTo: 'photos',
+      label: 'Feature Photo',
+      admin: {
+        description: 'Optional photo to show with this testimonial on the Testimonials page. Pick from your photo library.',
+      },
+    },
+    {
       name: 'featured',
       type: 'checkbox',
       label: 'Show on Homepage',
