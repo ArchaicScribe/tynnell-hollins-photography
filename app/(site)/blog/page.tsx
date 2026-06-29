@@ -1,38 +1,45 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import BlogClient from './BlogClient'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Blog',
+  title: 'Blog | Tynnell Hollins Photography',
   description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',
 }
 
 export default async function BlogPage() {
   const payload = await getPayload({ config })
-  const { docs: posts } = await payload.find({
+  const { docs } = await payload.find({
     collection: 'posts',
     where: { status: { equals: 'published' } },
     sort: '-publishedAt',
     depth: 1,
-    limit: 100,
+    limit: 200,
   })
 
-  const featuredPost = posts[0] ?? null
-  const featuredCover =
-    featuredPost && typeof featuredPost.coverImage === 'object' && featuredPost.coverImage !== null
-      ? (featuredPost.coverImage as Photo)
-      : null
-  const featuredCoverUrl = featuredCover?.sizes?.hero?.url ?? featuredCover?.url ?? null
-  const featuredSlug = featuredPost
-    ? (typeof featuredPost.slug === 'string' ? featuredPost.slug : '')
-    : ''
+  const posts = docs.map(p => ({
+    id: p.id,
+    title: p.title,
+    slug: typeof p.slug === 'string' ? p.slug : '',
+    publishedAt: p.publishedAt ?? null,
+    category: p.category ?? null,
+    excerpt: p.excerpt ?? null,
+    coverImage: (typeof p.coverImage === 'object' && p.coverImage !== null ? p.coverImage as Photo : null),
+  }))
+
+  // Hero: most recent post's cover photo
+  const hero = posts[0] ?? null
+  const heroCoverUrl = hero?.coverImage?.sizes?.hero?.url ?? hero?.coverImage?.url ?? null
+
+  // Unique categories present in posts, in definition order
+  const CAT_ORDER = ['style-guide', 'portrait-sessions', 'weddings', 'behind-the-lens', 'client-education']
+  const presentCats = CAT_ORDER.filter(c => posts.some(p => p.category === c))
 
   const blogSchema = posts.length > 0 ? {
     '@context': 'https://schema.org',
@@ -46,7 +53,7 @@ export default async function BlogPage() {
       headline: p.title,
       description: p.excerpt ?? undefined,
       datePublished: p.publishedAt,
-      url: `https://tynnellhollinsphotography.com/blog/${typeof p.slug === 'string' ? p.slug : ''}`,
+      url: `https://tynnellhollinsphotography.com/blog/${p.slug}`,
     })),
   } : null
 
@@ -54,113 +61,23 @@ export default async function BlogPage() {
     <main className={styles.main}>
       {blogSchema && <JsonLd data={blogSchema} />}
 
-      {/* Featured post hero */}
-      <section className={`${styles.hero} ${!featuredCoverUrl ? styles.heroFallback : ''}`} aria-label="Featured post">
-        {featuredCoverUrl && featuredPost && (
-          <Link href={`/blog/${featuredSlug}`} className={styles.heroImageLink} tabIndex={-1} aria-hidden="true">
-            <Image
-              src={featuredCoverUrl}
-              alt={featuredCover?.alt ?? featuredPost.title}
-              fill
-              priority
-              sizes="100vw"
-              className={styles.heroPhoto}
-            />
-          </Link>
+      {/* Hero */}
+      <section className={styles.hero} aria-label="Blog">
+        {heroCoverUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={heroCoverUrl}
+            alt=""
+            aria-hidden="true"
+            className={styles.heroPhoto}
+          />
         )}
-        <div className={styles.heroOverlay} />
-        {featuredPost && (
-          <div className={styles.heroContent}>
-            {featuredPost.publishedAt && (
-              <time className={styles.heroDate} dateTime={featuredPost.publishedAt}>
-                {new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
-                  year: 'numeric', month: 'long', day: 'numeric',
-                })}
-              </time>
-            )}
-            <h1 className={styles.heroTitle}>
-              <Link href={`/blog/${featuredSlug}`} className={styles.heroTitleLink}>
-                {featuredPost.title}
-              </Link>
-            </h1>
-            {featuredPost.excerpt && (
-              <p className={styles.heroExcerpt}>{featuredPost.excerpt}</p>
-            )}
-            <Link href={`/blog/${featuredSlug}`} className={styles.heroReadMore}>
-              Read More
-            </Link>
-          </div>
-        )}
-        <span className={styles.blogLabel} aria-hidden="true">Blog</span>
+        <div className={styles.heroOverlay} aria-hidden="true" />
+        <span className={styles.blogLabel} aria-hidden="true">B L O G</span>
       </section>
 
-      {/* Filter bar */}
-      <div className={styles.filterBar}>
-        <div className={styles.filterCats}>
-          <span className={styles.filterCatActive}>All</span>
-        </div>
-        <button className={styles.filterSearchBtn} aria-label="Search posts">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.25" />
-            <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Posts grid */}
-      {posts.length === 0 ? (
-        <p className={styles.emptyState}>New posts are on their way. Check back soon.</p>
-      ) : (
-        <section className={styles.grid} aria-label="All posts">
-          {posts.slice(1).map((post) => {
-            const cover =
-              typeof post.coverImage === 'object' && post.coverImage !== null
-                ? (post.coverImage as Photo)
-                : null
-            const coverUrl = cover?.sizes?.card?.url ?? cover?.url ?? null
-            const slug = typeof post.slug === 'string' ? post.slug : ''
-
-            return (
-              <article key={post.id} className={styles.card}>
-                <Link href={`/blog/${slug}`} className={styles.cardImageLink} tabIndex={-1} aria-hidden="true">
-                  <div className={styles.cardImage}>
-                    {coverUrl ? (
-                      <Image
-                        src={coverUrl}
-                        alt={cover?.alt ?? post.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        className={styles.cardPhoto}
-                      />
-                    ) : (
-                      <div className={styles.cardPlaceholder} />
-                    )}
-                  </div>
-                </Link>
-                <div className={styles.cardBody}>
-                  {post.publishedAt && (
-                    <time className={styles.cardDate} dateTime={post.publishedAt}>
-                      {new Date(post.publishedAt).toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'long', day: 'numeric',
-                      })}
-                    </time>
-                  )}
-                  <h2 className={styles.cardTitle}>
-                    <Link href={`/blog/${slug}`} className={styles.cardLink}>
-                      {post.title}
-                    </Link>
-                  </h2>
-                  {post.excerpt && <p className={styles.cardExcerpt}>{post.excerpt}</p>}
-                  <Link href={`/blog/${slug}`} className={styles.readMore} aria-label={`Read: ${post.title}`}>
-                    Read More
-                  </Link>
-                </div>
-              </article>
-            )
-          })}
-        </section>
-      )}
-
+      {/* Filter + Grid + Load More (client) */}
+      <BlogClient posts={posts} categories={presentCats} />
     </main>
   )
 }

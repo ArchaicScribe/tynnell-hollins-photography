@@ -55,6 +55,15 @@ export const Posts: CollectionConfig = {
   },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/PostEditHeader#PostEditHeader',
+        },
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       label: 'Post Title',
@@ -123,9 +132,26 @@ export const Posts: CollectionConfig = {
         description:
           'The main photo for this post, shown at the top of the post and on the blog listing page.',
         components: {
+          Field: './components/admin/PostCoverPicker#PostCoverPicker',
           Cell: './components/admin/PostCoverCell#PostCoverCell',
         },
       },
+    },
+    {
+      name: 'category',
+      type: 'select',
+      label: 'Category',
+      admin: {
+        description: 'Used to filter posts on the blog page.',
+        position: 'sidebar',
+      },
+      options: [
+        { label: 'Style Guide', value: 'style-guide' },
+        { label: 'Portrait Sessions', value: 'portrait-sessions' },
+        { label: 'Weddings', value: 'weddings' },
+        { label: 'Behind the Lens', value: 'behind-the-lens' },
+        { label: 'Client Education', value: 'client-education' },
+      ],
     },
     {
       name: 'excerpt',

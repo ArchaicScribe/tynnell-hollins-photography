@@ -395,6 +395,10 @@ export interface Post {
    */
   coverImage?: (number | null) | Photo;
   /**
+   * Used to filter posts on the blog page.
+   */
+  category?: ('style-guide' | 'portrait-sessions' | 'weddings' | 'behind-the-lens' | 'client-education') | null;
+  /**
    * A 1-2 sentence summary shown on the blog listing page. Helps readers decide if they want to read more.
    */
   excerpt?: string | null;
@@ -683,6 +687,7 @@ export interface PostsSelect<T extends boolean = true> {
   status?: T;
   publishedAt?: T;
   coverImage?: T;
+  category?: T;
   excerpt?: T;
   body?: T;
   updatedAt?: T;
