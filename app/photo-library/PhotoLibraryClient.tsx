@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import type { LibraryPhoto } from './page'
 
@@ -122,6 +122,20 @@ function groupByMonth(photos: LibraryPhoto[]): { label: string; photos: LibraryP
 // ---------------------------------------------------------------------------
 
 function Sidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (t: string) => void }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!dropdownOpen) return
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [dropdownOpen])
+
   return (
     <aside style={{
       width: 240,
@@ -134,9 +148,15 @@ function Sidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (
       position: 'sticky',
       top: 0,
     }}>
-      {/* Brand */}
-      <div style={{ padding: '20px 20px 8px', borderBottom: '1px solid #1e1e1e' }}>
-        <Link href="/studio" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+      {/* Brand / product switcher */}
+      <div style={{ padding: '20px 20px 8px', borderBottom: '1px solid #1e1e1e', position: 'relative' }} ref={dropdownRef}>
+        <button
+          onClick={() => setDropdownOpen(o => !o)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0, width: '100%',
+          }}
+        >
           <div style={{
             width: 32, height: 32, borderRadius: 8,
             background: 'linear-gradient(135deg, #2dd4bf, #0ea5e9)',
@@ -150,8 +170,49 @@ function Sidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (
               <rect x="14" y="14" width="7" height="7" rx="1" />
             </svg>
           </div>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#e6e1de', letterSpacing: 0.2 }}>Client Gallery</span>
-        </Link>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#e6e1de', letterSpacing: 0.2, flex: 1, textAlign: 'left' }}>Client Gallery</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+            style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        {dropdownOpen && (
+          <div style={{
+            position: 'absolute', top: '100%', left: 12, right: 12, zIndex: 50,
+            background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            padding: '6px 0', marginTop: 4,
+          }}>
+            {[
+              { label: 'Studio', href: '/studio', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+              { label: 'Client Gallery', href: '/photo-library', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>, active: true },
+              { label: 'Website Builder', href: '/builder', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> },
+              { label: 'Admin', href: '/admin', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> },
+            ].map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '8px 14px', textDecoration: 'none',
+                  color: item.active ? '#2dd4bf' : '#b0aba8',
+                  fontSize: 13, fontWeight: item.active ? 600 : 400,
+                  background: item.active ? 'rgba(45,212,191,0.08)' : 'transparent',
+                }}
+              >
+                {item.icon}
+                {item.label}
+                {item.active && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginLeft: 'auto' }}>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Nav */}
