@@ -4,19 +4,7 @@
   padding-top: 5.75rem;
 }
 
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* ── Cover image ──────────────────────────────────────────── */
+/* ── Hero ─────────────────────────────────────────────────── */
 
 .hero {
   position: relative;
@@ -26,131 +14,34 @@
   background: var(--color-bg-accent);
 }
 
-.heroFallback {
-  height: clamp(420px, 70vh, 780px);
-  background-image: url('/hero-background.jpg');
-  background-size: cover;
-  background-position: center;
-}
-
-.heroImageLink {
+.heroPhoto {
   position: absolute;
   inset: 0;
-  display: block;
-}
-
-.heroPhoto {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  transition: transform 0.9s ease;
-}
-
-.hero:not(.heroFallback):hover .heroPhoto {
-  transform: scale(1.025);
+  display: block;
 }
 
 .heroOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(12, 12, 12, 0.1) 0%,
-    rgba(12, 12, 12, 0.15) 40%,
-    rgba(12, 12, 12, 0.72) 100%
-  );
-  z-index: 1;
+  background: rgba(12, 12, 12, 0.25);
   pointer-events: none;
 }
 
-/* Featured post content overlaid at the bottom of the hero */
-.heroContent {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  padding: 3rem var(--padding-x) 3.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-width: 860px;
-}
-
-.heroDate {
-  font-family: var(--font-body);
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.heroTitle {
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 5vw, 4rem);
-  font-weight: 400;
-  line-height: 1.1;
-  margin: 0;
-  color: #ffffff;
-}
-
-.heroTitleLink {
-  color: inherit;
-  text-decoration: none;
-  transition: opacity 0.2s ease;
-}
-
-.heroTitleLink:hover {
-  opacity: 0.8;
-}
-
-.heroExcerpt {
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  max-width: 520px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.heroReadMore {
-  font-family: var(--font-body);
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  padding-bottom: 2px;
-  align-self: flex-start;
-  margin-top: 0.25rem;
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.heroReadMore:hover {
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.7);
-}
-
-/* "BLOG" label — bottom-right corner of cover image */
+/* "B L O G" — bottom-right corner, same as Pixieset */
 .blogLabel {
   position: absolute;
-  bottom: 1.75rem;
-  right: 2rem;
+  bottom: 2rem;
+  right: 2.5rem;
   z-index: 2;
   font-family: var(--font-body);
-  font-size: 0.58rem;
-  letter-spacing: 0.45em;
+  font-size: 0.6rem;
+  letter-spacing: 0.5em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  writing-mode: vertical-rl;
+  color: rgba(255, 255, 255, 0.7);
   pointer-events: none;
-}
-
-.heroFallback .blogLabel {
-  color: var(--color-detail);
 }
 
 /* ── Filter bar ───────────────────────────────────────────── */
@@ -160,41 +51,56 @@
   align-items: stretch;
   justify-content: space-between;
   padding: 0 var(--padding-x);
-  border-bottom: 1px solid var(--color-border-solid);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .filterCats {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 2.5rem;
+}
+
+.filterCat,
+.filterCatActive {
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 1.25rem 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.filterCat {
+  color: var(--color-detail);
+  border-bottom: 1px solid transparent;
+  margin-bottom: -1px;
+}
+
+.filterCat:hover {
+  color: var(--color-body);
 }
 
 .filterCatActive {
-  font-family: var(--font-body);
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
   color: var(--color-heading);
-  padding: 1.1rem 0;
   border-bottom: 1px solid var(--color-heading);
   margin-bottom: -1px;
-  display: block;
 }
 
 .filterSearchBtn {
   background: none;
   border: none;
   padding: 0 0.25rem;
-  cursor: pointer;
+  cursor: default;
   color: var(--color-detail);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease;
-}
-
-.filterSearchBtn:hover {
-  color: var(--color-heading);
+  opacity: 0.4;
 }
 
 /* ── Empty state ──────────────────────────────────────────── */
@@ -202,22 +108,22 @@
 .emptyState {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 3.5rem var(--padding-x) 6rem;
+  padding: 4rem var(--padding-x) 6rem;
   font-family: var(--font-body);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   color: var(--color-detail);
 }
 
-/* ── Posts grid ───────────────────────────────────────────── */
+/* ── Grid ─────────────────────────────────────────────────── */
 
 .grid {
-  max-width: 1200px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: 3.5rem var(--padding-x) 5rem;
+  padding: 3rem var(--padding-x) 2rem;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 4rem 3rem;
+  gap: 2px;
 }
 
 /* ── Card ─────────────────────────────────────────────────── */
@@ -225,6 +131,7 @@
 .card {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .cardImageLink {
@@ -234,18 +141,21 @@
 
 .cardImage {
   position: relative;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--color-bg-accent);
 }
 
 .cardPhoto {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
+  display: block;
+  transition: transform 0.7s ease;
 }
 
 .card:hover .cardPhoto {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .cardPlaceholder {
@@ -258,22 +168,22 @@
   padding: 1.25rem 0 2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.4rem;
   flex: 1;
 }
 
-.cardDate {
+.cardCat {
   font-family: var(--font-body);
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
+  font-size: 0.58rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--color-detail);
-  opacity: 0.65;
 }
 
 .cardTitle {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 2vw, 1.9rem);
+  font-size: clamp(1.4rem, 2vw, 2rem);
   font-weight: 400;
   line-height: 1.15;
   color: var(--color-heading);
@@ -290,107 +200,41 @@
   opacity: 0.68;
 }
 
-.cardExcerpt {
-  font-family: var(--font-prose);
-  font-size: 0.875rem;
-  line-height: 1.75;
-  color: var(--color-body);
-  margin: 0;
-  flex: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.readMore {
+.cardDate {
   font-family: var(--font-body);
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-detail);
-  text-decoration: none;
-  margin-top: auto;
-  padding-top: 0.5rem;
-  align-self: flex-start;
-  transition: color 0.2s ease;
+  opacity: 0.6;
 }
 
-.readMore:hover {
-  color: var(--color-body);
-}
+/* ── Load More ────────────────────────────────────────────── */
 
-/* ── CTA ──────────────────────────────────────────────────── */
-
-.cta {
-  background: var(--color-bg-accent);
-  border-top: 1px solid var(--color-border-solid);
-  padding: var(--padding-block) var(--padding-x);
-  text-align: center;
+.loadMoreWrap {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.ctaEyebrow {
-  font-family: var(--font-body);
-  font-size: 0.65rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-}
-
-.ctaHeading {
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 5vw, 4rem);
-  font-weight: 400;
-  color: var(--color-heading);
-  line-height: 1.1;
-  margin: 0;
-}
-
-.ctaActions {
-  display: flex;
-  gap: 1rem;
   justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 0.5rem;
+  padding: 2rem var(--padding-x) 5rem;
 }
 
-.ctaBtn {
-  display: inline-block;
+.loadMore {
   font-family: var(--font-body);
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--color-btn-text);
-  background: var(--color-btn-bg);
-  text-decoration: none;
-  padding: 0.9rem 2.5rem;
-  transition: background 0.2s ease;
-}
-
-.ctaBtn:hover {
-  background: var(--color-btn-hover);
-}
-
-.ctaBtnSecondary {
-  display: inline-block;
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-  text-decoration: none;
-  padding: 0.9rem 2.5rem;
-  border: 1px solid rgba(155, 154, 154, 0.3);
+  color: var(--color-body);
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(230, 225, 222, 0.35);
+  padding-bottom: 3px;
+  cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease;
 }
 
-.ctaBtnSecondary:hover {
+.loadMore:hover {
   color: var(--color-heading);
-  border-color: rgba(155, 154, 154, 0.6);
+  border-color: var(--color-heading);
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
@@ -401,24 +245,28 @@
   }
 
   .hero {
-    height: clamp(340px, 60vh, 540px);
+    height: clamp(320px, 55vh, 520px);
   }
 
-  .heroContent {
-    padding: 2rem var(--padding-x) 2.5rem;
+  .blogLabel {
+    right: 1.25rem;
+    bottom: 1.25rem;
   }
 
-  .heroTitle {
-    font-size: clamp(1.8rem, 7vw, 2.8rem);
-  }
-
-  .heroExcerpt {
-    display: none;
+  .filterCats {
+    gap: 1.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0;
   }
 
   .grid {
     grid-template-columns: 1fr;
-    padding: 2.5rem var(--padding-x) 4rem;
-    gap: 3rem;
+    gap: 1px;
+    padding: 2rem var(--padding-x) 1.5rem;
+  }
+
+  .cardImage {
+    aspect-ratio: 3 / 2;
   }
 }

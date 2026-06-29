@@ -415,6 +415,19 @@ async function run() {
     `)
 
     console.log('✓ testimonials.photo_id ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260629_300000: posts.category column
+    // Optional select field so posts can be filtered by category on the
+    // public blog page (Style Guide, Portrait Sessions, Weddings, etc.)
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "posts"
+        ADD COLUMN IF NOT EXISTS "category" varchar(40)
+    `)
+
+    console.log('✓ posts.category ready')
   } finally {
     client.release()
     await pool.end()
