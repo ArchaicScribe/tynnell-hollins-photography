@@ -465,10 +465,10 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       color: '#059669',
       icon: <StudioIcon />,
       links: [
-        { label: 'Manage Contacts', href: '#coming-soon' },
-        { label: 'New Project', href: '#coming-soon' },
-        { label: 'New Session', href: '#coming-soon' },
-        { label: 'View Payments', href: '#coming-soon' },
+        { label: 'Home', href: '/studio-manager' },
+        { label: 'Projects', href: '/studio-manager/projects' },
+        { label: 'Contacts', href: '/studio-manager/contacts' },
+        { label: 'Payments', href: '/studio-manager/payments' },
       ],
     },
     {
@@ -487,7 +487,7 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       icon: <BookingsIcon />,
       links: [
         { label: 'Booking Settings', href: '/admin/globals/booking-settings' },
-        { label: 'Availability / OOO', href: '/admin/globals/availability' },
+        { label: 'View Payments', href: '/studio-manager' },
         { label: 'Book a Session', href: 'https://tynnellhollinsphotography.com/book', external: true },
       ],
     },
