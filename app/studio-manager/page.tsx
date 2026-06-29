@@ -26,7 +26,7 @@ export default async function StudioManagerPage() {
   const now = Date.now()
   const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000
 
-  let monthlyRevenue: MonthRevenue[] = []
+  const monthlyRevenue: MonthRevenue[] = []
   let totalRevenue = 0
 
   // Pre-fill 12 months of zeroes so the chart always has a baseline

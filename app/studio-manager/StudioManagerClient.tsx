@@ -344,7 +344,7 @@ type Props = {
   userName: string
 }
 
-export function StudioManagerClient({ greeting, today, monthlyRevenue, totalRevenue, userName }: Props) {
+export function StudioManagerClient({ greeting, today, monthlyRevenue, userName }: Props) {
   const [revenueWindow, setRevenueWindow] = useState<'12mo' | '6mo' | '30d'>('12mo')
 
   const filteredRevenue = revenueWindow === '12mo'
