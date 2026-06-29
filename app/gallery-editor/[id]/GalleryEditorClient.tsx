@@ -14,6 +14,8 @@ type Props = {
   initialStatus: string
   initialTapedStyle: boolean
   initialFeatured: boolean
+  initialIsPasswordProtected: boolean
+  initialPassword: string
   initialCoverId: number | null
   initialCoverThumb: string | null
   initialHeroUrl: string | null
@@ -29,6 +31,8 @@ export function GalleryEditorClient({
   initialStatus,
   initialTapedStyle,
   initialFeatured,
+  initialIsPasswordProtected,
+  initialPassword,
   initialCoverId,
   initialCoverThumb,
   initialHeroUrl,
@@ -42,6 +46,8 @@ export function GalleryEditorClient({
   const [status, setStatus] = useState(initialStatus)
   const [tapedStyle, setTapedStyle] = useState(initialTapedStyle)
   const [featured, setFeatured] = useState(initialFeatured)
+  const [isPasswordProtected, setIsPasswordProtected] = useState(initialIsPasswordProtected)
+  const [galleryPassword, setGalleryPassword] = useState(initialPassword)
   const [coverId, setCoverId] = useState<number | null>(initialCoverId)
   const [coverThumb, setCoverThumb] = useState<string | null>(initialCoverThumb)
   const [heroUrl, setHeroUrl] = useState<string | null>(initialHeroUrl)
@@ -301,6 +307,8 @@ export function GalleryEditorClient({
           status: targetStatus,
           featured,
           tapedStyle,
+          isPasswordProtected,
+          password: isPasswordProtected ? galleryPassword : null,
           coverPhoto: coverId,
           photos: photos.map(p => ({ photo: p.id })),
         }),
@@ -341,7 +349,7 @@ export function GalleryEditorClient({
     autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChanges, title, slug, category, status, featured, tapedStyle, coverId, photos])
+  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, galleryPassword, coverId, photos])
 
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
@@ -372,7 +380,7 @@ export function GalleryEditorClient({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, coverId, photos])
+  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, galleryPassword, coverId, photos])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
@@ -779,6 +787,37 @@ export function GalleryEditorClient({
                     <option value="draft">Draft (hidden)</option>
                   </select>
                 </label>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={isPasswordProtected}
+                      onChange={e => setField(setIsPasswordProtected)(e.target.checked)}
+                      style={{ width: 15, height: 15, accentColor: '#1db954', cursor: 'pointer', flexShrink: 0, marginTop: '0.15rem' }}
+                      aria-label="Password protect this gallery"
+                    />
+                    <div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#d6d1ce', fontFamily: ui }}>Password protected</div>
+                      <div style={{ fontSize: '0.7rem', color: '#4b4b4b', fontFamily: ui, marginTop: '0.1rem' }}>Visitors must enter a password</div>
+                    </div>
+                  </label>
+
+                  {isPasswordProtected && (
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Gallery password</span>
+                      <input
+                        type="text"
+                        value={galleryPassword}
+                        onChange={e => setField(setGalleryPassword)(e.target.value)}
+                        placeholder="Set a password..."
+                        style={{ background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui }}
+                        aria-label="Gallery password"
+                      />
+                      <span style={{ fontSize: '0.67rem', color: '#3a3a3a', fontFamily: ui }}>Share this with your clients</span>
+                    </label>
+                  )}
+                </div>
 
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.1rem 0' }} />
 

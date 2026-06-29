@@ -300,7 +300,7 @@ export function PortfolioTab({ initialGalleries = [] }: { initialGalleries?: Gal
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href="/admin/collections/photos"
+            href="/photo-library"
             style={{ padding: '0.42rem 0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#9b9a9a', fontSize: '0.82rem', fontFamily: ui, textDecoration: 'none', whiteSpace: 'nowrap' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.28)'; (e.currentTarget as HTMLElement).style.color = '#d6d1ce' }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; (e.currentTarget as HTMLElement).style.color = '#9b9a9a' }}

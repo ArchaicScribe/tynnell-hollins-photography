@@ -90,6 +90,26 @@ function BlogIcon() {
   )
 }
 
+function BookingsIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <rect x="3" y="5" width="22" height="20" rx="2.5" stroke="white" strokeWidth="1.8" />
+      <path d="M3 11h22" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M9 3v4M19 3v4" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M8 16h4M8 20h7" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function SettingsIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <circle cx="14" cy="14" r="3.5" stroke="white" strokeWidth="1.8" />
+      <path d="M14 3v3M14 22v3M3 14h3M22 14h3M5.9 5.9l2.1 2.1M20 20l2.1 2.1M5.9 22.1l2.1-2.1M20 8l2.1-2.1" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function ExternalArrow() {
   return (
     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" style={{ marginLeft: 3, opacity: 0.5, flexShrink: 0 }}>
@@ -387,7 +407,7 @@ function RecentPhotos({ photos }: { photos: Photo[] }) {
               // eslint-disable-next-line @next/next/no-html-link-for-pages
               <a
                 key={p.id}
-                href="/admin/collections/photos"
+                href="/photo-library"
                 style={{ display: 'block', borderRadius: 6, overflow: 'hidden', background: '#222', aspectRatio: '1', textDecoration: 'none' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.75' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
@@ -402,7 +422,7 @@ function RecentPhotos({ photos }: { photos: Photo[] }) {
 
       {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <a
-        href="/admin/collections/photos"
+        href="/photo-library"
         style={{ display: 'inline-block', marginTop: '0.85rem', fontSize: '0.78rem', color: '#b45309', fontFamily: ui, textDecoration: 'none' }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline' }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'none' }}
@@ -426,7 +446,7 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       links: [
         { label: 'Manage Collections', href: '/gallery-editor' },
         { label: 'Create Collection', href: '/gallery-editor?new=1' },
-        { label: 'Search Photo Library', href: '/admin/collections/photos' },
+        { label: 'Search Photo Library', href: '/photo-library' },
         { label: 'View Portfolio', href: 'https://tynnellhollinsphotography.com/portfolio', external: true },
       ],
     },
@@ -445,10 +465,10 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       color: '#059669',
       icon: <StudioIcon />,
       links: [
-        { label: 'Manage Contacts', href: '#coming-soon' },
-        { label: 'New Project', href: '#coming-soon' },
-        { label: 'New Session', href: '#coming-soon' },
-        { label: 'View Payments', href: '#coming-soon' },
+        { label: 'Home', href: '/studio-manager' },
+        { label: 'Projects', href: '/studio-manager/projects' },
+        { label: 'Contacts', href: '/studio-manager/contacts' },
+        { label: 'Payments', href: '/studio-manager/payments' },
       ],
     },
     {
@@ -459,6 +479,27 @@ export function StudioClient({ userName, galleries, photos }: Props) {
         { label: 'All Posts', href: '/admin/collections/posts' },
         { label: 'New Post', href: '/admin/collections/posts/create' },
         { label: 'View Blog', href: 'https://tynnellhollinsphotography.com/blog', external: true },
+      ],
+    },
+    {
+      label: 'Bookings',
+      color: '#e11d48',
+      icon: <BookingsIcon />,
+      links: [
+        { label: 'Booking Settings', href: '/admin/globals/booking-settings' },
+        { label: 'View Payments', href: '/studio-manager' },
+        { label: 'Book a Session', href: 'https://tynnellhollinsphotography.com/book', external: true },
+      ],
+    },
+    {
+      label: 'Settings',
+      color: '#b45309',
+      icon: <SettingsIcon />,
+      links: [
+        { label: 'Site Config', href: '/admin/globals/site-config' },
+        { label: 'Hero Slides', href: '/admin/globals/hero-slides' },
+        { label: 'About Page', href: '/admin/globals/about-page' },
+        { label: 'Admin Panel', href: '/admin' },
       ],
     },
   ]
@@ -480,7 +521,7 @@ export function StudioClient({ userName, galleries, photos }: Props) {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(6, 1fr)',
           gap: '0',
           marginBottom: '3rem',
           borderTop: '1px solid rgba(255,255,255,0.07)',

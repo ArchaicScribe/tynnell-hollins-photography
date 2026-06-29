@@ -516,7 +516,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
         {/* Main nav */}
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', flex: 1 }}>
           <NavItem icon={<CollectionsIcon />} label="Collections" href="/gallery-editor" active collapsed={collapsed} />
-          <NavItem icon={<LibraryIcon />} label="Library" href="/admin/collections/photos" external collapsed={collapsed} />
+          <NavItem icon={<LibraryIcon />} label="Library" href="/photo-library" collapsed={collapsed} />
           <NavItem icon={<StarIcon />} label="Starred" href="/admin/collections/galleries?where[featured][equals]=true" external collapsed={collapsed} />
           <NavItem icon={<HomeIcon />} label="Homepage" href="/studio" external collapsed={collapsed} />
           <NavItem icon={<GearIcon />} label="Settings" href="/admin/globals/site-config" external collapsed={collapsed} />

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { createHmac } from 'crypto'
 import Link from 'next/link'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import { getPayload } from 'payload'
@@ -7,22 +9,17 @@ import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { GalleryViewer, type LightboxPhoto } from './GalleryViewer'
+import { GalleryPasswordGate } from './GalleryPasswordGate'
 import styles from './page.module.css'
 
-// Gallery content changes when photos are added - revalidate every 2 minutes
-export const revalidate = 120
+export const dynamic = 'force-dynamic'
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ from?: string }> }
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'galleries',
-    where: { status: { not_equals: 'draft' } },
-    depth: 0,
-    limit: 1000,
-  })
-  return docs.map(g => ({ slug: typeof g.slug === 'string' ? g.slug : '' }))
+function validateGalleryToken(slug: string, password: string, token: string): boolean {
+  const secret = process.env.PAYLOAD_SECRET ?? 'dev-secret'
+  const expected = createHmac('sha256', secret).update(`${slug}:${password}`).digest('hex')
+  return token === expected
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -71,14 +68,24 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   const gallery = docs[0]
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!gallery || (gallery as any).status === 'draft') notFound()
+  const galleryAny = gallery as any
+  if (!gallery || galleryAny.status === 'draft') notFound()
+
+  // Password gate: check cookie if gallery is protected
+  if (galleryAny.isPasswordProtected && galleryAny.password) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get(`gauth_${slug}`)?.value
+    const authed = token ? validateGalleryToken(slug, galleryAny.password, token) : false
+    if (!authed) {
+      return <GalleryPasswordGate slug={slug} title={gallery.title} />
+    }
+  }
 
   const cover = typeof gallery.coverPhoto === 'object' && gallery.coverPhoto !== null
     ? gallery.coverPhoto as Photo
     : null
   // heroPhoto is the full-bleed banner; falls back to coverPhoto when not set.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const heroRaw = (gallery as any).heroPhoto
+  const heroRaw = galleryAny.heroPhoto
   const hero = typeof heroRaw === 'object' && heroRaw !== null ? heroRaw as Photo : cover
   const coverUrl = hero?.sizes?.hero?.url ?? hero?.url ?? null
 

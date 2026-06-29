@@ -282,6 +282,8 @@ export interface Gallery {
    * Controls the order this gallery appears on your portfolio page. Lower numbers appear first. Leave blank and galleries display in the order they were added.
    */
   displayOrder?: number | null;
+  isPasswordProtected?: boolean | null;
+  password?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -628,6 +630,8 @@ export interface GalleriesSelect<T extends boolean = true> {
       };
   featured?: T;
   displayOrder?: T;
+  isPasswordProtected?: T;
+  password?: T;
   updatedAt?: T;
   createdAt?: T;
 }
