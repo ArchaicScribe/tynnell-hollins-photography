@@ -387,7 +387,7 @@ function RecentPhotos({ photos }: { photos: Photo[] }) {
               // eslint-disable-next-line @next/next/no-html-link-for-pages
               <a
                 key={p.id}
-                href="/admin/collections/photos"
+                href="/photo-library"
                 style={{ display: 'block', borderRadius: 6, overflow: 'hidden', background: '#222', aspectRatio: '1', textDecoration: 'none' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.75' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
@@ -402,7 +402,7 @@ function RecentPhotos({ photos }: { photos: Photo[] }) {
 
       {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <a
-        href="/admin/collections/photos"
+        href="/photo-library"
         style={{ display: 'inline-block', marginTop: '0.85rem', fontSize: '0.78rem', color: '#b45309', fontFamily: ui, textDecoration: 'none' }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline' }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'none' }}
@@ -426,7 +426,7 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       links: [
         { label: 'Manage Collections', href: '/gallery-editor' },
         { label: 'Create Collection', href: '/gallery-editor?new=1' },
-        { label: 'Search Photo Library', href: '/admin/collections/photos' },
+        { label: 'Search Photo Library', href: '/photo-library' },
         { label: 'View Portfolio', href: 'https://tynnellhollinsphotography.com/portfolio', external: true },
       ],
     },
