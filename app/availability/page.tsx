@@ -14,7 +14,8 @@ export default async function AvailabilityPage() {
   if (!user) redirect('/admin/login')
 
   const data = await payload.findGlobal({ slug: 'availability' }) as Availability
-  const blockedRanges = Array.isArray(data?.blockedRanges) ? data.blockedRanges : []
+  const blockedRanges = (Array.isArray(data?.blockedRanges) ? data.blockedRanges : [])
+    .map(r => ({ ...r, id: r.id ?? undefined }))
 
   return <AvailabilityEditorClient initialRanges={blockedRanges} />
 }
