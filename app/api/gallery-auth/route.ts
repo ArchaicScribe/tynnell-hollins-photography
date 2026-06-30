@@ -2,13 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { createHmac } from 'crypto'
+import bcrypt from 'bcryptjs'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
+import { getClientIp, safeLimit } from '@/app/lib/ratelimit'
 
-function makeToken(slug: string, password: string): string {
-  const secret = process.env.PAYLOAD_SECRET ?? 'dev-secret'
-  return createHmac('sha256', secret).update(`${slug}:${password}`).digest('hex')
+// 10 attempts per IP per 15 minutes to slow brute-force attacks
+const galleryAuthRatelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, '15 m'),
+  prefix: 'rl:gallery-auth',
+})
+
+function makeToken(slug: string, passwordHash: string): string {
+  const secret = process.env.PAYLOAD_SECRET
+  if (!secret) throw new Error('PAYLOAD_SECRET env var is required')
+  return createHmac('sha256', secret).update(`${slug}:${passwordHash}`).digest('hex')
 }
 
 export async function POST(req: NextRequest) {
+  const { success } = await safeLimit(galleryAuthRatelimit, getClientIp(req))
+  if (!success) {
+    return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
+  }
+
   const body = await req.json() as { slug?: string; password?: string }
   const { slug, password } = body
 
@@ -26,20 +43,27 @@ export async function POST(req: NextRequest) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gallery = docs[0] as any
-  if (!gallery || !gallery.isPasswordProtected) {
-    return NextResponse.json({ error: 'Gallery not found or not protected' }, { status: 404 })
-  }
-
-  if (!gallery.password || gallery.password !== password) {
+  if (!gallery || !gallery.isPasswordProtected || typeof gallery.password !== 'string') {
     return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
   }
 
-  const token = makeToken(slug, password)
+  // Support both bcrypt hashes (new) and plaintext (legacy, until re-saved)
+  const storedPassword: string = gallery.password
+  const isHashed = storedPassword.startsWith('$2')
+  const valid = isHashed
+    ? await bcrypt.compare(password, storedPassword)
+    : storedPassword === password
+
+  if (!valid) {
+    return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
+  }
+
+  const token = makeToken(slug, storedPassword)
   const res = NextResponse.json({ ok: true })
   res.cookies.set(`gauth_${slug}`, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'strict',
     path: `/portfolio/${slug}`,
     maxAge: 60 * 60 * 24 * 30,
   })

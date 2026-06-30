@@ -1,5 +1,6 @@
-import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { revalidatePath } from 'next/cache'
+import bcrypt from 'bcryptjs'
 
 function toSlug(str: string): string {
   return str
@@ -7,6 +8,17 @@ function toSlug(str: string): string {
     .trim()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
+
+// Hash the gallery password before saving so it is never stored as plaintext.
+// Bcrypt hashes start with '$2' - skip re-hashing if already hashed (e.g. on
+// a save where the password field was not changed).
+const hashGalleryPassword: CollectionBeforeChangeHook = async ({ data, originalDoc }) => {
+  const incoming = data.password as string | undefined
+  if (incoming && incoming !== originalDoc?.password && !incoming.startsWith('$2')) {
+    data.password = await bcrypt.hash(incoming, 12)
+  }
+  return data
 }
 
 // Auto-generate slug from title so Tynnell never has to think about URLs.
@@ -39,6 +51,7 @@ export const Galleries: CollectionConfig = {
     plural: 'Collections',
   },
   hooks: {
+    beforeChange: [hashGalleryPassword],
     beforeValidate: [autoSlugFromTitle],
     afterChange: [revalidateGallery],
   },
