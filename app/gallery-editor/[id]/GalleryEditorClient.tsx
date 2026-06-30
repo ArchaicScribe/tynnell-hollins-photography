@@ -311,7 +311,8 @@ export function GalleryEditorClient({
           tapedStyle,
           isPasswordProtected,
           // Only send a password value when the admin typed a new one.
-          // Omitting the field leaves the existing bcrypt hash untouched on the server.
+          // When isPasswordProtected is true and the field is blank, we omit `password`
+          // entirely so the server keeps the existing bcrypt hash unchanged.
           ...(isPasswordProtected && galleryPassword.trim()
             ? { password: galleryPassword }
             : !isPasswordProtected
