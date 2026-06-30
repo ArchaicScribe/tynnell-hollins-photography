@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
@@ -6,7 +7,7 @@ import JsonLd from '@/app/components/JsonLd/JsonLd'
 import BlogClient from './BlogClient'
 import styles from './page.module.css'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Blog | Tynnell Hollins Photography',
@@ -64,11 +65,13 @@ export default async function BlogPage() {
       {/* Hero */}
       <section className={styles.hero} aria-label="Blog">
         {heroCoverUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={heroCoverUrl}
             alt=""
             aria-hidden="true"
+            fill
+            priority
+            sizes="100vw"
             className={styles.heroPhoto}
           />
         )}

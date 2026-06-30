@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { escapeHtml } from '@/app/lib/validation'
+import { escapeHtml, isValidEmail } from '@/app/lib/validation'
 import { bookingConfirmEmailHtml, clientReceiptEmailHtml } from '@/app/lib/emails'
 import { EMAIL_FROM } from '@/app/lib/constants'
 import { getActiveOoo } from '@/app/lib/availability'
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 
     // Confirmation email to client
     const rawClientEmail = session.metadata?.clientEmail ?? session.customer_email ?? ''
-    if (rawClientEmail) {
+    if (rawClientEmail && isValidEmail(rawClientEmail)) {
       const receiptResult = await resend.emails.send({
         from: EMAIL_FROM,
         to: rawClientEmail,
