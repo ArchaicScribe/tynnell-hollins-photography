@@ -35,6 +35,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const gallery = docs[0]
   if (!gallery) return { title: 'Gallery' }
 
+  // Don't reveal the gallery name or cover image in metadata before auth
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((gallery as any).isPasswordProtected) {
+    return { title: 'Private Gallery', robots: { index: false } }
+  }
+
   const cover = typeof gallery.coverPhoto === 'object' && gallery.coverPhoto !== null
     ? gallery.coverPhoto as Photo
     : null
@@ -63,22 +69,28 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   const { docs } = await payload.find({
     collection: 'galleries',
     where: { slug: { equals: slug } },
-    depth: 2,
+    depth: 1,
     limit: 1,
   })
   const gallery = docs[0]
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const galleryAny = gallery as any
-  if (!gallery || galleryAny.status === 'draft') notFound()
+  type GalleryExtra = {
+    status?: string | null
+    isPasswordProtected?: boolean | null
+    password?: string | null
+    heroPhoto?: Photo | number | null
+  }
+  const galleryExt = gallery as typeof gallery & GalleryExtra
+
+  if (!gallery || galleryExt.status === 'draft') notFound()
 
   // Password gate: check cookie if gallery is protected
-  if (galleryAny.isPasswordProtected && galleryAny.password) {
+  if (galleryExt.isPasswordProtected && galleryExt.password) {
     const cookieStore = await cookies()
     const token = cookieStore.get(`gauth_${slug}`)?.value
-    const authed = token ? validateGalleryToken(slug, galleryAny.password, token) : false
+    const authed = token ? validateGalleryToken(slug, galleryExt.password, token) : false
     if (!authed) {
-      return <GalleryPasswordGate slug={slug} title={gallery.title} />
+      return <GalleryPasswordGate slug={slug} />
     }
   }
 
@@ -86,7 +98,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
     ? gallery.coverPhoto as Photo
     : null
   // heroPhoto is the full-bleed banner; falls back to coverPhoto when not set.
-  const heroRaw = galleryAny.heroPhoto
+  const heroRaw = galleryExt.heroPhoto
   const hero = typeof heroRaw === 'object' && heroRaw !== null ? heroRaw as Photo : cover
   const coverUrl = hero?.sizes?.hero?.url ?? hero?.url ?? null
 

@@ -3,9 +3,9 @@ import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-type Props = { slug: string; title: string }
+type Props = { slug: string }
 
-export function GalleryPasswordGate({ slug, title }: Props) {
+export function GalleryPasswordGate({ slug }: Props) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -70,7 +70,7 @@ export function GalleryPasswordGate({ slug, title }: Props) {
           margin: '0 0 2rem',
           lineHeight: 1.6,
         }}>
-          Enter the password to view <em style={{ color: 'var(--color-body, #E6E1DE)', fontStyle: 'normal' }}>{title}</em>.
+          Enter the password to view this gallery.
         </p>
 
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
