@@ -41,6 +41,12 @@ export async function POST(request: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
 
+    // Only send confirmation emails when payment actually succeeded.
+    // checkout.session.completed fires even for free/unpaid sessions.
+    if (session.payment_status !== 'paid') {
+      return NextResponse.json({ received: true })
+    }
+
     const clientName  = escapeHtml(session.metadata?.clientName ?? 'Client')
     const clientEmail = escapeHtml(session.metadata?.clientEmail ?? session.customer_email ?? '')
     const packageName = escapeHtml(session.metadata?.packageName ?? 'Session')
