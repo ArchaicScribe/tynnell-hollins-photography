@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import styles from './page.module.css'
 
+const FOCUSABLE_SELECTORS = 'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
 export type LightboxPhoto = {
   id: string | number
   thumbUrl: string | null
@@ -42,6 +44,7 @@ export function GalleryViewer({ photos, taped }: Props) {
   const touchStartX = useRef<number | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   const close = useCallback(() => setLightboxIdx(null), [])
   const prev = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null) }, [photos.length])
@@ -64,9 +67,20 @@ export function GalleryViewer({ photos, taped }: Props) {
   useEffect(() => {
     if (lightboxIdx === null) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close()
-      else if (e.key === 'ArrowLeft') prev()
-      else if (e.key === 'ArrowRight') next()
+      if (e.key === 'Escape') { close(); return }
+      if (e.key === 'ArrowLeft') { prev(); return }
+      if (e.key === 'ArrowRight') { next(); return }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS))
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus() }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus() }
+        }
+      }
     }
     window.addEventListener('keydown', handler)
     document.body.style.overflow = 'hidden'
@@ -132,6 +146,7 @@ export function GalleryViewer({ photos, taped }: Props) {
 
       {current !== null && lightboxIdx !== null && (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-label={`Photo ${lightboxIdx + 1} of ${photos.length}`}
