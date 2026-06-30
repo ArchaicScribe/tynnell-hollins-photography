@@ -62,6 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GalleryPage({ params, searchParams }: Props) {
   const { slug } = await params
+  if (!slug || !/^[a-z0-9-]{1,100}$/.test(slug)) notFound()
   const { from } = await searchParams
   const backHref = from ? `/portfolio?category=${from}` : '/portfolio'
   const backText = from ? `Back to ${from.charAt(0).toUpperCase() + from.slice(1)}` : 'Back to Portfolio'
