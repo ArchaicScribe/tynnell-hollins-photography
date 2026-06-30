@@ -2,7 +2,10 @@ import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import payloadConfig from '@payload-config'
+import type { Gallery, Photo } from '@/payload-types'
 import { StudioClient } from './StudioClient'
+
+type GalleryWithStatus = Gallery & { status?: string | null }
 
 export const dynamic = 'force-dynamic'
 
@@ -16,10 +19,8 @@ export default async function StudioPage() {
     payload.find({ collection: 'photos', limit: 8, sort: '-updatedAt', depth: 0 }),
   ])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const galleries = galleriesRes.docs as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const photos = photosRes.docs as any[]
+  const galleries = galleriesRes.docs as GalleryWithStatus[]
+  const photos = photosRes.docs as Photo[]
 
   return (
     <StudioClient

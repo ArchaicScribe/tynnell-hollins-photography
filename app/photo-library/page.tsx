@@ -32,22 +32,18 @@ export default async function PhotoLibraryPage() {
     sort: '-createdAt',
   })
 
-  const photos: LibraryPhoto[] = docs.map(p => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const a = p as any
-    return {
-      id: p.id,
-      filename: p.filename ?? null,
-      url: p.url ?? null,
-      thumbUrl: a.sizes?.thumbnail?.url ?? a.sizes?.card?.url ?? p.url ?? null,
-      cardUrl: a.sizes?.card?.url ?? p.url ?? null,
-      category: (p.category as string | null) ?? null,
-      featured: p.featured ?? false,
-      createdAt: p.createdAt,
-      width: a.width ?? null,
-      height: a.height ?? null,
-    }
-  })
+  const photos: LibraryPhoto[] = docs.map(p => ({
+    id: p.id,
+    filename: p.filename ?? null,
+    url: p.url ?? null,
+    thumbUrl: p.sizes?.thumbnail?.url ?? p.sizes?.card?.url ?? p.url ?? null,
+    cardUrl: p.sizes?.card?.url ?? p.url ?? null,
+    category: (p.category as string | null) ?? null,
+    featured: p.featured ?? false,
+    createdAt: p.createdAt,
+    width: p.width ?? null,
+    height: p.height ?? null,
+  }))
 
   return <PhotoLibraryClient initialPhotos={photos} />
 }
