@@ -10,6 +10,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { GalleryViewer, type LightboxPhoto } from './GalleryViewer'
 import { GalleryPasswordGate } from './GalleryPasswordGate'
+import { DownloadAllButton } from './DownloadButton'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -117,6 +118,12 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   }))
 
   const taped = gallery.tapedStyle === true
+  const allowDownload = gallery.allowDownload === true
+
+  // Shape needed by the download component - only id, filename, url.
+  const downloadPhotos = allowDownload
+    ? rawPhotos.map(p => ({ id: p.id, filename: p.filename ?? null, url: p.url ?? null }))
+    : []
 
   const pageUrl = `https://tynnellhollinsphotography.com/portfolio/${gallery.slug}`
   const breadcrumbSchema = {
@@ -169,9 +176,18 @@ export default async function GalleryPage({ params, searchParams }: Props) {
 
       {/* Back link + photo grid (with lightbox) */}
       <div className={styles.content}>
-        <Link href={backHref} className={styles.back}>
-          <span aria-hidden="true">&#8592;</span> {backText}
-        </Link>
+        <div className={styles.contentHeader}>
+          <Link href={backHref} className={styles.back}>
+            <span aria-hidden="true">&#8592;</span> {backText}
+          </Link>
+          {allowDownload && (
+            <DownloadAllButton
+              gallerySlug={typeof gallery.slug === 'string' ? gallery.slug : ''}
+              galleryTitle={gallery.title}
+              photos={downloadPhotos}
+            />
+          )}
+        </div>
         <GalleryViewer photos={photos} taped={taped} />
       </div>
 

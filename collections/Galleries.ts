@@ -237,5 +237,12 @@ export const Galleries: CollectionConfig = {
       label: 'Gallery Password',
       admin: { hidden: true },
     },
+    {
+      name: 'allowDownload',
+      type: 'checkbox',
+      label: 'Allow Photo Downloads',
+      defaultValue: false,
+      admin: { hidden: true },
+    },
   ],
 }

@@ -87,6 +87,15 @@
   padding: 3rem var(--padding-x) var(--padding-block);
 }
 
+.contentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .back {
   display: inline-block;
   font-family: var(--font-body);
@@ -95,7 +104,6 @@
   text-transform: uppercase;
   color: var(--color-detail);
   text-decoration: none;
-  margin-bottom: 3rem;
   transition: color 0.2s ease;
 }
 

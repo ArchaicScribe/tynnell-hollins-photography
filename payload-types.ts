@@ -284,6 +284,7 @@ export interface Gallery {
   displayOrder?: number | null;
   isPasswordProtected?: boolean | null;
   password?: string | null;
+  allowDownload?: boolean | null;
   /**
    * Draft galleries are hidden from your public portfolio.
    */

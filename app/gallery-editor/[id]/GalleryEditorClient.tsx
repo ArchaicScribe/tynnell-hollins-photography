@@ -16,6 +16,7 @@ type Props = {
   initialFeatured: boolean
   initialIsPasswordProtected: boolean
   initialPasswordSet: boolean
+  initialAllowDownload: boolean
   initialCoverId: number | null
   initialCoverThumb: string | null
   initialHeroUrl: string | null
@@ -33,6 +34,7 @@ export function GalleryEditorClient({
   initialFeatured,
   initialIsPasswordProtected,
   initialPasswordSet,
+  initialAllowDownload,
   initialCoverId,
   initialCoverThumb,
   initialHeroUrl,
@@ -47,6 +49,7 @@ export function GalleryEditorClient({
   const [tapedStyle, setTapedStyle] = useState(initialTapedStyle)
   const [featured, setFeatured] = useState(initialFeatured)
   const [isPasswordProtected, setIsPasswordProtected] = useState(initialIsPasswordProtected)
+  const [allowDownload, setAllowDownload] = useState(initialAllowDownload)
   // Empty string = no new password typed yet. When initialPasswordSet is true we show
   // a placeholder so the hash is never sent to the client.
   const [galleryPassword, setGalleryPassword] = useState('')
@@ -310,6 +313,7 @@ export function GalleryEditorClient({
           featured,
           tapedStyle,
           isPasswordProtected,
+          allowDownload,
           // Only send a password value when the admin typed a new one.
           // When isPasswordProtected is true and the field is blank, we omit `password`
           // entirely so the server keeps the existing bcrypt hash unchanged.
@@ -358,7 +362,7 @@ export function GalleryEditorClient({
     autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, galleryPassword, coverId, photos])
+  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, galleryPassword, coverId, photos])
 
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
@@ -389,7 +393,7 @@ export function GalleryEditorClient({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, galleryPassword, coverId, photos])
+  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, galleryPassword, coverId, photos])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
@@ -826,6 +830,24 @@ export function GalleryEditorClient({
                       <span style={{ fontSize: '0.67rem', color: '#3a3a3a', fontFamily: ui }}>Share this with your clients</span>
                     </label>
                   )}
+                </div>
+
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.1rem 0' }} />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={allowDownload}
+                      onChange={e => setField(setAllowDownload)(e.target.checked)}
+                      style={{ width: 15, height: 15, accentColor: '#1db954', cursor: 'pointer', flexShrink: 0, marginTop: '0.15rem' }}
+                      aria-label="Allow photo downloads"
+                    />
+                    <div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#d6d1ce', fontFamily: ui }}>Allow downloads</div>
+                      <div style={{ fontSize: '0.7rem', color: '#4b4b4b', fontFamily: ui, marginTop: '0.1rem' }}>Clients can download photos</div>
+                    </div>
+                  </label>
                 </div>
 
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.1rem 0' }} />

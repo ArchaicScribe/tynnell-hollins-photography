@@ -428,6 +428,19 @@ async function run() {
     `)
 
     console.log('✓ posts.category ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260630_100000: galleries.allow_download column
+    // Per-gallery toggle letting Tynnell decide whether clients can
+    // download photos. Default false so existing galleries are unchanged.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries"
+        ADD COLUMN IF NOT EXISTS "allow_download" boolean DEFAULT false
+    `)
+
+    console.log('✓ galleries.allow_download ready')
   } finally {
     client.release()
     await pool.end()
