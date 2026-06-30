@@ -16,9 +16,10 @@ export const dynamic = 'force-dynamic'
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ from?: string }> }
 
-function validateGalleryToken(slug: string, password: string, token: string): boolean {
-  const secret = process.env.PAYLOAD_SECRET ?? 'dev-secret'
-  const expected = createHmac('sha256', secret).update(`${slug}:${password}`).digest('hex')
+function validateGalleryToken(slug: string, passwordHash: string, token: string): boolean {
+  const secret = process.env.PAYLOAD_SECRET
+  if (!secret) return false
+  const expected = createHmac('sha256', secret).update(`${slug}:${passwordHash}`).digest('hex')
   return token === expected
 }
 
