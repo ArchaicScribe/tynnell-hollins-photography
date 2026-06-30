@@ -6,12 +6,12 @@
  *   <JsonLd data={{ '@context': 'https://schema.org', '@type': 'LocalBusiness', ... }} />
  */
 export default function JsonLd({ data }: { data: Record<string, unknown> }) {
+  // Escape < so a title like "</script><script>..." can't break out of the tag.
+  const safe = JSON.stringify(data).replace(/</g, '\\u003c')
   return (
     <script
       type="application/ld+json"
-      // dangerouslySetInnerHTML is safe here - data comes from our own
-      // server-side Payload queries, never from user input.
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: safe }}
     />
   )
 }

@@ -15,7 +15,7 @@ type Props = {
   initialTapedStyle: boolean
   initialFeatured: boolean
   initialIsPasswordProtected: boolean
-  initialPassword: string
+  initialPasswordSet: boolean
   initialCoverId: number | null
   initialCoverThumb: string | null
   initialHeroUrl: string | null
@@ -32,7 +32,7 @@ export function GalleryEditorClient({
   initialTapedStyle,
   initialFeatured,
   initialIsPasswordProtected,
-  initialPassword,
+  initialPasswordSet,
   initialCoverId,
   initialCoverThumb,
   initialHeroUrl,
@@ -47,7 +47,9 @@ export function GalleryEditorClient({
   const [tapedStyle, setTapedStyle] = useState(initialTapedStyle)
   const [featured, setFeatured] = useState(initialFeatured)
   const [isPasswordProtected, setIsPasswordProtected] = useState(initialIsPasswordProtected)
-  const [galleryPassword, setGalleryPassword] = useState(initialPassword)
+  // Empty string = no new password typed yet. When initialPasswordSet is true we show
+  // a placeholder so the hash is never sent to the client.
+  const [galleryPassword, setGalleryPassword] = useState('')
   const [coverId, setCoverId] = useState<number | null>(initialCoverId)
   const [coverThumb, setCoverThumb] = useState<string | null>(initialCoverThumb)
   const [heroUrl, setHeroUrl] = useState<string | null>(initialHeroUrl)
@@ -308,7 +310,13 @@ export function GalleryEditorClient({
           featured,
           tapedStyle,
           isPasswordProtected,
-          password: isPasswordProtected ? galleryPassword : null,
+          // Only send a password value when the admin typed a new one.
+          // Omitting the field leaves the existing bcrypt hash untouched on the server.
+          ...(isPasswordProtected && galleryPassword.trim()
+            ? { password: galleryPassword }
+            : !isPasswordProtected
+              ? { password: null }
+              : {}),
           coverPhoto: coverId,
           photos: photos.map(p => ({ photo: p.id })),
         }),
@@ -810,7 +818,7 @@ export function GalleryEditorClient({
                         type="text"
                         value={galleryPassword}
                         onChange={e => setField(setGalleryPassword)(e.target.value)}
-                        placeholder="Set a password..."
+                        placeholder={initialPasswordSet ? 'Leave blank to keep existing password' : 'Set a password...'}
                         style={{ background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui }}
                         aria-label="Gallery password"
                       />

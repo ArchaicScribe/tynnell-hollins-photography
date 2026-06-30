@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { createHmac } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 import Link from 'next/link'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import { getPayload } from 'payload'
@@ -19,8 +19,14 @@ type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ from?:
 function validateGalleryToken(slug: string, passwordHash: string, token: string): boolean {
   const secret = process.env.PAYLOAD_SECRET
   if (!secret) return false
-  const expected = createHmac('sha256', secret).update(`${slug}:${passwordHash}`).digest('hex')
-  return token === expected
+  try {
+    const expected = createHmac('sha256', secret).update(`${slug}:${passwordHash}`).digest('hex')
+    const a = Buffer.from(token)
+    const b = Buffer.from(expected)
+    return a.length === b.length && timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
