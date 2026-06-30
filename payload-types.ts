@@ -284,6 +284,14 @@ export interface Gallery {
   displayOrder?: number | null;
   isPasswordProtected?: boolean | null;
   password?: string | null;
+  /**
+   * Draft galleries are hidden from your public portfolio.
+   */
+  status?: ('published' | 'draft') | null;
+  /**
+   * Optional full-width hero photo shown at the top of the gallery page.
+   */
+  heroPhoto?: number | Photo | null;
   updatedAt: string;
   createdAt: string;
 }

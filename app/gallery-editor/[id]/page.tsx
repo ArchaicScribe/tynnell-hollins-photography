@@ -3,8 +3,6 @@ import { headers } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
 import payloadConfig from '@payload-config'
 import type { Gallery, Photo } from '@/payload-types'
-
-type GalleryWithExtra = Gallery & { status?: string | null; heroPhoto?: number | Photo | null }
 import { GalleryEditorClient } from './GalleryEditorClient'
 
 export const dynamic = 'force-dynamic'
@@ -50,7 +48,7 @@ export default async function GalleryEditorPage({ params }: Props) {
 
   if (!galleryResult) notFound()
 
-  const gallery = galleryResult as GalleryWithExtra
+  const gallery = galleryResult as Gallery
 
   const initialPhotos: PhotoItem[] = Array.isArray(gallery.photos)
     ? gallery.photos
@@ -78,7 +76,7 @@ export default async function GalleryEditorPage({ params }: Props) {
     ? gallery.heroPhoto as Photo
     : coverPhoto
 
-  const allGalleries: GalleryListItem[] = (allGalleriesResult.docs as GalleryWithExtra[]).map(g => {
+  const allGalleries: GalleryListItem[] = (allGalleriesResult.docs as Gallery[]).map(g => {
     const cover = typeof g.coverPhoto === 'object' && g.coverPhoto !== null ? g.coverPhoto as Photo : null
     return {
       id: g.id,

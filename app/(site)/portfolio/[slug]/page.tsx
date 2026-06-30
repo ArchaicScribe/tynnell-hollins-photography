@@ -75,21 +75,13 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   })
   const gallery = docs[0]
 
-  type GalleryExtra = {
-    status?: string | null
-    isPasswordProtected?: boolean | null
-    password?: string | null
-    heroPhoto?: Photo | number | null
-  }
-  const galleryExt = gallery as typeof gallery & GalleryExtra
-
-  if (!gallery || galleryExt.status === 'draft') notFound()
+  if (!gallery || gallery.status === 'draft') notFound()
 
   // Password gate: check cookie if gallery is protected
-  if (galleryExt.isPasswordProtected && galleryExt.password) {
+  if (gallery.isPasswordProtected && gallery.password) {
     const cookieStore = await cookies()
     const token = cookieStore.get(`gauth_${slug}`)?.value
-    const authed = token ? validateGalleryToken(slug, galleryExt.password, token) : false
+    const authed = token ? validateGalleryToken(slug, gallery.password, token) : false
     if (!authed) {
       return <GalleryPasswordGate slug={slug} />
     }
@@ -99,7 +91,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
     ? gallery.coverPhoto as Photo
     : null
   // heroPhoto is the full-bleed banner; falls back to coverPhoto when not set.
-  const heroRaw = galleryExt.heroPhoto
+  const heroRaw = gallery.heroPhoto
   const hero = typeof heroRaw === 'object' && heroRaw !== null ? heroRaw as Photo : cover
   const coverUrl = hero?.sizes?.hero?.url ?? hero?.url ?? null
 
