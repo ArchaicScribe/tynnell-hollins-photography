@@ -12,6 +12,13 @@ export const Projects: CollectionConfig = {
     description:
       'Track each client engagement from inquiry through delivery - sessions, payments, and documents all live on the project record.',
     defaultColumns: ['title', 'clientName', 'projectType', 'status', 'projectDate'],
+    components: {
+      views: {
+        list: {
+          Component: './components/admin/ProjectsKanbanView#ProjectsKanbanView',
+        },
+      },
+    },
   },
   fields: [
     {
