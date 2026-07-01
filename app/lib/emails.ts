@@ -181,6 +181,30 @@ export function clientAcknowledgmentEmailHtml(f: ClientAcknowledgmentEmailFields
 }
 
 // ---------------------------------------------------------------------------
+// Admin user invitation (sent to a newly invited Payload admin user)
+// ---------------------------------------------------------------------------
+
+export interface AdminInviteEmailFields {
+  name: string
+  email: string
+  tempPassword: string
+  loginUrl: string
+}
+
+export function adminInviteEmailHtml(f: AdminInviteEmailFields): string {
+  return internalWrapper(`
+    <h2 style="margin:0 0 16px;font-size:20px;">You've been invited to the studio dashboard</h2>
+    <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#444;">Hi ${f.name}, an admin account has been created for you on the Tynnell Hollins Photography dashboard.</p>
+    ${table([
+      tableRow('Login URL', `<a href="${f.loginUrl}" style="color:#333;">${f.loginUrl}</a>`),
+      tableRow('Email', f.email),
+      tableRow('Temporary password', `<code style="background:#f2f2f2;padding:2px 6px;border-radius:3px;">${f.tempPassword}</code>`),
+    ].join(''))}
+    <p style="margin:20px 0 0;font-size:13px;color:#888;">You'll be asked to set your own password the first time you sign in. This temporary password will not work again after that.</p>
+  `)
+}
+
+// ---------------------------------------------------------------------------
 // Coming-soon inquiry notification (sent to Tynnell during soft launch)
 // ---------------------------------------------------------------------------
 

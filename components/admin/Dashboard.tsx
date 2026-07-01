@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { type BlockedRange } from '@/app/lib/availability'
+import { InviteUserModal } from './InviteUserModal'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -182,7 +183,7 @@ const PRODUCTS: Product[] = [
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product }: { product: Product & { extra?: React.ReactNode } }) {
   return (
     <div style={{
       background: '#161616',
@@ -236,6 +237,7 @@ function ProductCard({ product }: { product: Product }) {
             </a>
           )
         )}
+        {product.extra}
       </div>
     </div>
   )
@@ -378,7 +380,9 @@ export function Dashboard() {
           gap: '0.85rem',
           marginBottom: '3rem',
         }}>
-          {PRODUCTS.map(p => <ProductCard key={p.id} product={p} />)}
+          {PRODUCTS.map(p => (
+            <ProductCard key={p.id} product={p.id === 'studio' ? { ...p, extra: <InviteUserModal /> } : p} />
+          ))}
         </div>
 
         {/* Quick Access */}

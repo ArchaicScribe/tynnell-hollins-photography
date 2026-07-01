@@ -148,6 +148,10 @@ export interface UserAuthOperations {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * When checked, the user is prompted to set a new password before accessing the admin.
+   */
+  mustChangePassword?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
