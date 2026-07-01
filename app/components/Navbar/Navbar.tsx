@@ -15,8 +15,31 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
   const [portfolioOpen, setPortfolioOpen] = useState(false)
   const pathname = usePathname()
   const dropdownRef = useRef<HTMLLIElement>(null)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useScrollLock(menuOpen)
+
+  // A visual gap sits between the trigger and the dropdown menu (see .dropdown
+  // top offset), so closing immediately on mouseleave fires while the cursor
+  // is still traveling through that gap. Delay the close briefly so the user
+  // has time to reach the menu.
+  const openDropdown = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current)
+      closeTimer.current = null
+    }
+    setPortfolioOpen(true)
+  }
+
+  const scheduleCloseDropdown = () => {
+    closeTimer.current = setTimeout(() => setPortfolioOpen(false), 250)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current)
+    }
+  }, [])
 
   useEffect(() => {
     let rafId: number
@@ -71,8 +94,8 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
                   key={link.href}
                   className={styles.hasDropdown}
                   ref={dropdownRef}
-                  onMouseEnter={() => setPortfolioOpen(true)}
-                  onMouseLeave={() => setPortfolioOpen(false)}
+                  onMouseEnter={openDropdown}
+                  onMouseLeave={scheduleCloseDropdown}
                 >
                   <button
                     className={styles.link}
