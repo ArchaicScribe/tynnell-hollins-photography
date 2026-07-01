@@ -28,9 +28,9 @@
   /* ── Typography ───────────────────────────────────────────── */
   --font-display:         'Tangerine', cursive;
   --font-display-bold:    'Abril Fatface', cursive;
-  --font-heading:         'Archivo', sans-serif;
+  --font-heading:         'Poppins', sans-serif;
   --font-prose:           var(--font-heading);
-  --font-body:            'Roboto Mono', monospace;
+  --font-body:            'Poppins', sans-serif;
   --font-mono:            var(--font-body);
 
   /* ── Spacing ──────────────────────────────────────────────── */

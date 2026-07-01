@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Tangerine, Archivo, Roboto_Mono, Abril_Fatface } from 'next/font/google'
+import { Tangerine, Poppins, Abril_Fatface } from 'next/font/google'
 import './globals.css'
 import './styles/tokens.css'
 import Navbar from '../components/Navbar/Navbar'
@@ -15,10 +15,20 @@ const tangerine = Tangerine({
   display: 'swap',
 })
 
-const archivo = Archivo({
+// Poppins matches the Pixieset builder's typeface. Used for both headings and
+// body copy (two loader instances so each gets its own CSS variable), keeping
+// the site's typography uniform outside of the Tangerine/Abril script accents.
+const poppinsHeading = Poppins({
   weight: ['400', '500', '600', '700', '800'],
   subsets: ['latin'],
   variable: '--font-heading',
+  display: 'swap',
+})
+
+const poppinsBody = Poppins({
+  weight: ['300', '400', '500'],
+  subsets: ['latin'],
+  variable: '--font-body',
   display: 'swap',
 })
 
@@ -26,13 +36,6 @@ const abrialFatface = Abril_Fatface({
   weight: ['400'],
   subsets: ['latin'],
   variable: '--font-display-bold',
-  display: 'swap',
-})
-
-const robotoMono = Roboto_Mono({
-  weight: ['300', '400'],
-  subsets: ['latin'],
-  variable: '--font-body',
   display: 'swap',
 })
 
@@ -72,7 +75,7 @@ export default async function RootLayout({
   const builderLinks = await getBuilderNavLinks()
 
   return (
-    <html lang="en" className={`${tangerine.variable} ${archivo.variable} ${robotoMono.variable} ${abrialFatface.variable}`}>
+    <html lang="en" className={`${tangerine.variable} ${poppinsHeading.variable} ${poppinsBody.variable} ${abrialFatface.variable}`}>
       <body suppressHydrationWarning>
         <a href="#main-content" className="skipLink">Skip to content</a>
         <Navbar builderLinks={builderLinks} />

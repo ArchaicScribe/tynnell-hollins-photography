@@ -189,8 +189,8 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 --color-detail: #9B9A9A
 --color-btn-bg: #9B9A9A
 --font-display: Tangerine
---font-heading: Archivo
---font-body: Roboto Mono
+--font-heading: Poppins
+--font-body: Poppins
 --padding-x: max(1.25rem, 2.5vw)
 ```
 
