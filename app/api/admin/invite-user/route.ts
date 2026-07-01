@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
+import { getPayload, ValidationError } from 'payload'
 import { headers } from 'next/headers'
 import { randomBytes } from 'crypto'
 import { Resend } from 'resend'
@@ -58,6 +58,13 @@ export async function POST(request: Request) {
       },
     })
   } catch (err) {
+    // Two concurrent invites for the same email can both pass the
+    // existence check above (TOCTOU) - the unique constraint on email
+    // catches it here instead, surfacing as a ValidationError. Treat that
+    // the same as the upfront duplicate check rather than a generic retry.
+    if (err instanceof ValidationError) {
+      return NextResponse.json({ error: 'A user with that email already exists.' }, { status: 409 })
+    }
     payload.logger.error({ msg: 'Failed to create invited user', err })
     return NextResponse.json({ error: 'Failed to create the user. Please try again.' }, { status: 500 })
   }

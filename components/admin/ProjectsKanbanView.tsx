@@ -123,6 +123,11 @@ export function ProjectsKanbanView() {
   useEffect(() => { fetchProjects() }, [fetchProjects])
 
   const updateStatus = useCallback(async (id: number, newStatus: string) => {
+    // Guard against a second update starting for the same card while its
+    // previous PATCH is still in flight (the card's draggable attribute
+    // already disables re-dragging while moving; this closes the same
+    // window for any other caller of updateStatus, e.g. the Restore button).
+    if (movingIds.has(id)) return
     setProjects(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p))
     setMovingIds(prev => new Set([...prev, id]))
     try {
@@ -140,7 +145,7 @@ export function ProjectsKanbanView() {
     } finally {
       setMovingIds(prev => { const n = new Set(prev); n.delete(id); return n })
     }
-  }, [fetchProjects])
+  }, [fetchProjects, movingIds])
 
   const handleDrop = (columnKey: string) => {
     setOverColumn(null)
