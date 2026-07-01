@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { type BlockedRange } from '@/app/lib/availability'
+import { type BlockedRange, computeReturnDate } from '@/app/lib/availability'
 import { InviteUserModal } from './InviteUserModal'
 
 // ---------------------------------------------------------------------------
@@ -21,13 +21,6 @@ interface OooState {
 // ---------------------------------------------------------------------------
 // OOO helpers
 // ---------------------------------------------------------------------------
-
-function getEffectiveEnd(range: BlockedRange): Date {
-  if (!range.endDate) return new Date(0)
-  const end = new Date(range.endDate)
-  const bufferDays = range.applyReturnBuffer ? (range.returnBufferDays ?? 0) : 0
-  return new Date(end.getTime() + bufferDays * 24 * 60 * 60 * 1000)
-}
 
 function fmtDate(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
@@ -54,7 +47,7 @@ function computeOooState(ranges: BlockedRange[]): OooState {
     if (!r.startDate || !r.endDate) continue
     const start = new Date(r.startDate)
     const end = new Date(r.endDate)
-    const effectiveEnd = getEffectiveEnd(r)
+    const effectiveEnd = computeReturnDate(r)
     const endDay = new Date(Date.UTC(effectiveEnd.getUTCFullYear(), effectiveEnd.getUTCMonth(), effectiveEnd.getUTCDate() + 1))
     if (todayStart >= new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())) && todayStart < endDay) {
       activeRange = { label: r.internalLabel ?? '', start, end, effectiveEnd }

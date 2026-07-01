@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useField } from '@payloadcms/ui'
-import { type BlockedRange, computeReturnDate } from '@/app/lib/availability'
+import { type BlockedRange, getActiveOoo } from '@/app/lib/availability'
 
 function label(range: BlockedRange, index: number): string {
   return range.internalLabel ? `"${range.internalLabel}"` : `Entry ${index + 1}`
@@ -14,8 +14,6 @@ export function OooWarnings() {
   if (!Array.isArray(ranges) || ranges.length === 0) return null
 
   const warnings: string[] = []
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
 
   for (let i = 0; i < ranges.length; i++) {
     const r = ranges[i]
@@ -37,8 +35,7 @@ export function OooWarnings() {
     }
 
     // Currently active
-    const returnDate = computeReturnDate(r)
-    if (today >= start && today <= returnDate) {
+    if (getActiveOoo([r])) {
       warnings.push(
         `${label(r, i)} is currently active - clients visiting the site right now will see your unavailability message.`,
       )
