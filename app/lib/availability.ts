@@ -18,8 +18,21 @@ export interface ActiveOoo {
   message: string
 }
 
+/**
+ * Parses a "YYYY-MM-DD" date string as local midnight, not UTC midnight.
+ * `new Date(dateOnlyString)` parses date-only strings as UTC per the ISO 8601
+ * spec, which silently shifts the calendar day by one in any timezone behind
+ * UTC (every US timezone). Date-only strings from Payload date fields always
+ * mean "this calendar day" in the studio's local timezone, so they must be
+ * parsed as local, matching how submitted booking dates are constructed.
+ */
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  return new Date(year, (month ?? 1) - 1, day ?? 1)
+}
+
 export function computeReturnDate(range: BlockedRange): Date {
-  const end = new Date(range.endDate!)
+  const end = parseLocalDate(range.endDate!)
   const bufferDays = range.applyReturnBuffer !== false ? (range.returnBufferDays ?? 2) : 0
   if (bufferDays > 0) end.setDate(end.getDate() + bufferDays)
   end.setHours(23, 59, 59, 999)
@@ -41,8 +54,7 @@ export function getActiveOoo(ranges: BlockedRange[]): ActiveOoo | null {
   for (const range of ranges) {
     if (!range.startDate || !range.endDate) continue
 
-    const start = new Date(range.startDate)
-    start.setHours(0, 0, 0, 0)
+    const start = parseLocalDate(range.startDate)
     const returnDate = computeReturnDate(range)
 
     if (now >= start && now <= returnDate) {
@@ -75,17 +87,14 @@ export function getBlockedDateResult(
 ): BlockedDateResult | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null
 
-  const [year, month, day] = dateStr.split('-').map(Number)
-  const submitted = new Date(year, month - 1, day)
-  submitted.setHours(0, 0, 0, 0)
+  const submitted = parseLocalDate(dateStr)
 
   const now = new Date()
 
   for (const range of ranges) {
     if (!range.startDate || !range.endDate) continue
 
-    const start = new Date(range.startDate)
-    start.setHours(0, 0, 0, 0)
+    const start = parseLocalDate(range.startDate)
     const returnDate = computeReturnDate(range)
 
     if (returnDate < now) continue

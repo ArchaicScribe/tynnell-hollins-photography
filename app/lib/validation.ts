@@ -84,6 +84,12 @@ export function isValidSessionDate(
   const [year, month, day] = dateStr.split('-').map(Number)
   const submitted = new Date(year, month - 1, day)
   if (isNaN(submitted.getTime())) return false
+  // The Date constructor silently rolls over out-of-range components (month 13,
+  // day 40) into a different valid date instead of failing - reject anything
+  // that doesn't round-trip back to the exact input.
+  if (submitted.getFullYear() !== year || submitted.getMonth() !== month - 1 || submitted.getDate() !== day) {
+    return false
+  }
 
   const leadTimeHours = options?.minLeadTimeHours ?? MIN_LEAD_TIME_HOURS
   const bookingMonths = options?.maxBookingMonths ?? MAX_BOOKING_MONTHS
