@@ -8,6 +8,7 @@ export type CategoryPhoto = {
   id: string
   title?: string | null
   alt?: string | null
+  caption?: string | null
   imageUrl: string | null
   fullUrl: string | null
 }
@@ -164,9 +165,16 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
           >
             &times;
           </button>
-          <p style={{ position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', color: 'rgba(155,154,154,0.6)', fontFamily: 'var(--font-body)', fontSize: '0.62rem', letterSpacing: '0.14em', textTransform: 'uppercase', margin: 0, whiteSpace: 'nowrap' }}>
-            {lightboxIdx + 1} / {photos.length}
-          </p>
+          <div style={{ position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', maxWidth: '80vw' }}>
+            {currentPhoto.caption && (
+              <p style={{ color: 'rgba(214,209,206,0.8)', fontFamily: 'var(--font-body)', fontSize: '0.75rem', letterSpacing: '0.08em', margin: '0 0 0.4rem' }}>
+                {currentPhoto.caption}
+              </p>
+            )}
+            <p style={{ color: 'rgba(155,154,154,0.6)', fontFamily: 'var(--font-body)', fontSize: '0.62rem', letterSpacing: '0.14em', textTransform: 'uppercase', margin: 0, whiteSpace: 'nowrap' }}>
+              {lightboxIdx + 1} / {photos.length}
+            </p>
+          </div>
         </div>
       )}
     </>

@@ -47,6 +47,7 @@ export default async function WeddingsPage() {
       id: String(p.id),
       title: p.title,
       alt: p.alt ?? undefined,
+      caption: p.caption ?? null,
       imageUrl: (p as Photo).sizes?.card?.url ?? p.url ?? null,
       fullUrl: (p as Photo).sizes?.hero?.url ?? p.url ?? null,
     }))
