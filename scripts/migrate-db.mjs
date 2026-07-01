@@ -441,6 +441,121 @@ async function run() {
     `)
 
     console.log('✓ galleries.allow_download ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260701_100000: projects collection (TYN-124/125/126/127)
+    // Client Project Management - central record for each client engagement
+    // (replaces Pixieset Studio Manager). Sessions, payments, and documents
+    // are array sub-tables keyed to the parent project.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "projects" (
+        "id"              serial  PRIMARY KEY NOT NULL,
+        "title"           varchar NOT NULL,
+        "status"          varchar DEFAULT 'inquiry' NOT NULL,
+        "client_name"     varchar NOT NULL,
+        "client_email"    varchar NOT NULL,
+        "project_type"    varchar,
+        "project_date"    timestamp(3) with time zone,
+        "location"        varchar,
+        "description"     varchar,
+        "internal_notes"  varchar,
+        "updated_at"      timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"      timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "projects_sessions" (
+        "id"            serial  PRIMARY KEY NOT NULL,
+        "_order"        integer NOT NULL,
+        "_parent_id"    integer NOT NULL,
+        "session_date"  timestamp(3) with time zone NOT NULL,
+        "location"      varchar,
+        "session_type"  varchar,
+        "duration"      numeric,
+        "notes"         varchar
+      )
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "projects_sessions"
+          ADD CONSTRAINT "projects_sessions_parent_id_fk"
+          FOREIGN KEY ("_parent_id")
+          REFERENCES "projects"("id")
+          ON DELETE CASCADE ON UPDATE NO ACTION;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "projects_sessions_order_idx" ON "projects_sessions" USING btree ("_order")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "projects_sessions_parent_id_idx" ON "projects_sessions" USING btree ("_parent_id")
+    `)
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "projects_payments" (
+        "id"          serial  PRIMARY KEY NOT NULL,
+        "_order"      integer NOT NULL,
+        "_parent_id"  integer NOT NULL,
+        "label"       varchar NOT NULL,
+        "amount"      numeric NOT NULL,
+        "due_date"    timestamp(3) with time zone,
+        "status"      varchar DEFAULT 'upcoming' NOT NULL,
+        "notes"       varchar
+      )
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "projects_payments"
+          ADD CONSTRAINT "projects_payments_parent_id_fk"
+          FOREIGN KEY ("_parent_id")
+          REFERENCES "projects"("id")
+          ON DELETE CASCADE ON UPDATE NO ACTION;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "projects_payments_order_idx" ON "projects_payments" USING btree ("_order")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "projects_payments_parent_id_idx" ON "projects_payments" USING btree ("_parent_id")
+    `)
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "projects_documents" (
+        "id"             serial  PRIMARY KEY NOT NULL,
+        "_order"         integer NOT NULL,
+        "_parent_id"     integer NOT NULL,
+        "title"          varchar NOT NULL,
+        "document_type"  varchar DEFAULT 'contract' NOT NULL,
+        "status"         varchar DEFAULT 'draft' NOT NULL,
+        "document_date"  timestamp(3) with time zone,
+        "amount"         numeric,
+        "external_link"  varchar,
+        "notes"          varchar
+      )
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "projects_documents"
+          ADD CONSTRAINT "projects_documents_parent_id_fk"
+          FOREIGN KEY ("_parent_id")
+          REFERENCES "projects"("id")
+          ON DELETE CASCADE ON UPDATE NO ACTION;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "projects_documents_order_idx" ON "projects_documents" USING btree ("_order")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "projects_documents_parent_id_idx" ON "projects_documents" USING btree ("_parent_id")
+    `)
+
+    console.log('✓ projects tables ready')
   } finally {
     client.release()
     await pool.end()

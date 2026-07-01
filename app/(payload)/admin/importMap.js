@@ -38,6 +38,9 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { PostGridView as PostGridView_14ec513780a751f079162e3480e8024b } from '../../../components/admin/PostGridView'
+import { SessionRowLabel as SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc } from '../../../collections/Projects/SessionRowLabel'
+import { PaymentRowLabel as PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5 } from '../../../collections/Projects/PaymentRowLabel'
+import { DocumentRowLabel as DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c } from '../../../collections/Projects/DocumentRowLabel'
 import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe } from '../../../components/admin/AboutViewOnSiteButton'
 import { OooWarnings as OooWarnings_24882b9d221e8df452e06e4f5a939af9 } from '../../../components/admin/OooWarnings'
 import { EmptyNav as EmptyNav_82b891e66c2c3695aa54244888ed30ee } from '../../../components/admin/EmptyNav'
@@ -91,6 +94,9 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "./components/admin/PostGridView#PostGridView": PostGridView_14ec513780a751f079162e3480e8024b,
+  "./collections/Projects/SessionRowLabel#SessionRowLabel": SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc,
+  "./collections/Projects/PaymentRowLabel#PaymentRowLabel": PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5,
+  "./collections/Projects/DocumentRowLabel#DocumentRowLabel": DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c,
   "./components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton": AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe,
   "./components/admin/OooWarnings#OooWarnings": OooWarnings_24882b9d221e8df452e06e4f5a939af9,
   "./components/admin/EmptyNav#EmptyNav": EmptyNav_82b891e66c2c3695aa54244888ed30ee,

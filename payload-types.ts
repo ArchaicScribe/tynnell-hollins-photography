@@ -74,6 +74,7 @@ export interface Config {
     services: Service;
     posts: Post;
     pages: Page;
+    projects: Project;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     services: ServicesSelect<false> | ServicesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -461,6 +463,90 @@ export interface Page {
   createdAt: string;
 }
 /**
+ * Track each client engagement from inquiry through delivery - sessions, payments, and documents all live on the project record.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  /**
+   * A short name for this project. Example: "Smith Wedding" or "Javan Graduation Session".
+   */
+  title: string;
+  /**
+   * Where this project is in your pipeline.
+   */
+  status: 'inquiry' | 'booked' | 'post-production' | 'delivered' | 'archived';
+  clientName: string;
+  clientEmail: string;
+  /**
+   * The type of session this project is for.
+   */
+  projectType?: ('portrait' | 'wedding' | 'family' | 'couples' | 'brand') | null;
+  projectDate?: string | null;
+  location?: string | null;
+  /**
+   * Notes about this project. Visible to the client if you choose to share it - not private.
+   */
+  description?: string | null;
+  /**
+   * Private notes for you only. Never shown to clients.
+   */
+  internalNotes?: string | null;
+  /**
+   * Scheduled or completed sessions for this project.
+   */
+  sessions?:
+    | {
+        sessionDate: string;
+        location?: string | null;
+        sessionType?:
+          | ('portrait' | 'engagement' | 'wedding-ceremony' | 'wedding-reception' | 'family' | 'couples' | 'brand')
+          | null;
+        duration?: number | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Record-keeping only - actual payment processing happens through Stripe on the booking page.
+   */
+  payments?:
+    | {
+        label: string;
+        amount: number;
+        dueDate?: string | null;
+        status: 'upcoming' | 'paid' | 'past-due';
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Track contracts and invoices for this project. Store the actual file/signature in DocuSign, Google Drive, or wherever it lives, and link to it here.
+   */
+  documents?:
+    | {
+        title: string;
+        documentType: 'contract' | 'invoice' | 'model-release' | 'other';
+        status: 'draft' | 'sent' | 'signed' | 'void';
+        documentDate?: string | null;
+        /**
+         * For invoices: the invoice total.
+         */
+        amount?: number | null;
+        /**
+         * Link to the document in DocuSign, Google Drive, or wherever it lives.
+         */
+        externalLink?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -716,6 +802,55 @@ export interface PagesSelect<T extends boolean = true> {
   content?: T;
   published?: T;
   displayOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  title?: T;
+  status?: T;
+  clientName?: T;
+  clientEmail?: T;
+  projectType?: T;
+  projectDate?: T;
+  location?: T;
+  description?: T;
+  internalNotes?: T;
+  sessions?:
+    | T
+    | {
+        sessionDate?: T;
+        location?: T;
+        sessionType?: T;
+        duration?: T;
+        notes?: T;
+        id?: T;
+      };
+  payments?:
+    | T
+    | {
+        label?: T;
+        amount?: T;
+        dueDate?: T;
+        status?: T;
+        notes?: T;
+        id?: T;
+      };
+  documents?:
+    | T
+    | {
+        title?: T;
+        documentType?: T;
+        status?: T;
+        documentDate?: T;
+        amount?: T;
+        externalLink?: T;
+        notes?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
