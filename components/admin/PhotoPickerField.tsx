@@ -58,6 +58,7 @@ export function PhotoPickerField({
   const [open, setOpen] = useState(false)
   const [photos, setPhotos] = useState<PhotoDoc[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState('')
   const [catFilter, setCatFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -69,18 +70,25 @@ export function PhotoPickerField({
 
   const fetchPhotos = useCallback((cat: string, q: string, pg: number) => {
     setLoading(true)
+    setLoadError('')
     const params = new URLSearchParams({ limit: String(PAGE_SIZE), page: String(pg), depth: '1', sort: '-createdAt' })
     if (cat !== 'all') params.append('where[category][equals]', cat)
     if (q) params.append('where[filename][contains]', q)
     fetch(`/api/photos?${params.toString()}`, { credentials: 'include' })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`Server error ${r.status}`)
+        return r.json()
+      })
       .then((data: { docs?: PhotoDoc[]; totalDocs?: number; totalPages?: number }) => {
         setPhotos(data.docs ?? [])
         setTotal(data.totalDocs ?? 0)
         setTotalPages(data.totalPages ?? 1)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        setLoadError("Couldn't load photos. Check your connection and try again.")
+        setLoading(false)
+      })
   }, [])
 
   useEffect(() => {
@@ -189,7 +197,9 @@ export function PhotoPickerField({
 
             {/* Photo grid */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '0.85rem 1.25rem' }}>
-              {loading ? (
+              {loadError ? (
+                <div role="alert" style={{ textAlign: 'center', padding: '3rem', color: '#f0a3a3', fontSize: '0.85rem' }}>{loadError}</div>
+              ) : loading ? (
                 <div style={{ textAlign: 'center', padding: '3rem', color: '#9b9a9a', fontSize: '0.85rem' }}>Loading...</div>
               ) : photos.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '3rem', color: '#9b9a9a', fontSize: '0.85rem' }}>No photos found.</div>

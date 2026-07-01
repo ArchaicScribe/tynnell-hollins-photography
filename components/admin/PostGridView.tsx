@@ -52,6 +52,7 @@ export function PostGridView() {
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set())
   const [toggleError, setToggleError] = useState('')
+  const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.search) {
@@ -67,13 +68,20 @@ export function PostGridView() {
 
   useEffect(() => {
     setLoading(true)
+    setLoadError('')
     const params = new URLSearchParams({ limit: String(LIMIT), page: String(page), depth: '1', sort: '-publishedAt' })
     if (debouncedSearch) params.append('where[title][contains]', debouncedSearch)
     if (statusFilter !== 'all') params.append('where[status][equals]', statusFilter)
     fetch(`/api/posts?${params.toString()}`, { credentials: 'include' })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`Server error ${r.status}`)
+        return r.json()
+      })
       .then(data => { setPosts(data.docs ?? []); setTotal(data.totalDocs ?? 0); setTotalPages(data.totalPages ?? 1); setLoading(false) })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        setLoadError("Couldn't load posts. Check your connection and try again.")
+        setLoading(false)
+      })
   }, [debouncedSearch, statusFilter, page])
 
   const toggleStatus = useCallback(async (e: React.MouseEvent, post: PostDoc) => {
@@ -176,10 +184,13 @@ export function PostGridView() {
       {toggleError && (
         <div role="alert" style={{ margin: '0.75rem 1.5rem', padding: '0.5rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 2, fontSize: '0.72rem', color: '#f0a3a3' }}>{toggleError}</div>
       )}
+      {loadError && (
+        <div role="alert" style={{ margin: '0.75rem 1.5rem', padding: '0.5rem 0.75rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 2, fontSize: '0.72rem', color: '#f0a3a3' }}>{loadError}</div>
+      )}
 
       {/* ── 2-column post grid (matches public /blog grid) ── */}
       <div style={{ padding: '2rem 1.5rem' }}>
-        {loading ? (
+        {loadError ? null : loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem 1.5rem' }}>
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i}>

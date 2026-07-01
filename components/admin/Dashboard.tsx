@@ -258,6 +258,7 @@ const linkStyle: React.CSSProperties = {
 
 export function Dashboard() {
   const [oooState, setOooState] = useState<OooState | null>(null)
+  const [oooError, setOooError] = useState(false)
   const [recentPhotos, setRecentPhotos] = useState<RecentPhoto[]>([])
   const [recentGalleries, setRecentGalleries] = useState<RecentGallery[]>([])
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
@@ -276,13 +277,15 @@ export function Dashboard() {
 
   useEffect(() => {
     fetch('/api/globals/availability?depth=0', { credentials: 'include' })
-      .then(r => r.ok ? r.json() : null)
+      .then(r => {
+        if (!r.ok) throw new Error(`Server error ${r.status}`)
+        return r.json()
+      })
       .then(data => {
-        if (!data) return
-        const ranges: BlockedRange[] = Array.isArray(data.blockedRanges) ? data.blockedRanges : []
+        const ranges: BlockedRange[] = Array.isArray(data?.blockedRanges) ? data.blockedRanges : []
         setOooState(computeOooState(ranges))
       })
-      .catch(() => {})
+      .catch(() => setOooError(true))
   }, [])
 
   useEffect(() => {
@@ -323,6 +326,26 @@ export function Dashboard() {
           <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.75rem', fontWeight: 700, color: '#e6e1de', fontFamily: ui }}>
             {getGreeting()}, {firstName}
           </h1>
+          {oooError && (
+            <span
+              role="alert"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.35rem 0.9rem',
+                borderRadius: '999px',
+                border: '1px solid rgba(248,113,113,0.27)',
+                background: 'rgba(248,113,113,0.07)',
+                fontSize: '0.7rem',
+                color: '#f0a3a3',
+                fontFamily: "'Roboto Mono', monospace",
+                letterSpacing: '0.04em',
+              }}
+            >
+              Couldn&apos;t check availability status
+            </span>
+          )}
           {oooState && (
             <Link
               href="/availability"

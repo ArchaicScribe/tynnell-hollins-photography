@@ -100,6 +100,9 @@ export function GalleryGridView() {
       await Promise.all(newOrder.map((g, i) =>
         fetch(`/api/galleries/${g.id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ displayOrder: i + 1 }) })
       ))
+    } catch {
+      setToggleError("Couldn't save the new order - please try again.")
+      setTimeout(() => setToggleError(''), 3500)
     } finally { setReordering(false) }
   }, [dragIdx, galleries])
 
