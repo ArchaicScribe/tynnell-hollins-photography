@@ -100,35 +100,3 @@ export function DownloadAllButton({ gallerySlug, galleryTitle, photos }: Props) 
     </button>
   )
 }
-
-type SingleProps = {
-  photoId: number
-  filename: string | null
-  gallerySlug: string
-}
-
-export function DownloadSingleButton({ photoId, filename, gallerySlug }: SingleProps) {
-  return (
-    <a
-      href={`/api/photos/${photoId}/download?gallery=${gallerySlug}`}
-      download={filename ?? undefined}
-      title="Download photo"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '32px',
-        height: '32px',
-        background: 'rgba(0,0,0,0.55)',
-        borderRadius: '4px',
-        color: '#fff',
-        textDecoration: 'none',
-      }}
-      aria-label="Download photo"
-    >
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </a>
-  )
-}
