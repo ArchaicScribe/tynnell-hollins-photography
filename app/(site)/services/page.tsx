@@ -5,7 +5,8 @@ import config from '@payload-config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
-export const dynamic = 'force-dynamic'
+// Service packages/pricing rarely change - revalidate every 2 minutes
+export const revalidate = 120
 
 export const metadata: Metadata = {
   title: 'Services',

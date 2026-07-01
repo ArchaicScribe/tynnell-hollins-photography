@@ -194,14 +194,13 @@ export function GalleryViewer({ photos, taped }: Props) {
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: '90vw', maxHeight: '90vh' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <ProtectedImage
               src={current.fullUrl ?? current.thumbUrl ?? ''}
               alt={current.alt ?? ''}
-              draggable={false}
+              width={1600}
+              height={1200}
               onLoad={() => setImgLoading(false)}
-              onContextMenu={e => e.preventDefault()}
-              style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', display: 'block', userSelect: 'none', opacity: imgLoading ? 0 : 1, transition: 'opacity 0.2s' }}
+              style={{ width: 'auto', height: 'auto', maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', display: 'block', userSelect: 'none', opacity: imgLoading ? 0 : 1, transition: 'opacity 0.2s' }}
             />
           </div>
 
