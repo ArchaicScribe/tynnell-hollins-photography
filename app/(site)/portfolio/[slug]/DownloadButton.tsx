@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { zipSync, strToU8 } from 'fflate'
+import { zipSync } from 'fflate'
 
 type DownloadPhoto = {
   id: number
