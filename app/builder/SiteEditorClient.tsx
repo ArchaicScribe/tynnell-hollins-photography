@@ -101,6 +101,15 @@ function IconHome() {
   )
 }
 
+function IconPenSmall() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M2.5 10.5l7-7 2.5 2.5-7 7H2.5v-2.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      <path d="M8.5 4.5l1.5 1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 function IconDots() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -163,8 +172,20 @@ function NavPageRow({
   onToggleExpand: () => void
 }) {
   const [hovered, setHovered] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const isActive   = selectedKey === item.key
   const hasChildren = (item.children?.length ?? 0) > 0
+  const isBlog = item.key === 'blog'
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
 
   return (
     <>
@@ -174,16 +195,16 @@ function NavPageRow({
         onClick={() => { if (hasChildren) onToggleExpand(); onSelect(item.key, item.href) }}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { if (hasChildren) onToggleExpand(); onSelect(item.key, item.href) } }}
         onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseLeave={() => { if (!menuOpen) setHovered(false) }}
         style={{
-          display: 'flex', alignItems: 'center', gap: '0.55rem',
+          position: 'relative', display: 'flex', alignItems: 'center', gap: '0.55rem',
           padding: '0.45rem 0.75rem', borderRadius: 6, cursor: 'pointer',
           background: isActive ? 'rgba(255,255,255,0.08)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
           transition: 'background 0.1s',
         }}
       >
         <span style={{ color: isActive ? '#9b9a9a' : '#4a4a4a', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-          {item.key === 'home' ? <IconHome /> : <IconPage />}
+          {item.key === 'home' ? <IconHome /> : isBlog ? <IconPenSmall /> : <IconPage />}
         </span>
 
         <span style={{
@@ -201,7 +222,18 @@ function NavPageRow({
           </span>
         )}
 
-        {!hasChildren && hovered && (
+        {isBlog && hovered && (
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
+            style={{ background: 'none', border: 'none', color: '#4a4a4a', cursor: 'pointer', padding: '0.1rem 0.2rem', borderRadius: 4, display: 'flex', alignItems: 'center', flexShrink: 0 }}
+            aria-label="Blog options"
+          >
+            <IconDots />
+          </button>
+        )}
+
+        {!hasChildren && !isBlog && hovered && (
           <a
             href={item.href} target="_blank" rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
@@ -210,6 +242,33 @@ function NavPageRow({
           >
             <IconExternal />
           </a>
+        )}
+
+        {isBlog && menuOpen && (
+          <div
+            ref={menuRef}
+            style={{
+              position: 'absolute', right: 4, top: '100%', zIndex: 200,
+              background: '#232323', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 8, padding: '0.3rem', minWidth: 150,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+            }}
+          >
+            {[
+              { label: 'All Posts', action: () => { window.location.href = '/admin/collections/posts' } },
+              { label: 'New Post', action: () => { window.location.href = '/admin/collections/posts/create' } },
+            ].map(menuItem => (
+              <button
+                key={menuItem.label} type="button"
+                onClick={e => { e.stopPropagation(); menuItem.action(); setMenuOpen(false) }}
+                style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.7rem', background: 'none', border: 'none', borderRadius: 5, fontSize: '0.8rem', fontFamily: ui, color: '#c4bfb9', cursor: 'pointer' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+              >
+                {menuItem.label}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
