@@ -14,7 +14,10 @@ export const HeroSlides: GlobalConfig = {
   label: 'Hero Slides',
   hooks: { afterChange: [revalidateHero] },
   admin: {
-    hidden: true,
+    // Not `hidden: true` - that removes the global from Payload's routing
+    // entirely (404s), not just its nav entry. The nav sidebar is already
+    // permanently hidden (EmptyNav), so hiding it here is both redundant
+    // and breaks the Studio dashboard's direct link to this page.
     group: 'Site Settings',
     description:
       'The full-screen photo carousel on your homepage. Add, remove, or reorder slides here.',

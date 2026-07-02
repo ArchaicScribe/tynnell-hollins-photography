@@ -6,6 +6,13 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
     description: 'Admin accounts that can log into this dashboard.',
+    components: {
+      views: {
+        list: {
+          Component: './components/admin/UsersGridView#UsersGridView',
+        },
+      },
+    },
   },
   fields: [
     {

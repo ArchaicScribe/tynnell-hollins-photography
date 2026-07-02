@@ -167,8 +167,11 @@ select,
 
 /* ── Hide the API tab — not relevant to content editors ─────── */
 
-.doc-tab__list-item:has(a[href*="/api"]),
-.doc-tab__list-item:has(button[aria-label*="API"]) {
+/* Current Payload markup renders the API tab as a plain a.doc-tab with no
+   wrapping list-item, so the old :has() selector (targeting a
+   .doc-tab__list-item wrapper that no longer exists) never matched. */
+.doc-tab[aria-label="API"],
+.doc-tab[href*="/api"] {
   display: none !important;
 }
 
@@ -471,6 +474,23 @@ input[name='url'],
 .cell--slug {
   font-family: 'Roboto Mono', monospace !important;
   font-size: 0.8rem !important;
+}
+
+/* ── Strip remaining Payload chrome ─────────────────────────── */
+
+/* The nav sidebar is permanently empty (EmptyNav), so the hamburger
+   toggle that opens/closes it does nothing useful - hide both the
+   fixed corner toggler and the header's mobile toggler. */
+.template-default__nav-toggler-wrapper,
+.app-header__mobile-nav-toggler {
+  display: none !important;
+}
+
+/* Generic gravatar-style account avatar - not on-brand. The Studio UI's
+   own user menu (top-right of /studio) already covers account/logout,
+   so this is purely redundant chrome. */
+.app-header__account {
+  display: none !important;
 }
 
 /* ── Document edit page readability (TYN-202) ───────────────── */

@@ -105,6 +105,7 @@ export default buildConfig({
       providers: ['./components/admin/ForcePasswordChange#ForcePasswordChange'],
       beforeLogin: ['./components/admin/GoogleSignInButton#GoogleSignInButton'],
       Nav: './components/admin/EmptyNav#EmptyNav',
+      actions: ['./components/admin/BackToStudio#BackToStudio'],
       graphics: {
         Logo: './components/admin/AdminLogo#AdminLogo',
         Icon: './components/admin/AdminIcon#AdminIcon',

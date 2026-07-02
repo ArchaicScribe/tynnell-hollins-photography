@@ -6,6 +6,7 @@
 - **No em dashes (`—`) anywhere** — in code, comments, strings, docs. Use a hyphen, comma, colon, or restructure the sentence.
 - **PowerShell only.** No Git Bash. Bash syntax will error.
 - **Never commit `.env.local`** or any file containing secrets.
+- **Never link, redirect, or route users into the raw Payload admin UI.** The entire point of `/studio`, `/studio-manager`, `/gallery-editor`, `/photo-library`, and `/builder` is to replace Payload's default interface with a custom Pixieset-style experience. Bare `/admin` is intentionally redirected back to `/studio` by `middleware.ts` — this is BY DESIGN, not a bug. Links like "Admin Panel" that point to `/admin` and loop back to `/studio` are correct and must not be "fixed" to deep-link into Payload's own collection list/sidebar. Deep links to specific collection edit views (e.g. `/admin/collections/testimonials/[id]`) inside custom Pixieset-styled grid views (TestimonialsGridView, ServicesGridView, etc.) are fine since Payload still renders the underlying document form — what's off-limits is surfacing Payload's own dashboard, nav sidebar, or list views as a navigation destination. If a collection has no Pixieset-style grid view yet, build one (matching the existing GalleryGridView/TestimonialsGridView/ServicesGridView pattern) rather than sending the user to the stock Payload list.
 
 ---
 

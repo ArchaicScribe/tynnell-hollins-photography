@@ -259,6 +259,16 @@ export function Dashboard() {
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
   const [ordersLoaded, setOrdersLoaded] = useState(false)
   const [firstName, setFirstName] = useState('Tynnell')
+  // Server render has no local clock to match against the visitor's browser, so
+  // start with a neutral greeting and swap in the time-of-day version once
+  // mounted client-side. Calling getGreeting() directly in render caused a
+  // hydration mismatch whenever the hour bucket differed between SSR and
+  // hydration (React error #418, TYN-179).
+  const [greeting, setGreeting] = useState('Welcome')
+
+  useEffect(() => {
+    setGreeting(getGreeting())
+  }, [])
 
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
@@ -319,7 +329,7 @@ export function Dashboard() {
         {/* Greeting */}
         <div style={{ marginBottom: '2.5rem' }}>
           <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.75rem', fontWeight: 700, color: '#e6e1de', fontFamily: ui }}>
-            {getGreeting()}, {firstName}
+            {greeting}, {firstName}
           </h1>
           {oooError && (
             <span
