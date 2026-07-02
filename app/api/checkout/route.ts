@@ -25,7 +25,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 })
   }
 
-  const body = await request.json()
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
   const { packageName, depositAmount, clientName, clientEmail, sessionDate } = body
 
   if (!packageName || !depositAmount || !clientName || !clientEmail || !sessionDate) {
@@ -95,17 +100,23 @@ export async function POST(request: Request) {
   }
 
   // Validate depositAmount against Payload - Payload is the source of truth for pricing
-  const { docs } = await payload.find({
-    collection: 'services',
-    where: {
-      and: [
-        { title: { equals: packageName } },
-        { depositAmount: { exists: true } },
-      ],
-    },
-    depth: 0,
-    limit: 1,
-  })
+  let docs: Array<{ depositAmount?: number | null }>
+  try {
+    ;({ docs } = await payload.find({
+      collection: 'services',
+      where: {
+        and: [
+          { title: { equals: packageName } },
+          { depositAmount: { exists: true } },
+        ],
+      },
+      depth: 0,
+      limit: 1,
+    }))
+  } catch (err) {
+    console.error('[checkout] failed to look up package pricing:', err)
+    return NextResponse.json({ error: 'Failed to create checkout session. Please try again.' }, { status: 500 })
+  }
   const payloadPackage = docs[0] ?? null
 
   if (!payloadPackage) {

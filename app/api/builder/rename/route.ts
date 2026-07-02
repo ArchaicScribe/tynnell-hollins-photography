@@ -27,6 +27,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 })
   }
 
-  await payload.update({ collection: 'pages', id, data: { title: title.trim() } })
+  try {
+    await payload.update({ collection: 'pages', id, data: { title: title.trim() } })
+  } catch (err) {
+    console.error('[builder/rename] failed to rename page:', err)
+    return NextResponse.json({ error: 'Failed to rename page' }, { status: 500 })
+  }
   return NextResponse.json({ ok: true })
 }

@@ -26,7 +26,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
   }
 
-  const body = await req.json() as { slug?: string; password?: string }
+  let body: { slug?: string; password?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
   const { slug, password } = body
 
   if (!slug || !password) {
@@ -34,12 +39,18 @@ export async function POST(req: NextRequest) {
   }
 
   const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'galleries',
-    where: { slug: { equals: slug } },
-    depth: 0,
-    limit: 1,
-  })
+  let docs: unknown[]
+  try {
+    ;({ docs } = await payload.find({
+      collection: 'galleries',
+      where: { slug: { equals: slug } },
+      depth: 0,
+      limit: 1,
+    }))
+  } catch (err) {
+    console.error('[gallery-auth] failed to look up gallery:', err)
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gallery = docs[0] as any

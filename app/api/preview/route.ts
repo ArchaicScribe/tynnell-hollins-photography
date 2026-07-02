@@ -12,8 +12,14 @@ import payloadConfig from '@payload-config'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers: await headers() })
+  let user
+  try {
+    const payload = await getPayload({ config: payloadConfig })
+    ;({ user } = await payload.auth({ headers: await headers() }))
+  } catch (err) {
+    console.error('[preview] auth check failed:', err)
+    return new Response('Internal server error', { status: 500 })
+  }
   if (!user) {
     return new Response('Unauthorized', { status: 401 })
   }

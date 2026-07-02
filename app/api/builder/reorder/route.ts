@@ -24,24 +24,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Bad request' }, { status: 400 })
   }
 
-  const { docs } = await payload.find({ collection: 'pages', sort: 'displayOrder', limit: 1000, depth: 0 })
-  const idx = docs.findIndex((d) => String(d.id) === String(id))
-  if (idx === -1) {
-    return NextResponse.json({ error: 'Page not found' }, { status: 404 })
+  try {
+    const { docs } = await payload.find({ collection: 'pages', sort: 'displayOrder', limit: 1000, depth: 0 })
+    const idx = docs.findIndex((d) => String(d.id) === String(id))
+    if (idx === -1) {
+      return NextResponse.json({ error: 'Page not found' }, { status: 404 })
+    }
+
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= docs.length) {
+      return NextResponse.json({ ok: true }) // already at the edge
+    }
+
+    const a = docs[idx]
+    const b = docs[swapIdx]
+    const aOrder = typeof a.displayOrder === 'number' ? a.displayOrder : idx
+    const bOrder = typeof b.displayOrder === 'number' ? b.displayOrder : swapIdx
+
+    await payload.update({ collection: 'pages', id: a.id, data: { displayOrder: bOrder } })
+    await payload.update({ collection: 'pages', id: b.id, data: { displayOrder: aOrder } })
+  } catch (err) {
+    console.error('[builder/reorder] failed to reorder pages:', err)
+    return NextResponse.json({ error: 'Failed to reorder pages' }, { status: 500 })
   }
-
-  const swapIdx = direction === 'up' ? idx - 1 : idx + 1
-  if (swapIdx < 0 || swapIdx >= docs.length) {
-    return NextResponse.json({ ok: true }) // already at the edge
-  }
-
-  const a = docs[idx]
-  const b = docs[swapIdx]
-  const aOrder = typeof a.displayOrder === 'number' ? a.displayOrder : idx
-  const bOrder = typeof b.displayOrder === 'number' ? b.displayOrder : swapIdx
-
-  await payload.update({ collection: 'pages', id: a.id, data: { displayOrder: bOrder } })
-  await payload.update({ collection: 'pages', id: b.id, data: { displayOrder: aOrder } })
 
   return NextResponse.json({ ok: true })
 }

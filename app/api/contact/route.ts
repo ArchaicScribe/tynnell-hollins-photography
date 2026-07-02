@@ -18,7 +18,12 @@ export async function POST(request: Request) {
   if (!isAllowedOrigin(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
-  const body = await request.json()
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
   const { name, email, phone, contactPreference, sessionType, date, location, message, howHeard } = body
 
   const { success } = await safeLimit(contactRatelimit, getClientIp(request))

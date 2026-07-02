@@ -24,64 +24,69 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const payload = await getPayload({ config })
-  const availability = await payload.findGlobal({ slug: 'availability' })
-  const ranges = availability.blockedRanges
+  try {
+    const payload = await getPayload({ config })
+    const availability = await payload.findGlobal({ slug: 'availability' })
+    const ranges = availability.blockedRanges
 
-  if (!Array.isArray(ranges) || ranges.length === 0) {
-    return NextResponse.json({ sent: 0 })
-  }
-
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  let sent = 0
-  const updatedRanges = ranges.map((range) => ({ ...range }))
-
-  for (let i = 0; i < ranges.length; i++) {
-    const range = ranges[i]
-    if (!range.startDate || !range.endDate) continue
-    if (range.notificationSent) continue
-
-    const end = new Date(range.endDate)
-    const bufferDays = range.applyReturnBuffer !== false ? (range.returnBufferDays ?? 2) : 0
-    const returnDate = new Date(end)
-    returnDate.setDate(returnDate.getDate() + bufferDays)
-    returnDate.setHours(0, 0, 0, 0)
-
-    if (today.getTime() !== returnDate.getTime()) continue
-
-    const returnDateStr = returnDate.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
-
-    const result = await resend.emails.send({
-      from: EMAIL_FROM,
-      to: process.env.CONTACT_TO_EMAIL ?? CONTACT_EMAIL,
-      subject: `You're back: ${range.internalLabel ?? 'OOO period'} has ended`,
-      html: oooReturnNotificationEmailHtml({
-        internalLabel: range.internalLabel ?? 'OOO period',
-        returnDate: returnDateStr,
-      }),
-    })
-
-    if (result.error) {
-      console.error('[cron/ooo-return-notify] email send failed:', JSON.stringify(result.error))
-      continue
+    if (!Array.isArray(ranges) || ranges.length === 0) {
+      return NextResponse.json({ sent: 0 })
     }
 
-    updatedRanges[i] = { ...updatedRanges[i], notificationSent: true }
-    sent++
-  }
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
-  if (sent > 0) {
-    await payload.updateGlobal({
-      slug: 'availability',
-      data: { blockedRanges: updatedRanges },
-    })
-  }
+    let sent = 0
+    const updatedRanges = ranges.map((range) => ({ ...range }))
 
-  return NextResponse.json({ sent })
+    for (let i = 0; i < ranges.length; i++) {
+      const range = ranges[i]
+      if (!range.startDate || !range.endDate) continue
+      if (range.notificationSent) continue
+
+      const end = new Date(range.endDate)
+      const bufferDays = range.applyReturnBuffer !== false ? (range.returnBufferDays ?? 2) : 0
+      const returnDate = new Date(end)
+      returnDate.setDate(returnDate.getDate() + bufferDays)
+      returnDate.setHours(0, 0, 0, 0)
+
+      if (today.getTime() !== returnDate.getTime()) continue
+
+      const returnDateStr = returnDate.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+
+      const result = await resend.emails.send({
+        from: EMAIL_FROM,
+        to: process.env.CONTACT_TO_EMAIL ?? CONTACT_EMAIL,
+        subject: `You're back: ${range.internalLabel ?? 'OOO period'} has ended`,
+        html: oooReturnNotificationEmailHtml({
+          internalLabel: range.internalLabel ?? 'OOO period',
+          returnDate: returnDateStr,
+        }),
+      })
+
+      if (result.error) {
+        console.error('[cron/ooo-return-notify] email send failed:', JSON.stringify(result.error))
+        continue
+      }
+
+      updatedRanges[i] = { ...updatedRanges[i], notificationSent: true }
+      sent++
+    }
+
+    if (sent > 0) {
+      await payload.updateGlobal({
+        slug: 'availability',
+        data: { blockedRanges: updatedRanges },
+      })
+    }
+
+    return NextResponse.json({ sent })
+  } catch (err) {
+    console.error('[cron/ooo-return-notify] unhandled error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

@@ -39,20 +39,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No valid flags provided' }, { status: 400 })
   }
 
-  // Enforce a single homepage: clear the flag everywhere else first.
-  if (data.isHomepage === true) {
-    const others = await payload.find({
-      collection: 'pages',
-      where: { and: [{ isHomepage: { equals: true } }, { id: { not_equals: id } }] },
-      limit: 100,
-      depth: 0,
-    })
-    for (const other of others.docs) {
-      await payload.update({ collection: 'pages', id: other.id, data: { isHomepage: false } })
+  try {
+    // Enforce a single homepage: clear the flag everywhere else first.
+    if (data.isHomepage === true) {
+      const others = await payload.find({
+        collection: 'pages',
+        where: { and: [{ isHomepage: { equals: true } }, { id: { not_equals: id } }] },
+        limit: 100,
+        depth: 0,
+      })
+      for (const other of others.docs) {
+        await payload.update({ collection: 'pages', id: other.id, data: { isHomepage: false } })
+      }
     }
-  }
 
-  await payload.update({ collection: 'pages', id, data })
+    await payload.update({ collection: 'pages', id, data })
+  } catch (err) {
+    console.error('[builder/settings] failed to update page flags:', err)
+    return NextResponse.json({ error: 'Failed to update page' }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true })
 }

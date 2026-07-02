@@ -27,19 +27,24 @@ export async function POST(request: Request) {
   }
 
   let slug = `${src.slug}-copy`
-  const existing = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, depth: 0 })
-  if (existing.docs.length > 0) slug = `${slug}-${String(Date.now()).slice(-5)}`
+  try {
+    const existing = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, depth: 0 })
+    if (existing.docs.length > 0) slug = `${slug}-${String(Date.now()).slice(-5)}`
 
-  await payload.create({
-    collection: 'pages',
-    data: {
-      title: `Copy of ${src.title}`,
-      slug,
-      content: src.content ?? { content: [], root: {} },
-      published: false,
-      displayOrder: Date.now(),
-    },
-  })
+    await payload.create({
+      collection: 'pages',
+      data: {
+        title: `Copy of ${src.title}`,
+        slug,
+        content: src.content ?? { content: [], root: {} },
+        published: false,
+        displayOrder: Date.now(),
+      },
+    })
+  } catch (err) {
+    console.error('[builder/duplicate] failed to duplicate page:', err)
+    return NextResponse.json({ error: 'Failed to duplicate page' }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true, slug })
 }

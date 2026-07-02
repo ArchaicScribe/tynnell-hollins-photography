@@ -32,18 +32,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing builder data' }, { status: 400 })
   }
 
-  const { docs } = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, depth: 0 })
-  const page = docs[0]
-  if (!page) {
-    return NextResponse.json({ error: 'Page not found' }, { status: 404 })
-  }
+  try {
+    const { docs } = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, depth: 0 })
+    const page = docs[0]
+    if (!page) {
+      return NextResponse.json({ error: 'Page not found' }, { status: 404 })
+    }
 
-  await payload.update({
-    collection: 'pages',
-    id: page.id,
-    // Save draft leaves `published` untouched; Publish sets it true.
-    data: publish ? { content: data, published: true } : { content: data },
-  })
+    await payload.update({
+      collection: 'pages',
+      id: page.id,
+      // Save draft leaves `published` untouched; Publish sets it true.
+      data: publish ? { content: data, published: true } : { content: data },
+    })
+  } catch (err) {
+    console.error('[builder/save] failed to save page:', err)
+    return NextResponse.json({ error: 'Failed to save page' }, { status: 500 })
+  }
 
   try {
     revalidatePath(`/${slug}`)

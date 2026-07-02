@@ -12,7 +12,13 @@ export async function GET(req: NextRequest) {
   if (!key || key.startsWith('placeholder')) return NextResponse.json({ orders: [] })
 
   const stripe = new Stripe(key)
-  const sessions = await stripe.checkout.sessions.list({ limit: 20 })
+  let sessions
+  try {
+    sessions = await stripe.checkout.sessions.list({ limit: 20 })
+  } catch (err) {
+    console.error('[admin/recent-orders] Stripe session list failed:', err)
+    return NextResponse.json({ orders: [] })
+  }
 
   const orders = sessions.data
     .filter(s => s.payment_status === 'paid')
