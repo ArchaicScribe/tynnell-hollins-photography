@@ -66,6 +66,7 @@ export function PhotoPickerField({
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const headingId = `photo-picker-heading-${fieldPath}`
 
   const fetchPhotos = useCallback((cat: string, q: string, pg: number) => {
@@ -102,18 +103,23 @@ export function PhotoPickerField({
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [search])
 
+  const closePicker = useCallback(() => {
+    setOpen(false)
+    triggerRef.current?.focus()
+  }, [])
+
   useEffect(() => {
     if (!open) return
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') closePicker() }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [open])
+  }, [open, closePicker])
 
   const openPicker = useCallback(() => {
     setCatFilter('all'); setSearch(''); setDebouncedSearch(''); setPage(1); setOpen(true)
   }, [])
 
-  const selectPhoto = (photo: PhotoDoc) => { setValue(photo); setOpen(false) }
+  const selectPhoto = (photo: PhotoDoc) => { setValue(photo); closePicker() }
   const changeCategory = (cat: string) => { setCatFilter(cat); setPage(1) }
 
   const btnStyle: React.CSSProperties = {
@@ -141,11 +147,11 @@ export function PhotoPickerField({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={current.url} alt={current.alt ?? current.filename ?? label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : (
-            <span style={{ fontSize: '1.5rem', color: 'rgba(155,154,154,0.35)' }}>&#128247;</span>
+            <span style={{ fontSize: '1.5rem', color: '#9b9a9a' }}>&#128247;</span>
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-          <button type="button" onClick={openPicker} style={btnStyle}>
+          <button ref={triggerRef} type="button" onClick={openPicker} style={btnStyle}>
             {current ? `Change ${label}` : `Choose ${label}`}
           </button>
           {current?.filename && (
@@ -169,7 +175,7 @@ export function PhotoPickerField({
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <span style={{ fontSize: '0.72rem', color: '#9b9a9a' }}>Click a photo to select it</span>
-                <button type="button" onClick={() => setOpen(false)} style={{ cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', borderRadius: '4px', border: '1px solid rgba(155,154,154,0.25)', background: 'transparent', color: '#9b9a9a', padding: '0.38rem 0.8rem' }}>
+                <button type="button" onClick={closePicker} style={{ cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.78rem', borderRadius: '4px', border: '1px solid rgba(155,154,154,0.25)', background: 'transparent', color: '#9b9a9a', padding: '0.38rem 0.8rem' }}>
                   Cancel
                 </button>
               </div>

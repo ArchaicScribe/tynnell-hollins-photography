@@ -10,7 +10,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { GalleryViewer, type LightboxPhoto } from './GalleryViewer'
 import { GalleryPasswordGate } from './GalleryPasswordGate'
-import { DownloadAllButton } from './DownloadButton'
+import { DownloadAllButtonLoader as DownloadAllButton } from './DownloadButtonLoader'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'

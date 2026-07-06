@@ -1,9 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const ui = "'Archivo', system-ui, sans-serif"
 
 export function InviteUserModal() {
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -24,6 +25,7 @@ export function InviteUserModal() {
     setEmail('')
     setError('')
     setSuccess(false)
+    triggerRef.current?.focus()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,6 +55,7 @@ export function InviteUserModal() {
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         style={{

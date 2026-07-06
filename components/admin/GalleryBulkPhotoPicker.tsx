@@ -46,6 +46,8 @@ export function GalleryBulkPhotoPicker() {
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const wasOpenRef = useRef(false)
 
   // IDs already in this gallery
   const currentIds = new Set(
@@ -123,6 +125,14 @@ export function GalleryBulkPhotoPicker() {
   }
 
   useEffect(() => {
+    // The trigger button unmounts while the modal is open (see the `!open`
+    // early return below), so its ref is only live again after this closing
+    // render commits - focus it here rather than at each setOpen(false) call site.
+    if (wasOpenRef.current && !open) triggerRef.current?.focus()
+    wasOpenRef.current = open
+  }, [open])
+
+  useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
     document.addEventListener('keydown', handler)
@@ -144,7 +154,7 @@ export function GalleryBulkPhotoPicker() {
   if (!open) {
     return (
       <div style={{ paddingBottom: '0.25rem' }}>
-        <button type="button" onClick={openPicker} style={{ ...btnBase, background: 'rgba(155,154,154,0.08)' }}>
+        <button ref={triggerRef} type="button" onClick={openPicker} style={{ ...btnBase, background: 'rgba(155,154,154,0.08)' }}>
           + Add Multiple Photos
         </button>
       </div>
@@ -215,7 +225,7 @@ export function GalleryBulkPhotoPicker() {
                 ...btnBase,
                 background: selected.size > 0 ? 'rgba(155,154,154,0.18)' : 'transparent',
                 border: `1px solid ${selected.size > 0 ? 'rgba(155,154,154,0.35)' : 'rgba(155,154,154,0.12)'}`,
-                color: selected.size > 0 ? '#d6d1ce' : 'rgba(155,154,154,0.35)',
+                color: selected.size > 0 ? '#d6d1ce' : '#9b9a9a',
                 cursor: selected.size > 0 ? 'pointer' : 'default',
                 fontWeight: selected.size > 0 ? 500 : 400,
               }}

@@ -180,6 +180,16 @@ export function ProjectsKanbanView() {
     else { setSortField(field); setSortDir('asc') }
   }
 
+  const sortHeaderProps = (field: SortField) => ({
+    role: 'button' as const,
+    tabIndex: 0,
+    'aria-sort': (sortField === field ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none') as React.AriaAttributes['aria-sort'],
+    onClick: () => toggleSort(field),
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSort(field) }
+    },
+  })
+
   const tabBtnStyle = (active: boolean): React.CSSProperties => ({
     padding: '0.45rem 0.9rem',
     fontSize: '0.8rem',
@@ -338,14 +348,14 @@ export function ProjectsKanbanView() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                  <th style={thStyle} onClick={() => toggleSort('clientName')}>
+                  <th style={thStyle} {...sortHeaderProps('clientName')}>
                     Client {sortField === 'clientName' && (sortDir === 'asc' ? '↑' : '↓')}
                   </th>
                   <th style={thStyle}>Project Type</th>
-                  <th style={thStyle} onClick={() => toggleSort('status')}>
+                  <th style={thStyle} {...sortHeaderProps('status')}>
                     Status {sortField === 'status' && (sortDir === 'asc' ? '↑' : '↓')}
                   </th>
-                  <th style={thStyle} onClick={() => toggleSort('projectDate')}>
+                  <th style={thStyle} {...sortHeaderProps('projectDate')}>
                     Date {sortField === 'projectDate' && (sortDir === 'asc' ? '↑' : '↓')}
                   </th>
                   <th style={thStyle}>Payments</th>
