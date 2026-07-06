@@ -1,14 +1,14 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { draftMode } from 'next/headers'
 import Link from 'next/link'
 import Image from 'next/image'
-import { RichText } from '@payloadcms/richtext-lexical/react'
-import type { SerializedEditorState } from 'lexical'
+import { Render } from '@measured/puck/rsc'
+import type { Data } from '@measured/puck'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { blogBlocksConfig } from '@/app/blog-editor/blog-blocks.config'
 import styles from './page.module.css'
 
 // Post content rarely changes once published - revalidate every 2 minutes for fresh edits
@@ -59,14 +59,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params
   const payload = await getPayload({ config })
-  const { isEnabled: isPreview } = await draftMode()
 
   const [{ docs }, { docs: relatedDocs }] = await Promise.all([
     payload.find({
       collection: 'posts',
-      where: isPreview
-        ? { slug: { equals: slug } }
-        : { and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }] },
+      where: { and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }] },
       depth: 1,
       limit: 1,
     }),
@@ -165,9 +162,7 @@ export default async function BlogPostPage({ params }: Props) {
       <article className={styles.article} aria-labelledby="post-heading">
         {post.excerpt && <p className={styles.excerpt}>{post.excerpt}</p>}
         {post.body && (
-          <div className={styles.body}>
-            <RichText data={post.body as SerializedEditorState} />
-          </div>
+          <Render config={blogBlocksConfig} data={(post.body as Data) ?? { content: [], root: {} }} />
         )}
       </article>
 

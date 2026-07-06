@@ -23,6 +23,7 @@ export function middleware(request: NextRequest) {
   // The page builder is admin-only and auth-gated, so let it through during
   // Coming Soon mode (same as /admin) instead of rewriting it to /coming-soon.
   if (pathname.startsWith('/builder')) return NextResponse.next()
+  if (pathname.startsWith('/blog-editor')) return NextResponse.next()
   if (pathname.startsWith('/api')) return NextResponse.next()
   if (pathname.startsWith('/book')) return NextResponse.next()
   if (pathname.startsWith('/_next')) return NextResponse.next()

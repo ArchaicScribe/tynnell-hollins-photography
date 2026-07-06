@@ -43,3 +43,27 @@
 .puck-dark textarea::placeholder {
   color: #6b6a6a;
 }
+
+/* Puck's default layout is a header/sidebar/preview CSS grid sized against a
+ * fixed-height ancestor (see app/builder/[slug]/EditorClient.tsx's
+ * height: 100vh wrapper). When Puck's `children` prop is used instead of its
+ * default layout (as the blog editor's body-only canvas does), that grid
+ * never applies, so .Puck and everything under it falls back to block/auto
+ * height and PuckPreview's `height: 100%` resolves to 0. Forcing a flex
+ * chain down to the preview frame makes the 100% actually mean something.
+ */
+.blog-body-puck {
+  display: flex;
+  flex-direction: column;
+}
+.blog-body-puck > .Puck,
+.blog-body-puck > .Puck > div:first-child {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.blog-body-puck [class*="PuckPreview_"] {
+  flex: 1 1 auto;
+  min-height: 0;
+}

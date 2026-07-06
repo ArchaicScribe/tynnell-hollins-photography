@@ -86,14 +86,9 @@ export default buildConfig({
             ? `/portfolio/${data.slug}`
             : '/portfolio'
         }
-        if (collectionConfig?.slug === 'posts') {
-          return typeof data?.slug === 'string' && data.slug
-            ? `/api/preview?slug=${data.slug}`
-            : '/blog'
-        }
         return '/'
       },
-      collections: ['galleries', 'posts'],
+      collections: ['galleries'],
       globals: ['about-page'],
       breakpoints: [
         { label: 'Mobile', name: 'mobile', width: 390, height: 844 },

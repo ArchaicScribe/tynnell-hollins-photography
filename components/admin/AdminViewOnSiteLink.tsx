@@ -5,8 +5,7 @@ import React from 'react'
  * Shared presentational "View on Site" link for admin edit views.
  * Galleries, the About page, and Photos each render this with their own URL
  * and label; keeping the styling in one place avoids duplicating ~50 lines of
- * inline styles across every content type. (PostViewOnSiteButton predates this
- * and keeps its own copy for now.)
+ * inline styles across every content type.
  */
 export function AdminViewOnSiteLink({
   url,

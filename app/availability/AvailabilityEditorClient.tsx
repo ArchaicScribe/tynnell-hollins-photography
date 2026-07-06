@@ -36,7 +36,7 @@ interface FormData {
 const SWITCHER = [
   { label: 'Portfolio', desc: 'Manage galleries and photos', color: '#0d9488', href: '/gallery-editor', icon: '📷' },
   { label: 'Website', desc: 'Build your portfolio website', color: '#2563eb', href: '/builder', icon: '🌐' },
-  { label: 'Blog', desc: 'Write and publish posts', color: '#7c3aed', href: '/admin/collections/posts', icon: '✍️' },
+  { label: 'Blog', desc: 'Write and publish posts', color: '#7c3aed', href: '/blog-editor', icon: '✍️' },
   { label: 'Bookings', desc: 'Services and availability', color: '#b45309', href: '/availability', icon: '📅' },
   { label: 'Testimonials', desc: 'Client reviews', color: '#059669', href: '/admin/collections/testimonials', icon: '💬' },
   { label: 'Studio', desc: 'Settings and users', color: '#475569', href: '/admin/globals/site-config', icon: '⚙️' },

@@ -255,8 +255,8 @@ function NavPageRow({
             }}
           >
             {[
-              { label: 'All Posts', action: () => { window.location.href = '/admin/collections/posts' } },
-              { label: 'New Post', action: () => { window.location.href = '/admin/collections/posts/create' } },
+              { label: 'All Posts', action: () => { window.location.href = '/blog-editor' } },
+              { label: 'New Post', action: () => { window.location.href = '/blog-editor/new' } },
             ].map(menuItem => (
               <button
                 key={menuItem.label} type="button"
@@ -485,7 +485,7 @@ function NewPageModal({ onClose }: { onClose: () => void }) {
 const SWITCHER_ITEMS = [
   { label: 'Portfolio',     desc: 'Galleries and photos',    href: '/builder?product=portfolio',         color: '#0d9488' },
   { label: 'Website',       desc: 'Pages and content',       href: '/builder',                           color: '#2563eb', active: true },
-  { label: 'Blog',          desc: 'Posts and articles',      href: '/admin/collections/posts',           color: '#7c3aed' },
+  { label: 'Blog',          desc: 'Posts and articles',      href: '/blog-editor',                       color: '#7c3aed' },
   { label: 'Bookings',      desc: 'Services and availability', href: '/availability',                   color: '#b45309' },
   { label: 'Testimonials',  desc: 'Client reviews',          href: '/admin/collections/testimonials',    color: '#059669' },
   { label: 'Studio',        desc: 'Site settings',           href: '/admin',                             color: '#475569' },
@@ -800,8 +800,8 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
               <p style={{ margin: '0 0 0.75rem', fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#e0dcd8' }}>Blog</p>
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               {[
-                { label: 'All Posts',  href: '/admin/collections/posts'        },
-                { label: 'New Post',   href: '/admin/collections/posts/create' },
+                { label: 'All Posts',  href: '/blog-editor'     },
+                { label: 'New Post',   href: '/blog-editor/new' },
               ].map(item => (
                 <a key={item.href} href={item.href}
                   style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 7, color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.83rem' }}

@@ -476,8 +476,8 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       color: '#7c3aed',
       icon: <BlogIcon />,
       links: [
-        { label: 'All Posts', href: '/admin/collections/posts' },
-        { label: 'New Post', href: '/admin/collections/posts/create' },
+        { label: 'All Posts', href: '/blog-editor' },
+        { label: 'New Post', href: '/blog-editor/new' },
         { label: 'View Blog', href: 'https://tynnellhollinsphotography.com/blog', external: true },
       ],
     },

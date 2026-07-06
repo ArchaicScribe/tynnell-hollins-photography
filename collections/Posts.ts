@@ -1,6 +1,5 @@
 import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { revalidatePath } from 'next/cache'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 function toSlug(str: string): string {
   return str
@@ -41,28 +40,13 @@ export const Posts: CollectionConfig = {
     afterChange: [revalidatePost],
   },
   admin: {
-    group: 'Content',
     useAsTitle: 'title',
-    description: 'Your blog posts, shown on the Blog page and individual post pages.',
-    defaultColumns: ['coverImage', 'title', 'status', 'publishedAt', 'updatedAt'],
-    components: {
-      views: {
-        list: {
-          Component: './components/admin/PostGridView#PostGridView',
-        },
-      },
-    },
+    // Managed entirely via /blog-editor now (see app/blog-editor/) - hidden
+    // from the Payload admin nav the same way Pages.ts hides the builder's
+    // own collection.
+    hidden: true,
   },
   fields: [
-    {
-      name: 'editHeader',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: './components/admin/PostEditHeader#PostEditHeader',
-        },
-      },
-    },
     {
       name: 'title',
       type: 'text',
@@ -82,16 +66,6 @@ export const Posts: CollectionConfig = {
       admin: {
         description:
           'Auto-generated from the title - you do not need to set this. Edit here only if you want a custom web address. Use lowercase letters and hyphens only.',
-      },
-    },
-    {
-      name: 'viewOnSite',
-      type: 'ui',
-      admin: {
-        position: 'sidebar',
-        components: {
-          Field: './components/admin/PostViewOnSiteButton#PostViewOnSiteButton',
-        },
       },
     },
     {
@@ -131,10 +105,6 @@ export const Posts: CollectionConfig = {
       admin: {
         description:
           'The main photo for this post, shown at the top of the post and on the blog listing page.',
-        components: {
-          Field: './components/admin/PostCoverPicker#PostCoverPicker',
-          Cell: './components/admin/PostCoverCell#PostCoverCell',
-        },
       },
     },
     {
@@ -164,12 +134,16 @@ export const Posts: CollectionConfig = {
       },
     },
     {
+      // Puck-style block document (see app/blog-editor/blog-blocks.config.tsx),
+      // matching the same { content: Block[], root: object } shape the Pages
+      // collection uses for its own builder content. Only ever written by
+      // /api/blog-editor/save - hidden here since the in-context editor at
+      // /blog-editor/[slug] is the only place this gets edited.
       name: 'body',
-      type: 'richText',
+      type: 'json',
       label: 'Post Content',
-      editor: lexicalEditor(),
       admin: {
-        description: 'The full content of your blog post.',
+        hidden: true,
       },
     },
   ],

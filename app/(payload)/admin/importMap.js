@@ -11,10 +11,11 @@ import { GalleryPhotoArranger as GalleryPhotoArranger_4f7a56c3214650ac93f2acac36
 import { GalleryGridView as GalleryGridView_694fcc37683b7c53f35803e850250b41 } from '../../../components/admin/GalleryGridView'
 import { TestimonialsGridView as TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3 } from '../../../components/admin/TestimonialsGridView'
 import { ServicesGridView as ServicesGridView_f8436fdecdb227662e953e6db61537d6 } from '../../../components/admin/ServicesGridView'
-import { PostEditHeader as PostEditHeader_cb79679928a2d7877ab3f326ae6ee767 } from '../../../components/admin/PostEditHeader'
-import { PostViewOnSiteButton as PostViewOnSiteButton_1ab6c780b568dfb07e054eff657fabe1 } from '../../../components/admin/PostViewOnSiteButton'
-import { PostCoverCell as PostCoverCell_4b9dc1d31737dde9d4508c8875a9c5cd } from '../../../components/admin/PostCoverCell'
-import { PostCoverPicker as PostCoverPicker_51a0ae71331796fdb5f74245989f7a01 } from '../../../components/admin/PostCoverPicker'
+import { SessionRowLabel as SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc } from '../../../collections/Projects/SessionRowLabel'
+import { PaymentRowLabel as PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5 } from '../../../collections/Projects/PaymentRowLabel'
+import { DocumentRowLabel as DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c } from '../../../collections/Projects/DocumentRowLabel'
+import { ProjectsKanbanView as ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0 } from '../../../components/admin/ProjectsKanbanView'
+import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe } from '../../../components/admin/AboutViewOnSiteButton'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -38,12 +39,6 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { PostGridView as PostGridView_14ec513780a751f079162e3480e8024b } from '../../../components/admin/PostGridView'
-import { SessionRowLabel as SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc } from '../../../collections/Projects/SessionRowLabel'
-import { PaymentRowLabel as PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5 } from '../../../collections/Projects/PaymentRowLabel'
-import { DocumentRowLabel as DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c } from '../../../collections/Projects/DocumentRowLabel'
-import { ProjectsKanbanView as ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0 } from '../../../components/admin/ProjectsKanbanView'
-import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe } from '../../../components/admin/AboutViewOnSiteButton'
 import { OooWarnings as OooWarnings_24882b9d221e8df452e06e4f5a939af9 } from '../../../components/admin/OooWarnings'
 import { EmptyNav as EmptyNav_82b891e66c2c3695aa54244888ed30ee } from '../../../components/admin/EmptyNav'
 import { AdminIcon as AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c } from '../../../components/admin/AdminIcon'
@@ -70,10 +65,11 @@ export const importMap = {
   "./components/admin/GalleryGridView#GalleryGridView": GalleryGridView_694fcc37683b7c53f35803e850250b41,
   "./components/admin/TestimonialsGridView#TestimonialsGridView": TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3,
   "./components/admin/ServicesGridView#ServicesGridView": ServicesGridView_f8436fdecdb227662e953e6db61537d6,
-  "./components/admin/PostEditHeader#PostEditHeader": PostEditHeader_cb79679928a2d7877ab3f326ae6ee767,
-  "./components/admin/PostViewOnSiteButton#PostViewOnSiteButton": PostViewOnSiteButton_1ab6c780b568dfb07e054eff657fabe1,
-  "./components/admin/PostCoverCell#PostCoverCell": PostCoverCell_4b9dc1d31737dde9d4508c8875a9c5cd,
-  "./components/admin/PostCoverPicker#PostCoverPicker": PostCoverPicker_51a0ae71331796fdb5f74245989f7a01,
+  "./collections/Projects/SessionRowLabel#SessionRowLabel": SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc,
+  "./collections/Projects/PaymentRowLabel#PaymentRowLabel": PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5,
+  "./collections/Projects/DocumentRowLabel#DocumentRowLabel": DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c,
+  "./components/admin/ProjectsKanbanView#ProjectsKanbanView": ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0,
+  "./components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton": AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -97,12 +93,6 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "./components/admin/PostGridView#PostGridView": PostGridView_14ec513780a751f079162e3480e8024b,
-  "./collections/Projects/SessionRowLabel#SessionRowLabel": SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc,
-  "./collections/Projects/PaymentRowLabel#PaymentRowLabel": PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5,
-  "./collections/Projects/DocumentRowLabel#DocumentRowLabel": DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c,
-  "./components/admin/ProjectsKanbanView#ProjectsKanbanView": ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0,
-  "./components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton": AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe,
   "./components/admin/OooWarnings#OooWarnings": OooWarnings_24882b9d221e8df452e06e4f5a939af9,
   "./components/admin/EmptyNav#EmptyNav": EmptyNav_82b891e66c2c3695aa54244888ed30ee,
   "./components/admin/AdminIcon#AdminIcon": AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c,
