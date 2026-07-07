@@ -81,6 +81,11 @@ export default async function RootLayout({
         <Navbar builderLinks={builderLinks} />
         <div id="main-content" tabIndex={-1}>{children}</div>
         <Footer />
+        {/* No consent gate (TYN-27, investigated): Vercel Web Analytics and Speed
+            Insights are cookieless by design - no persistent identifiers, no
+            cross-site tracking, no PII collected - so no GDPR consent banner
+            is required for this specific tooling. Revisit if any future
+            analytics tool is added that does use cookies/fingerprinting. */}
         <Analytics />
         <SpeedInsights />
       </body>
