@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { requireBuilderUser } from '@/app/lib/builderAuth'
 
 // Rename a builder page's display title (TYN-223). Auth-gated. The slug is
@@ -28,7 +29,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    await payload.update({ collection: 'pages', id, data: { title: title.trim() } })
+    const page = await payload.update({ collection: 'pages', id, data: { title: title.trim() } })
+    // The public page's <title> comes from this field (TYN-231) and it now
+    // uses ISR (TYN-290), so invalidate the cached render immediately.
+    if (page?.slug) revalidatePath(`/${page.slug}`)
   } catch (err) {
     console.error('[builder/rename] failed to rename page:', err)
     return NextResponse.json({ error: 'Failed to rename page' }, { status: 500 })

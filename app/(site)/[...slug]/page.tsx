@@ -12,7 +12,12 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 // route precedence gives static and specific dynamic routes priority over this
 // catch-all, so existing pages are never shadowed. Unknown/unpublished slugs
 // fall through to notFound().
-export const dynamic = 'force-dynamic'
+//
+// ISR instead of force-dynamic (TYN-290): this page has no cookie/session
+// logic, unlike the gallery pages. The builder's save/delete/rename routes
+// call revalidatePath for the affected slug, so edits go live immediately;
+// the 120s window (matching the homepage's ISR interval) is just a backstop.
+export const revalidate = 120
 
 // cache() dedupes the lookup across generateMetadata + the page body within a
 // single request render, so a published-page view hits the DB once, not twice.

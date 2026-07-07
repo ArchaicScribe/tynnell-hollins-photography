@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { requireBuilderUser } from '@/app/lib/builderAuth'
 
 // Delete a builder page (TYN-219). Auth-gated.
@@ -22,7 +23,12 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Read the slug before deleting - the public page now uses ISR (TYN-290),
+    // so a deleted page's cached render must be explicitly invalidated or it
+    // would keep serving until the 120s window lapses.
+    const page = await payload.findByID({ collection: 'pages', id, depth: 0 }).catch(() => null)
     await payload.delete({ collection: 'pages', id })
+    if (page?.slug) revalidatePath(`/${page.slug}`)
   } catch (err) {
     console.error('[builder/delete] failed to delete page:', err)
     return NextResponse.json({ error: 'Failed to delete page' }, { status: 500 })
