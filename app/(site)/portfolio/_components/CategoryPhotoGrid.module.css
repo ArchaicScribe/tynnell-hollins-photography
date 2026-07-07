@@ -21,6 +21,40 @@
   transform: scale(1.03);
 }
 
+.loadMoreRow {
+  display: flex;
+  justify-content: center;
+  padding: 3rem var(--padding-x);
+}
+
+.loadMore {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  padding-bottom: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.loadMore::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: currentColor;
+}
+
+.loadMore:hover {
+  color: var(--color-detail);
+}
+
 .emptySection {
   max-width: 520px;
   margin: 5rem auto 6rem;

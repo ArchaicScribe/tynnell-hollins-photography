@@ -31,16 +31,25 @@ const NAV_BTN: React.CSSProperties = {
   backdropFilter: 'blur(4px)',
 }
 
+// Matches Pixieset's category grid: an initial batch with a plain "Load More"
+// link to reveal the rest, rather than rendering the full (sometimes 100+
+// photo) gallery in one long scroll.
+const PAGE_SIZE = 12
+
 export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] }) {
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [imgLoading, setImgLoading] = useState(false)
   const touchStartX = useRef<number | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
 
+  const visiblePhotos = photos.slice(0, visibleCount)
+  const hasMore = visibleCount < photos.length
+
   const closeLightbox = useCallback(() => setLightboxIdx(null), [])
-  const prevPhoto = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null) }, [photos.length])
-  const nextPhoto = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % photos.length : null) }, [photos.length])
+  const prevPhoto = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + visiblePhotos.length) % visiblePhotos.length : null) }, [visiblePhotos.length])
+  const nextPhoto = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % visiblePhotos.length : null) }, [visiblePhotos.length])
 
   const openPhoto = useCallback((i: number) => {
     previousFocusRef.current = document.activeElement as HTMLElement
@@ -66,15 +75,15 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
   }, [lightboxIdx, closeLightbox, prevPhoto, nextPhoto])
 
   useEffect(() => {
-    if (lightboxIdx === null || photos.length < 2) return
-    const adjacentIdxs = [(lightboxIdx + 1) % photos.length, (lightboxIdx - 1 + photos.length) % photos.length]
+    if (lightboxIdx === null || visiblePhotos.length < 2) return
+    const adjacentIdxs = [(lightboxIdx + 1) % visiblePhotos.length, (lightboxIdx - 1 + visiblePhotos.length) % visiblePhotos.length]
     adjacentIdxs.forEach(i => {
-      const url = photos[i]?.fullUrl ?? photos[i]?.imageUrl
+      const url = visiblePhotos[i]?.fullUrl ?? visiblePhotos[i]?.imageUrl
       if (url) { const img = new window.Image(); img.src = url }
     })
-  }, [lightboxIdx, photos])
+  }, [lightboxIdx, visiblePhotos])
 
-  const currentPhoto = lightboxIdx !== null ? photos[lightboxIdx] : null
+  const currentPhoto = lightboxIdx !== null ? visiblePhotos[lightboxIdx] : null
 
   if (!photos.length) {
     return (
@@ -93,7 +102,7 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
   return (
     <>
       <div className={styles.grid}>
-        {photos.map((photo, i) =>
+        {visiblePhotos.map((photo, i) =>
           photo.imageUrl ? (
             <div
               key={photo.id}
@@ -116,11 +125,23 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
         )}
       </div>
 
+      {hasMore && (
+        <div className={styles.loadMoreRow}>
+          <button
+            type="button"
+            className={styles.loadMore}
+            onClick={() => setVisibleCount(c => Math.min(c + PAGE_SIZE, photos.length))}
+          >
+            Load More
+          </button>
+        </div>
+      )}
+
       {currentPhoto !== null && lightboxIdx !== null && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={`Photo ${lightboxIdx + 1} of ${photos.length}`}
+          aria-label={`Photo ${lightboxIdx + 1} of ${visiblePhotos.length}`}
           style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.96)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={closeLightbox}
           onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
@@ -133,7 +154,7 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
             if (delta < 0) nextPhoto(); else prevPhoto()
           }}
         >
-          {photos.length > 1 && (
+          {visiblePhotos.length > 1 && (
             <button type="button" onClick={e => { e.stopPropagation(); prevPhoto() }} aria-label="Previous photo" style={{ ...NAV_BTN, left: '1rem' }}>&#8592;</button>
           )}
           {imgLoading && (
@@ -153,7 +174,7 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
               style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', display: 'block', userSelect: 'none', opacity: imgLoading ? 0 : 1, transition: 'opacity 0.2s' }}
             />
           </div>
-          {photos.length > 1 && (
+          {visiblePhotos.length > 1 && (
             <button type="button" onClick={e => { e.stopPropagation(); nextPhoto() }} aria-label="Next photo" style={{ ...NAV_BTN, right: '1rem' }}>&#8594;</button>
           )}
           <button
@@ -172,7 +193,7 @@ export default function CategoryPhotoGrid({ photos }: { photos: CategoryPhoto[] 
               </p>
             )}
             <p style={{ color: 'rgba(155,154,154,0.6)', fontFamily: 'var(--font-body)', fontSize: '0.62rem', letterSpacing: '0.14em', textTransform: 'uppercase', margin: 0, whiteSpace: 'nowrap' }}>
-              {lightboxIdx + 1} / {photos.length}
+              {lightboxIdx + 1} / {visiblePhotos.length}
             </p>
           </div>
         </div>
