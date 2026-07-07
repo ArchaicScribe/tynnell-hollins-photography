@@ -34,6 +34,7 @@ export function GalleryPhotoArranger() {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [uploadError, setUploadError] = useState('')
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  const [focusedIdx, setFocusedIdx] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch thumbnails deferred so the form renders first
@@ -211,7 +212,7 @@ export function GalleryPhotoArranger() {
             const isCover = pid !== null && pid === coverId
             const isDragging = dragIdx === i
             const isOver = overIdx === i && dragIdx !== null && dragIdx !== i
-            const isHovered = hoveredIdx === i
+            const isHovered = hoveredIdx === i || focusedIdx === i
 
             return (
               <div
@@ -224,6 +225,8 @@ export function GalleryPhotoArranger() {
                 onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
                 onMouseEnter={() => setHoveredIdx(i)}
                 onMouseLeave={() => setHoveredIdx(null)}
+                onFocus={() => setFocusedIdx(i)}
+                onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setFocusedIdx((prev) => (prev === i ? null : prev)) }}
                 style={{
                   position: 'relative',
                   borderRadius: 6,
@@ -300,6 +303,44 @@ export function GalleryPhotoArranger() {
                 >
                   &times;
                 </button>
+
+                {/* Keyboard/screen-reader equivalent of drag-to-reorder */}
+                <div style={{
+                  position: 'absolute', top: '0.3rem', left: '50%', transform: 'translateX(-50%)',
+                  display: 'flex', gap: '0.25rem',
+                  opacity: isHovered ? 1 : 0, transition: 'opacity .15s',
+                }}>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); move(i, i - 1) }}
+                    disabled={i === 0}
+                    aria-label={`Move photo ${i + 1} earlier`}
+                    style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      border: 'none', background: 'rgba(0,0,0,0.65)', color: '#fff',
+                      fontSize: '0.7rem', lineHeight: 1, cursor: i === 0 ? 'default' : 'pointer',
+                      opacity: i === 0 ? 0.35 : 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    &#8592;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); move(i, i + 1) }}
+                    disabled={i === photos.length - 1}
+                    aria-label={`Move photo ${i + 1} later`}
+                    style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      border: 'none', background: 'rgba(0,0,0,0.65)', color: '#fff',
+                      fontSize: '0.7rem', lineHeight: 1, cursor: i === photos.length - 1 ? 'default' : 'pointer',
+                      opacity: i === photos.length - 1 ? 0.35 : 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    &#8594;
+                  </button>
+                </div>
 
                 {/* Bottom: cover indicator or set-cover button */}
                 <div style={{

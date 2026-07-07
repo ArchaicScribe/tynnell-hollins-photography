@@ -61,6 +61,7 @@ export function GalleryEditorClient({
   const [saveMsg, setSaveMsg] = useState('')
   const [error, setError] = useState('')
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  const [focusedIdx, setFocusedIdx] = useState<number | null>(null)
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
   const [fileOver, setFileOver] = useState(false)
@@ -1097,7 +1098,7 @@ export function GalleryEditorClient({
                 {photos.map((photo, i) => {
                   const isDragging = dragIdx === i
                   const isOver = overIdx === i && dragIdx !== null && dragIdx !== i
-                  const isHovered = hoveredIdx === i
+                  const isHovered = hoveredIdx === i || focusedIdx === i
                   const isCover = photo.id === coverId
 
                   if (tapedStyle) {
@@ -1114,6 +1115,8 @@ export function GalleryEditorClient({
                         onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
                         onMouseEnter={() => setHoveredIdx(i)}
                         onMouseLeave={() => setHoveredIdx(null)}
+                        onFocus={() => setFocusedIdx(i)}
+                        onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setFocusedIdx(prev => (prev === i ? null : prev)) }}
                         style={{
                           cursor: selectMode ? 'pointer' : isDragging ? 'grabbing' : 'grab',
                           opacity: isDragging ? 0.3 : 1,
@@ -1158,6 +1161,34 @@ export function GalleryEditorClient({
                                 <button type="button" onClick={() => removePhoto(i)} aria-label="Remove" style={{ fontSize: '0.75rem', color: '#fff', background: 'rgba(0,0,0,0.5)', border: 'none', width: 22, height: 22, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&times;</button>
                               </div>
                             )}
+
+                            {/* Keyboard/screen-reader equivalent of drag-to-reorder (hidden in select mode).
+                                Rendered unconditionally (not just on hover) so a keyboard user tabbing
+                                through can actually reach these - opacity is the only hover-driven part. */}
+                            {!selectMode && (
+                              <div style={{ position: 'absolute', top: '0.4rem', left: '50%', transform: 'translateX(-50%)', zIndex: 3, display: 'flex', gap: '0.25rem', opacity: isHovered ? 1 : 0, transition: 'opacity .15s' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => move(i, i - 1)}
+                                  onFocus={() => setFocusedIdx(i)}
+                                  disabled={i === 0}
+                                  aria-label={`Move photo ${i + 1} earlier`}
+                                  style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '0.7rem', cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                  &#8592;
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => move(i, i + 1)}
+                                  onFocus={() => setFocusedIdx(i)}
+                                  disabled={i === photos.length - 1}
+                                  aria-label={`Move photo ${i + 1} later`}
+                                  style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '0.7rem', cursor: i === photos.length - 1 ? 'default' : 'pointer', opacity: i === photos.length - 1 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                  &#8594;
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                         {!selectMode && isOver && <div style={{ position: 'absolute', inset: -4, border: '2px dashed rgba(214,209,206,0.8)', borderRadius: 4, pointerEvents: 'none' }} aria-hidden="true" />}
@@ -1178,6 +1209,8 @@ export function GalleryEditorClient({
                       onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
                       onMouseEnter={() => setHoveredIdx(i)}
                       onMouseLeave={() => setHoveredIdx(null)}
+                      onFocus={() => setFocusedIdx(i)}
+                      onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setFocusedIdx(prev => (prev === i ? null : prev)) }}
                       style={{
                         position: 'relative',
                         aspectRatio: '4/3',
@@ -1215,11 +1248,40 @@ export function GalleryEditorClient({
                         <button
                           type="button"
                           onClick={() => removePhoto(i)}
+                          onFocus={() => setFocusedIdx(i)}
                           aria-label={`Remove photo ${i + 1}`}
                           style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', width: 24, height: 24, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isHovered ? 1 : 0, transition: 'opacity .15s' }}
                         >
                           &times;
                         </button>
+                      )}
+
+                      {/* Keyboard/screen-reader equivalent of drag-to-reorder (hidden in select mode).
+                          Rendered unconditionally (not just on hover) so a keyboard user tabbing
+                          through can actually reach these - opacity is the only hover-driven part. */}
+                      {!selectMode && (
+                        <div style={{ position: 'absolute', top: '0.4rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '0.25rem', opacity: isHovered ? 1 : 0, transition: 'opacity .15s' }}>
+                          <button
+                            type="button"
+                            onClick={() => move(i, i - 1)}
+                            onFocus={() => setFocusedIdx(i)}
+                            disabled={i === 0}
+                            aria-label={`Move photo ${i + 1} earlier`}
+                            style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.7rem', cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            &#8592;
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => move(i, i + 1)}
+                            onFocus={() => setFocusedIdx(i)}
+                            disabled={i === photos.length - 1}
+                            aria-label={`Move photo ${i + 1} later`}
+                            style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.7rem', cursor: i === photos.length - 1 ? 'default' : 'pointer', opacity: i === photos.length - 1 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            &#8594;
+                          </button>
+                        </div>
                       )}
 
                       {/* Cover / set cover (hidden in select mode) */}
