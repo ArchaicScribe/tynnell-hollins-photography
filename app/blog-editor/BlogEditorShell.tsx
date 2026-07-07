@@ -110,7 +110,10 @@ export function BlogEditorShell({ selectedPost }: { selectedPost: Post | null })
           onPublish={handlePublish}
           publishing={publishing}
         />
-        <BlogPostCanvas post={post} onEdit={handleEdit} />
+        {/* key forces a clean remount when switching posts via the sidebar's
+            soft navigation, so BlogPostCanvas's local title/category/cover/body
+            state never carries over stale values from the previous post. */}
+        <BlogPostCanvas key={post.id} post={post} onEdit={handleEdit} />
       </div>
 
       {settingsOpen && (
