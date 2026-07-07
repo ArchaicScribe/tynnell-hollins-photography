@@ -305,6 +305,37 @@ export function ProjectsKanbanView() {
                           </p>
                           <PaymentBadges payments={project.payments} />
                         </Link>
+
+                        {/* Keyboard/screen-reader equivalent of the drag-and-drop move -
+                            native select, no custom popover/focus-trap needed. */}
+                        <select
+                          aria-label={`Move ${project.clientName} to stage`}
+                          value={project.status}
+                          disabled={isMoving}
+                          draggable={false}
+                          onMouseDown={e => e.stopPropagation()}
+                          onClick={e => e.stopPropagation()}
+                          onChange={e => {
+                            const next = e.target.value
+                            if (next !== project.status) void updateStatus(project.id, next)
+                          }}
+                          style={{
+                            marginTop: '0.5rem',
+                            width: '100%',
+                            fontSize: '0.68rem',
+                            fontFamily: ui,
+                            color: 'var(--theme-text-dim,#9b9a9a)',
+                            background: 'var(--theme-elevation-50,#1e1e1e)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 4,
+                            padding: '0.25rem 0.4rem',
+                            cursor: isMoving ? 'wait' : 'pointer',
+                          }}
+                        >
+                          {COLUMNS.map(c => (
+                            <option key={c.key} value={c.key}>Move to: {c.label}</option>
+                          ))}
+                        </select>
                       </div>
                     )
                   })}
