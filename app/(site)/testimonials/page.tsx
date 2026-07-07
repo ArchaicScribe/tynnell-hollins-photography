@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
@@ -64,6 +65,8 @@ export default async function TestimonialsPage() {
           testimonials.map((t) => {
             const photo = t.photo && typeof t.photo === 'object' ? t.photo as Photo : null
             const photoUrl = photo?.sizes?.card?.url ?? photo?.sizes?.thumbnail?.url ?? photo?.url ?? null
+            const photoWidth = photo?.sizes?.card?.width ?? photo?.sizes?.thumbnail?.width ?? photo?.width ?? null
+            const photoHeight = photo?.sizes?.card?.height ?? photo?.sizes?.thumbnail?.height ?? photo?.height ?? null
 
             return (
               <article key={t.id} className={styles.item} aria-label={`Review from ${t.clientName}`}>
@@ -83,13 +86,24 @@ export default async function TestimonialsPage() {
                 {/* Photo (when set) */}
                 {photoUrl && (
                   <div className={styles.photoWrap}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={photoUrl}
-                      alt={`${t.clientName} session`}
-                      className={styles.photo}
-                      loading="lazy"
-                    />
+                    {photoWidth && photoHeight ? (
+                      <Image
+                        src={photoUrl}
+                        alt={`${t.clientName} session`}
+                        width={photoWidth}
+                        height={photoHeight}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className={styles.photo}
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={photoUrl}
+                        alt={`${t.clientName} session`}
+                        className={styles.photo}
+                        loading="lazy"
+                      />
+                    )}
                   </div>
                 )}
               </article>

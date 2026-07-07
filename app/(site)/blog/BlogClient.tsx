@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './page.module.css'
 import type { Photo } from '@/payload-types'
 
@@ -94,12 +95,12 @@ export default function BlogClient({
                 <Link href={`/blog/${post.slug}`} className={styles.cardImageLink} tabIndex={-1} aria-hidden="true">
                   <div className={styles.cardImage}>
                     {coverUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={coverUrl}
                         alt={post.coverImage?.alt ?? post.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className={styles.cardPhoto}
-                        loading="lazy"
                       />
                     ) : (
                       <div className={styles.cardPlaceholder} />
