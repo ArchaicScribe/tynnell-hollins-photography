@@ -13,6 +13,13 @@ import { GalleryPasswordGate } from './GalleryPasswordGate'
 import { DownloadAllButtonLoader as DownloadAllButton } from './DownloadButtonLoader'
 import styles from './page.module.css'
 
+// Investigated for ISR (TYN-291) and kept force-dynamic: whether this page
+// reads the gauth_ cookie depends on gallery.isPasswordProtected, a DB value
+// only known at request time. Converting to ISR would risk caching a private
+// gallery's full photo set for anonymous visitors (or serving the password
+// gate to an already-authorized one) depending on who happened to trigger
+// the cached render - the App Router has no per-request cache-mode switch
+// for a single route, so this stays fully dynamic.
 export const dynamic = 'force-dynamic'
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ from?: string }> }
