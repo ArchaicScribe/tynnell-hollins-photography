@@ -8,6 +8,7 @@ export function InviteUserModal() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [role, setRole] = useState<'admin' | 'editor'>('editor')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -23,6 +24,7 @@ export function InviteUserModal() {
     setOpen(false)
     setName('')
     setEmail('')
+    setRole('editor')
     setError('')
     setSuccess(false)
     triggerRef.current?.focus()
@@ -37,7 +39,7 @@ export function InviteUserModal() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, role }),
       })
       const data = await res.json().catch(() => ({}))
       if (res.ok) {
@@ -133,6 +135,17 @@ export function InviteUserModal() {
                       onChange={e => setEmail(e.target.value)}
                       style={{ background: '#262626', border: '1px solid rgba(155,154,154,0.2)', borderRadius: '4px', padding: '0.5rem 0.7rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui }}
                     />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <span style={{ fontFamily: ui, fontSize: '0.72rem', color: '#6b6a6a' }}>Role</span>
+                    <select
+                      value={role}
+                      onChange={e => setRole(e.target.value === 'admin' ? 'admin' : 'editor')}
+                      style={{ background: '#262626', border: '1px solid rgba(155,154,154,0.2)', borderRadius: '4px', padding: '0.5rem 0.7rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui }}
+                    >
+                      <option value="editor">Content Editor - Photos, Galleries, Blog, Testimonials, Services, Pages</option>
+                      <option value="admin">Admin - full access, including Users and Site Settings</option>
+                    </select>
                   </label>
                   {error && (
                     <p role="alert" style={{ margin: 0, fontFamily: ui, fontSize: '0.78rem', color: '#f0a3a3' }}>{error}</p>

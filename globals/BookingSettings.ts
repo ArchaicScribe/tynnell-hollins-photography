@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
+import { isAdmin } from '@/app/lib/access'
 
 const revalidateBooking: GlobalAfterChangeHook = () => {
   try {
@@ -13,6 +14,10 @@ const revalidateBooking: GlobalAfterChangeHook = () => {
 export const BookingSettings: GlobalConfig = {
   slug: 'booking-settings',
   label: 'Booking Settings',
+  access: {
+    read: isAdmin,
+    update: isAdmin,
+  },
   admin: {
     group: 'Services & Booking',
     description:

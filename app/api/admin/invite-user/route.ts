@@ -24,6 +24,12 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  // payload.create below runs with the local API's default overrideAccess:
+  // true, which bypasses the Users collection's own create access control -
+  // so this route must enforce "inviter must be admin" itself.
+  if (user.role !== 'admin') {
+    return NextResponse.json({ error: 'Only an admin can invite new users.' }, { status: 403 })
+  }
 
   let body: Record<string, unknown>
   try {
@@ -33,6 +39,9 @@ export async function POST(request: Request) {
   }
   const name = typeof body.name === 'string' ? body.name.trim() : ''
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
+  // Default to the least-privileged role so a plain invite never silently
+  // grants full admin access - the inviter must explicitly opt into 'admin'.
+  const role = body.role === 'admin' ? 'admin' : 'editor'
 
   if (!name) {
     return NextResponse.json({ error: 'Name is required.' }, { status: 400 })
@@ -58,6 +67,7 @@ export async function POST(request: Request) {
       data: {
         name,
         email,
+        role,
         password: tempPassword,
         mustChangePassword: true,
       },
