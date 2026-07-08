@@ -72,6 +72,9 @@ export default buildConfig({
     },
     theme: 'dark',
     suppressHydrationWarning: true,
+    // Default is 'gravatar', which would require allowing a third-party image
+    // host in the CSP just for an optional avatar (TYN-301). Not worth it.
+    avatar: 'default',
     // Live Preview pane (TYN-200). Same-origin embedded site, so a relative
     // path resolves to the public page and is allowed by X-Frame-Options:
     // SAMEORIGIN. Saves are reflected immediately via revalidatePath hooks on
