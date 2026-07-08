@@ -20,11 +20,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 })
   }
 
-  const body = await request.json()
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
   const { name, email, phone, eventDate, message } = body
 
   if (!name || !email || !message) {
     return NextResponse.json({ error: 'Please fill in all required fields.' }, { status: 400 })
+  }
+
+  if (
+    typeof name !== 'string' ||
+    typeof email !== 'string' ||
+    typeof message !== 'string' ||
+    (phone !== undefined && typeof phone !== 'string') ||
+    (eventDate !== undefined && typeof eventDate !== 'string')
+  ) {
+    return NextResponse.json({ error: 'Invalid field types' }, { status: 400 })
   }
 
   if (name.length > 100) {

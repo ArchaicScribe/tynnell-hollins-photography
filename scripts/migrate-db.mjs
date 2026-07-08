@@ -20,7 +20,7 @@ if (!connectionString) {
   process.exit(1)
 }
 
-const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } })
+const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: true } })
 
 async function run() {
   const client = await pool.connect()
