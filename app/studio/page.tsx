@@ -41,6 +41,7 @@ export default async function StudioPage() {
   return (
     <StudioClient
       userName={user.email ?? ''}
+      userRole={user.role}
       galleries={galleries}
       photos={photos}
     />

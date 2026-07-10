@@ -27,6 +27,7 @@ interface Photo {
 
 interface Props {
   userName: string
+  userRole: string
   galleries: Gallery[]
   photos: Photo[]
 }
@@ -39,6 +40,11 @@ interface ProductLink {
   label: string
   href: string
   external?: boolean
+  // Areas an editor account is blocked from (Users, Site Config, Booking
+  // Settings, Availability - see TYN-302's access control). Filtered out
+  // of a non-admin's product cards rather than left in as dead links that
+  // would just 403.
+  adminOnly?: boolean
 }
 
 interface Product {
@@ -437,8 +443,10 @@ function RecentPhotos({ photos }: { photos: Photo[] }) {
 // Main component
 // ---------------------------------------------------------------------------
 
-export function StudioClient({ userName, galleries, photos }: Props) {
-  const PRODUCTS: Product[] = [
+export function StudioClient({ userName, userRole, galleries, photos }: Props) {
+  const isAdmin = userRole === 'admin'
+
+  const ALL_PRODUCTS: Product[] = [
     {
       label: 'Portfolio',
       color: '#0d9488',
@@ -456,7 +464,7 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       icon: <WebsiteIcon />,
       links: [
         { label: 'Edit Website', href: '/builder' },
-        { label: 'Availability / OOO', href: '/availability' },
+        { label: 'Availability / OOO', href: '/availability', adminOnly: true },
         { label: 'View Website', href: 'https://tynnellhollinsphotography.com', external: true },
       ],
     },
@@ -486,7 +494,7 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       color: '#e11d48',
       icon: <BookingsIcon />,
       links: [
-        { label: 'Booking Settings', href: '/admin/globals/booking-settings' },
+        { label: 'Booking Settings', href: '/admin/globals/booking-settings', adminOnly: true },
         { label: 'View Payments', href: '/studio-manager' },
         { label: 'Book a Session', href: 'https://tynnellhollinsphotography.com/book', external: true },
       ],
@@ -496,13 +504,17 @@ export function StudioClient({ userName, galleries, photos }: Props) {
       color: '#b45309',
       icon: <SettingsIcon />,
       links: [
-        { label: 'Site Config', href: '/admin/globals/site-config' },
+        { label: 'Site Config', href: '/admin/globals/site-config', adminOnly: true },
         { label: 'Hero Slides', href: '/admin/globals/hero-slides' },
         { label: 'About Page', href: '/admin/globals/about-page' },
         { label: 'Admin Panel', href: '/admin' },
       ],
     },
   ]
+
+  const PRODUCTS: Product[] = isAdmin
+    ? ALL_PRODUCTS
+    : ALL_PRODUCTS.map(p => ({ ...p, links: p.links.filter(link => !link.adminOnly) }))
 
   return (
     <div style={{ minHeight: '100vh', background: '#111', display: 'flex', flexDirection: 'column' }}>
