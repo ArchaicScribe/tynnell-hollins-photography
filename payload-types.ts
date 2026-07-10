@@ -151,6 +151,10 @@ export interface User {
   id: number;
   name?: string | null;
   /**
+   * Admin: full access, including Users, Site Config, Booking Settings, and Availability. Content Editor: can manage Photos, Galleries, Blog Posts, Testimonials, Services, and Pages, but not those admin-only areas.
+   */
+  role: 'admin' | 'editor';
+  /**
    * When checked, the user is prompted to set a new password before accessing the admin.
    */
   mustChangePassword?: boolean | null;

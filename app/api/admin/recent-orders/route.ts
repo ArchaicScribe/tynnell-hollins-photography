@@ -7,6 +7,7 @@ export async function GET(req: NextRequest) {
   const payload = await getPayload({ config })
   const { user } = await payload.auth({ headers: req.headers })
   if (!user) return NextResponse.json({ orders: [] }, { status: 401 })
+  if (user.role !== 'admin') return NextResponse.json({ orders: [] }, { status: 403 })
 
   const key = process.env.STRIPE_SECRET_KEY
   if (!key || key.startsWith('placeholder')) return NextResponse.json({ orders: [] })

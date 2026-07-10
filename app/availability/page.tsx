@@ -12,6 +12,7 @@ export default async function AvailabilityPage() {
   const payload = await getPayload({ config: payloadConfig })
   const { user } = await payload.auth({ headers: await headers() })
   if (!user) redirect('/admin/login')
+  if (user.role !== 'admin') redirect('/studio')
 
   const data = await payload.findGlobal({ slug: 'availability' }) as Availability
   const blockedRanges: Range[] = (Array.isArray(data?.blockedRanges) ? data.blockedRanges : []).map(r => ({

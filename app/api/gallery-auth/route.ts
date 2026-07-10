@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { createHmac } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 import bcrypt from 'bcryptjs'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
@@ -58,12 +58,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
   }
 
-  // Support both bcrypt hashes (new) and plaintext (legacy, until re-saved)
+  // Support both bcrypt hashes (new) and plaintext (legacy, until re-saved).
+  // The plaintext branch uses timingSafeEqual rather than === so a legacy
+  // password can't be guessed character-by-character via response timing.
   const storedPassword: string = gallery.password
   const isHashed = storedPassword.startsWith('$2')
   const valid = isHashed
     ? await bcrypt.compare(password, storedPassword)
-    : storedPassword === password
+    : (() => {
+        const a = Buffer.from(password)
+        const b = Buffer.from(storedPassword)
+        return a.length === b.length && timingSafeEqual(a, b)
+      })()
 
   if (!valid) {
     return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })

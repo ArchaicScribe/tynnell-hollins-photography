@@ -236,6 +236,13 @@ export const Galleries: CollectionConfig = {
       type: 'text',
       label: 'Gallery Password',
       admin: { hidden: true },
+      // Defense in depth: the bcrypt hash should never reach a client bundle,
+      // even if a future change accidentally spreads the raw gallery doc into
+      // a component. Local API calls (SSR, gallery-auth) default to
+      // overrideAccess: true and are unaffected by this.
+      access: {
+        read: ({ req }) => Boolean(req.user),
+      },
     },
     {
       name: 'allowDownload',

@@ -20,7 +20,7 @@ if (!connectionString) {
   process.exit(1)
 }
 
-const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } })
+const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: true } })
 
 async function run() {
   const client = await pool.connect()
@@ -556,6 +556,23 @@ async function run() {
     `)
 
     console.log('✓ projects tables ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260708_100000: users.role column (TYN-302)
+    // Admin: full access. Content Editor: Photos/Galleries/Posts/
+    // Testimonials/Services/Pages only, not Users/Site Config/Booking
+    // Settings/Availability. Existing rows default to 'admin' since both
+    // current accounts (Tynnell + developer) are fully trusted.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "role" varchar(20) DEFAULT 'admin'
+    `)
+    await client.query(`
+      UPDATE "users" SET "role" = 'admin' WHERE "role" IS NULL
+    `)
+
+    console.log('✓ users.role ready')
   } finally {
     client.release()
     await pool.end()

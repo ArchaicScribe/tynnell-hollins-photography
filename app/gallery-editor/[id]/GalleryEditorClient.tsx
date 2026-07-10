@@ -1148,17 +1148,19 @@ export function GalleryEditorClient({
                                 </div>
                               </div>
                             )}
-                            {/* Controls overlay (hidden in select mode) */}
-                            {!selectMode && (isHovered || isCover) && (
-                              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                            {/* Controls overlay (hidden in select mode). Rendered unconditionally
+                                (not just on hover) so a keyboard user tabbing through can reach
+                                Remove/Set cover - opacity is the only hover-driven part. */}
+                            {!selectMode && (
+                              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: (isHovered || isCover) ? 1 : 0, transition: 'opacity .15s', pointerEvents: (isHovered || isCover) ? 'auto' : 'none' }}>
                                 {isCover ? (
                                   <span style={{ fontSize: '0.65rem', color: 'rgba(201,162,39,0.95)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                                     <span aria-hidden="true">&#9733; </span>Cover
                                   </span>
                                 ) : (
-                                  <button type="button" onClick={() => setCover(photo)} style={{ fontSize: '0.65rem', color: '#fff', background: 'none', border: '1px solid rgba(255,255,255,0.4)', padding: '0.2rem 0.5rem', borderRadius: 3, cursor: 'pointer' }}>Set cover</button>
+                                  <button type="button" onClick={() => setCover(photo)} onFocus={() => setFocusedIdx(i)} style={{ fontSize: '0.65rem', color: '#fff', background: 'none', border: '1px solid rgba(255,255,255,0.4)', padding: '0.2rem 0.5rem', borderRadius: 3, cursor: 'pointer' }}>Set cover</button>
                                 )}
-                                <button type="button" onClick={() => removePhoto(i)} aria-label="Remove" style={{ fontSize: '0.75rem', color: '#fff', background: 'rgba(0,0,0,0.5)', border: 'none', width: 22, height: 22, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&times;</button>
+                                <button type="button" onClick={() => removePhoto(i)} onFocus={() => setFocusedIdx(i)} aria-label="Remove" style={{ fontSize: '0.75rem', color: '#fff', background: 'rgba(0,0,0,0.5)', border: 'none', width: 22, height: 22, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&times;</button>
                               </div>
                             )}
 

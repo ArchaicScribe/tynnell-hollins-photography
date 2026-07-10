@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
+import { isAdmin } from '@/app/lib/access'
 
 const revalidateAvailability: GlobalAfterChangeHook = () => {
   try {
@@ -14,6 +15,10 @@ const revalidateAvailability: GlobalAfterChangeHook = () => {
 export const Availability: GlobalConfig = {
   slug: 'availability',
   label: 'Availability',
+  access: {
+    read: isAdmin,
+    update: isAdmin,
+  },
   hooks: { afterChange: [revalidateAvailability] },
   admin: {
     group: 'Services & Booking',
