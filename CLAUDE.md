@@ -15,7 +15,7 @@
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 15.4.x (pinned), App Router, TypeScript |
+| Framework | Next.js 15.5.19 (pinned), App Router, TypeScript |
 | CMS | Payload v3 (embedded in Next.js at `/app/(payload)`) |
 | Database | Neon serverless PostgreSQL (Postgres 17, AWS US East 1) |
 | Media | Cloudflare R2 via `@payloadcms/storage-s3` |
@@ -83,7 +83,7 @@ See Vercel webhook rules below — simultaneous multi-branch pushes drop the pro
 
 Two confirmed rules for reliable production deploys:
 
-1. **Real file change required.** Empty commits to main get silently dropped (Vercel detects no deployable content changed). Always make a 1-line comment tweak (e.g. in `Dashboard.tsx`) rather than an empty commit.
+1. **Real file change required.** Empty commits to main get silently dropped (Vercel detects no deployable content changed). Always make a 1-line comment tweak (e.g. in `app/studio/StudioClient.tsx`) rather than an empty commit.
 
 2. **Push main alone.** Pushing main simultaneously with dev/qa/staging causes the main webhook to be dropped. Correct sequence: push main first, confirm the build starts in Vercel, THEN sync dev/qa/staging separately.
 
@@ -95,8 +95,20 @@ Two confirmed rules for reliable production deploys:
 - Payload is embedded inside Next.js — one Vercel deployment, no separate CMS server
 - All SSR/RSC data fetching uses the **local API** (`payload.find()`, `payload.findGlobal()`) — zero HTTP overhead
 - Admin at `/admin`
-- Collections: Photos, Galleries, Testimonials, Services, Posts, Users, Pages (visual builder)
+- Collections: Photos, Galleries, Testimonials, Services, Posts, Users, Pages (visual builder), Projects (Studio Manager)
 - Globals: HeroSlides, AboutPage, SiteConfig, BookingSettings, Availability
+
+### Access control (RBAC, TYN-302)
+- `Users.role` is `'admin' | 'editor'`. Admin has full access. Editor can manage content (Photos, Galleries, Posts, Testimonials, Services, Pages/builder) but is blocked from Users, Site Config, Booking Settings, and Availability
+- Content collections deliberately have **no** `access` block — Payload's default (`node_modules/payload/dist/auth/executeAccess.js`) already requires `req.user` truthy for every operation, which both roles satisfy. Only the admin-only surfaces (Users, SiteConfig, BookingSettings, Availability globals) define explicit `access` using the shared `isAdmin` helper in `app/lib/access.ts`
+- Local API calls (`payload.create`, etc.) default to `overrideAccess: true` and bypass collection access entirely — routes that must enforce a role (`/api/admin/invite-user`, `/api/admin/recent-orders`) check `user.role` themselves, not just `payload.auth()` presence
+- `app/studio/StudioClient.tsx` (the real `/studio` dashboard, see gotcha below) filters admin-only product-card links client-side based on a `userRole` prop resolved server-side in `app/studio/page.tsx`, so there's no flash of admin-only links before the role is known
+
+### Security headers (TYN-301)
+- `next.config.mjs` sets HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, and a Content-Security-Policy — all as a static header (not a per-request nonce)
+- `script-src` and `style-src` keep `'unsafe-inline'` as a deliberate tradeoff: a nonce-based CSP would require every root layout to call `headers()`, which forces those routes out of static rendering — this app relies on ISR (TYN-290) for the homepage, about, blog, and portfolio index, so that regression wasn't worth it. `style-src` needs `'unsafe-inline'` regardless, since nonces only cover `<style>` elements/links, not the `style={{}}` props used throughout the admin
+- Everything else is locked down with explicit allowlists: R2 image hosts, Google Fonts (admin only — the public site self-hosts via `next/font`), and Vercel Analytics
+- `payload.config.ts`'s `admin.avatar` is `'default'` (not the Payload default `'gravatar'`) specifically to avoid needing a third-party image host in `img-src`
 
 ### Media (Cloudflare R2)
 - Bucket: `tynnell-hollins-photos`
@@ -158,7 +170,8 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `app/(payload)/custom.css` | Admin brand theme overrides |
 | `components/admin/AdminLogo.tsx` | "Tynnell Hollins Photography" brand mark (login + nav) |
 | `components/admin/AdminIcon.tsx` | "TH" monogram icon (nav collapsed state) |
-| `components/admin/Dashboard.tsx` | Custom admin dashboard (client component) |
+| `components/admin/Dashboard.tsx` | Payload's registered `admin.components.views.dashboard` — **unreachable dead code**, since `middleware.ts` unconditionally redirects bare `/admin` to `/studio`. Do not edit this expecting it to affect what a user sees; edit `app/studio/StudioClient.tsx` instead (confirmed TYN-303 session, 2026-07-09) |
+| `app/studio/page.tsx` + `app/studio/StudioClient.tsx` | The **actual** `/studio` dashboard shown after login — product cards, recent collections/uploads, role-filtered links (TYN-302) |
 | `components/admin/PhotoGridView.tsx` | Visual photo grid, drag-to-upload, category filters |
 | `components/admin/GalleryGridView.tsx` | Visual gallery card grid with category filter |
 | `components/admin/GalleryPhotoArranger.tsx` | Visual gallery grid: drag-arrange, drag-and-drop upload, remove, set cover (replaces the photos array UI) |
