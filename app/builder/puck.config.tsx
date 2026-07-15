@@ -14,6 +14,7 @@
 import type { ReactNode } from 'react'
 import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
+import { PhotoCarouselBlock } from './PhotoCarouselBlock'
 
 const C = {
   bg: '#0C0C0C',
@@ -61,6 +62,15 @@ const TAPE_CSS = `
 .pk-taped::before{left:0.6rem;transform:rotate(-32deg)}
 .pk-taped::after{right:0.6rem;transform:rotate(32deg)}
 `
+
+// Polaroid-photo treatment (TYN-309): a classic instant-photo frame - thick
+// cream mat with extra depth at the bottom, no tape strips. Shares the same
+// mat color token as the taped style for brand consistency.
+const POLAROID_CSS = `
+.pk-polaroid{position:relative;background:var(--tape-mat, #f4efe8);padding:0.65rem 0.65rem 2.75rem;box-shadow:0 10px 24px rgba(0,0,0,0.35);transition:transform .25s ease}
+.pk-polaroid:hover{transform:rotate(0deg) scale(1.015) !important;z-index:2}
+.pk-polaroid img{display:block;width:100%;height:auto}
+`
 function visClass(hideOnMobile?: boolean, hideOnDesktop?: boolean): string | undefined {
   const c = []
   if (hideOnMobile) c.push('pk-hide-mobile')
@@ -77,10 +87,24 @@ const responsiveDefaults = { hideOnMobile: false, hideOnDesktop: false }
 
 // Shared section wrapper: applies the per-section Background + Spacing controls
 // so every content block has consistent, Pixieset-style design options.
-function Section({ background, spacing, className, children }: { background?: string; spacing?: string; className?: string; children?: ReactNode }) {
+// backgroundImage/backgroundFade (TYN-305) layer a user-picked, dimmed photo
+// behind the content instead of/under the flat background color.
+function Section({ background, backgroundImage, backgroundFade, spacing, className, children }: { background?: string; backgroundImage?: string; backgroundFade?: string; spacing?: string; className?: string; children?: ReactNode }) {
   const padY = SPACING[spacing ?? 'normal'] ?? SPACING.normal
   const bg = background && background !== 'transparent' ? background : undefined
-  return <section className={className} style={{ background: bg, padding: `${padY} ${PAD_X}` }}>{children}</section>
+  const fade = backgroundFade ? Number(backgroundFade) : 0.55
+  return (
+    <section className={className} style={{ position: 'relative', background: bg, overflow: backgroundImage ? 'hidden' : undefined }}>
+      {backgroundImage && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={backgroundImage} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{ position: 'absolute', inset: 0, background: `rgba(12,12,12,${fade})` }} />
+        </>
+      )}
+      <div style={{ position: 'relative', padding: `${padY} ${PAD_X}` }}>{children}</div>
+    </section>
+  )
 }
 
 const eyebrowStyle: React.CSSProperties = {
@@ -139,8 +163,24 @@ const bgField = {
     { label: 'Accent', value: '#131313' },
   ],
 }
+// Faded background photo (TYN-305): an optional user-picked image behind the
+// section, dimmed by a dark scrim so content stays legible. Placed here (not
+// baked into any one block) so Tynnell can add/remove it on any section, on
+// any page, alongside the existing flat Background option.
+const backgroundImageField = imageField('Background photo (optional)')
+const backgroundFadeField = {
+  type: 'select' as const,
+  label: 'Background photo fade',
+  options: [
+    { label: 'Light', value: '0.35' },
+    { label: 'Medium', value: '0.55' },
+    { label: 'Heavy', value: '0.75' },
+  ],
+}
 const styleFields = {
   background: bgField,
+  backgroundImage: backgroundImageField,
+  backgroundFade: backgroundFadeField,
   spacing: {
     type: 'select' as const,
     label: 'Spacing',
@@ -152,13 +192,13 @@ const styleFields = {
     ],
   },
 }
-const styleDefaults = { background: 'transparent', spacing: 'normal' }
+const styleDefaults = { background: 'transparent', backgroundImage: '', backgroundFade: '0.55', spacing: 'normal' }
 
 export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
       <div style={{ background: C.bg, color: C.body, minHeight: '100%', fontFamily: BODY_FONT }}>
-        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + TAPE_CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + TAPE_CSS + POLAROID_CSS }} />
         {children}
       </div>
     ),
@@ -167,7 +207,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer'] },
     content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'FullWidthImage'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'FullWidthImage'] },
   },
 
   components: {
@@ -188,6 +228,14 @@ export const config: Config = {
             { label: 'Short', value: '45vh' },
           ],
         },
+        backgroundBehavior: {
+          type: 'radio',
+          label: 'Background behavior',
+          options: [
+            { label: 'Scrolls with page', value: 'scroll' },
+            { label: 'Stays fixed (parallax)', value: 'fixed' },
+          ],
+        },
         align: alignField,
         buttonText: { type: 'text', label: 'Button text (optional)' },
         buttonHref: { type: 'text', label: 'Button link' },
@@ -199,16 +247,21 @@ export const config: Config = {
         subheading: 'Photos that feel like your favorite memory.',
         imageUrl: '',
         height: '60vh',
+        backgroundBehavior: 'scroll',
         align: 'left',
         buttonText: '',
         buttonHref: '',
         ...responsiveDefaults,
       },
-      render: ({ eyebrow, heading, subheading, imageUrl, height, align, buttonText, buttonHref, hideOnMobile, hideOnDesktop }: any) => (
+      render: ({ eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, align, buttonText, buttonHref, hideOnMobile, hideOnDesktop }: any) => (
         <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: 'flex-end', justifyContent: align === 'center' ? 'center' : 'flex-start', overflow: 'hidden' }}>
           {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            backgroundBehavior === 'fixed' ? (
+              <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            )
           ) : (
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a1a,#0c0c0c)' }} />
           )}
@@ -235,8 +288,8 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: { eyebrow: 'My Work', heading: 'A Section Heading', subtext: '', align: 'center', ...styleDefaults, ...responsiveDefaults },
-      render: ({ eyebrow, heading, subtext, align, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ eyebrow, heading, subtext, align, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: align, maxWidth: align === 'center' ? '70ch' : undefined, margin: align === 'center' ? '0 auto' : undefined }}>
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle()}>{heading}</h2>
@@ -256,8 +309,8 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: { text: 'Tell your story here.', align: 'left', ...styleDefaults, ...responsiveDefaults },
-      render: ({ text, align, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ text, align, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ maxWidth: '70ch', margin: align === 'center' ? '0 auto' : undefined, textAlign: align }}>
             <p style={{ color: C.body, fontSize: '1.05rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
           </div>
@@ -351,8 +404,8 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ heading, items, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, items, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
@@ -394,8 +447,8 @@ export const config: Config = {
         spacing: 'normal',
         ...responsiveDefaults,
       },
-      render: ({ heading, items, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, items, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
@@ -429,8 +482,8 @@ export const config: Config = {
         spacing: 'spacious',
         ...responsiveDefaults,
       },
-      render: ({ heading, subtext, buttonText, buttonHref, background, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, subtext, buttonText, buttonHref, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: 'center' }}>
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
             {subtext && <p style={{ marginTop: '0.85rem', color: C.detail, maxWidth: '60ch', margin: '0.85rem auto 0' }}>{subtext}</p>}
@@ -475,6 +528,7 @@ export const config: Config = {
           options: [
             { label: 'Clean', value: 'plain' },
             { label: 'Taped', value: 'taped' },
+            { label: 'Polaroid', value: 'polaroid' },
           ],
         },
         ...responsiveFields,
@@ -483,15 +537,17 @@ export const config: Config = {
       render: ({ images, size, aspect, frame, hideOnMobile, hideOnDesktop }: any) => {
         const valid = (images ?? []).filter((i: any) => i?.url)
         const taped = frame === 'taped'
+        const polaroid = frame === 'polaroid'
+        const framed = taped || polaroid
         return (
-          <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: taped ? 'clamp(2rem,5vw,3.75rem) clamp(1.25rem,3vw,3rem)' : 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
+          <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: framed ? 'clamp(2rem,5vw,3.75rem) clamp(1.25rem,3vw,3rem)' : 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
             {valid.length === 0 ? (
               <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the gallery.</p>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${size}, 1fr))`, gap: taped ? 'clamp(1.5rem,3vw,2.75rem)' : '0.75rem', alignItems: 'start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${size}, 1fr))`, gap: framed ? 'clamp(1.5rem,3vw,2.75rem)' : '0.75rem', alignItems: 'start' }}>
                 {valid.map((img: any, i: number) =>
-                  taped ? (
-                    <div key={i} className="pk-taped" style={{ transform: `rotate(${(i % 2 === 0 ? -1 : 1) * (1.2 + (i % 3) * 0.6)}deg)` }}>
+                  framed ? (
+                    <div key={i} className={taped ? 'pk-taped' : 'pk-polaroid'} style={{ transform: `rotate(${(i % 2 === 0 ? -1 : 1) * (1.2 + (i % 3) * 0.6)}deg)` }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover' }} />
                     </div>
@@ -503,6 +559,37 @@ export const config: Config = {
               </div>
             )}
           </section>
+        )
+      },
+    },
+
+    // ------------------------------------------------------- PhotoCarousel
+    PhotoCarousel: {
+      label: 'Photo Carousel',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        images: {
+          type: 'array',
+          label: 'Photos',
+          arrayFields: { url: imageField('Image') },
+          defaultItemProps: { url: '' },
+          getItemSummary: (item: any) => item?.url || 'Photo',
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { heading: '', images: [], ...styleDefaults, ...responsiveDefaults },
+      render: ({ heading, images, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => {
+        const valid = (images ?? []).filter((i: any) => i?.url)
+        return (
+          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+            {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '1.5rem' }}>{heading}</h2>}
+            {valid.length === 0 ? (
+              <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the carousel.</p>
+            ) : (
+              <PhotoCarouselBlock images={valid} />
+            )}
+          </Section>
         )
       },
     },

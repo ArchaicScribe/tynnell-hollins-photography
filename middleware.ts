@@ -19,6 +19,7 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin')) return NextResponse.next()
   if (pathname.startsWith('/studio')) return NextResponse.next()
   if (pathname.startsWith('/gallery-editor')) return NextResponse.next()
+  if (pathname.startsWith('/photo-library')) return NextResponse.next()
   if (pathname.startsWith('/availability')) return NextResponse.next()
   // The page builder is admin-only and auth-gated, so let it through during
   // Coming Soon mode (same as /admin) instead of rewriting it to /coming-soon.
