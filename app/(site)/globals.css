@@ -74,6 +74,17 @@ a {
   }
 }
 
+/* ── Design editor "Enable animations" toggle ──────────────── */
+/* Same effect as the reduced-motion override above, but as an editorial
+   on/off switch (Design > Animations) rather than an accessibility
+   preference - set via a data-animations attribute on <html>. */
+[data-animations="off"] *, [data-animations="off"] *::before, [data-animations="off"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 /* ── Google Places autocomplete dropdown ───────────────────── */
 
 .pac-container {

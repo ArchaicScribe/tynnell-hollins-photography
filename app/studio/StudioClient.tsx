@@ -464,6 +464,7 @@ export function StudioClient({ userName, userRole, galleries, photos }: Props) {
       icon: <WebsiteIcon />,
       links: [
         { label: 'Edit Website', href: '/builder' },
+        { label: 'Design', href: '/design', adminOnly: true },
         { label: 'Availability / OOO', href: '/availability', adminOnly: true },
         { label: 'View Website', href: 'https://tynnellhollinsphotography.com', external: true },
       ],

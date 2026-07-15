@@ -15,6 +15,7 @@
   --color-border-subtle:  rgba(214, 209, 206, 0.06);
   --color-border-solid:   #1e1e1e;
   --color-error:          #c87171;
+  --btn-radius:           2px;
 
   /* ── Colors: light mode override ─────────────────────────── */
   /* Overlay boxes (--color-bg-overlay) intentionally stay dark since they
@@ -34,8 +35,12 @@
   --font-mono:            var(--font-body);
 
   /* ── Spacing ──────────────────────────────────────────────── */
+  /* --space-scale (Design editor "Overall spacing": 0.75 compact / 1
+     normal / 1.35 spacious) multiplies both spacing tokens below, so a
+     single override retunes every consumer without touching each one. */
+  --space-scale:          1;
   --max-width:            1680px;
-  --padding-x:            max(1.25rem, 2.5vw);
-  --padding-block:        4vmax;
+  --padding-x:            calc(max(1.25rem, 2.5vw) * var(--space-scale));
+  --padding-block:        calc(4vmax * var(--space-scale));
 }
 
