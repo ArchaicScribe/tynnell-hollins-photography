@@ -1,5 +1,5 @@
 .section {
-  background-color: #0C0C0C;
+  background-color: var(--color-bg);
   padding: 8rem var(--padding-x);
   text-align: center;
 }
@@ -24,7 +24,7 @@
 .heading {
   font-family: var(--font-display);
   font-size: clamp(3.5rem, 7vw, 6.5rem);
-  color: #D6D1CE;
+  color: var(--color-heading);
   font-weight: 400;
   line-height: 1.05;
 }
@@ -49,8 +49,8 @@
   display: inline-flex;
   align-items: center;
   padding: 0.9rem 2.5rem;
-  background-color: #9B9A9A;
-  color: #0C0C0C;
+  background-color: var(--color-btn-bg);
+  color: var(--color-bg);
   font-family: var(--font-body);
   font-size: 0.7rem;
   letter-spacing: 0.18em;
@@ -58,10 +58,11 @@
   text-decoration: none;
   transition: background-color 0.2s ease;
   min-height: 44px;
+  border-radius: var(--btn-radius, 2px);
 }
 
 .btn:hover {
-  background-color: #D6D1CE;
+  background-color: var(--color-btn-hover);
 }
 
 .btnSecondary {
@@ -78,6 +79,7 @@
   text-decoration: none;
   transition: border-color 0.2s ease, color 0.2s ease;
   min-height: 44px;
+  border-radius: var(--btn-radius, 2px);
 }
 
 .btnSecondary:hover {
