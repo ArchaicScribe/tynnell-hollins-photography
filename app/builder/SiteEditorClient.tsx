@@ -778,19 +778,21 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
             </>
           )}
 
-          {/* Design tab */}
+          {/* Design tab (TYN-314) */}
           {activeTab === 'design' && (
-            <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <p style={{ margin: 0, fontFamily: ui, fontSize: '0.82rem', color: '#6b6b6b', lineHeight: 1.6 }}>
-                Global design tokens are managed in code at <code style={{ color: '#9b9a9a', fontSize: '0.78rem' }}>tokens.css</code>.
-              </p>
+            <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <p style={{ margin: '0 0 0.75rem', fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#e0dcd8' }}>Design</p>
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-              <a href="/admin/globals/site-config" style={{ color: teal, fontSize: '0.8rem', fontFamily: ui, textDecoration: 'none' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'none' }}
+              <a href="/design"
+                style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 7, color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.83rem' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)' }}
               >
-                Open Site Config
+                Open Design Editor
               </a>
+              <p style={{ margin: '0.5rem 0 0', fontFamily: ui, fontSize: '0.78rem', color: '#6b6b6b', lineHeight: 1.6 }}>
+                Logo, fonts, colors, spacing, buttons, and animations, with a live preview of the real site.
+              </p>
             </div>
           )}
 
