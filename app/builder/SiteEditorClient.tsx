@@ -1,6 +1,9 @@
 'use client'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { PortfolioTab } from './PortfolioTab'
+import { ImagePickerField } from './ImagePickerField'
+import { DesignSections, useDesignPreviewSync } from './DesignPanelShared'
+import type { SiteTheme } from '@/app/lib/siteTheme'
 
 // System font stack matches Pixieset's clean UI look
 const ui = "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -552,7 +555,7 @@ function ProductSwitcher({ onClose, anchorRef }: { onClose: () => void; anchorRe
 type Tab = 'pages' | 'design' | 'blog' | 'settings'
 type Product = 'portfolio' | 'website'
 
-export function SiteEditorClient({ initialPages, initialProduct = 'website' }: { initialPages: SitePage[]; initialProduct?: Product }) {
+export function SiteEditorClient({ initialPages, initialProduct = 'website', initialTheme }: { initialPages: SitePage[]; initialProduct?: Product; initialTheme: SiteTheme }) {
   const [pages, setPages] = useState<SitePage[]>(initialPages)
   const [activeTab, setActiveTab] = useState<Tab>('pages')
   const [product, setProduct] = useState<Product>(initialProduct)
@@ -560,6 +563,35 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
   const [publishing, setPublishing] = useState(false)
   const [showSwitcher, setShowSwitcher] = useState(false)
   const switcherBtnRef = useRef<HTMLButtonElement>(null)
+
+  // Design tab (TYN-314/TYN-315): embedded here so it matches Pixieset's
+  // unified editor - controls on the left, the SAME live preview pane on the
+  // right updates in real time, no separate page navigation.
+  const [theme, setTheme] = useState<SiteTheme>(initialTheme)
+  const [designOpen, setDesignOpen] = useState<string | null>('logo')
+  const [designSaving, setDesignSaving] = useState(false)
+  const [designSaved, setDesignSaved] = useState(false)
+  const isDesignTab = activeTab === 'design'
+  const { iframeRef: designIframeRef, openPreviewTab: openDesignPreviewTab } = useDesignPreviewSync(theme, isDesignTab)
+
+  const setThemeField = <K extends keyof SiteTheme>(key: K, value: SiteTheme[K]) => {
+    setDesignSaved(false)
+    setTheme((t) => ({ ...t, [key]: value }))
+  }
+
+  const publishDesign = async () => {
+    setDesignSaving(true)
+    try {
+      const res = await fetch('/api/design/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(theme),
+      })
+      if (res.ok) setDesignSaved(true)
+    } finally {
+      setDesignSaving(false)
+    }
+  }
 
   const switchProduct = (p: Product) => {
     setProduct(p)
@@ -778,21 +810,24 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
             </>
           )}
 
-          {/* Design tab (TYN-314) */}
-          {activeTab === 'design' && (
-            <div style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {/* Design tab (TYN-314/TYN-315) - embedded, matching Pixieset's
+              unified layout: controls here, live preview in the shared pane
+              to the right, no separate page navigation. */}
+          {isDesignTab && (
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1rem' }}>
               <p style={{ margin: '0 0 0.75rem', fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#e0dcd8' }}>Design</p>
-              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-              <a href="/design"
-                style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 7, color: '#c4bfb9', textDecoration: 'none', fontFamily: ui, fontSize: '0.83rem' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)' }}
-              >
-                Open Design Editor
-              </a>
-              <p style={{ margin: '0.5rem 0 0', fontFamily: ui, fontSize: '0.78rem', color: '#6b6b6b', lineHeight: 1.6 }}>
-                Logo, fonts, colors, spacing, buttons, and animations, with a live preview of the real site.
-              </p>
+
+              <p style={{ margin: '0 0 0.5rem', fontFamily: mono, fontSize: '0.58rem', letterSpacing: '0.12em', color: '#4a4a4a', textTransform: 'uppercase' }}>Template</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10, background: 'rgba(255,255,255,0.03)', borderRadius: 7, border: '1px solid rgba(255,255,255,0.07)', marginBottom: '0.5rem' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 4, background: 'linear-gradient(135deg,#2dd4bf,#0ea5e9)', flexShrink: 0 }} />
+                <div>
+                  <div style={{ color: '#e0dcd8', fontSize: 12.5, fontWeight: 600 }}>Editorial</div>
+                  <div style={{ color: '#6b6663', fontSize: 10.5 }}>Your site&apos;s current design</div>
+                </div>
+              </div>
+
+              <p style={{ margin: '1rem 0 0.25rem', fontFamily: mono, fontSize: '0.58rem', letterSpacing: '0.12em', color: '#4a4a4a', textTransform: 'uppercase' }}>Template Options</p>
+              <DesignSections theme={theme} set={setThemeField} open={designOpen} setOpen={setDesignOpen} ImagePickerField={ImagePickerField} />
             </div>
           )}
 
@@ -840,23 +875,35 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
 
           {/* ---- Bottom: Preview + Publish ---- */}
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-            <a
-              href="https://tynnellhollinsphotography.com" target="_blank" rel="noopener noreferrer"
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.6rem', background: 'none', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 7, color: '#9b9a9a', fontSize: '0.82rem', fontFamily: ui, textDecoration: 'none', fontWeight: 500, transition: 'border-color 0.12s, color 0.12s' }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.28)'; el.style.color = '#d4d0cc' }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.14)'; el.style.color = '#9b9a9a' }}
-            >
-              Preview
-            </a>
+            {isDesignTab ? (
+              <button
+                type="button"
+                onClick={() => openDesignPreviewTab(previewHref)}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.6rem', background: 'none', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 7, color: '#9b9a9a', fontSize: '0.82rem', fontFamily: ui, fontWeight: 500, cursor: 'pointer', transition: 'border-color 0.12s, color 0.12s' }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.28)'; el.style.color = '#d4d0cc' }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.14)'; el.style.color = '#9b9a9a' }}
+              >
+                Preview
+              </button>
+            ) : (
+              <a
+                href="https://tynnellhollinsphotography.com" target="_blank" rel="noopener noreferrer"
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.6rem', background: 'none', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 7, color: '#9b9a9a', fontSize: '0.82rem', fontFamily: ui, textDecoration: 'none', fontWeight: 500, transition: 'border-color 0.12s, color 0.12s' }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.28)'; el.style.color = '#d4d0cc' }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.14)'; el.style.color = '#9b9a9a' }}
+              >
+                Preview
+              </a>
+            )}
             <button
               type="button"
-              onClick={() => void publishAll()}
-              disabled={publishing} aria-busy={publishing}
-              style={{ flex: 1, padding: '0.6rem', background: teal, border: 'none', borderRadius: 7, color: '#fff', fontSize: '0.82rem', fontFamily: ui, fontWeight: 600, cursor: publishing ? 'wait' : 'pointer', opacity: publishing ? 0.7 : 1, transition: 'opacity 0.12s' }}
-              onMouseEnter={e => { if (!publishing) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)' }}
+              onClick={() => void (isDesignTab ? publishDesign() : publishAll())}
+              disabled={isDesignTab ? designSaving : publishing} aria-busy={isDesignTab ? designSaving : publishing}
+              style={{ flex: 1, padding: '0.6rem', background: teal, border: 'none', borderRadius: 7, color: '#fff', fontSize: '0.82rem', fontFamily: ui, fontWeight: 600, cursor: (isDesignTab ? designSaving : publishing) ? 'wait' : 'pointer', opacity: (isDesignTab ? designSaving : publishing) ? 0.7 : 1, transition: 'opacity 0.12s' }}
+              onMouseEnter={e => { if (!(isDesignTab ? designSaving : publishing)) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none' }}
             >
-              {publishing ? 'Publishing...' : 'Publish'}
+              {isDesignTab ? (designSaving ? 'Publishing...' : designSaved ? 'Published' : 'Publish') : (publishing ? 'Publishing...' : 'Publish')}
             </button>
           </div>
         </div>
@@ -878,10 +925,14 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website' }: {
             </a>
           </div>
 
-          {/* Live preview iframe - key changes force a reload when page changes */}
+          {/* Live preview iframe - key changes force a reload when the page
+              (or design-preview mode) changes. When the Design tab is active,
+              ?__designPreview=1 activates DesignPreviewBridge on the loaded
+              page so it listens for and applies the live draft theme. */}
           <iframe
-            key={previewHref}
-            src={previewHref}
+            key={isDesignTab ? `design:${previewHref}` : previewHref}
+            ref={isDesignTab ? designIframeRef : undefined}
+            src={isDesignTab ? `${previewHref}${previewHref.includes('?') ? '&' : '?'}__designPreview=1` : previewHref}
             style={{ position: 'absolute', top: 36, left: 0, right: 0, bottom: 0, width: '100%', height: 'calc(100% - 36px)', border: 'none' }}
             title={`Preview: ${previewLabel}`}
           />
