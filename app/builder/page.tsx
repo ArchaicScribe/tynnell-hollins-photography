@@ -3,6 +3,7 @@ import config from '@payload-config'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { SiteEditorClient, type SitePage } from './SiteEditorClient'
+import { getSiteDesign } from '@/app/lib/siteDesign'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Studio' }
@@ -38,5 +39,7 @@ export default async function BuilderHome({
     updatedAt: p.updatedAt,
   }))
 
-  return <SiteEditorClient initialPages={pages} initialProduct={initialProduct} />
+  const initialTheme = await getSiteDesign()
+
+  return <SiteEditorClient initialPages={pages} initialProduct={initialProduct} initialTheme={initialTheme} />
 }
