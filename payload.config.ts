@@ -16,6 +16,7 @@ import { Posts } from './collections/Posts'
 import { HeroSlides } from './globals/HeroSlides'
 import { AboutPage } from './globals/AboutPage'
 import { SiteConfig } from './globals/SiteConfig'
+import { SiteDesign } from './globals/SiteDesign'
 import { BookingSettings } from './globals/BookingSettings'
 import { Availability } from './globals/Availability'
 import { Pages } from './collections/Pages'
@@ -117,7 +118,7 @@ export default buildConfig({
   },
   sharp,
   collections: [Users, Photos, Galleries, Testimonials, Services, Posts, Pages, Projects],
-  globals: [HeroSlides, AboutPage, SiteConfig, BookingSettings, Availability],
+  globals: [HeroSlides, AboutPage, SiteConfig, SiteDesign, BookingSettings, Availability],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

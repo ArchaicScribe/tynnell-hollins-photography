@@ -573,6 +573,36 @@ async function run() {
     `)
 
     console.log('✓ users.role ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260715_100000: site_design global table (TYN-314)
+    // Site-wide theme (logo, fonts, colors, spacing, button style,
+    // animations) edited from the /design Studio page. Defaults match
+    // tokens.css's existing hardcoded values so publishing for the first
+    // time is a no-op visually until something is actually changed.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "site_design" (
+        "id"                  serial  PRIMARY KEY NOT NULL,
+        "logo_url"            varchar,
+        "heading_font"        varchar DEFAULT 'poppins',
+        "body_font"           varchar DEFAULT 'poppins',
+        "color_bg"            varchar DEFAULT '#0C0C0C',
+        "color_bg_accent"     varchar DEFAULT '#131313',
+        "color_heading"       varchar DEFAULT '#D6D1CE',
+        "color_body"          varchar DEFAULT '#E6E1DE',
+        "color_detail"        varchar DEFAULT '#9B9A9A',
+        "color_btn_bg"        varchar DEFAULT '#9B9A9A',
+        "spacing_scale"       varchar DEFAULT 'normal',
+        "button_style"        varchar DEFAULT 'sharp',
+        "animations_enabled"  boolean DEFAULT true,
+        "updated_at"          timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"          timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    console.log('✓ site_design table ready')
   } finally {
     client.release()
     await pool.end()

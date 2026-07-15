@@ -5,6 +5,8 @@ import './styles/tokens.css'
 import Navbar from '../components/Navbar/Navbar'
 import Footer from '../components/Footer/Footer'
 import { getBuilderNavLinks } from '@/app/lib/nav'
+import { getSiteDesign, themeToCssVars } from '@/app/lib/siteDesign'
+import { DesignPreviewBridge } from '../components/DesignPreviewBridge'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
@@ -72,15 +74,25 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const builderLinks = await getBuilderNavLinks()
+  const [builderLinks, theme] = await Promise.all([getBuilderNavLinks(), getSiteDesign()])
 
   return (
-    <html lang="en" className={`${tangerine.variable} ${poppinsHeading.variable} ${poppinsBody.variable} ${abrialFatface.variable}`}>
+    <html
+      lang="en"
+      className={`${tangerine.variable} ${poppinsHeading.variable} ${poppinsBody.variable} ${abrialFatface.variable}`}
+      data-animations={theme.animationsEnabled ? undefined : 'off'}
+    >
+      {/* Site-wide theme (TYN-314), read fresh on every request from the
+          Design editor's saved settings - layers on top of tokens.css's
+          hardcoded defaults so an unsaved/missing global never breaks
+          styling (getSiteDesign falls back to those same defaults). */}
+      <style dangerouslySetInnerHTML={{ __html: `:root {\n  ${themeToCssVars(theme)}\n}` }} />
       <body suppressHydrationWarning>
         <a href="#main-content" className="skipLink">Skip to content</a>
-        <Navbar builderLinks={builderLinks} />
+        <Navbar builderLinks={builderLinks} logoUrl={theme.logoUrl} />
         <div id="main-content" tabIndex={-1}>{children}</div>
         <Footer />
+        <DesignPreviewBridge />
         {/* No consent gate (TYN-27, investigated): Vercel Web Analytics and Speed
             Insights are cookieless by design - no persistent identifiers, no
             cross-site tracking, no PII collected - so no GDPR consent banner

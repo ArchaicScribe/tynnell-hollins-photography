@@ -16,13 +16,16 @@ import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
 
+// CSS-var-backed (TYN-314) so page-builder content follows the site-wide
+// Design editor theme, not a fixed palette - fallbacks match tokens.css's
+// defaults for when the var isn't set (e.g. isolated tooling/tests).
 const C = {
-  bg: '#0C0C0C',
-  accent: '#131313',
-  heading: '#D6D1CE',
-  body: '#E6E1DE',
-  detail: '#9B9A9A',
-  btn: '#9B9A9A',
+  bg: 'var(--color-bg, #0C0C0C)',
+  accent: 'var(--color-bg-accent, #131313)',
+  heading: 'var(--color-heading, #D6D1CE)',
+  body: 'var(--color-body, #E6E1DE)',
+  detail: 'var(--color-detail, #9B9A9A)',
+  btn: 'var(--color-btn-bg, #9B9A9A)',
   border: 'rgba(155,154,154,0.18)',
 }
 const HEADING_FONT = "var(--font-heading, Archivo, sans-serif)"
@@ -134,6 +137,7 @@ function btnStyle(): React.CSSProperties {
     textTransform: 'uppercase',
     fontSize: '0.78rem',
     fontFamily: BODY_FONT,
+    borderRadius: 'var(--btn-radius, 2px)',
   }
 }
 
@@ -159,8 +163,8 @@ const bgField = {
   label: 'Background',
   options: [
     { label: 'None', value: 'transparent' },
-    { label: 'Dark', value: '#0C0C0C' },
-    { label: 'Accent', value: '#131313' },
+    { label: 'Dark', value: 'var(--color-bg, #0C0C0C)' },
+    { label: 'Accent', value: 'var(--color-bg-accent, #131313)' },
   ],
 }
 // Faded background photo (TYN-305): an optional user-picked image behind the
@@ -443,7 +447,7 @@ export const config: Config = {
         items: [
           { quote: 'Working with Tynnell was effortless. The photos feel like us.', name: 'Sarah & James' },
         ],
-        background: '#131313',
+        background: 'var(--color-bg-accent, #131313)',
         spacing: 'normal',
         ...responsiveDefaults,
       },
@@ -478,7 +482,7 @@ export const config: Config = {
         subtext: '',
         buttonText: 'Book a Session',
         buttonHref: '/contact',
-        background: '#131313',
+        background: 'var(--color-bg-accent, #131313)',
         spacing: 'spacious',
         ...responsiveDefaults,
       },

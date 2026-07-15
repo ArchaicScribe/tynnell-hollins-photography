@@ -9,7 +9,7 @@ import styles from './Navbar.module.css'
 
 const ROW1 = ['Home', 'About', 'Portfolio', 'Services', 'Testimonials']
 
-export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[] }) {
+export default function Navbar({ builderLinks = [], logoUrl }: { builderLinks?: NavLink[]; logoUrl?: string }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [portfolioOpen, setPortfolioOpen] = useState(false)
@@ -81,9 +81,16 @@ export default function Navbar({ builderLinks = [] }: { builderLinks?: NavLink[]
     <>
       <nav className={navClass} aria-label="Main navigation">
         <Link href="/" className={styles.brand} aria-label="Tynnell Hollins Photography, home">
-          <span className={styles.brandLine}>Tynnell</span>
-          <span className={styles.brandLine}>Hollins</span>
-          <span className={styles.brandLine}>Photography</span>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="Tynnell Hollins Photography" className={styles.brandLogo} />
+          ) : (
+            <>
+              <span className={styles.brandLine}>Tynnell</span>
+              <span className={styles.brandLine}>Hollins</span>
+              <span className={styles.brandLine}>Photography</span>
+            </>
+          )}
         </Link>
 
         <div className={styles.linksWrapper}>

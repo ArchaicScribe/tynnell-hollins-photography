@@ -103,6 +103,7 @@ export interface Config {
     'hero-slides': HeroSlide;
     'about-page': AboutPage;
     'site-config': SiteConfig;
+    'site-design': SiteDesign;
     'booking-settings': BookingSetting;
     availability: Availability;
   };
@@ -110,6 +111,7 @@ export interface Config {
     'hero-slides': HeroSlidesSelect<false> | HeroSlidesSelect<true>;
     'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
     'site-config': SiteConfigSelect<false> | SiteConfigSelect<true>;
+    'site-design': SiteDesignSelect<false> | SiteDesignSelect<true>;
     'booking-settings': BookingSettingsSelect<false> | BookingSettingsSelect<true>;
     availability: AvailabilitySelect<false> | AvailabilitySelect<true>;
   };
@@ -1025,6 +1027,27 @@ export interface SiteConfig {
   createdAt?: string | null;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-design".
+ */
+export interface SiteDesign {
+  id: number;
+  logoUrl?: string | null;
+  headingFont?: ('poppins' | 'tangerine' | 'abril') | null;
+  bodyFont?: ('poppins' | 'tangerine' | 'abril') | null;
+  colorBg?: string | null;
+  colorBgAccent?: string | null;
+  colorHeading?: string | null;
+  colorBody?: string | null;
+  colorDetail?: string | null;
+  colorBtnBg?: string | null;
+  spacingScale?: ('compact' | 'normal' | 'spacious') | null;
+  buttonStyle?: ('sharp' | 'rounded' | 'pill') | null;
+  animationsEnabled?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Controls how far in advance clients can request sessions. Changes take effect immediately — no code change needed.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1138,6 +1161,27 @@ export interface SiteConfigSelect<T extends boolean = true> {
   facebookUrl?: T;
   tiktokUrl?: T;
   pinterestUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-design_select".
+ */
+export interface SiteDesignSelect<T extends boolean = true> {
+  logoUrl?: T;
+  headingFont?: T;
+  bodyFont?: T;
+  colorBg?: T;
+  colorBgAccent?: T;
+  colorHeading?: T;
+  colorBody?: T;
+  colorDetail?: T;
+  colorBtnBg?: T;
+  spacingScale?: T;
+  buttonStyle?: T;
+  animationsEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
