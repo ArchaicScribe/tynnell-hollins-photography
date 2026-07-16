@@ -18,6 +18,7 @@ import { SessionRowLabel as SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc } f
 import { PaymentRowLabel as PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5 } from '../../../collections/Projects/PaymentRowLabel'
 import { DocumentRowLabel as DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c } from '../../../collections/Projects/DocumentRowLabel'
 import { ProjectsKanbanView as ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0 } from '../../../components/admin/ProjectsKanbanView'
+import { ProjectsEditHeader as ProjectsEditHeader_d0e1f20314253647586970819a2b3c4d } from '../../../components/admin/ProjectsEditHeader'
 import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe } from '../../../components/admin/AboutViewOnSiteButton'
 import { SiteConfigHeader as SiteConfigHeader_a1b2c3d4e5f60718293a4b5c6d7e8f90 } from '../../../components/admin/SiteConfigHeader'
 import { BookingSettingsHeader as BookingSettingsHeader_b2c3d4e5f60718293a4b5c6d7e8f9001 } from '../../../components/admin/BookingSettingsHeader'
@@ -80,6 +81,7 @@ export const importMap = {
   "./collections/Projects/PaymentRowLabel#PaymentRowLabel": PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5,
   "./collections/Projects/DocumentRowLabel#DocumentRowLabel": DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c,
   "./components/admin/ProjectsKanbanView#ProjectsKanbanView": ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0,
+  "./components/admin/ProjectsEditHeader#ProjectsEditHeader": ProjectsEditHeader_d0e1f20314253647586970819a2b3c4d,
   "./components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton": AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe,
   "./components/admin/SiteConfigHeader#SiteConfigHeader": SiteConfigHeader_a1b2c3d4e5f60718293a4b5c6d7e8f90,
   "./components/admin/BookingSettingsHeader#BookingSettingsHeader": BookingSettingsHeader_b2c3d4e5f60718293a4b5c6d7e8f9001,
