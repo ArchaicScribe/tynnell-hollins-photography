@@ -27,6 +27,15 @@ export const Availability: GlobalConfig = {
   },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/AvailabilityHeader#AvailabilityHeader',
+        },
+      },
+    },
+    {
       name: 'blockedRanges',
       type: 'array',
       label: 'Blocked Date Ranges',

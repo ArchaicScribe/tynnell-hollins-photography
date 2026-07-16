@@ -19,6 +19,8 @@ import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c
 import { SiteConfigHeader as SiteConfigHeader_a1b2c3d4e5f60718293a4b5c6d7e8f90 } from '../../../components/admin/SiteConfigHeader'
 import { BookingSettingsHeader as BookingSettingsHeader_b2c3d4e5f60718293a4b5c6d7e8f9001 } from '../../../components/admin/BookingSettingsHeader'
 import { HeroSlidesHeader as HeroSlidesHeader_c3d4e5f60718293a4b5c6d7e8f900112 } from '../../../components/admin/HeroSlidesHeader'
+import { AboutPageHeader as AboutPageHeader_d4e5f60718293a4b5c6d7e8f90011223 } from '../../../components/admin/AboutPageHeader'
+import { AvailabilityHeader as AvailabilityHeader_e5f60718293a4b5c6d7e8f9001122334 } from '../../../components/admin/AvailabilityHeader'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -76,6 +78,8 @@ export const importMap = {
   "./components/admin/SiteConfigHeader#SiteConfigHeader": SiteConfigHeader_a1b2c3d4e5f60718293a4b5c6d7e8f90,
   "./components/admin/BookingSettingsHeader#BookingSettingsHeader": BookingSettingsHeader_b2c3d4e5f60718293a4b5c6d7e8f9001,
   "./components/admin/HeroSlidesHeader#HeroSlidesHeader": HeroSlidesHeader_c3d4e5f60718293a4b5c6d7e8f900112,
+  "./components/admin/AboutPageHeader#AboutPageHeader": AboutPageHeader_d4e5f60718293a4b5c6d7e8f90011223,
+  "./components/admin/AvailabilityHeader#AvailabilityHeader": AvailabilityHeader_e5f60718293a4b5c6d7e8f9001122334,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
