@@ -22,6 +22,15 @@ export const Projects: CollectionConfig = {
   },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/ProjectsEditHeader#ProjectsEditHeader',
+        },
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       label: 'Project Name',
