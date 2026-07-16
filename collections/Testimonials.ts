@@ -35,6 +35,15 @@ export const Testimonials: CollectionConfig = {
   },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/TestimonialsEditHeader#TestimonialsEditHeader',
+        },
+      },
+    },
+    {
       name: 'clientName',
       type: 'text',
       label: 'Client Name',
