@@ -10,6 +10,7 @@ import { GalleryBulkPhotoPicker as GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a
 import { GalleryPhotoArranger as GalleryPhotoArranger_4f7a56c3214650ac93f2acac369662ae } from '../../../components/admin/GalleryPhotoArranger'
 import { GalleryGridView as GalleryGridView_694fcc37683b7c53f35803e850250b41 } from '../../../components/admin/GalleryGridView'
 import { TestimonialsGridView as TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3 } from '../../../components/admin/TestimonialsGridView'
+import { TestimonialsEditHeader as TestimonialsEditHeader_a7b8c9d0e1f20314253647586970819a } from '../../../components/admin/TestimonialsEditHeader'
 import { ServicesGridView as ServicesGridView_f8436fdecdb227662e953e6db61537d6 } from '../../../components/admin/ServicesGridView'
 import { SessionRowLabel as SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc } from '../../../collections/Projects/SessionRowLabel'
 import { PaymentRowLabel as PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5 } from '../../../collections/Projects/PaymentRowLabel'
@@ -69,6 +70,7 @@ export const importMap = {
   "./components/admin/GalleryPhotoArranger#GalleryPhotoArranger": GalleryPhotoArranger_4f7a56c3214650ac93f2acac369662ae,
   "./components/admin/GalleryGridView#GalleryGridView": GalleryGridView_694fcc37683b7c53f35803e850250b41,
   "./components/admin/TestimonialsGridView#TestimonialsGridView": TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3,
+  "./components/admin/TestimonialsEditHeader#TestimonialsEditHeader": TestimonialsEditHeader_a7b8c9d0e1f20314253647586970819a,
   "./components/admin/ServicesGridView#ServicesGridView": ServicesGridView_f8436fdecdb227662e953e6db61537d6,
   "./collections/Projects/SessionRowLabel#SessionRowLabel": SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc,
   "./collections/Projects/PaymentRowLabel#PaymentRowLabel": PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5,
