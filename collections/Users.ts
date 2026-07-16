@@ -32,6 +32,15 @@ export const Users: CollectionConfig = {
   },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/UsersEditHeader#UsersEditHeader',
+        },
+      },
+    },
+    {
       name: 'name',
       type: 'text',
       label: 'Full Name',
