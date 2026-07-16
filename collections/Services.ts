@@ -35,6 +35,15 @@ export const Services: CollectionConfig = {
   },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/ServicesEditHeader#ServicesEditHeader',
+        },
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       label: 'Service Name',
