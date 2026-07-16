@@ -16,6 +16,9 @@ import { PaymentRowLabel as PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5 } f
 import { DocumentRowLabel as DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c } from '../../../collections/Projects/DocumentRowLabel'
 import { ProjectsKanbanView as ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0 } from '../../../components/admin/ProjectsKanbanView'
 import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe } from '../../../components/admin/AboutViewOnSiteButton'
+import { SiteConfigHeader as SiteConfigHeader_a1b2c3d4e5f60718293a4b5c6d7e8f90 } from '../../../components/admin/SiteConfigHeader'
+import { BookingSettingsHeader as BookingSettingsHeader_b2c3d4e5f60718293a4b5c6d7e8f9001 } from '../../../components/admin/BookingSettingsHeader'
+import { HeroSlidesHeader as HeroSlidesHeader_c3d4e5f60718293a4b5c6d7e8f900112 } from '../../../components/admin/HeroSlidesHeader'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -70,6 +73,9 @@ export const importMap = {
   "./collections/Projects/DocumentRowLabel#DocumentRowLabel": DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c,
   "./components/admin/ProjectsKanbanView#ProjectsKanbanView": ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0,
   "./components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton": AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe,
+  "./components/admin/SiteConfigHeader#SiteConfigHeader": SiteConfigHeader_a1b2c3d4e5f60718293a4b5c6d7e8f90,
+  "./components/admin/BookingSettingsHeader#BookingSettingsHeader": BookingSettingsHeader_b2c3d4e5f60718293a4b5c6d7e8f9001,
+  "./components/admin/HeroSlidesHeader#HeroSlidesHeader": HeroSlidesHeader_c3d4e5f60718293a4b5c6d7e8f900112,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,

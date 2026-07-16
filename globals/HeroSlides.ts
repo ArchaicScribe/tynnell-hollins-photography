@@ -24,6 +24,15 @@ export const HeroSlides: GlobalConfig = {
   },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/HeroSlidesHeader#HeroSlidesHeader',
+        },
+      },
+    },
+    {
       name: 'slides',
       type: 'array',
       label: 'Slides',

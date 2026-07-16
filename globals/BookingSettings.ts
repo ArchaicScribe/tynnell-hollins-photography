@@ -26,6 +26,15 @@ export const BookingSettings: GlobalConfig = {
   hooks: { afterChange: [revalidateBooking] },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/BookingSettingsHeader#BookingSettingsHeader',
+        },
+      },
+    },
+    {
       name: 'minLeadTimeHours',
       type: 'number',
       label: 'Minimum Lead Time (hours)',
