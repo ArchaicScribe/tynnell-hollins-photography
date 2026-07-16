@@ -25,6 +25,15 @@ export const AboutPage: GlobalConfig = {
   },
   fields: [
     {
+      name: 'editHeader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: './components/admin/AboutPageHeader#AboutPageHeader',
+        },
+      },
+    },
+    {
       name: 'viewOnSite',
       type: 'ui',
       admin: {
