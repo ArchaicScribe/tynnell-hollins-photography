@@ -1,4 +1,5 @@
 import { UsersGridView as UsersGridView_e52e18109dd25c5262c4d2e001ae4a87 } from '../../../components/admin/UsersGridView'
+import { UsersEditHeader as UsersEditHeader_c9d0e1f20314253647586970819a2b3c } from '../../../components/admin/UsersEditHeader'
 import { PhotoEditHeader as PhotoEditHeader_994fa1cc565775730944a666ddd8cc75 } from '../../../components/admin/PhotoEditHeader'
 import { PhotoViewInPortfolioButton as PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93 } from '../../../components/admin/PhotoViewInPortfolioButton'
 import { PhotoGridView as PhotoGridView_416d697f5d1039cfdf395a457f2fc19a } from '../../../components/admin/PhotoGridView'
@@ -60,6 +61,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 /** @type import('payload').ImportMap */
 export const importMap = {
   "./components/admin/UsersGridView#UsersGridView": UsersGridView_e52e18109dd25c5262c4d2e001ae4a87,
+  "./components/admin/UsersEditHeader#UsersEditHeader": UsersEditHeader_c9d0e1f20314253647586970819a2b3c,
   "./components/admin/PhotoEditHeader#PhotoEditHeader": PhotoEditHeader_994fa1cc565775730944a666ddd8cc75,
   "./components/admin/PhotoViewInPortfolioButton#PhotoViewInPortfolioButton": PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93,
   "./components/admin/PhotoGridView#PhotoGridView": PhotoGridView_416d697f5d1039cfdf395a457f2fc19a,
