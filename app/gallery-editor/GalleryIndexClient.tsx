@@ -26,7 +26,7 @@ const SWITCHER = [
   { label: 'Blog', desc: 'Write and publish posts', color: '#7c3aed', href: '/blog-editor', icon: '✍️' },
   { label: 'Bookings', desc: 'Services and availability', color: '#b45309', href: '/availability', icon: '📅' },
   { label: 'Testimonials', desc: 'Client reviews', color: '#059669', href: '/admin/collections/testimonials', icon: '💬' },
-  { label: 'Studio', desc: 'Settings and users', color: '#475569', href: '/admin/globals/site-config', icon: '⚙️' },
+  { label: 'Studio', desc: 'Settings and users', color: '#475569', href: '/site-settings', icon: '⚙️' },
 ]
 
 function fmtDate(iso: string | null): string {
@@ -519,7 +519,7 @@ export function GalleryIndexClient({ galleries }: { galleries: GalleryCard[] }) 
           <NavItem icon={<LibraryIcon />} label="Library" href="/photo-library" collapsed={collapsed} />
           <NavItem icon={<StarIcon />} label="Starred" href="/admin/collections/galleries?where[featured][equals]=true" external collapsed={collapsed} />
           <NavItem icon={<HomeIcon />} label="Homepage" href="/studio" external collapsed={collapsed} />
-          <NavItem icon={<GearIcon />} label="Settings" href="/admin/globals/site-config" external collapsed={collapsed} />
+          <NavItem icon={<GearIcon />} label="Settings" href="/site-settings" external collapsed={collapsed} />
 
           <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.65rem 0 0.5rem' }} />
 

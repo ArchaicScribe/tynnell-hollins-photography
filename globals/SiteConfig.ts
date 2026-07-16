@@ -15,15 +15,6 @@ export const SiteConfig: GlobalConfig = {
   },
   fields: [
     {
-      name: 'editHeader',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: './components/admin/SiteConfigHeader#SiteConfigHeader',
-        },
-      },
-    },
-    {
       name: 'title',
       type: 'text',
       label: 'Business Name',
