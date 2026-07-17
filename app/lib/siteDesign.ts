@@ -25,6 +25,8 @@ export const getSiteDesign = cache(async (): Promise<SiteTheme> => {
     return {
       logoUrl: doc.logoUrl || DEFAULT_THEME.logoUrl,
       faviconUrl: doc.faviconUrl || DEFAULT_THEME.faviconUrl,
+      watermarkEnabled: doc.watermarkEnabled ?? false,
+      watermarkUrl: doc.watermarkUrl || DEFAULT_THEME.watermarkUrl,
       headingFont: doc.headingFont || DEFAULT_THEME.headingFont,
       bodyFont: doc.bodyFont || DEFAULT_THEME.bodyFont,
       colorBg: doc.colorBg || DEFAULT_THEME.colorBg,

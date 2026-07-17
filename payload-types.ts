@@ -1034,6 +1034,8 @@ export interface SiteDesign {
   id: number;
   logoUrl?: string | null;
   faviconUrl?: string | null;
+  watermarkEnabled?: boolean | null;
+  watermarkUrl?: string | null;
   headingFont?: ('poppins' | 'tangerine' | 'abril') | null;
   bodyFont?: ('poppins' | 'tangerine' | 'abril') | null;
   colorBg?: string | null;
@@ -1173,6 +1175,8 @@ export interface SiteConfigSelect<T extends boolean = true> {
 export interface SiteDesignSelect<T extends boolean = true> {
   logoUrl?: T;
   faviconUrl?: T;
+  watermarkEnabled?: T;
+  watermarkUrl?: T;
   headingFont?: T;
   bodyFont?: T;
   colorBg?: T;

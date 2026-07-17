@@ -109,6 +109,19 @@ export function DesignSections({
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>Shown in the browser tab. Leave empty to use the site&apos;s default favicon.</p>
       </AccordionRow>
 
+      <AccordionRow label="Watermark" isOpen={open === 'watermark'} onToggle={() => setOpen(open === 'watermark' ? null : 'watermark')}>
+        <FieldLabel>Watermark image</FieldLabel>
+        <ImagePickerField value={theme.watermarkUrl} onChange={(v) => set('watermarkUrl', v)} />
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e6e1de', fontSize: 13, cursor: 'pointer', marginTop: 12 }}>
+          <input type="checkbox" checked={theme.watermarkEnabled} onChange={(e) => set('watermarkEnabled', e.target.checked)} />
+          Apply watermark to gallery previews
+        </label>
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          Applies to new uploads only, on gallery/portfolio preview images. Photos a client downloads through &quot;Allow Photo
+          Downloads&quot; are never watermarked.
+        </p>
+      </AccordionRow>
+
       <AccordionRow label="Fonts" isOpen={open === 'fonts'} onToggle={() => setOpen(open === 'fonts' ? null : 'fonts')}>
         <FieldLabel>Heading font</FieldLabel>
         <Select value={theme.headingFont} onChange={(v) => set('headingFont', v as SiteTheme['headingFont'])} options={FONT_OPTIONS} />
