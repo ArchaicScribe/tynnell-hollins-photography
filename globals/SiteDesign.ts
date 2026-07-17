@@ -23,6 +23,11 @@ export const SiteDesign: GlobalConfig = {
       label: 'Logo image URL',
     },
     {
+      name: 'faviconUrl',
+      type: 'text',
+      label: 'Favicon image URL',
+    },
+    {
       name: 'headingFont',
       type: 'select',
       label: 'Heading font',

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { SiteDesign } from '@/payload-types'
@@ -13,12 +14,17 @@ export { DEFAULT_THEME, themeToCssVarMap, themeToCssVars } from './siteTheme'
 // its own module (not app/lib/siteTheme.ts) because getPayload/@payload-config
 // pull in server-only code that breaks the /design editor's client bundle if
 // imported from a 'use client' component - see siteTheme.ts's header comment.
-export async function getSiteDesign(): Promise<SiteTheme> {
+//
+// Wrapped in React's cache() (TYN-321) so generateMetadata's favicon lookup
+// and the layout body's <style> lookup share one DB read per request instead
+// of two - both call this same function independently within one request.
+export const getSiteDesign = cache(async (): Promise<SiteTheme> => {
   try {
     const payload = await getPayload({ config })
     const doc = (await payload.findGlobal({ slug: 'site-design' })) as SiteDesign
     return {
       logoUrl: doc.logoUrl || DEFAULT_THEME.logoUrl,
+      faviconUrl: doc.faviconUrl || DEFAULT_THEME.faviconUrl,
       headingFont: doc.headingFont || DEFAULT_THEME.headingFont,
       bodyFont: doc.bodyFont || DEFAULT_THEME.bodyFont,
       colorBg: doc.colorBg || DEFAULT_THEME.colorBg,
@@ -34,4 +40,4 @@ export async function getSiteDesign(): Promise<SiteTheme> {
   } catch {
     return DEFAULT_THEME
   }
-}
+})

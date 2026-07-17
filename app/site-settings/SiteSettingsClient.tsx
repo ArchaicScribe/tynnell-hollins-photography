@@ -143,6 +143,30 @@ export function SiteSettingsClient({ initial }: { initial: SiteSettingsData }) {
           name, tagline, contact info, and social links from hardcoded values in the code instead. See TYN-326 to connect them.
         </div>
 
+        <Section title="Branding">
+          <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
+            Logo and favicon are managed from the Design editor, alongside your site&apos;s colors and fonts.
+          </p>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- cross-root-layout link, /design has its own root layout */}
+          <a
+            href="/design"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.5rem 0.9rem',
+              borderRadius: 6,
+              border: '1px solid rgba(155,154,154,0.3)',
+              color: '#D6D1CE',
+              fontSize: '0.82rem',
+              fontFamily: ui,
+              textDecoration: 'none',
+            }}
+          >
+            Open Design Editor &rarr;
+          </a>
+        </Section>
+
         <Section title="Business Info">
           <Field
             label="Business Name"

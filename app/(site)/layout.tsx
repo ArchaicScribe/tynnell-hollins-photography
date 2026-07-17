@@ -41,28 +41,38 @@ const abrialFatface = Abril_Fatface({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://tynnellhollinsphotography.com'),
-  title: {
-    default: 'Tynnell Hollins Photography',
-    template: '%s | Tynnell Hollins Photography',
-  },
-  description:
-    'Albuquerque, New Mexico wedding and portrait photographer. Tynnell Hollins captures authentic, timeless moments for couples, families, and engagements.',
-  openGraph: {
-    type: 'website',
-    siteName: 'Tynnell Hollins Photography',
-    locale: 'en_US',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Tynnell Hollins Photography' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    images: ['/og-image.jpg'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+// Favicon (TYN-321) is the one piece of metadata that depends on the
+// SiteDesign global, so this can't stay a static `metadata` export - Next.js
+// only allows one or the other per layout. getSiteDesign() is wrapped in
+// React's cache(), so this and the layout body's own call share one DB read.
+export async function generateMetadata(): Promise<Metadata> {
+  const theme = await getSiteDesign()
+  return {
+    metadataBase: new URL('https://tynnellhollinsphotography.com'),
+    title: {
+      default: 'Tynnell Hollins Photography',
+      template: '%s | Tynnell Hollins Photography',
+    },
+    description:
+      'Albuquerque, New Mexico wedding and portrait photographer. Tynnell Hollins captures authentic, timeless moments for couples, families, and engagements.',
+    openGraph: {
+      type: 'website',
+      siteName: 'Tynnell Hollins Photography',
+      locale: 'en_US',
+      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Tynnell Hollins Photography' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: ['/og-image.jpg'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    // Falls back to the app/favicon.ico file convention when no custom
+    // favicon has been set - only override when a real value exists.
+    ...(theme.faviconUrl ? { icons: { icon: theme.faviconUrl } } : {}),
+  }
 }
 
 export const viewport: Viewport = {

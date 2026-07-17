@@ -603,6 +603,19 @@ async function run() {
     `)
 
     console.log('✓ site_design table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260717_100000: site_design.favicon_url column (TYN-321)
+    // Optional custom favicon shown in the browser tab, set from the
+    // /design editor's Logo & Branding section. Falls back to the
+    // app/favicon.ico file convention when null.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "favicon_url" varchar
+    `)
+
+    console.log('✓ site_design.favicon_url column ready')
   } finally {
     client.release()
     await pool.end()
