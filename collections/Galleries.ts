@@ -51,6 +51,20 @@ const applyGalleryPresets: CollectionBeforeValidateHook = async ({ data = {}, op
   return data
 }
 
+// Reset the expiry-reminder idempotency flag whenever expiresAt or
+// clientEmail changes, regardless of which code path made the edit (the
+// /share route, a plain Settings-tab PATCH, or a raw Payload edit) - this is
+// a collection-level invariant, not something each caller should have to
+// remember to do itself.
+const resetExpiryReminderOnChange: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
+  const expiresAtChanged = 'expiresAt' in data && data.expiresAt !== originalDoc?.expiresAt
+  const clientEmailChanged = 'clientEmail' in data && data.clientEmail !== originalDoc?.clientEmail
+  if (expiresAtChanged || clientEmailChanged) {
+    data.expiryReminderSent = false
+  }
+  return data
+}
+
 // Bust the ISR cache for the affected gallery page (and the portfolio index)
 // on every save so the Live Preview pane reflects changes immediately instead
 // of waiting up to the 120s revalidate window (TYN-200). No-op outside a Next
@@ -72,7 +86,7 @@ export const Galleries: CollectionConfig = {
     plural: 'Collections',
   },
   hooks: {
-    beforeChange: [hashGalleryPassword],
+    beforeChange: [hashGalleryPassword, resetExpiryReminderOnChange],
     beforeValidate: [applyGalleryPresets, autoSlugFromTitle],
     afterChange: [revalidateGallery],
   },
@@ -275,6 +289,36 @@ export const Galleries: CollectionConfig = {
       name: 'allowDownload',
       type: 'checkbox',
       label: 'Allow Photo Downloads',
+      admin: { hidden: true },
+    },
+    {
+      // Managed via the gallery editor's Settings tab / "Send Gallery Email"
+      // modal (TYN-324), not the raw Payload form.
+      name: 'clientName',
+      type: 'text',
+      label: 'Client Name',
+      admin: { hidden: true },
+    },
+    {
+      name: 'clientEmail',
+      type: 'email',
+      label: 'Client Email',
+      admin: { hidden: true },
+    },
+    {
+      name: 'expiresAt',
+      type: 'date',
+      label: 'Expires On',
+      admin: {
+        hidden: true,
+        date: { pickerAppearance: 'dayOnly' },
+      },
+    },
+    {
+      name: 'expiryReminderSent',
+      type: 'checkbox',
+      label: 'Expiry Reminder Sent',
+      defaultValue: false,
       admin: { hidden: true },
     },
   ],

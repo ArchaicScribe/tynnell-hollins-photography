@@ -20,6 +20,7 @@ import { SiteDesign } from './globals/SiteDesign'
 import { BookingSettings } from './globals/BookingSettings'
 import { Availability } from './globals/Availability'
 import { GalleryPresets } from './globals/GalleryPresets'
+import { EmailTemplates } from './globals/EmailTemplates'
 import { Pages } from './collections/Pages'
 import { Projects } from './collections/Projects'
 
@@ -119,7 +120,7 @@ export default buildConfig({
   },
   sharp,
   collections: [Users, Photos, Galleries, Testimonials, Services, Posts, Pages, Projects],
-  globals: [HeroSlides, AboutPage, SiteConfig, SiteDesign, BookingSettings, Availability, GalleryPresets],
+  globals: [HeroSlides, AboutPage, SiteConfig, SiteDesign, BookingSettings, Availability, GalleryPresets, EmailTemplates],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

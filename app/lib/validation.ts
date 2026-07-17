@@ -18,6 +18,10 @@ export const CHECKOUT_MAX_LENGTHS = {
   clientName:  100,
 } as const
 
+export const SHARE_MAX_LENGTHS = {
+  clientName: 100,
+} as const
+
 /**
  * Returns true if any field in `values` exceeds its limit in `limits`.
  * Only checks string values - non-strings are skipped.

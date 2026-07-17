@@ -4,6 +4,7 @@ import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import { cookies } from 'next/headers'
 import { createHmac, timingSafeEqual } from 'crypto'
+import { isGalleryExpired } from '@/app/lib/galleryExpiry'
 
 // Verify the gallery auth cookie for password-protected galleries.
 function verifyToken(slug: string, passwordHash: string, token: string): boolean {
@@ -50,6 +51,7 @@ export async function GET(req: NextRequest, { params }: Props) {
   if (!gallery) return new NextResponse('Not found', { status: 404 })
   if (!gallery.allowDownload) return new NextResponse('Downloads not enabled', { status: 403 })
   if (gallery.status === 'draft') return new NextResponse('Not found', { status: 404 })
+  if (isGalleryExpired(gallery.expiresAt)) return new NextResponse('Gallery has expired', { status: 403 })
 
   // Password-protected gallery: check cookie.
   if (gallery.isPasswordProtected && gallery.password) {

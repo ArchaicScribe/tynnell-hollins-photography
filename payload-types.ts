@@ -107,6 +107,7 @@ export interface Config {
     'booking-settings': BookingSetting;
     availability: Availability;
     'gallery-presets': GalleryPreset;
+    'email-templates': EmailTemplate;
   };
   globalsSelect: {
     'hero-slides': HeroSlidesSelect<false> | HeroSlidesSelect<true>;
@@ -116,6 +117,7 @@ export interface Config {
     'booking-settings': BookingSettingsSelect<false> | BookingSettingsSelect<true>;
     availability: AvailabilitySelect<false> | AvailabilitySelect<true>;
     'gallery-presets': GalleryPresetsSelect<false> | GalleryPresetsSelect<true>;
+    'email-templates': EmailTemplatesSelect<false> | EmailTemplatesSelect<true>;
   };
   locale: null;
   widgets: {
@@ -307,6 +309,10 @@ export interface Gallery {
    * Optional full-width hero photo shown at the top of the gallery page.
    */
   heroPhoto?: number | Photo | null;
+  clientName?: string | null;
+  clientEmail?: string | null;
+  expiresAt?: string | null;
+  expiryReminderSent?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -738,6 +744,10 @@ export interface GalleriesSelect<T extends boolean = true> {
   displayOrder?: T;
   isPasswordProtected?: T;
   password?: T;
+  clientName?: T;
+  clientEmail?: T;
+  expiresAt?: T;
+  expiryReminderSent?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1147,6 +1157,26 @@ export interface GalleryPreset {
   createdAt?: string | null;
 }
 /**
+ * Copy for the emails sent when you share a gallery with a client, and the automatic reminder sent before it expires. Edited from Settings.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-templates".
+ */
+export interface EmailTemplate {
+  id: number;
+  shareSubject?: string | null;
+  shareHeading?: string | null;
+  shareBody?: string | null;
+  shareButtonLabel?: string | null;
+  reminderSubject?: string | null;
+  reminderHeading?: string | null;
+  reminderBody?: string | null;
+  reminderButtonLabel?: string | null;
+  reminderDaysBefore?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hero-slides_select".
  */
@@ -1246,6 +1276,24 @@ export interface GalleryPresetsSelect<T extends boolean = true> {
   defaultTapedStyle?: T;
   defaultFeatured?: T;
   defaultAllowDownload?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-templates_select".
+ */
+export interface EmailTemplatesSelect<T extends boolean = true> {
+  shareSubject?: T;
+  shareHeading?: T;
+  shareBody?: T;
+  shareButtonLabel?: T;
+  reminderSubject?: T;
+  reminderHeading?: T;
+  reminderBody?: T;
+  reminderButtonLabel?: T;
+  reminderDaysBefore?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

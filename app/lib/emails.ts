@@ -105,6 +105,17 @@ function divider(): string {
   return `<hr style="border:none;border-top:1px solid ${BORDER};margin:28px 0;" />`
 }
 
+function ctaButton(href: string, label: string): string {
+  return `
+    <table cellpadding="0" cellspacing="0" style="margin:8px 0 24px;">
+      <tr>
+        <td style="border-radius:4px;background:${BRAND_DARK};">
+          <a href="${href}" style="display:inline-block;padding:14px 32px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#ffffff;text-decoration:none;">${label}</a>
+        </td>
+      </tr>
+    </table>`
+}
+
 function signature(): string {
   return `
     <p style="margin:28px 0 0;font-family:Georgia,serif;font-size:15px;line-height:1.8;color:#444;">
@@ -310,6 +321,35 @@ export function clientReceiptEmailHtml(f: ClientReceiptEmailFields): string {
     ${body(`Hi ${f.clientName}, your <strong>${f.amountPaid}</strong> deposit for a <strong>${f.packageName}</strong> session has been received. I&rsquo;m so excited to work with you.`)}
     ${dateNote}
     ${followUpNote}
+    ${divider()}
+    ${signature()}
+  `)
+}
+
+// ---------------------------------------------------------------------------
+// Gallery sharing + expiry reminder (sent to a client, TYN-324)
+//
+// Both emails are CMS-editable (Settings > Email Templates) - the heading
+// and body text below have already been interpolated (variables substituted
+// and HTML-escaped) by app/lib/templateInterpolation.ts before reaching this
+// function. This one function renders both, since they share an identical
+// visual shape (branded wrapper + heading + body + CTA button + signature).
+// ---------------------------------------------------------------------------
+
+export interface TemplatedCtaEmailFields {
+  eyebrowText: string
+  headingHtml: string
+  bodyHtml: string
+  ctaHref: string
+  ctaLabel: string
+}
+
+export function templatedCtaEmailHtml(f: TemplatedCtaEmailFields): string {
+  return emailWrapper(`
+    ${eyebrow(f.eyebrowText)}
+    ${heading(f.headingHtml)}
+    ${body(f.bodyHtml)}
+    ${ctaButton(f.ctaHref, f.ctaLabel)}
     ${divider()}
     ${signature()}
   `)

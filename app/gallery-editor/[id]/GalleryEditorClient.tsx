@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { isUnsupportedImage, uploadPhotoToLibrary } from '@/app/lib/uploadPhoto'
+import { isValidEmail } from '@/app/lib/validation'
 import type { PhotoItem, GalleryListItem } from './page'
 
 const CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
@@ -17,6 +18,9 @@ type Props = {
   initialIsPasswordProtected: boolean
   initialPasswordSet: boolean
   initialAllowDownload: boolean
+  initialClientName: string
+  initialClientEmail: string
+  initialExpiresAt: string
   initialCoverId: number | null
   initialCoverThumb: string | null
   initialHeroUrl: string | null
@@ -35,6 +39,9 @@ export function GalleryEditorClient({
   initialIsPasswordProtected,
   initialPasswordSet,
   initialAllowDownload,
+  initialClientName,
+  initialClientEmail,
+  initialExpiresAt,
   initialCoverId,
   initialCoverThumb,
   initialHeroUrl,
@@ -50,6 +57,13 @@ export function GalleryEditorClient({
   const [featured, setFeatured] = useState(initialFeatured)
   const [isPasswordProtected, setIsPasswordProtected] = useState(initialIsPasswordProtected)
   const [allowDownload, setAllowDownload] = useState(initialAllowDownload)
+  const [clientName, setClientName] = useState(initialClientName)
+  const [clientEmail, setClientEmail] = useState(initialClientEmail)
+  const [expiresAt, setExpiresAt] = useState(initialExpiresAt)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const [shareError, setShareError] = useState('')
+  const [shareSuccess, setShareSuccess] = useState(false)
   // Empty string = no new password typed yet. When initialPasswordSet is true we show
   // a placeholder so the hash is never sent to the client.
   const [galleryPassword, setGalleryPassword] = useState('')
@@ -141,6 +155,37 @@ export function GalleryEditorClient({
     } finally {
       setDuplicating(false)
     }
+  }
+
+  const sendShareEmail = async () => {
+    if (!isValidEmail(clientEmail.trim())) {
+      setShareError('Enter a valid client email address.')
+      return
+    }
+    setSharing(true)
+    setShareError('')
+    try {
+      const res = await fetch(`/api/galleries/${galleryId}/share`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientName: clientName.trim(),
+          clientEmail: clientEmail.trim(),
+          expiresAt: expiresAt || null,
+        }),
+      })
+      if (res.ok) {
+        setShareSuccess(true)
+        setHasChanges(false)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setShareError(data.error || 'Could not send email. Please try again.')
+      }
+    } catch {
+      setShareError('Could not send email. Check your connection.')
+    }
+    setSharing(false)
   }
 
   // Pre-select the Gallery Presets default category (TYN-323), if one is set.
@@ -341,6 +386,9 @@ export function GalleryEditorClient({
               : {}),
           coverPhoto: coverId,
           photos: photos.map(p => ({ photo: p.id })),
+          clientName: clientName.trim() || null,
+          clientEmail: clientEmail.trim() || null,
+          expiresAt: expiresAt || null,
         }),
       })
       if (res.ok) {
@@ -379,7 +427,7 @@ export function GalleryEditorClient({
     autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, galleryPassword, coverId, photos])
+  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, galleryPassword, coverId, photos, clientName, clientEmail, expiresAt])
 
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
@@ -481,6 +529,84 @@ export function GalleryEditorClient({
                 {deleting ? 'Deleting...' : 'Delete gallery'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Send Gallery Email modal */}
+      {showShareModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="share-gallery-title"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={e => { if (e.target === e.currentTarget) setShowShareModal(false) }}
+          onKeyDown={e => { if (e.key === 'Escape') setShowShareModal(false) }}
+        >
+          <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '2rem', width: 380, display: 'flex', flexDirection: 'column', gap: '1.1rem', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
+            <h2 id="share-gallery-title" style={{ margin: 0, fontFamily: ui, fontSize: '1.05rem', fontWeight: 600, color: '#e6e1de', letterSpacing: '-0.01em' }}>Send gallery email</h2>
+
+            {shareSuccess ? (
+              <>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#6b6a6a', fontFamily: ui, lineHeight: 1.5 }}>
+                  Email sent to {clientEmail}.
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button type="button" onClick={() => setShowShareModal(false)} style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.5rem 1.1rem', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui }}>Done</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Client name</span>
+                  <input
+                    type="text"
+                    value={clientName}
+                    onChange={e => setField(setClientName)(e.target.value)}
+                    placeholder="Jane Doe"
+                    style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.9rem', outline: 'none', fontFamily: ui }}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Client email</span>
+                  <input
+                    type="email"
+                    value={clientEmail}
+                    onChange={e => setField(setClientEmail)(e.target.value)}
+                    placeholder="jane@example.com"
+                    autoFocus
+                    style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.9rem', outline: 'none', fontFamily: ui }}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Expires on (optional)</span>
+                  <input
+                    type="date"
+                    value={expiresAt}
+                    onChange={e => setField(setExpiresAt)(e.target.value)}
+                    style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.9rem', outline: 'none', fontFamily: ui, colorScheme: 'dark' }}
+                  />
+                </label>
+                {isPasswordProtected && (
+                  <p style={{ margin: 0, fontSize: '0.72rem', color: '#3a3a3a', fontFamily: ui, lineHeight: 1.5 }}>
+                    This gallery is password protected. The email will let the client know a password is required - be sure to share it with them separately.
+                  </p>
+                )}
+                {shareError && <p role="alert" style={{ margin: 0, fontSize: '0.78rem', color: '#f0a3a3', fontFamily: ui }}>{shareError}</p>}
+                <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
+                  <button type="button" onClick={() => setShowShareModal(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 6, padding: '0.5rem 1.1rem', fontSize: '0.85rem', cursor: 'pointer', fontFamily: ui, fontWeight: 500 }}>Cancel</button>
+                  <button
+                    type="button"
+                    onClick={() => void sendShareEmail()}
+                    disabled={sharing || !clientEmail.trim()}
+                    aria-busy={sharing}
+                    style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.5rem 1.3rem', fontSize: '0.85rem', fontWeight: 600, cursor: (sharing || !clientEmail.trim()) ? 'not-allowed' : 'pointer', fontFamily: ui, opacity: (sharing || !clientEmail.trim()) ? 0.5 : 1 }}
+                  >
+                    {sharing ? 'Sending...' : 'Send email'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -847,6 +973,52 @@ export function GalleryEditorClient({
                       <span style={{ fontSize: '0.67rem', color: '#3a3a3a', fontFamily: ui }}>Share this with your clients</span>
                     </label>
                   )}
+                </div>
+
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.1rem 0' }} />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Client sharing</span>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Client name</span>
+                    <input
+                      type="text"
+                      value={clientName}
+                      onChange={e => setField(setClientName)(e.target.value)}
+                      placeholder="Jane Doe"
+                      style={{ background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui }}
+                      aria-label="Client name"
+                    />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Client email</span>
+                    <input
+                      type="email"
+                      value={clientEmail}
+                      onChange={e => setField(setClientEmail)(e.target.value)}
+                      placeholder="jane@example.com"
+                      style={{ background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui }}
+                      aria-label="Client email"
+                    />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Expires on</span>
+                    <input
+                      type="date"
+                      value={expiresAt}
+                      onChange={e => setField(setExpiresAt)(e.target.value)}
+                      style={{ background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui, colorScheme: 'dark' }}
+                      aria-label="Gallery expiration date"
+                    />
+                    <span style={{ fontSize: '0.67rem', color: '#3a3a3a', fontFamily: ui }}>Leave blank for a gallery that never expires</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { setShareError(''); setShareSuccess(false); setShowShareModal(true) }}
+                    style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 6, padding: '0.5rem 0.75rem', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer', fontFamily: ui, textAlign: 'center' }}
+                  >
+                    Send Gallery Email
+                  </button>
                 </div>
 
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.1rem 0' }} />

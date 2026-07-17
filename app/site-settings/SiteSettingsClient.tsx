@@ -21,6 +21,18 @@ type GalleryPresetsData = {
   defaultAllowDownload: boolean
 }
 
+type EmailTemplatesData = {
+  shareSubject: string
+  shareHeading: string
+  shareBody: string
+  shareButtonLabel: string
+  reminderSubject: string
+  reminderHeading: string
+  reminderBody: string
+  reminderButtonLabel: string
+  reminderDaysBefore: string
+}
+
 const CATEGORY_OPTIONS = [
   { value: '', label: 'No default (always choose manually)' },
   { value: 'weddings', label: 'Weddings' },
@@ -130,6 +142,48 @@ function SelectField({
   )
 }
 
+function TextAreaField({
+  label,
+  description,
+  value,
+  onChange,
+}: {
+  label: string
+  description: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div style={{ marginBottom: '1.5rem' }}>
+      <label style={{ display: 'block', color: '#D6D1CE', fontSize: '0.85rem', fontWeight: 600, fontFamily: ui, marginBottom: '0.5rem' }}>
+        {label}
+      </label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={4}
+        style={{
+          width: '100%',
+          maxWidth: 480,
+          padding: '0.65rem 0.85rem',
+          background: '#1a1a1a',
+          border: '1px solid rgba(155,154,154,0.25)',
+          borderRadius: 6,
+          color: '#E6E1DE',
+          fontSize: '0.9rem',
+          fontFamily: ui,
+          outline: 'none',
+          boxSizing: 'border-box',
+          resize: 'vertical',
+        }}
+      />
+      <p style={{ margin: '0.5rem 0 0', color: '#6b6a6a', fontSize: '0.78rem', lineHeight: 1.5, maxWidth: 480 }}>
+        {description}
+      </p>
+    </div>
+  )
+}
+
 function CheckboxField({
   label,
   description,
@@ -176,12 +230,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function SiteSettingsClient({
   initial,
   initialPresets,
+  initialEmailTemplates,
 }: {
   initial: SiteSettingsData
   initialPresets: GalleryPresetsData
+  initialEmailTemplates: EmailTemplatesData
 }) {
   const [data, setData] = useState<SiteSettingsData>(initial)
   const [presets, setPresets] = useState<GalleryPresetsData>(initialPresets)
+  const [templates, setTemplates] = useState<EmailTemplatesData>(initialEmailTemplates)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -196,11 +253,16 @@ export function SiteSettingsClient({
     setPresets((p) => ({ ...p, [key]: value }))
   }
 
+  const setTemplate = <K extends keyof EmailTemplatesData>(key: K, value: EmailTemplatesData[K]) => {
+    setSaved(false)
+    setTemplates((t) => ({ ...t, [key]: value }))
+  }
+
   const save = async () => {
     setSaving(true)
     setError('')
     try {
-      const [siteRes, presetsRes] = await Promise.all([
+      const [siteRes, presetsRes, templatesRes] = await Promise.all([
         fetch('/api/site-settings/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -211,8 +273,16 @@ export function SiteSettingsClient({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(presets),
         }),
+        fetch('/api/email-templates/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...templates,
+            reminderDaysBefore: Number(templates.reminderDaysBefore) || 0,
+          }),
+        }),
       ])
-      if (siteRes.ok && presetsRes.ok) {
+      if (siteRes.ok && presetsRes.ok && templatesRes.ok) {
         setSaved(true)
       } else {
         setError('Failed to save. Please try again.')
@@ -377,6 +447,76 @@ export function SiteSettingsClient({
             description="New galleries start with client photo downloads turned on."
             checked={presets.defaultAllowDownload}
             onChange={(v) => setPreset('defaultAllowDownload', v)}
+          />
+        </Section>
+
+        <Section title="Email Templates">
+          <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
+            Copy for the emails sent when you share a gallery with a client, and the automatic reminder sent before it
+            expires.
+          </p>
+
+          <h3 style={{ margin: '0 0 0.75rem', color: '#D6D1CE', fontSize: '0.85rem', fontWeight: 600, fontFamily: ui }}>
+            Collection Sharing Email
+          </h3>
+          <Field
+            label="Subject"
+            description="Available variables: {{clientName}}, {{galleryTitle}}"
+            value={templates.shareSubject}
+            onChange={(v) => setTemplate('shareSubject', v)}
+          />
+          <Field
+            label="Heading"
+            description="Available variables: {{clientName}}, {{galleryTitle}}"
+            value={templates.shareHeading}
+            onChange={(v) => setTemplate('shareHeading', v)}
+          />
+          <TextAreaField
+            label="Body"
+            description="Available variables: {{clientName}}, {{galleryTitle}}, {{passwordNote}} (only appears if the gallery is password protected)"
+            value={templates.shareBody}
+            onChange={(v) => setTemplate('shareBody', v)}
+          />
+          <Field
+            label="Button Label"
+            description="Text shown on the call-to-action button linking to the gallery."
+            value={templates.shareButtonLabel}
+            onChange={(v) => setTemplate('shareButtonLabel', v)}
+          />
+
+          <h3 style={{ margin: '2rem 0 0.75rem', color: '#D6D1CE', fontSize: '0.85rem', fontWeight: 600, fontFamily: ui }}>
+            Expiry Reminder Email
+          </h3>
+          <Field
+            label="Subject"
+            description="Available variables: {{clientName}}, {{galleryTitle}}, {{expiresAt}}"
+            value={templates.reminderSubject}
+            onChange={(v) => setTemplate('reminderSubject', v)}
+          />
+          <Field
+            label="Heading"
+            description="Available variables: {{clientName}}, {{galleryTitle}}, {{expiresAt}}"
+            value={templates.reminderHeading}
+            onChange={(v) => setTemplate('reminderHeading', v)}
+          />
+          <TextAreaField
+            label="Body"
+            description="Available variables: {{clientName}}, {{galleryTitle}}, {{expiresAt}}"
+            value={templates.reminderBody}
+            onChange={(v) => setTemplate('reminderBody', v)}
+          />
+          <Field
+            label="Button Label"
+            description="Text shown on the call-to-action button linking to the gallery."
+            value={templates.reminderButtonLabel}
+            onChange={(v) => setTemplate('reminderButtonLabel', v)}
+          />
+          <Field
+            label="Send Reminder (Days Before Expiry)"
+            description="How many days before a gallery expires to send the reminder email."
+            type="number"
+            value={templates.reminderDaysBefore}
+            onChange={(v) => setTemplate('reminderDaysBefore', v)}
           />
         </Section>
 

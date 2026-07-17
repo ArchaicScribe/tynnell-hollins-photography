@@ -17,6 +17,7 @@ export default async function SiteSettingsPage() {
 
   const siteConfig = await payload.findGlobal({ slug: 'site-config' })
   const galleryPresets = await payload.findGlobal({ slug: 'gallery-presets' })
+  const emailTemplates = await payload.findGlobal({ slug: 'email-templates' })
 
   return (
     <SiteSettingsClient
@@ -36,6 +37,17 @@ export default async function SiteSettingsPage() {
         defaultTapedStyle: galleryPresets.defaultTapedStyle ?? false,
         defaultFeatured: galleryPresets.defaultFeatured ?? false,
         defaultAllowDownload: galleryPresets.defaultAllowDownload ?? false,
+      }}
+      initialEmailTemplates={{
+        shareSubject: emailTemplates.shareSubject ?? '',
+        shareHeading: emailTemplates.shareHeading ?? '',
+        shareBody: emailTemplates.shareBody ?? '',
+        shareButtonLabel: emailTemplates.shareButtonLabel ?? '',
+        reminderSubject: emailTemplates.reminderSubject ?? '',
+        reminderHeading: emailTemplates.reminderHeading ?? '',
+        reminderBody: emailTemplates.reminderBody ?? '',
+        reminderButtonLabel: emailTemplates.reminderButtonLabel ?? '',
+        reminderDaysBefore: String(emailTemplates.reminderDaysBefore ?? 3),
       }}
     />
   )

@@ -99,6 +99,9 @@ export default async function GalleryEditorPage({ params }: Props) {
       initialIsPasswordProtected={gallery.isPasswordProtected ?? false}
       initialPasswordSet={typeof gallery.password === 'string' && gallery.password.length > 0}
       initialAllowDownload={gallery.allowDownload ?? false}
+      initialClientName={gallery.clientName ?? ''}
+      initialClientEmail={gallery.clientEmail ?? ''}
+      initialExpiresAt={typeof gallery.expiresAt === 'string' ? gallery.expiresAt.slice(0, 10) : ''}
       initialCoverId={coverPhoto?.id ?? null}
       initialCoverThumb={coverPhoto?.sizes?.card?.url ?? coverPhoto?.url ?? null}
       initialHeroUrl={heroPhoto?.sizes?.hero?.url ?? heroPhoto?.url ?? null}
