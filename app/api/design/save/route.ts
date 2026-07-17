@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic'
 
 const FIELDS = [
   'logoUrl',
+  'faviconUrl',
   'headingFont',
   'bodyFont',
   'colorBg',

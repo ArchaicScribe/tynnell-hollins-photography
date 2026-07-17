@@ -104,6 +104,9 @@ export function DesignSections({
         <FieldLabel>Logo image</FieldLabel>
         <ImagePickerField value={theme.logoUrl} onChange={(v) => set('logoUrl', v)} />
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>Leave empty to show the text wordmark instead of an image.</p>
+        <FieldLabel style={{ marginTop: 16 }}>Favicon</FieldLabel>
+        <ImagePickerField value={theme.faviconUrl} onChange={(v) => set('faviconUrl', v)} />
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>Shown in the browser tab. Leave empty to use the site&apos;s default favicon.</p>
       </AccordionRow>
 
       <AccordionRow label="Fonts" isOpen={open === 'fonts'} onToggle={() => setOpen(open === 'fonts' ? null : 'fonts')}>
