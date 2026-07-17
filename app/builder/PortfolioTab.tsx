@@ -131,6 +131,18 @@ function NewCollectionModal({ onClose, onCreated }: { onClose: () => void; onCre
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
+  // Pre-select the Gallery Presets default category (TYN-323), if one is set.
+  // Status/tapedStyle/featured/allowDownload are applied server-side by the
+  // Galleries collection's create hook, so they don't need a value here.
+  useEffect(() => {
+    fetch('/api/globals/gallery-presets', { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: { defaultCategory?: string | null }) => {
+        if (d.defaultCategory) setCategory(d.defaultCategory)
+      })
+      .catch(() => {})
+  }, [])
+
   const create = async () => {
     if (!title.trim()) return
     setCreating(true); setError('')
@@ -138,7 +150,7 @@ function NewCollectionModal({ onClose, onCreated }: { onClose: () => void; onCre
       const res = await fetch('/api/galleries', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), category, status: 'draft' }),
+        body: JSON.stringify({ title: title.trim(), category }),
       })
       if (res.ok) {
         const data = await res.json() as { doc?: { id: number } }

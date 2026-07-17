@@ -143,6 +143,22 @@ export function GalleryEditorClient({
     }
   }
 
+  // Pre-select the Gallery Presets default category (TYN-323), if one is set.
+  // Status/tapedStyle/featured/allowDownload are applied server-side by the
+  // Galleries collection's create hook, so they don't need a value here.
+  const openNewGalleryModal = () => {
+    setNewTitle('')
+    setNewCategory('portraits')
+    setCreateError('')
+    setShowNewModal(true)
+    fetch('/api/globals/gallery-presets', { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: { defaultCategory?: string | null }) => {
+        if (d.defaultCategory) setNewCategory(d.defaultCategory)
+      })
+      .catch(() => {})
+  }
+
   const createGallery = async () => {
     if (!newTitle.trim()) return
     setCreating(true)
@@ -152,7 +168,7 @@ export function GalleryEditorClient({
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle.trim(), category: newCategory, status: 'draft' }),
+        body: JSON.stringify({ title: newTitle.trim(), category: newCategory }),
       })
       if (res.ok) {
         const data = await res.json() as { doc?: { id: number } }
@@ -692,7 +708,7 @@ export function GalleryEditorClient({
                 <span style={{ fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3a3a3a', fontFamily: ui }}>{allGalleries.length} Galleries</span>
                 <button
                   type="button"
-                  onClick={() => { setNewTitle(''); setCreateError(''); setShowNewModal(true) }}
+                  onClick={openNewGalleryModal}
                   style={{ background: 'none', border: 'none', color: '#1db954', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui, display: 'flex', alignItems: 'center', gap: '0.2rem', padding: '0.1rem 0.25rem' }}
                   aria-label="New gallery"
                 >

@@ -16,6 +16,7 @@ export default async function SiteSettingsPage() {
   if (user.role !== 'admin') redirect('/studio')
 
   const siteConfig = await payload.findGlobal({ slug: 'site-config' })
+  const galleryPresets = await payload.findGlobal({ slug: 'gallery-presets' })
 
   return (
     <SiteSettingsClient
@@ -28,6 +29,13 @@ export default async function SiteSettingsPage() {
         facebookUrl: siteConfig.facebookUrl ?? '',
         tiktokUrl: siteConfig.tiktokUrl ?? '',
         pinterestUrl: siteConfig.pinterestUrl ?? '',
+      }}
+      initialPresets={{
+        defaultCategory: galleryPresets.defaultCategory ?? '',
+        defaultStatus: galleryPresets.defaultStatus ?? 'draft',
+        defaultTapedStyle: galleryPresets.defaultTapedStyle ?? false,
+        defaultFeatured: galleryPresets.defaultFeatured ?? false,
+        defaultAllowDownload: galleryPresets.defaultAllowDownload ?? false,
       }}
     />
   )

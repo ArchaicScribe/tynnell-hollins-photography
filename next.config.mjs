@@ -73,6 +73,11 @@ const nextConfig = {
         destination: '/site-settings',
         permanent: false,
       },
+      {
+        source: '/admin/globals/gallery-presets',
+        destination: '/site-settings',
+        permanent: false,
+      },
     ]
   },
   async headers() {

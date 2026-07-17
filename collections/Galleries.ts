@@ -30,6 +30,27 @@ const autoSlugFromTitle: CollectionBeforeValidateHook = ({ data = {} }) => {
   return data
 }
 
+// Apply Gallery Presets (TYN-323) on creation only - fills in status,
+// tapedStyle, featured, and allowDownload when the create request does not
+// already specify them, so the "New Collection" modals don't have to be
+// rebuilt with pickers for every preset-able field. Never overrides a value
+// the client actually sent. Best-effort: falls through to the field's own
+// defaultValue if the presets global cannot be read.
+const applyGalleryPresets: CollectionBeforeValidateHook = async ({ data = {}, operation, req }) => {
+  if (operation !== 'create') return data
+  try {
+    const presets = await req.payload.findGlobal({ slug: 'gallery-presets' })
+    if (data.category === undefined && presets.defaultCategory) data.category = presets.defaultCategory
+    if (data.status === undefined && presets.defaultStatus) data.status = presets.defaultStatus
+    if (data.tapedStyle === undefined) data.tapedStyle = presets.defaultTapedStyle ?? false
+    if (data.featured === undefined) data.featured = presets.defaultFeatured ?? false
+    if (data.allowDownload === undefined) data.allowDownload = presets.defaultAllowDownload ?? false
+  } catch (err) {
+    console.warn('[galleries] failed to apply gallery presets on create (non-fatal):', err)
+  }
+  return data
+}
+
 // Bust the ISR cache for the affected gallery page (and the portfolio index)
 // on every save so the Live Preview pane reflects changes immediately instead
 // of waiting up to the 120s revalidate window (TYN-200). No-op outside a Next
@@ -52,7 +73,7 @@ export const Galleries: CollectionConfig = {
   },
   hooks: {
     beforeChange: [hashGalleryPassword],
-    beforeValidate: [autoSlugFromTitle],
+    beforeValidate: [applyGalleryPresets, autoSlugFromTitle],
     afterChange: [revalidateGallery],
   },
   admin: {
@@ -184,10 +205,15 @@ export const Galleries: CollectionConfig = {
       ],
     },
     {
+      // No defaultValue here - Payload resolves field-level defaults before
+      // beforeValidate hooks run, which would pre-empt applyGalleryPresets's
+      // "not provided by the client" check on create. Gallery Presets (TYN-323)
+      // is the single source of truth for what a new gallery starts as; the
+      // Postgres column's own DEFAULT 'published' is the final fallback if the
+      // presets hook itself fails.
       name: 'status',
       type: 'select',
       label: 'Status',
-      defaultValue: 'published',
       admin: {
         position: 'sidebar',
         description: 'Draft galleries are hidden from your public portfolio.',
@@ -198,20 +224,20 @@ export const Galleries: CollectionConfig = {
       ],
     },
     {
+      // No defaultValue - see the note on `status` above.
       name: 'tapedStyle',
       type: 'checkbox',
       label: 'Taped Photo Style',
-      defaultValue: false,
       admin: {
         description:
           'Display this gallery with the editorial taped-photo look (each photo on a cream mat with tape corners and a slight tilt). Leave off for a clean grid.',
       },
     },
     {
+      // No defaultValue - see the note on `status` above.
       name: 'featured',
       type: 'checkbox',
       label: 'Show on Homepage',
-      defaultValue: false,
       admin: {
         description: 'Turn on to feature this gallery on your homepage.',
       },
@@ -245,10 +271,10 @@ export const Galleries: CollectionConfig = {
       },
     },
     {
+      // No defaultValue - see the note on `status` above.
       name: 'allowDownload',
       type: 'checkbox',
       label: 'Allow Photo Downloads',
-      defaultValue: false,
       admin: { hidden: true },
     },
   ],

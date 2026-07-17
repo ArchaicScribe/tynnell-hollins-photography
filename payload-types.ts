@@ -106,6 +106,7 @@ export interface Config {
     'site-design': SiteDesign;
     'booking-settings': BookingSetting;
     availability: Availability;
+    'gallery-presets': GalleryPreset;
   };
   globalsSelect: {
     'hero-slides': HeroSlidesSelect<false> | HeroSlidesSelect<true>;
@@ -114,6 +115,7 @@ export interface Config {
     'site-design': SiteDesignSelect<false> | SiteDesignSelect<true>;
     'booking-settings': BookingSettingsSelect<false> | BookingSettingsSelect<true>;
     availability: AvailabilitySelect<false> | AvailabilitySelect<true>;
+    'gallery-presets': GalleryPresetsSelect<false> | GalleryPresetsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -1114,6 +1116,37 @@ export interface Availability {
   createdAt?: string | null;
 }
 /**
+ * Default values applied automatically whenever a new gallery is created, so you do not have to reconfigure the same options every time. Edited from Settings.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-presets".
+ */
+export interface GalleryPreset {
+  id: number;
+  /**
+   * Pre-selected category when creating a new gallery. Leave unset to always require a manual choice.
+   */
+  defaultCategory?: ('weddings' | 'portraits' | 'families' | 'couples' | 'brands') | null;
+  /**
+   * Status applied to a gallery when it is first created.
+   */
+  defaultStatus?: ('published' | 'draft') | null;
+  /**
+   * New galleries start with the editorial taped-photo look already turned on.
+   */
+  defaultTapedStyle?: boolean | null;
+  /**
+   * New galleries start featured on the homepage.
+   */
+  defaultFeatured?: boolean | null;
+  /**
+   * New galleries start with client photo downloads turned on.
+   */
+  defaultAllowDownload?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hero-slides_select".
  */
@@ -1199,6 +1232,20 @@ export interface SiteDesignSelect<T extends boolean = true> {
 export interface BookingSettingsSelect<T extends boolean = true> {
   minLeadTimeHours?: T;
   maxBookingMonths?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-presets_select".
+ */
+export interface GalleryPresetsSelect<T extends boolean = true> {
+  defaultCategory?: T;
+  defaultStatus?: T;
+  defaultTapedStyle?: T;
+  defaultFeatured?: T;
+  defaultAllowDownload?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
