@@ -634,6 +634,29 @@ async function run() {
     `)
 
     console.log('✓ site_design watermark columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260717_300000: gallery_presets global table (TYN-323)
+    // Defaults applied automatically when a new gallery is created (see the
+    // applyGalleryPresets hook in collections/Galleries.ts), edited from the
+    // Settings > Gallery Presets section. default_status defaults to 'draft'
+    // to match the create-modal behavior that existed before this feature.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "gallery_presets" (
+        "id"                     serial  PRIMARY KEY NOT NULL,
+        "default_category"       varchar,
+        "default_status"         varchar DEFAULT 'draft',
+        "default_taped_style"    boolean DEFAULT false,
+        "default_featured"       boolean DEFAULT false,
+        "default_allow_download" boolean DEFAULT false,
+        "updated_at"             timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"             timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    console.log('✓ gallery_presets table ready')
   } finally {
     client.release()
     await pool.end()
