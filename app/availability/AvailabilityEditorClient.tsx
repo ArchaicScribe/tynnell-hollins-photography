@@ -39,7 +39,7 @@ const SWITCHER = [
   { label: 'Blog', desc: 'Write and publish posts', color: '#7c3aed', href: '/blog-editor', icon: '✍️' },
   { label: 'Bookings', desc: 'Services and availability', color: '#b45309', href: '/availability', icon: '📅' },
   { label: 'Testimonials', desc: 'Client reviews', color: '#059669', href: '/admin/collections/testimonials', icon: '💬' },
-  { label: 'Studio', desc: 'Settings and users', color: '#475569', href: '/admin/globals/site-config', icon: '⚙️' },
+  { label: 'Studio', desc: 'Settings and users', color: '#475569', href: '/site-settings', icon: '⚙️' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -867,7 +867,7 @@ export function AvailabilityEditorClient({ initialRanges }: { initialRanges: Ran
           <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0.5rem 0.25rem' }} />
 
           <NavItem href="https://tynnellhollinsphotography.com" icon={<GlobeIcon />} label="View Website" collapsed={collapsed} external />
-          <NavItem href="/admin/globals/site-config" icon={<GearIcon />} label="Site Settings" collapsed={collapsed} external />
+          <NavItem href="/site-settings" icon={<GearIcon />} label="Site Settings" collapsed={collapsed} external />
         </nav>
 
         {/* Collapse toggle */}

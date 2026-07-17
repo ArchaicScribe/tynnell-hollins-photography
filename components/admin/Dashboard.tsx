@@ -166,7 +166,7 @@ const PRODUCTS: Product[] = [
     icon: <UsersIcon />,
     links: [
       { label: 'Users', href: '/admin/collections/users' },
-      { label: 'Site Config', href: '/admin/globals/site-config' },
+      { label: 'Site Config', href: '/site-settings' },
       { label: 'Page Builder', href: '/builder' },
     ],
   },

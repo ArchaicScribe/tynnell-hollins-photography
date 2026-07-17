@@ -68,6 +68,11 @@ const nextConfig = {
         destination: '/gallery-editor/:id',
         permanent: false,
       },
+      {
+        source: '/admin/globals/site-config',
+        destination: '/site-settings',
+        permanent: false,
+      },
     ]
   },
   async headers() {

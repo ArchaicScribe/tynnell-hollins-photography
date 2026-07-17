@@ -857,7 +857,7 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website', ini
               <p style={{ margin: '0 0 0.75rem', fontFamily: ui, fontSize: '0.9rem', fontWeight: 600, color: '#e0dcd8' }}>Settings</p>
               {/* eslint-disable @next/next/no-html-link-for-pages */}
               {[
-                { label: 'Site Config', href: '/admin/globals/site-config' },
+                { label: 'Site Config', href: '/site-settings' },
                 { label: 'Hero Slides', href: '/admin/globals/hero-slides'  },
                 { label: 'About Page',  href: '/admin/globals/about-page'   },
               ].map(item => (

@@ -505,7 +505,7 @@ export function StudioClient({ userName, userRole, galleries, photos }: Props) {
       color: '#b45309',
       icon: <SettingsIcon />,
       links: [
-        { label: 'Site Config', href: '/admin/globals/site-config', adminOnly: true },
+        { label: 'Site Config', href: '/site-settings', adminOnly: true },
         { label: 'Hero Slides', href: '/admin/globals/hero-slides' },
         { label: 'About Page', href: '/admin/globals/about-page' },
         { label: 'Admin Panel', href: '/admin' },
