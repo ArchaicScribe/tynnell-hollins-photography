@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic'
 const FIELDS = [
   'logoUrl',
   'faviconUrl',
+  'watermarkEnabled',
+  'watermarkUrl',
   'headingFont',
   'bodyFont',
   'colorBg',

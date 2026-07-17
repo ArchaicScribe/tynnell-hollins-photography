@@ -28,6 +28,17 @@ export const SiteDesign: GlobalConfig = {
       label: 'Favicon image URL',
     },
     {
+      name: 'watermarkEnabled',
+      type: 'checkbox',
+      label: 'Apply watermark to gallery previews',
+      defaultValue: false,
+    },
+    {
+      name: 'watermarkUrl',
+      type: 'text',
+      label: 'Watermark image URL',
+    },
+    {
       name: 'headingFont',
       type: 'select',
       label: 'Heading font',

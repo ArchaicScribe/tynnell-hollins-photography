@@ -8,6 +8,8 @@
 export interface SiteTheme {
   logoUrl: string
   faviconUrl: string
+  watermarkEnabled: boolean
+  watermarkUrl: string
   headingFont: 'poppins' | 'tangerine' | 'abril'
   bodyFont: 'poppins' | 'tangerine' | 'abril'
   colorBg: string
@@ -24,6 +26,8 @@ export interface SiteTheme {
 export const DEFAULT_THEME: SiteTheme = {
   logoUrl: '',
   faviconUrl: '',
+  watermarkEnabled: false,
+  watermarkUrl: '',
   headingFont: 'poppins',
   bodyFont: 'poppins',
   colorBg: '#0C0C0C',

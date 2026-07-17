@@ -616,6 +616,24 @@ async function run() {
     `)
 
     console.log('✓ site_design.favicon_url column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260717_200000: site_design watermark columns (TYN-322)
+    // watermark_enabled/watermark_url control whether newly-uploaded photos
+    // get a watermark composited onto their thumbnail/card/hero preview
+    // sizes at ingest time. The full original (used by gallery downloads)
+    // is never watermarked. Existing photos are unaffected - new uploads
+    // only, per TYN-322's scope.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "watermark_enabled" boolean DEFAULT false
+    `)
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "watermark_url" varchar
+    `)
+
+    console.log('✓ site_design watermark columns ready')
   } finally {
     client.release()
     await pool.end()
