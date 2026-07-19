@@ -21,7 +21,10 @@ const csp = [
   // upload sitewide (Photo Library, galleries, blog covers, builder/Design
   // image pickers) is silently blocked by the browser as a CSP violation.
   `connect-src 'self' https://va.vercel-scripts.com https://c5edbede1b4e1c8723a363615b47bb4c.r2.cloudflarestorage.com`,
-  `frame-src 'self'`,
+  // Puck builder Map block (TYN-333) embeds a plain Google Maps iframe
+  // (maps?...&output=embed) - no API key needed, but the iframe's own origin
+  // must be allow-listed here or the browser silently blocks the embed.
+  `frame-src 'self' https://www.google.com`,
   `frame-ancestors 'self'`,
   `object-src 'none'`,
   `base-uri 'self'`,
