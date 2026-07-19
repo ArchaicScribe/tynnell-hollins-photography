@@ -15,6 +15,7 @@ import type { ReactNode } from 'react'
 import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
+import ContactForm from '@/app/(site)/contact/ContactForm'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -210,7 +211,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer'] },
-    content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'ContactFormBlock', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'FullWidthImage'] },
   },
 
@@ -461,6 +462,35 @@ export const config: Config = {
                 {it.name && <figcaption style={{ marginTop: '1rem', color: C.detail, fontSize: '0.8rem', letterSpacing: '0.06em' }}><span aria-hidden="true">- </span>{it.name}</figcaption>}
               </figure>
             ))}
+          </div>
+        </Section>
+      ),
+    },
+
+    // ------------------------------------------------------- ContactFormBlock
+    ContactFormBlock: {
+      label: 'Contact Form',
+      fields: {
+        eyebrow: { type: 'text', label: 'Eyebrow (optional)' },
+        heading: { type: 'text', label: 'Heading (optional)' },
+        subtext: { type: 'textarea', label: 'Subtext (optional)' },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        eyebrow: '',
+        heading: "Let's Connect",
+        subtext: "Fill out the form and I'll be in touch within 48 hours.",
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ eyebrow, heading, subtext, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+            {eyebrow && <p style={{ ...eyebrowStyle, textAlign: 'center' }}>{eyebrow}</p>}
+            {heading && <h2 style={{ ...headingStyle('clamp(1.5rem,3vw,2.4rem)'), textAlign: 'center' }}>{heading}</h2>}
+            {subtext && <p style={{ marginTop: '0.85rem', marginBottom: '2rem', color: C.detail, textAlign: 'center' }}>{subtext}</p>}
+            <ContactForm />
           </div>
         </Section>
       ),
