@@ -6,6 +6,7 @@ import '../puck-theme.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { config } from '../puck.config'
+import { SectionMoveOverlay } from '../SectionMoveOverlay'
 
 // Per-page Puck editor (TYN-216). Saves the document for `slug` via the save
 // API; Publish marks the page published so it renders at /{slug}. Puck's
@@ -127,6 +128,7 @@ export function EditorClient({
         headerTitle={title}
         headerPath={`/${slug}`}
         overrides={{
+          componentOverlay: SectionMoveOverlay,
           headerActions: ({ children }) => (
             <>
               <span
