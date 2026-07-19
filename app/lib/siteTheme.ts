@@ -18,6 +18,8 @@ export interface SiteTheme {
   colorBody: string
   colorDetail: string
   colorBtnBg: string
+  tapeMatColor: string
+  tapeColor: string
   spacingScale: 'compact' | 'normal' | 'spacious'
   buttonStyle: 'sharp' | 'rounded' | 'pill'
   animationsEnabled: boolean
@@ -36,6 +38,8 @@ export const DEFAULT_THEME: SiteTheme = {
   colorBody: '#E6E1DE',
   colorDetail: '#9B9A9A',
   colorBtnBg: '#9B9A9A',
+  tapeMatColor: '#f4efe8',
+  tapeColor: 'rgba(214, 209, 206, 0.42)',
   spacingScale: 'normal',
   buttonStyle: 'sharp',
   animationsEnabled: true,
@@ -69,6 +73,8 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--color-body': theme.colorBody,
     '--color-detail': theme.colorDetail,
     '--color-btn-bg': theme.colorBtnBg,
+    '--tape-mat': theme.tapeMatColor,
+    '--tape-color': theme.tapeColor,
     '--space-scale': String(SPACE_SCALE[theme.spacingScale]),
     '--btn-radius': BTN_RADIUS[theme.buttonStyle],
   }

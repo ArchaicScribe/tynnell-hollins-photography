@@ -35,6 +35,8 @@ export const getSiteDesign = cache(async (): Promise<SiteTheme> => {
       colorBody: doc.colorBody || DEFAULT_THEME.colorBody,
       colorDetail: doc.colorDetail || DEFAULT_THEME.colorDetail,
       colorBtnBg: doc.colorBtnBg || DEFAULT_THEME.colorBtnBg,
+      tapeMatColor: doc.tapeMatColor || DEFAULT_THEME.tapeMatColor,
+      tapeColor: doc.tapeColor || DEFAULT_THEME.tapeColor,
       spacingScale: doc.spacingScale || DEFAULT_THEME.spacingScale,
       buttonStyle: doc.buttonStyle || DEFAULT_THEME.buttonStyle,
       animationsEnabled: doc.animationsEnabled ?? true,

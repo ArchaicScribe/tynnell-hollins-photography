@@ -1046,6 +1046,8 @@ export interface SiteDesign {
   colorBody?: string | null;
   colorDetail?: string | null;
   colorBtnBg?: string | null;
+  tapeMatColor?: string | null;
+  tapeColor?: string | null;
   spacingScale?: ('compact' | 'normal' | 'spacious') | null;
   buttonStyle?: ('sharp' | 'rounded' | 'pill') | null;
   animationsEnabled?: boolean | null;
@@ -1218,6 +1220,8 @@ export interface SiteDesignSelect<T extends boolean = true> {
   colorBody?: T;
   colorDetail?: T;
   colorBtnBg?: T;
+  tapeMatColor?: T;
+  tapeColor?: T;
   spacingScale?: T;
   buttonStyle?: T;
   animationsEnabled?: T;

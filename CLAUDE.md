@@ -196,6 +196,12 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 --padding-x: max(1.25rem, 2.5vw)
 ```
 
+### Style-exposure convention (TYN-338)
+
+Any new visual/style option added to a block or sitewide treatment must be exposed as an adjustable control (the `/design` Design editor for sitewide treatments, or a per-block field in `app/builder/puck.config.tsx` for builder-only options) rather than hardcoded. Tynnell needs to be able to change it herself without filing a dev ticket.
+
+TYN-338 is the reference example: the taped/polaroid photo-frame mat and tape-strip colors were a hardcoded sitewide constant (`--tape-mat`, `--tape-color` in `tokens.css`) used by the gallery album, portfolio teaser, about headshot, blog cards, and the builder's PhotoGallery block. They were promoted to `SiteDesign.tapeMatColor`/`tapeColor` fields, added to the `/design` editor's "Photo Frame" accordion (`app/builder/DesignPanelShared.tsx`), and plumbed through `themeToCssVarMap` (`app/lib/siteTheme.ts`) the same way the existing color palette already was (TYN-314). `tokens.css`'s hardcoded values remain only as the CSS-var fallback for when `SiteDesign` hasn't been read yet (e.g. isolated tooling).
+
 ---
 
 ## Pages (public site)

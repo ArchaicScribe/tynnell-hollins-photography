@@ -636,6 +636,22 @@ async function run() {
     console.log('✓ site_design watermark columns ready')
 
     // ------------------------------------------------------------------
+    // Migration 20260719_100000: site_design tape/polaroid frame colors
+    // (TYN-338). Previously a hardcoded sitewide CSS constant
+    // (--tape-mat/--tape-color in tokens.css) - defaults here match those
+    // same values so publishing for the first time is a no-op visually.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "tape_mat_color" varchar DEFAULT '#f4efe8'
+    `)
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "tape_color" varchar DEFAULT 'rgba(214, 209, 206, 0.42)'
+    `)
+
+    console.log('✓ site_design tape/polaroid frame color columns ready')
+
+    // ------------------------------------------------------------------
     // Migration 20260717_300000: gallery_presets global table (TYN-323)
     // Defaults applied automatically when a new gallery is created (see the
     // applyGalleryPresets hook in collections/Galleries.ts), edited from the

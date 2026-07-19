@@ -21,6 +21,8 @@ const FIELDS = [
   'colorBody',
   'colorDetail',
   'colorBtnBg',
+  'tapeMatColor',
+  'tapeColor',
   'spacingScale',
   'buttonStyle',
   'animationsEnabled',

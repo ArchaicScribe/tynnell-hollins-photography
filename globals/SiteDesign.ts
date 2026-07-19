@@ -97,6 +97,18 @@ export const SiteDesign: GlobalConfig = {
       defaultValue: '#9B9A9A',
     },
     {
+      name: 'tapeMatColor',
+      type: 'text',
+      label: 'Photo mat color (tape/polaroid frames)',
+      defaultValue: '#f4efe8',
+    },
+    {
+      name: 'tapeColor',
+      type: 'text',
+      label: 'Tape strip color',
+      defaultValue: 'rgba(214, 209, 206, 0.42)',
+    },
+    {
       name: 'spacingScale',
       type: 'select',
       label: 'Overall spacing',

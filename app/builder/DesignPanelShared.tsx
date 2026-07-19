@@ -32,6 +32,16 @@ export const COLOR_FIELDS: { key: keyof Pick<SiteTheme, 'colorBg' | 'colorBgAcce
   { key: 'colorBtnBg', label: 'Button color' },
 ]
 
+// TYN-338: the taped/polaroid photo-frame treatment (gallery album, portfolio
+// teaser, about headshot, blog cards, builder PhotoGallery block) used to be a
+// hardcoded sitewide constant. tapeColor is usually an rgba() value, not a
+// hex, so its swatch preview in ColorInput won't parse - the text field still
+// accepts and applies any valid CSS color.
+export const TAPE_FIELDS: { key: keyof Pick<SiteTheme, 'tapeMatColor' | 'tapeColor'>; label: string }[] = [
+  { key: 'tapeMatColor', label: 'Photo mat color' },
+  { key: 'tapeColor', label: 'Tape strip color' },
+]
+
 export function AccordionRow({ label, isOpen, onToggle, children }: { label: string; isOpen: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
     <div style={{ borderBottom: '1px solid #1a1a1a' }}>
@@ -136,6 +146,16 @@ export function DesignSections({
             <ColorInput value={theme[f.key]} onChange={(v) => set(f.key, v)} />
           </div>
         ))}
+      </AccordionRow>
+
+      <AccordionRow label="Photo Frame" isOpen={open === 'photoFrame'} onToggle={() => setOpen(open === 'photoFrame' ? null : 'photoFrame')}>
+        {TAPE_FIELDS.map((f, i) => (
+          <div key={f.key} style={{ marginTop: i === 0 ? 0 : 12 }}>
+            <FieldLabel>{f.label}</FieldLabel>
+            <ColorInput value={theme[f.key]} onChange={(v) => set(f.key, v)} />
+          </div>
+        ))}
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>Used by the Taped and Polaroid photo styles across the portfolio, galleries, and builder.</p>
       </AccordionRow>
 
       <AccordionRow label="Animations" isOpen={open === 'animations'} onToggle={() => setOpen(open === 'animations' ? null : 'animations')}>
