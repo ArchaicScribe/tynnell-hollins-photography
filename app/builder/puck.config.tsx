@@ -74,6 +74,26 @@ const POLAROID_CSS = `
 .pk-polaroid:hover{transform:rotate(0deg) scale(1.015) !important;z-index:2}
 .pk-polaroid img{display:block;width:100%;height:auto}
 `
+// Simple brand-icon paths for the Social Links block (TYN-334). Instagram
+// and TikTok match the same marks already used in the site footer
+// (components/Footer/Footer.tsx) for visual consistency.
+const SOCIAL_ICON_PATHS: Record<string, string> = {
+  instagram: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z',
+  facebook: 'M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.892h-2.33v6.987C18.343 21.128 22 16.991 22 12z',
+  tiktok: 'M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.22 8.22 0 0 0 4.82 1.55V6.79a4.85 4.85 0 0 1-1.05-.1z',
+  pinterest: 'M12 2C6.477 2 2 6.477 2 12c0 4.237 2.636 7.855 6.356 9.312-.088-.791-.167-2.005.035-2.868.182-.78 1.172-4.97 1.172-4.97s-.299-.6-.299-1.486c0-1.39.806-2.428 1.809-2.428.852 0 1.264.64 1.264 1.408 0 .858-.546 2.14-.828 3.33-.236.996.499 1.807 1.481 1.807 1.777 0 3.144-1.874 3.144-4.579 0-2.394-1.72-4.068-4.177-4.068-2.845 0-4.515 2.135-4.515 4.34 0 .859.331 1.781.744 2.281a.3.3 0 0 1 .069.287c-.076.316-.244.996-.277 1.135-.043.183-.143.222-.33.134-1.234-.575-2.005-2.379-2.005-3.828 0-3.118 2.265-5.983 6.53-5.983 3.428 0 6.093 2.443 6.093 5.708 0 3.406-2.148 6.148-5.13 6.148-1.002 0-1.944-.52-2.266-1.135l-.616 2.35c-.223.858-.826 1.933-1.229 2.588A10 10 0 1 0 12 2z',
+}
+
+function SocialIcon({ platform, size, color }: { platform: string; size: number; color: string }) {
+  const path = SOCIAL_ICON_PATHS[platform]
+  if (!path) return null
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <path d={path} />
+    </svg>
+  )
+}
+
 function visClass(hideOnMobile?: boolean, hideOnDesktop?: boolean): string | undefined {
   const c = []
   if (hideOnMobile) c.push('pk-hide-mobile')
@@ -209,7 +229,7 @@ export const config: Config = {
   },
 
   categories: {
-    layout: { title: 'Layout', components: ['SectionHeading', 'Spacer'] },
+    layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'SocialLinks'] },
     content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'FullWidthImage'] },
   },
@@ -627,6 +647,74 @@ export const config: Config = {
           {caption && <p style={{ textAlign: 'center', color: C.detail, fontSize: '0.78rem', padding: '0.75rem 1rem 0', margin: 0 }}>{caption}</p>}
         </section>
       ),
+    },
+
+    // ----------------------------------------------------------- SocialLinks
+    SocialLinks: {
+      label: 'Social Links',
+      fields: {
+        instagramUrl: { type: 'text', label: 'Instagram URL' },
+        facebookUrl: { type: 'text', label: 'Facebook URL' },
+        tiktokUrl: { type: 'text', label: 'TikTok URL' },
+        pinterestUrl: { type: 'text', label: 'Pinterest URL' },
+        size: {
+          type: 'select',
+          label: 'Icon size',
+          options: [
+            { label: 'Small', value: '18' },
+            { label: 'Medium', value: '24' },
+            { label: 'Large', value: '32' },
+          ],
+        },
+        color: {
+          type: 'select',
+          label: 'Icon color',
+          options: [
+            { label: 'Detail', value: 'var(--color-detail, #9B9A9A)' },
+            { label: 'Heading', value: 'var(--color-heading, #D6D1CE)' },
+            { label: 'Button', value: 'var(--color-btn-bg, #9B9A9A)' },
+          ],
+        },
+        align: alignField,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        // Pre-filled with the same handles the site footer currently links to
+        // (components/Footer/Footer.tsx) - editable per-instance since Site
+        // Config's social fields aren't wired into the live site yet (TYN-326).
+        instagramUrl: 'https://instagram.com/tynnellhollinsphotography',
+        facebookUrl: '',
+        tiktokUrl: 'https://tiktok.com/@tynnellhollinsphotography',
+        pinterestUrl: '',
+        size: '24',
+        color: 'var(--color-detail, #9B9A9A)',
+        align: 'center',
+        ...responsiveDefaults,
+      },
+      render: ({ instagramUrl, facebookUrl, tiktokUrl, pinterestUrl, size, color, align, hideOnMobile, hideOnDesktop }: any) => {
+        const links: { platform: string; href: string; label: string }[] = [
+          instagramUrl && { platform: 'instagram', href: instagramUrl, label: 'Instagram' },
+          facebookUrl && { platform: 'facebook', href: facebookUrl, label: 'Facebook' },
+          tiktokUrl && { platform: 'tiktok', href: tiktokUrl, label: 'TikTok' },
+          pinterestUrl && { platform: 'pinterest', href: pinterestUrl, label: 'Pinterest' },
+        ].filter(Boolean) as { platform: string; href: string; label: string }[]
+
+        if (links.length === 0) return <></>
+        const iconSize = Number(size) || 24
+
+        return (
+          <div
+            className={visClass(hideOnMobile, hideOnDesktop)}
+            style={{ padding: 'clamp(1rem,3vw,2rem)', display: 'flex', gap: '1.1rem', justifyContent: align === 'center' ? 'center' : 'flex-start' }}
+          >
+            {links.map(({ platform, href, label }) => (
+              <a key={platform} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} style={{ display: 'flex' }}>
+                <SocialIcon platform={platform} size={iconSize} color={color} />
+              </a>
+            ))}
+          </div>
+        )
+      },
     },
 
     // ---------------------------------------------------------------- Spacer
