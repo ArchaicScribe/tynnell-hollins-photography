@@ -74,6 +74,18 @@ const POLAROID_CSS = `
 .pk-polaroid:hover{transform:rotate(0deg) scale(1.015) !important;z-index:2}
 .pk-polaroid img{display:block;width:100%;height:auto}
 `
+// Detects a YouTube/Vimeo URL and extracts its video ID so it can be rendered
+// as a proper embed iframe; anything else is treated as a direct video file
+// URL (R2-hosted or otherwise) and rendered with a native <video> element.
+function parseVideoEmbed(url: string): { type: 'youtube' | 'vimeo' | 'file'; id?: string } | null {
+  if (!url) return null
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/)
+  if (yt) return { type: 'youtube', id: yt[1] }
+  const vimeo = url.match(/vimeo\.com\/(\d+)/)
+  if (vimeo) return { type: 'vimeo', id: vimeo[1] }
+  return { type: 'file' }
+}
+
 function visClass(hideOnMobile?: boolean, hideOnDesktop?: boolean): string | undefined {
   const c = []
   if (hideOnMobile) c.push('pk-hide-mobile')
@@ -209,9 +221,9 @@ export const config: Config = {
   },
 
   categories: {
-    layout: { title: 'Layout', components: ['SectionHeading', 'Spacer'] },
+    layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line'] },
     content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'FullWidthImage'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'FullWidthImage', 'Video'] },
   },
 
   components: {
@@ -627,6 +639,216 @@ export const config: Config = {
           {caption && <p style={{ textAlign: 'center', color: C.detail, fontSize: '0.78rem', padding: '0.75rem 1rem 0', margin: 0 }}>{caption}</p>}
         </section>
       ),
+    },
+
+    // ----------------------------------------------------------------- Video
+    Video: {
+      label: 'Video',
+      fields: {
+        videoUrl: { type: 'text', label: 'Video URL (YouTube, Vimeo, or direct file link)' },
+        height: {
+          type: 'select',
+          label: 'Height',
+          options: [
+            { label: 'Tall', value: '75vh' },
+            { label: 'Medium', value: '55vh' },
+            { label: 'Band', value: '38vh' },
+          ],
+        },
+        autoplay: {
+          type: 'radio',
+          label: 'Autoplay',
+          options: [{ label: 'Off', value: false }, { label: 'On', value: true }],
+        },
+        loop: {
+          type: 'radio',
+          label: 'Loop',
+          options: [{ label: 'Off', value: false }, { label: 'On', value: true }],
+        },
+        muted: {
+          type: 'radio',
+          label: 'Muted (required for autoplay to work in most browsers)',
+          options: [{ label: 'Off', value: false }, { label: 'On', value: true }],
+        },
+        ...responsiveFields,
+      },
+      defaultProps: { videoUrl: '', height: '55vh', autoplay: false, loop: false, muted: true, ...responsiveDefaults },
+      render: ({ videoUrl, height, autoplay, loop, muted, hideOnMobile, hideOnDesktop }: any) => {
+        const embed = parseVideoEmbed(videoUrl)
+        // Browsers block audible autoplay outright, so autoplay always implies
+        // muted regardless of the field value - otherwise the video would
+        // simply fail to play rather than play with sound.
+        const effectiveMuted = muted || autoplay
+        return (
+          <section className={visClass(hideOnMobile, hideOnDesktop)}>
+            <div style={{ position: 'relative', width: '100%', height, background: C.accent }}>
+              {!embed ? (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.detail, fontSize: '0.85rem' }}>
+                  Add a video URL
+                </div>
+              ) : embed.type === 'file' ? (
+                <video
+                  src={videoUrl}
+                  autoPlay={autoplay}
+                  loop={loop}
+                  muted={effectiveMuted}
+                  controls={!autoplay}
+                  playsInline
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <iframe
+                  src={
+                    embed.type === 'youtube'
+                      ? `https://www.youtube.com/embed/${embed.id}?${autoplay ? `autoplay=1&mute=${effectiveMuted ? 1 : 0}&` : ''}${loop ? `loop=1&playlist=${embed.id}&` : ''}`
+                      : `https://player.vimeo.com/video/${embed.id}?${autoplay ? 'autoplay=1&' : ''}${loop ? 'loop=1&' : ''}${effectiveMuted ? 'muted=1&' : ''}`
+                  }
+                  title="Video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+                />
+              )}
+            </div>
+          </section>
+        )
+      },
+    },
+
+    // ----------------------------------------------------------------- Shape
+    Shape: {
+      label: 'Shape',
+      fields: {
+        shapeType: {
+          type: 'radio',
+          label: 'Shape',
+          options: [{ label: 'Rectangle', value: 'rectangle' }, { label: 'Circle', value: 'circle' }],
+        },
+        size: {
+          type: 'select',
+          label: 'Size',
+          options: [
+            { label: 'Small', value: '80px' },
+            { label: 'Medium', value: '160px' },
+            { label: 'Large', value: '280px' },
+          ],
+        },
+        color: {
+          type: 'select',
+          label: 'Color',
+          options: [
+            { label: 'Heading', value: 'var(--color-heading, #D6D1CE)' },
+            { label: 'Detail', value: 'var(--color-detail, #9B9A9A)' },
+            { label: 'Button', value: 'var(--color-btn-bg, #9B9A9A)' },
+            { label: 'Accent background', value: 'var(--color-bg-accent, #131313)' },
+          ],
+        },
+        opacity: {
+          type: 'select',
+          label: 'Opacity',
+          options: [
+            { label: 'Light', value: '0.25' },
+            { label: 'Medium', value: '0.6' },
+            { label: 'Solid', value: '1' },
+          ],
+        },
+        align: alignField,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        shapeType: 'circle',
+        size: '160px',
+        color: 'var(--color-detail, #9B9A9A)',
+        opacity: '0.6',
+        align: 'center',
+        ...responsiveDefaults,
+      },
+      render: ({ shapeType, size, color, opacity, align, hideOnMobile, hideOnDesktop }: any) => (
+        <div
+          className={visClass(hideOnMobile, hideOnDesktop)}
+          style={{ padding: 'clamp(1rem,3vw,2rem)', display: 'flex', justifyContent: align === 'center' ? 'center' : 'flex-start' }}
+        >
+          <div
+            style={{ width: size, height: size, background: color, opacity: Number(opacity), borderRadius: shapeType === 'circle' ? '50%' : '4px' }}
+            aria-hidden="true"
+          />
+        </div>
+      ),
+    },
+
+    // ------------------------------------------------------------------ Line
+    Line: {
+      label: 'Line',
+      fields: {
+        orientation: {
+          type: 'radio',
+          label: 'Orientation',
+          options: [{ label: 'Horizontal', value: 'horizontal' }, { label: 'Vertical', value: 'vertical' }],
+        },
+        thickness: {
+          type: 'select',
+          label: 'Thickness',
+          options: [
+            { label: 'Thin', value: '1px' },
+            { label: 'Medium', value: '2px' },
+            { label: 'Thick', value: '4px' },
+          ],
+        },
+        length: {
+          type: 'select',
+          label: 'Length',
+          options: [
+            { label: 'Narrow', value: '160px' },
+            { label: 'Medium', value: '360px' },
+            { label: 'Full', value: '100%' },
+          ],
+        },
+        color: {
+          type: 'select',
+          label: 'Color',
+          options: [
+            { label: 'Detail', value: 'var(--color-detail, #9B9A9A)' },
+            { label: 'Heading', value: 'var(--color-heading, #D6D1CE)' },
+            { label: 'Subtle', value: 'rgba(155,154,154,0.18)' },
+          ],
+        },
+        margin: {
+          type: 'select',
+          label: 'Margin',
+          options: [
+            { label: 'Compact', value: SPACING.compact },
+            { label: 'Normal', value: SPACING.normal },
+            { label: 'Spacious', value: SPACING.spacious },
+          ],
+        },
+        ...responsiveFields,
+      },
+      defaultProps: {
+        orientation: 'horizontal',
+        thickness: '1px',
+        length: '100%',
+        color: 'var(--color-detail, #9B9A9A)',
+        margin: SPACING.normal,
+        ...responsiveDefaults,
+      },
+      render: ({ orientation, thickness, length, color, margin, hideOnMobile, hideOnDesktop }: any) => {
+        const horizontal = orientation !== 'vertical'
+        return (
+          <div
+            className={visClass(hideOnMobile, hideOnDesktop)}
+            style={{ display: 'flex', justifyContent: 'center', padding: horizontal ? `${margin} 0` : `0 ${margin}` }}
+          >
+            <div
+              style={
+                horizontal
+                  ? { width: length, height: thickness, background: color }
+                  : { width: thickness, height: length === '100%' ? '4rem' : length, background: color }
+              }
+              aria-hidden="true"
+            />
+          </div>
+        )
+      },
     },
 
     // ---------------------------------------------------------------- Spacer
