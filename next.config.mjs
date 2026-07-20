@@ -16,12 +16,16 @@ const csp = [
   `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
   `font-src 'self' https://fonts.gstatic.com`,
   `img-src 'self' data: https://pub-db2dd9a6665142e4adcd4f822fbe2683.r2.dev https://media.tynnellhollinsphotography.com`,
+  // Direct video files (builder Video block, TYN-330) may be hosted on R2
+  // alongside photos, or same-origin.
+  `media-src 'self' https://pub-db2dd9a6665142e4adcd4f822fbe2683.r2.dev https://media.tynnellhollinsphotography.com`,
   // R2 uploads PUT directly from the browser to a presigned URL on Cloudflare's
   // S3-compatible endpoint (app/lib/uploadPhoto.ts) - without this, every photo
   // upload sitewide (Photo Library, galleries, blog covers, builder/Design
   // image pickers) is silently blocked by the browser as a CSP violation.
   `connect-src 'self' https://va.vercel-scripts.com https://c5edbede1b4e1c8723a363615b47bb4c.r2.cloudflarestorage.com`,
-  `frame-src 'self'`,
+  // YouTube/Vimeo embeds for the builder Video block (TYN-330).
+  `frame-src 'self' https://www.youtube.com https://player.vimeo.com`,
   `frame-ancestors 'self'`,
   `object-src 'none'`,
   `base-uri 'self'`,
