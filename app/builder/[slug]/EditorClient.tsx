@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { config } from '../puck.config'
 import { SectionMoveOverlay } from '../SectionMoveOverlay'
+import { DrawerItemClickToAdd } from '../DrawerItemClickToAdd'
 
 // Per-page Puck editor (TYN-216). Saves the document for `slug` via the save
 // API; Publish marks the page published so it renders at /{slug}. Puck's
@@ -129,6 +130,7 @@ export function EditorClient({
         headerPath={`/${slug}`}
         overrides={{
           componentOverlay: SectionMoveOverlay,
+          drawerItem: DrawerItemClickToAdd,
           headerActions: ({ children }) => (
             <>
               <span
