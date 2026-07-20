@@ -223,7 +223,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line'] },
     content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'FullWidthImage', 'Video'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video'] },
   },
 
   components: {
@@ -606,6 +606,67 @@ export const config: Config = {
               <PhotoCarouselBlock images={valid} />
             )}
           </Section>
+        )
+      },
+    },
+
+    // ---------------------------------------------------------- ImageGrid
+    ImageGrid: {
+      label: 'Image Grid',
+      fields: {
+        images: {
+          type: 'array',
+          label: 'Photos',
+          arrayFields: { url: imageField('Image') },
+          defaultItemProps: { url: '' },
+          getItemSummary: (item: any) => item?.url || 'Photo',
+        },
+        columns: {
+          type: 'select',
+          label: 'Columns',
+          options: [
+            { label: '2 columns', value: '2' },
+            { label: '3 columns', value: '3' },
+            { label: '4 columns', value: '4' },
+          ],
+        },
+        aspect: {
+          type: 'select',
+          label: 'Shape',
+          options: [
+            { label: 'Portrait', value: '4 / 5' },
+            { label: 'Square', value: '1 / 1' },
+            { label: 'Landscape', value: '3 / 2' },
+          ],
+        },
+        gap: {
+          type: 'select',
+          label: 'Gap',
+          options: [
+            { label: 'None', value: '0' },
+            { label: 'Small', value: '0.5rem' },
+            { label: 'Medium', value: '1rem' },
+            { label: 'Large', value: '2rem' },
+          ],
+        },
+        ...responsiveFields,
+      },
+      defaultProps: { images: [], columns: '3', aspect: '1 / 1', gap: '0.5rem', ...responsiveDefaults },
+      render: ({ images, columns, aspect, gap, hideOnMobile, hideOnDesktop }: any) => {
+        const valid = (images ?? []).filter((i: any) => i?.url)
+        return (
+          <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
+            {valid.length === 0 ? (
+              <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the grid.</p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap }}>
+                {valid.map((img: any, i: number) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover' }} />
+                ))}
+              </div>
+            )}
+          </section>
         )
       },
     },
