@@ -24,8 +24,11 @@ const csp = [
   // upload sitewide (Photo Library, galleries, blog covers, builder/Design
   // image pickers) is silently blocked by the browser as a CSP violation.
   `connect-src 'self' https://va.vercel-scripts.com https://c5edbede1b4e1c8723a363615b47bb4c.r2.cloudflarestorage.com`,
-  // YouTube/Vimeo embeds for the builder Video block (TYN-330).
-  `frame-src 'self' https://www.youtube.com https://player.vimeo.com`,
+  // YouTube/Vimeo embeds for the builder Video block (TYN-330), plus Google
+  // Maps for the builder Map block (TYN-333, plain output=embed iframe, no
+  // API key needed) - each origin must be allow-listed here or the browser
+  // silently blocks the embed.
+  `frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com`,
   `frame-ancestors 'self'`,
   `object-src 'none'`,
   `base-uri 'self'`,

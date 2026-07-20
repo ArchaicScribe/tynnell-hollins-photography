@@ -246,7 +246,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
     content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map'] },
   },
 
   components: {
@@ -906,8 +906,6 @@ export const config: Config = {
         )
       },
     },
-
-    // ----------------------------------------------------------------- Shape
     Shape: {
       label: 'Shape',
       fields: {
@@ -1111,6 +1109,56 @@ export const config: Config = {
       },
     },
 
+    // -------------------------------------------------------------------- Map
+    // Plain Google Maps "output=embed" iframe (TYN-333) - no API key, no JS
+    // map library, so this costs nothing and can't fail on a missing/rotated
+    // key. Zoom/style customization isn't available on this embed form, which
+    // is the deliberate tradeoff for zero setup and zero recurring cost.
+    Map: {
+      label: 'Map',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        address: { type: 'text', label: 'Address or location' },
+        height: {
+          type: 'select',
+          label: 'Height',
+          options: [
+            { label: 'Tall', value: '480px' },
+            { label: 'Medium', value: '380px' },
+            { label: 'Short', value: '280px' },
+          ],
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        address: 'Los Angeles, CA',
+        height: '380px',
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, address, height, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '1.5rem' }}>{heading}</h2>}
+          <div style={{ position: 'relative', width: '100%', height }}>
+            {address ? (
+              <iframe
+                src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title={heading || 'Map'}
+              />
+            ) : (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.accent, color: C.detail }}>
+                Add an address to show the map.
+              </div>
+            )}
+          </div>
+        </Section>
+      ),
+    },
     // ---------------------------------------------------------------- Spacer
     Spacer: {
       label: 'Spacer',
