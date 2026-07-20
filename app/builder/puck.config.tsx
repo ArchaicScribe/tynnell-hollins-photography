@@ -18,6 +18,7 @@ import { PhotoCarouselBlock } from './PhotoCarouselBlock'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
+import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -192,6 +193,128 @@ const imageField = (label: string) => ({
   render: ({ value, onChange }: any) => <ImagePickerField value={value} onChange={onChange} />,
 })
 
+// Custom field: "Change Layout" thumbnail picker (TYN-329). All layout
+// options for a block share the same content fields, so switching never
+// discards anything the user typed in.
+const layoutField = (options: LayoutOption[]) => ({
+  type: 'custom' as const,
+  label: 'Layout',
+  render: ({ value, onChange }: any) => <LayoutVariantField value={value} onChange={onChange} options={options} />,
+})
+
+// Small hand-drawn CSS diagrams for the layout thumbnails - see
+// LayoutVariantField.tsx for why these aren't real screenshots.
+const diagramBar = (style: React.CSSProperties): React.CSSProperties => ({ position: 'absolute', background: '#9b9a9a', borderRadius: 1, ...style })
+const HERO_LAYOUT_OPTIONS: LayoutOption[] = [
+  {
+    value: 'bottom',
+    label: 'Bottom-aligned',
+    preview: (
+      <>
+        <div style={{ position: 'absolute', inset: 0, background: '#2a2a2a' }} />
+        <div style={diagramBar({ left: 6, bottom: 6, width: 28, height: 4 })} />
+        <div style={diagramBar({ left: 6, bottom: 13, width: 20, height: 6, opacity: 0.6 })} />
+      </>
+    ),
+  },
+  {
+    value: 'centered',
+    label: 'Centered',
+    preview: (
+      <>
+        <div style={{ position: 'absolute', inset: 0, background: '#2a2a2a' }} />
+        <div style={diagramBar({ left: '50%', top: 16, width: 24, height: 6, opacity: 0.6, transform: 'translateX(-50%)' })} />
+        <div style={diagramBar({ left: '50%', top: 24, width: 30, height: 4, transform: 'translateX(-50%)' })} />
+      </>
+    ),
+  },
+  {
+    value: 'split',
+    label: 'Split',
+    preview: (
+      <>
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%', background: '#2a2a2a' }} />
+        <div style={diagramBar({ left: 36, top: 14, width: 22, height: 4 })} />
+        <div style={diagramBar({ left: 36, top: 21, width: 18, height: 4, opacity: 0.6 })} />
+        <div style={diagramBar({ left: 36, top: 28, width: 14, height: 5, opacity: 0.9 })} />
+      </>
+    ),
+  },
+]
+const SPLIT_LAYOUT_OPTIONS: LayoutOption[] = [
+  {
+    value: 'side-by-side',
+    label: 'Side by side',
+    preview: (
+      <>
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%', background: '#2a2a2a' }} />
+        <div style={diagramBar({ left: 36, top: 14, width: 22, height: 4 })} />
+        <div style={diagramBar({ left: 36, top: 21, width: 18, height: 4, opacity: 0.6 })} />
+      </>
+    ),
+  },
+  {
+    value: 'overlay',
+    label: 'Image overlay',
+    preview: (
+      <>
+        <div style={{ position: 'absolute', inset: 0, background: '#2a2a2a' }} />
+        <div style={diagramBar({ left: 6, bottom: 6, width: 28, height: 4 })} />
+        <div style={diagramBar({ left: 6, bottom: 13, width: 20, height: 6, opacity: 0.6 })} />
+      </>
+    ),
+  },
+  {
+    value: 'stacked',
+    label: 'Stacked',
+    preview: (
+      <>
+        <div style={{ position: 'absolute', left: 4, right: 4, top: 4, height: 20, background: '#2a2a2a' }} />
+        <div style={diagramBar({ left: '50%', top: 28, width: 24, height: 4, transform: 'translateX(-50%)' })} />
+        <div style={diagramBar({ left: '50%', top: 34, width: 32, height: 4, opacity: 0.6, transform: 'translateX(-50%)' })} />
+      </>
+    ),
+  },
+]
+// Fixed column counts for the Masonry/Featured layouts (the Grid layout uses
+// CSS auto-fit instead, which doesn't need a fixed count).
+const GALLERY_COLS_BY_SIZE: Record<string, number> = { '440px': 2, '300px': 3, '220px': 4 }
+const GALLERY_LAYOUT_OPTIONS: LayoutOption[] = [
+  {
+    value: 'grid',
+    label: 'Grid',
+    preview: (
+      <div style={{ position: 'absolute', inset: 4, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+        {Array.from({ length: 6 }).map((_, i) => <div key={i} style={{ background: '#2a2a2a' }} />)}
+      </div>
+    ),
+  },
+  {
+    value: 'masonry',
+    label: 'Masonry',
+    preview: (
+      <div style={{ position: 'absolute', inset: 4, display: 'flex', gap: 2 }}>
+        <div style={{ flex: 1, background: '#2a2a2a', height: '60%' }} />
+        <div style={{ flex: 1, background: '#2a2a2a', height: '100%' }} />
+        <div style={{ flex: 1, background: '#2a2a2a', height: '40%' }} />
+      </div>
+    ),
+  },
+  {
+    value: 'featured',
+    label: 'Featured + grid',
+    preview: (
+      <div style={{ position: 'absolute', inset: 4, display: 'flex', gap: 2 }}>
+        <div style={{ flex: 1.4, background: '#2a2a2a' }} />
+        <div style={{ flex: 1, display: 'grid', gridTemplateRows: 'repeat(2, 1fr)', gap: 2 }}>
+          <div style={{ background: '#2a2a2a' }} />
+          <div style={{ background: '#2a2a2a' }} />
+        </div>
+      </div>
+    ),
+  },
+]
+
 // Per-section style controls (TYN-221), spread into each content block's fields.
 const bgField = {
   type: 'select' as const,
@@ -254,6 +377,12 @@ export const config: Config = {
     Hero: {
       label: 'Hero',
       fields: {
+        // TYN-329: layout options share every field below, so switching
+        // layouts never discards content. In the Split layout, the
+        // Alignment field repurposes to "which side the image sits on"
+        // (Left = image left, Center = image right) since a 2-up layout
+        // has no meaningful center option of its own.
+        layout: layoutField(HERO_LAYOUT_OPTIONS),
         eyebrow: { type: 'text', label: 'Eyebrow (small label)' },
         heading: { type: 'text', label: 'Heading' },
         subheading: { type: 'textarea', label: 'Subheading' },
@@ -269,7 +398,7 @@ export const config: Config = {
         },
         backgroundBehavior: {
           type: 'radio',
-          label: 'Background behavior',
+          label: 'Background behavior (Bottom-aligned/Centered only)',
           options: [
             { label: 'Scrolls with page', value: 'scroll' },
             { label: 'Stays fixed (parallax)', value: 'fixed' },
@@ -281,6 +410,7 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: {
+        layout: 'bottom',
         eyebrow: '',
         heading: 'Refined. Editorial. Artful. Lasting.',
         subheading: 'Photos that feel like your favorite memory.',
@@ -292,27 +422,56 @@ export const config: Config = {
         buttonHref: '',
         ...responsiveDefaults,
       },
-      render: ({ eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, align, buttonText, buttonHref, hideOnMobile, hideOnDesktop }: any) => (
-        <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: 'flex-end', justifyContent: align === 'center' ? 'center' : 'flex-start', overflow: 'hidden' }}>
-          {imageUrl ? (
-            backgroundBehavior === 'fixed' ? (
-              <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
+      render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, align, buttonText, buttonHref, hideOnMobile, hideOnDesktop }: any) => {
+        const cls = visClass(hideOnMobile, hideOnDesktop)
+        if (layout === 'split') {
+          const imageLeft = align !== 'center'
+          const img = (
+            <div style={{ flex: '1 1 340px', minHeight: height, position: 'relative', background: C.accent }}>
+              {imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              )}
+            </div>
+          )
+          const txt = (
+            <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)' }}>
+              {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+              <h1 style={headingStyle('clamp(1.75rem,3.5vw,3rem)')}>{heading}</h1>
+              {subheading && <p style={{ marginTop: '1rem', color: C.body, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
+              {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+            </div>
+          )
+          return (
+            <section className={cls} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch' }}>
+              {imageLeft ? <>{img}{txt}</> : <>{txt}{img}</>}
+            </section>
+          )
+        }
+
+        const centered = layout === 'centered'
+        return (
+          <section className={cls} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
+            {imageUrl ? (
+              backgroundBehavior === 'fixed' ? (
+                <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              )
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-            )
-          ) : (
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a1a,#0c0c0c)' }} />
-          )}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(12,12,12,0.7), rgba(12,12,12,0.1))' }} />
-          <div style={{ position: 'relative', padding: 'clamp(2rem,5vw,4rem) clamp(1.25rem,5vw,5rem)', maxWidth: '60ch', textAlign: align }}>
-            {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-            <h1 style={headingStyle('clamp(2rem,5vw,3.75rem)')}>{heading}</h1>
-            {subheading && <p style={{ marginTop: '1rem', color: C.body, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
-            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
-          </div>
-        </section>
-      ),
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a1a,#0c0c0c)' }} />
+            )}
+            <div style={{ position: 'absolute', inset: 0, background: centered ? 'rgba(12,12,12,0.45)' : 'linear-gradient(to top, rgba(12,12,12,0.7), rgba(12,12,12,0.1))' }} />
+            <div style={{ position: 'relative', padding: 'clamp(2rem,5vw,4rem) clamp(1.25rem,5vw,5rem)', maxWidth: centered ? '70ch' : '60ch', textAlign: centered ? 'center' : align }}>
+              {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+              <h1 style={headingStyle('clamp(2rem,5vw,3.75rem)')}>{heading}</h1>
+              {subheading && <p style={{ marginTop: '1rem', color: C.body, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
+              {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+            </div>
+          </section>
+        )
+      },
     },
 
     // ------------------------------------------------------ SectionHeading
@@ -408,10 +567,15 @@ export const config: Config = {
     SplitImageText: {
       label: 'Split Image + Text',
       fields: {
+        // TYN-329: same content fields power all 3 layouts. imagePosition
+        // only applies to Side by side; Image overlay/Stacked always use a
+        // fixed arrangement since a 2-way position toggle isn't meaningful
+        // for a single full-width image.
+        layout: layoutField(SPLIT_LAYOUT_OPTIONS),
         imageUrl: imageField('Image'),
         imagePosition: {
           type: 'radio',
-          label: 'Image position',
+          label: 'Image position (Side by side only)',
           options: [
             { label: 'Left', value: 'left' },
             { label: 'Right', value: 'right' },
@@ -426,6 +590,7 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: {
+        layout: 'side-by-side',
         imageUrl: '',
         imagePosition: 'left',
         eyebrow: '',
@@ -436,8 +601,49 @@ export const config: Config = {
         background: 'transparent',
         ...responsiveDefaults,
       },
-      render: ({ imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, background, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, background, hideOnMobile, hideOnDesktop }: any) => {
         const bg = background && background !== 'transparent' ? background : undefined
+        const cls = visClass(hideOnMobile, hideOnDesktop)
+
+        if (layout === 'overlay') {
+          return (
+            <section className={cls} style={{ position: 'relative', minHeight: '50vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
+              {imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ position: 'absolute', inset: 0, background: C.accent }} />
+              )}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(12,12,12,0.75), rgba(12,12,12,0.1))' }} />
+              <div style={{ position: 'relative', padding: 'clamp(2rem,4vw,3.5rem)', maxWidth: '60ch' }}>
+                {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+                <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+                <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
+                {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+              </div>
+            </section>
+          )
+        }
+
+        if (layout === 'stacked') {
+          return (
+            <section className={cls} style={{ background: bg }}>
+              <div style={{ minHeight: '280px', position: 'relative', background: C.accent }}>
+                {imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageUrl} alt="" style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
+                )}
+              </div>
+              <div style={{ padding: 'clamp(2rem,4vw,3.5rem)', textAlign: 'center', maxWidth: '65ch', margin: '0 auto' }}>
+                {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+                <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+                <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
+                {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+              </div>
+            </section>
+          )
+        }
+
         const img = (
           <div style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', background: C.accent }}>
             {imageUrl && (
@@ -455,7 +661,7 @@ export const config: Config = {
           </div>
         )
         return (
-          <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
+          <section className={cls} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
             {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
           </section>
         )
@@ -644,6 +850,9 @@ export const config: Config = {
     PhotoGallery: {
       label: 'Photo Gallery',
       fields: {
+        // TYN-329: photos/size/aspect/frame apply across all 3 layouts (aspect
+        // is ignored by Masonry, which preserves each photo's natural ratio).
+        layout: layoutField(GALLERY_LAYOUT_OPTIONS),
         images: {
           type: 'array',
           label: 'Photos',
@@ -662,7 +871,7 @@ export const config: Config = {
         },
         aspect: {
           type: 'select',
-          label: 'Shape',
+          label: 'Shape (Grid/Featured only)',
           options: [
             { label: 'Portrait', value: '4 / 5' },
             { label: 'Square', value: '1 / 1' },
@@ -680,31 +889,83 @@ export const config: Config = {
         },
         ...responsiveFields,
       },
-      defaultProps: { images: [], size: '300px', aspect: '4 / 5', frame: 'plain', ...responsiveDefaults },
-      render: ({ images, size, aspect, frame, hideOnMobile, hideOnDesktop }: any) => {
+      defaultProps: { layout: 'grid', images: [], size: '300px', aspect: '4 / 5', frame: 'plain', ...responsiveDefaults },
+      render: ({ layout, images, size, aspect, frame, hideOnMobile, hideOnDesktop }: any) => {
         const valid = (images ?? []).filter((i: any) => i?.url)
         const taped = frame === 'taped'
         const polaroid = frame === 'polaroid'
         const framed = taped || polaroid
+        const frameClass = taped ? 'pk-taped' : polaroid ? 'pk-polaroid' : undefined
+        const cols = GALLERY_COLS_BY_SIZE[size] ?? 3
+        const gap = framed ? 'clamp(1.5rem,3vw,2.75rem)' : '0.75rem'
+
+        if (valid.length === 0) {
+          return (
+            <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
+              <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the gallery.</p>
+            </section>
+          )
+        }
+
+        if (layout === 'masonry') {
+          return (
+            <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: framed ? 'clamp(2rem,5vw,3.75rem) clamp(1.25rem,3vw,3rem)' : 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
+              <div style={{ columnCount: cols, columnGap: gap }}>
+                {valid.map((img: any, i: number) => (
+                  <div key={i} className={frameClass} style={{ breakInside: 'avoid', marginBottom: gap, transform: framed ? `rotate(${(i % 2 === 0 ? -1 : 1) * (1.2 + (i % 3) * 0.6)}deg)` : undefined }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.url} alt="" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: framed ? undefined : '2px' }} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        }
+
+        if (layout === 'featured') {
+          return (
+            <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: framed ? 'clamp(2rem,5vw,3.75rem) clamp(1.25rem,3vw,3rem)' : 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gridAutoRows: '1fr', gap, alignItems: 'start' }}>
+                {valid.map((img: any, i: number) => {
+                  const isFeatured = i === 0 && valid.length > 1
+                  const tile = (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={img.url} alt="" style={{ width: '100%', height: '100%', aspectRatio: isFeatured ? undefined : aspect, objectFit: 'cover', borderRadius: framed ? undefined : '2px' }} />
+                  )
+                  return (
+                    <div
+                      key={i}
+                      className={frameClass}
+                      style={{
+                        gridColumn: isFeatured ? `span ${Math.min(2, cols)}` : undefined,
+                        gridRow: isFeatured ? 'span 2' : undefined,
+                        transform: framed ? `rotate(${(i % 2 === 0 ? -1 : 1) * (1.2 + (i % 3) * 0.6)}deg)` : undefined,
+                      }}
+                    >
+                      {tile}
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )
+        }
+
         return (
           <section className={visClass(hideOnMobile, hideOnDesktop)} style={{ padding: framed ? 'clamp(2rem,5vw,3.75rem) clamp(1.25rem,3vw,3rem)' : 'clamp(1.5rem,4vw,3rem) clamp(1.25rem,2.5vw,2.5rem)' }}>
-            {valid.length === 0 ? (
-              <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the gallery.</p>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${size}, 1fr))`, gap: framed ? 'clamp(1.5rem,3vw,2.75rem)' : '0.75rem', alignItems: 'start' }}>
-                {valid.map((img: any, i: number) =>
-                  framed ? (
-                    <div key={i} className={taped ? 'pk-taped' : 'pk-polaroid'} style={{ transform: `rotate(${(i % 2 === 0 ? -1 : 1) * (1.2 + (i % 3) * 0.6)}deg)` }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover' }} />
-                    </div>
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={i} src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover', borderRadius: '2px' }} />
-                  )
-                )}
-              </div>
-            )}
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${size}, 1fr))`, gap, alignItems: 'start' }}>
+              {valid.map((img: any, i: number) =>
+                framed ? (
+                  <div key={i} className={frameClass} style={{ transform: `rotate(${(i % 2 === 0 ? -1 : 1) * (1.2 + (i % 3) * 0.6)}deg)` }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover' }} />
+                  </div>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={img.url} alt="" style={{ width: '100%', aspectRatio: aspect, objectFit: 'cover', borderRadius: '2px' }} />
+                )
+              )}
+            </div>
           </section>
         )
       },
