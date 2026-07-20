@@ -61,7 +61,12 @@ const EMPTY_FORM: FormFields = {
   howHeard: '',
 }
 
-export default function ContactForm({ minDate, maxDate }: { minDate: string; maxDate: string }) {
+// minDate/maxDate are optional (TYN-332) so this component can be embedded
+// via the builder's Contact Form block without a server-side BookingSettings
+// fetch - the date input simply won't proactively restrict the calendar
+// widget in that case, but /api/contact still enforces the real lead-time/
+// booking-window rules server-side on submit regardless.
+export default function ContactForm({ minDate, maxDate }: { minDate?: string; maxDate?: string }) {
   const [fields, setFields] = useState<FormFields>(EMPTY_FORM)
   const [status, setStatus] = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<ReactNode>('')
