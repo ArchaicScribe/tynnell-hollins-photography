@@ -10,6 +10,8 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { GalleryViewer, type LightboxPhoto } from './GalleryViewer'
 import { GalleryPasswordGate } from './GalleryPasswordGate'
+import { GalleryExpiredNotice } from './GalleryExpiredNotice'
+import { isGalleryExpired } from '@/app/lib/galleryExpiry'
 import { DownloadAllButtonLoader as DownloadAllButton } from './DownloadButtonLoader'
 import styles from './page.module.css'
 
@@ -49,7 +51,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const gallery = docs[0]
   if (!gallery) return { title: 'Gallery' }
 
-  // Don't reveal the gallery name or cover image in metadata before auth
+  // Don't reveal the gallery name or cover image in metadata before auth,
+  // or for an expired gallery whose content is no longer accessible. Expiry
+  // is checked first, matching the same precedence used in the page body
+  // below - an expired gallery is "Gallery Expired" regardless of whether
+  // it also happens to be password protected.
+  if (isGalleryExpired(gallery.expiresAt)) {
+    return { title: 'Gallery Expired', robots: { index: false } }
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((gallery as any).isPasswordProtected) {
     return { title: 'Private Gallery', robots: { index: false } }
@@ -90,6 +99,13 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   const gallery = docs[0]
 
   if (!gallery || gallery.status === 'draft') notFound()
+
+  // Expiry gate: independent of password protection - a plain shared
+  // gallery can expire too, and there's no point making an already-expired
+  // client enter a password only to hit a dead end.
+  if (isGalleryExpired(gallery.expiresAt)) {
+    return <GalleryExpiredNotice />
+  }
 
   // Password gate: check cookie if gallery is protected
   if (gallery.isPasswordProtected && gallery.password) {

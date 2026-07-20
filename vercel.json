@@ -10,6 +10,10 @@
     {
       "path": "/api/cron/ooo-return-notify",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/gallery-expiry-notify",
+      "schedule": "0 10 * * *"
     }
   ]
 }

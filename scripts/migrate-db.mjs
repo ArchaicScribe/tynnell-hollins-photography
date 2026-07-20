@@ -657,6 +657,59 @@ async function run() {
     `)
 
     console.log('✓ gallery_presets table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260717_400000: galleries client-sharing/expiry columns
+    // (TYN-324). client_name/client_email/expires_at are set via the new
+    // "Send Gallery Email" flow (app/api/galleries/[id]/share); expiry_
+    // reminder_sent is an idempotency flag reset to false whenever
+    // client_email or expires_at changes (see the resetExpiryReminderOnChange
+    // beforeChange hook in collections/Galleries.ts), and flipped to true by
+    // the gallery-expiry-notify cron once a reminder has gone out.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "client_name" varchar
+    `)
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "client_email" varchar
+    `)
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "expires_at" timestamp(3) with time zone
+    `)
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "expiry_reminder_sent" boolean DEFAULT false
+    `)
+
+    console.log('✓ galleries client-sharing/expiry columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260717_500000: email_templates global table (TYN-324)
+    // Editable copy for the Collection Sharing and Expiry Reminder client
+    // emails, edited from Settings > Email Templates. {{token}} placeholders
+    // in *_heading/*_body are interpolated at send time
+    // (app/lib/templateInterpolation.ts) - see app/api/galleries/[id]/share
+    // and app/api/cron/gallery-expiry-notify.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "email_templates" (
+        "id"                     serial  PRIMARY KEY NOT NULL,
+        "share_subject"          varchar,
+        "share_heading"          varchar,
+        "share_body"             varchar,
+        "share_button_label"     varchar,
+        "reminder_subject"       varchar,
+        "reminder_heading"       varchar,
+        "reminder_body"          varchar,
+        "reminder_button_label"  varchar,
+        "reminder_days_before"   numeric DEFAULT 3,
+        "updated_at"             timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"             timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+
+    console.log('✓ email_templates table ready')
   } finally {
     client.release()
     await pool.end()
