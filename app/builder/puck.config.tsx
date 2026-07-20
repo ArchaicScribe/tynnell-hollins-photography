@@ -369,7 +369,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
     content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed'] },
   },
 
   components: {
@@ -1420,6 +1420,60 @@ export const config: Config = {
         </Section>
       ),
     },
+    // --------------------------------------------------------- InstagramFeed
+    // Third-party embed (TYN-335), not Instagram's own Graph API - avoids
+    // registering a developer app and refreshing an access token forever.
+    // Standardized on SnapWidget specifically because its default embed is a
+    // plain iframe (no injected <script>, so no CSP script-src loosening
+    // needed) with a free tier. Switching providers later means updating
+    // both this block's help text and the snapwidget.com CSP frame-src entry
+    // in next.config.mjs.
+    InstagramFeed: {
+      label: 'Instagram Feed',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        embedUrl: { type: 'text', label: 'SnapWidget embed URL (from snapwidget.com, looks like https://snapwidget.com/embed/123456)' },
+        height: {
+          type: 'select',
+          label: 'Height',
+          options: [
+            { label: 'Tall', value: '600px' },
+            { label: 'Medium', value: '450px' },
+            { label: 'Short', value: '300px' },
+          ],
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        embedUrl: '',
+        height: '450px',
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, embedUrl, height, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '1.5rem' }}>{heading}</h2>}
+          <div style={{ position: 'relative', width: '100%', height }}>
+            {embedUrl ? (
+              <iframe
+                src={embedUrl}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+                loading="lazy"
+                scrolling="no"
+                title={heading || 'Instagram Feed'}
+              />
+            ) : (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.accent, color: C.detail, textAlign: 'center', padding: '1rem' }}>
+                Add a SnapWidget embed URL to show the feed.
+              </div>
+            )}
+          </div>
+        </Section>
+      ),
+    },
+
     // ---------------------------------------------------------------- Spacer
     Spacer: {
       label: 'Spacer',
