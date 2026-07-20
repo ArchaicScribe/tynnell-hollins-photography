@@ -26,11 +26,14 @@ const csp = [
   `connect-src 'self' https://va.vercel-scripts.com https://c5edbede1b4e1c8723a363615b47bb4c.r2.cloudflarestorage.com`,
   // YouTube/Vimeo embeds for the builder Video block (TYN-330), Google Maps
   // for the builder Map block (TYN-333, plain output=embed iframe, no API
-  // key needed), and SnapWidget for the builder Instagram Feed block
-  // (TYN-335, third-party embed widget - avoids Instagram's own API/token
-  // maintenance) - each origin must be allow-listed here or the browser
-  // silently blocks the embed.
-  `frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://snapwidget.com`,
+  // key needed), SnapWidget for the builder Instagram Feed block (TYN-335),
+  // and Elfsight for the builder TikTok Feed block (TYN-339) - all three
+  // "Feed" blocks are third-party embed widgets, avoiding each platform's
+  // own API/token maintenance. Each origin must be allow-listed here or the
+  // browser silently blocks the embed. The Elfsight entry is a best-effort
+  // default (see TikTokFeed's comment in puck.config.tsx) - swap it for
+  // whichever provider Tynnell actually uses if it's not Elfsight.
+  `frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://snapwidget.com https://apps.elfsight.com`,
   `frame-ancestors 'self'`,
   `object-src 'none'`,
   `base-uri 'self'`,

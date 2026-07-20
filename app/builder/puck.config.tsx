@@ -369,7 +369,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
     content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
   },
 
   components: {
@@ -1467,6 +1467,64 @@ export const config: Config = {
             ) : (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.accent, color: C.detail, textAlign: 'center', padding: '1rem' }}>
                 Add a SnapWidget embed URL to show the feed.
+              </div>
+            )}
+          </div>
+        </Section>
+      ),
+    },
+
+    // ------------------------------------------------------------ TikTokFeed
+    // Same third-party-widget decision as InstagramFeed (TYN-335) - a
+    // developer-app + token setup is a maintenance burden neither ticket's
+    // scope wanted. Unlike SnapWidget for Instagram, there isn't one single
+    // dominant iframe-native TikTok widget provider to standardize on with
+    // full confidence, so this field is intentionally generic ("widget embed
+    // URL") rather than named to one brand. Defaulted the CSP frame-src entry
+    // to Elfsight (apps.elfsight.com), a widely-used social-feed widget
+    // platform that supports TikTok - flagged as a best-effort default that
+    // may need swapping for whichever specific provider Tynnell ends up
+    // using, the same way the Video/Map/Instagram blocks' CSP entries are
+    // each tied to one concrete origin.
+    TikTokFeed: {
+      label: 'TikTok Feed',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        embedUrl: { type: 'text', label: 'Widget embed URL (iframe URL from a TikTok feed widget provider, e.g. Elfsight)' },
+        height: {
+          type: 'select',
+          label: 'Height',
+          options: [
+            { label: 'Tall', value: '600px' },
+            { label: 'Medium', value: '450px' },
+            { label: 'Short', value: '300px' },
+          ],
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        embedUrl: '',
+        height: '450px',
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, embedUrl, height, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '1.5rem' }}>{heading}</h2>}
+          <div style={{ position: 'relative', width: '100%', height }}>
+            {embedUrl ? (
+              <iframe
+                src={embedUrl}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+                loading="lazy"
+                scrolling="no"
+                title={heading || 'TikTok Feed'}
+              />
+            ) : (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.accent, color: C.detail, textAlign: 'center', padding: '1rem' }}>
+                Add a widget embed URL to show the feed.
               </div>
             )}
           </div>
