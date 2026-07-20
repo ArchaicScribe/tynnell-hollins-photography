@@ -301,6 +301,7 @@ export interface Gallery {
   isPasswordProtected?: boolean | null;
   password?: string | null;
   allowDownload?: boolean | null;
+  seoIndexable?: boolean | null;
   /**
    * Draft galleries are hidden from your public portfolio.
    */
@@ -744,6 +745,8 @@ export interface GalleriesSelect<T extends boolean = true> {
   displayOrder?: T;
   isPasswordProtected?: T;
   password?: T;
+  allowDownload?: T;
+  seoIndexable?: T;
   clientName?: T;
   clientEmail?: T;
   expiresAt?: T;
@@ -1061,6 +1064,7 @@ export interface SiteDesign {
   spacingScale?: ('compact' | 'normal' | 'spacious') | null;
   buttonStyle?: ('sharp' | 'rounded' | 'pill') | null;
   animationsEnabled?: boolean | null;
+  sharpeningLevel?: ('none' | 'subtle' | 'moderate' | 'strong') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1255,6 +1259,7 @@ export interface SiteDesignSelect<T extends boolean = true> {
   spacingScale?: T;
   buttonStyle?: T;
   animationsEnabled?: T;
+  sharpeningLevel?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

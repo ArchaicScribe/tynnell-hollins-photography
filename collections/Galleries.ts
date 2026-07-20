@@ -292,6 +292,16 @@ export const Galleries: CollectionConfig = {
       admin: { hidden: true },
     },
     {
+      // Search engine visibility (TYN-325) - independent of `status`. A
+      // published gallery can still be excluded from search-engine indexing;
+      // it stays reachable via direct link, it just won't appear in results.
+      name: 'seoIndexable',
+      type: 'checkbox',
+      label: 'Search Engine Visible',
+      defaultValue: true,
+      admin: { hidden: true },
+    },
+    {
       // Managed via the gallery editor's Settings tab / "Send Gallery Email"
       // modal (TYN-324), not the raw Payload form.
       name: 'clientName',

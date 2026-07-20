@@ -80,6 +80,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: [ogImageUrl],
       },
     }),
+    // Search Engine Visibility (TYN-325): unlike the password/expired cases
+    // above, this is a plain indexing preference, not a security gate - the
+    // real title/description/OG image are still returned so shared links
+    // preview correctly, only `robots.index` is suppressed.
+    ...(gallery.seoIndexable === false && { robots: { index: false } }),
   }
 }
 
