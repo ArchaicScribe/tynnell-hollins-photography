@@ -15,6 +15,7 @@ import type { ReactNode } from 'react'
 import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
+import { AccordionBlock } from './AccordionBlock'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -222,7 +223,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line'] },
-    content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video'] },
   },
 
@@ -474,6 +475,40 @@ export const config: Config = {
               </figure>
             ))}
           </div>
+        </Section>
+      ),
+    },
+
+    // ----------------------------------------------------------- Accordion
+    Accordion: {
+      label: 'Accordion',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        items: {
+          type: 'array',
+          label: 'Sections',
+          arrayFields: {
+            title: { type: 'text', label: 'Title' },
+            body: { type: 'textarea', label: 'Body' },
+          },
+          defaultItemProps: { title: 'A common question', body: 'The answer, in a sentence or two.' },
+          getItemSummary: (item: any) => item?.title || 'Section',
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: 'Frequently Asked Questions',
+        items: [
+          { title: 'How far in advance should I book?', body: 'Most sessions book 4-8 weeks out - weddings often further ahead.' },
+        ],
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, items, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2rem' }}>{heading}</h2>}
+          <AccordionBlock items={items ?? []} />
         </Section>
       ),
     },
