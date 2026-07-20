@@ -16,6 +16,7 @@ import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
 import { AccordionBlock } from './AccordionBlock'
+import { TypewriterText } from './TypewriterText'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -223,7 +224,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line'] },
-    content: { title: 'Content', components: ['RichText', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video'] },
   },
 
@@ -331,6 +332,53 @@ export const config: Config = {
           <div style={{ maxWidth: '70ch', margin: align === 'center' ? '0 auto' : undefined, textAlign: align }}>
             <p style={{ color: C.body, fontSize: '1.05rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
           </div>
+        </Section>
+      ),
+    },
+
+    // ------------------------------------------------------ TypewriterHeading
+    TypewriterHeading: {
+      label: 'Typewriter Text',
+      fields: {
+        prefix: { type: 'text', label: 'Prefix (optional, stays static)' },
+        phrases: {
+          type: 'array',
+          label: 'Phrases (typed one at a time, in a loop)',
+          arrayFields: { text: { type: 'text', label: 'Phrase' } },
+          defaultItemProps: { text: 'A new phrase' },
+          getItemSummary: (item: any) => item?.text || 'Phrase',
+        },
+        size: {
+          type: 'select',
+          label: 'Size',
+          options: [
+            { label: 'Small', value: 'clamp(1.1rem, 2.5vw, 1.5rem)' },
+            { label: 'Medium', value: 'clamp(1.6rem, 3.5vw, 2.75rem)' },
+            { label: 'Large', value: 'clamp(2rem, 5vw, 3.75rem)' },
+          ],
+        },
+        align: alignField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        prefix: 'I photograph ',
+        phrases: [
+          { text: 'weddings.' },
+          { text: 'portraits.' },
+          { text: 'families.' },
+        ],
+        size: 'clamp(1.6rem, 3.5vw, 2.75rem)',
+        align: 'center',
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ prefix, phrases, size, align, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <p style={{ ...headingStyle(size), textAlign: align, maxWidth: align === 'center' ? '70ch' : undefined, margin: align === 'center' ? '0 auto' : 0 }}>
+            {prefix}
+            <TypewriterText phrases={(phrases ?? []).map((p: any) => p.text).filter(Boolean)} />
+          </p>
         </Section>
       ),
     },
