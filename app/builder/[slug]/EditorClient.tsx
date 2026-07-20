@@ -6,7 +6,7 @@ import '../puck-theme.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { config } from '../puck.config'
-import { SectionMoveOverlay } from '../SectionMoveOverlay'
+import { SectionHoverToolbar } from '../SectionHoverToolbar'
 import { DrawerItemClickToAdd } from '../DrawerItemClickToAdd'
 
 // Per-page Puck editor (TYN-216). Saves the document for `slug` via the save
@@ -129,7 +129,13 @@ export function EditorClient({
         headerTitle={title}
         headerPath={`/${slug}`}
         overrides={{
-          componentOverlay: SectionMoveOverlay,
+          // Puck's own default action bar (Duplicate/Delete, top-right) is
+          // suppressed entirely - SectionHoverToolbar rebuilds those actions
+          // itself as part of one unified toolbar matching Pixieset's actual
+          // reference layout, since actionBar's own props don't reliably
+          // identify which block they belong to (see SectionHoverToolbar.tsx).
+          actionBar: () => <></>,
+          componentOverlay: SectionHoverToolbar,
           drawerItem: DrawerItemClickToAdd,
           headerActions: ({ children }) => (
             <>
