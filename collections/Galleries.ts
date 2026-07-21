@@ -167,11 +167,18 @@ export const Galleries: CollectionConfig = {
       },
     },
     {
+      // Not required (TYN-312): a brand-new gallery starts with no photos at
+      // all, so requiring a cover at creation time made "New Collection"
+      // impossible to complete. Every read site already renders a "No cover"
+      // placeholder for a missing cover (GalleryGridView, CoverPhotoCell, the
+      // public Weddings album grid, the Studio dashboard's recent-activity
+      // strip), so this was purely a schema oversight, not a UI gap. A cover
+      // gets set from the gallery editor's photo grid ("Set as cover") once
+      // photos are added, or picked manually here.
       name: 'coverPhoto',
       type: 'relationship',
       label: 'Cover Photo',
       relationTo: 'photos',
-      required: true,
       admin: {
         description:
           'The photo shown as the preview for this gallery on your portfolio page. Must be a photo already uploaded to All Photos.',

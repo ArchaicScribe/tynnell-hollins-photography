@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { extractPayloadErrorMessage } from '@/app/lib/payloadError'
 
 const ui = "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 const teal = '#0d9488'
@@ -162,7 +163,8 @@ function NewCollectionModal({ onClose, onCreated }: { onClose: () => void; onCre
           onClose()
         }
       } else {
-        setError('Could not create collection. Please try again.')
+        const body = await res.json().catch(() => null)
+        setError(extractPayloadErrorMessage(body, 'Could not create collection. Please try again.'))
         setCreating(false)
       }
     } catch { setError('Connection error.'); setCreating(false) }

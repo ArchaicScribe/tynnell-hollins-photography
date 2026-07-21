@@ -276,7 +276,7 @@ export interface Gallery {
   /**
    * The photo shown as the preview for this gallery on your portfolio page. Must be a photo already uploaded to All Photos.
    */
-  coverPhoto: number | Photo;
+  coverPhoto?: (number | Photo) | null;
   /**
    * Use the button above to add multiple photos at once, or add one at a time with the row picker below. Drag the handle on the left to reorder. The order here is exactly how photos appear on the site.
    */
