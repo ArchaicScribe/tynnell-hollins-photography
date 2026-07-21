@@ -24,12 +24,12 @@ export interface SitePage {
 }
 
 // Kept in sync by hand with collections/Pages.ts's PROMOTABLE_ROUTES.
-// 'portfolio/weddings' isn't here yet - see the comment in Pages.ts on why.
 const PROMOTABLE_ROUTES: { route: string; label: string }[] = [
   { route: 'about', label: 'About' },
   { route: 'portfolio', label: 'Portfolio' },
   { route: 'portfolio/portraits', label: 'Portfolio - Portraits' },
   { route: 'portfolio/family', label: 'Portfolio - Family' },
+  { route: 'portfolio/weddings', label: 'Portfolio - Weddings' },
 ]
 
 // ---------------------------------------------------------------------------

@@ -16,6 +16,7 @@ import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
 import CategoryPhotoGrid from '@/app/(site)/portfolio/_components/CategoryPhotoGrid'
+import AlbumGridComponent from '@/app/(site)/portfolio/_components/AlbumGrid'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
@@ -370,7 +371,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
     content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
   },
 
   components: {
@@ -1026,6 +1027,53 @@ export const config: Config = {
       render: ({ resolvedPhotos, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <CategoryPhotoGrid photos={resolvedPhotos ?? []} />
+        </Section>
+      ),
+    },
+
+    // ----------------------------------------------------------- AlbumGrid
+    // Sibling of PortfolioGrid above, for categories (today, only Weddings)
+    // where the real page shows real Gallery album cards - cover photo,
+    // preview thumbnails, title, photo count, each linking to
+    // /portfolio/[slug] - rather than a plain photo grid. Same resolveData
+    // pattern, fetching the dedicated /api/portfolio-albums route (Payload's
+    // own /api/galleries REST route also has no public `read` access -
+    // confirmed the same way as /api/photos). Reuses the exact album-card
+    // component (AlbumGridComponent) app/(site)/portfolio/weddings/page.tsx
+    // now also uses, so there is one markup implementation, not two.
+    AlbumGrid: {
+      label: 'Album Grid',
+      fields: {
+        category: {
+          type: 'select',
+          label: 'Category',
+          options: [
+            { label: 'Weddings', value: 'weddings' },
+            { label: 'Portraits', value: 'portraits' },
+            { label: 'Family', value: 'families' },
+            { label: 'Couples', value: 'couples' },
+            { label: 'Brands', value: 'brands' },
+          ],
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { category: 'weddings', ...styleDefaults, ...responsiveDefaults },
+      resolveData: async ({ props }: any) => {
+        const category = props.category ?? 'weddings'
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/portfolio-albums?category=${category}`)
+          if (!res.ok) return { props: { resolvedAlbums: [] } }
+          const data = await res.json()
+          return { props: { resolvedAlbums: data.albums ?? [] } }
+        } catch {
+          return { props: { resolvedAlbums: [] } }
+        }
+      },
+      render: ({ resolvedAlbums, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <AlbumGridComponent albums={resolvedAlbums ?? []} />
         </Section>
       ),
     },
