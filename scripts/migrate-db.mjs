@@ -745,6 +745,19 @@ async function run() {
       ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "sharpening_level" varchar DEFAULT 'none'
     `)
     console.log('✓ site_design.sharpening_level column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260721_100000: drop NOT NULL on galleries.cover_photo_id
+    // (TYN-312). A brand-new gallery has no photos yet, so requiring a cover
+    // at creation time made "New Collection" fail every time - every read
+    // site already renders a "No cover" placeholder for a missing cover, so
+    // this was a schema oversight, not a UI gap.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries" ALTER COLUMN "cover_photo_id" DROP NOT NULL
+    `)
+    console.log('✓ galleries.cover_photo_id now nullable')
   } finally {
     client.release()
     await pool.end()

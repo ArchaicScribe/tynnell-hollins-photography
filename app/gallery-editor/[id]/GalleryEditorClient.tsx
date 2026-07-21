@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { isUnsupportedImage, uploadPhotoToLibrary } from '@/app/lib/uploadPhoto'
 import { isValidEmail } from '@/app/lib/validation'
+import { extractPayloadErrorMessage } from '@/app/lib/payloadError'
 import type { PhotoItem, GalleryListItem } from './page'
 
 const CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
@@ -151,7 +152,8 @@ export function GalleryEditorClient({
         const newId = data?.doc?.id ?? data?.id
         if (newId) window.location.href = `/gallery-editor/${newId}`
       } else {
-        setError('Could not duplicate gallery. Please try again.')
+        const body = await res.json().catch(() => null)
+        setError(extractPayloadErrorMessage(body, 'Could not duplicate gallery. Please try again.'))
       }
     } catch {
       setError('Duplicate failed. Check your connection.')
@@ -223,7 +225,8 @@ export function GalleryEditorClient({
         const id = data.doc?.id
         if (id) window.location.href = `/gallery-editor/${id}`
       } else {
-        setCreateError('Could not create gallery. Please try again.')
+        const body = await res.json().catch(() => null)
+        setCreateError(extractPayloadErrorMessage(body, 'Could not create gallery. Please try again.'))
       }
     } catch {
       setCreateError('Could not create gallery. Check your connection.')

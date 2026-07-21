@@ -6,8 +6,7 @@ export function CoverPhotoPicker() {
     <PhotoPickerField
       fieldPath="coverPhoto"
       label="Cover Photo"
-      hint="Required - shown on your portfolio page"
-      required
+      hint="Shown on your portfolio page. Add photos below and use Set as Cover, or pick one here."
     />
   )
 }
