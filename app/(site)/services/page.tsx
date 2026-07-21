@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import styles from './page.module.css'
 
 // Service packages/pricing rarely change - revalidate every 2 minutes
@@ -15,12 +16,15 @@ export const metadata: Metadata = {
 
 export default async function ServicesPage() {
   const payload = await getPayload({ config })
-  const { docs: services } = await payload.find({
-    collection: 'services',
-    sort: 'displayOrder',
-    depth: 0,
-    limit: 50,
-  })
+  const [{ docs: services }, siteConfig] = await Promise.all([
+    payload.find({
+      collection: 'services',
+      sort: 'displayOrder',
+      depth: 0,
+      limit: 50,
+    }),
+    getSiteConfig(),
+  ])
 
   const servicesSchema = services.length > 0 ? {
     '@context': 'https://schema.org',
@@ -31,7 +35,7 @@ export default async function ServicesPage() {
       url: 'https://tynnellhollinsphotography.com/services',
       provider: {
         '@type': 'LocalBusiness',
-        name: 'Tynnell Hollins Photography',
+        name: siteConfig.title,
         url: 'https://tynnellhollinsphotography.com',
       },
       ...(s.price ? {

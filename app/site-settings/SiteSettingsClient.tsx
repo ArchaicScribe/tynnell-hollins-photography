@@ -309,22 +309,6 @@ export function SiteSettingsClient({
           Settings
         </h1>
 
-        <div
-          style={{
-            background: 'rgba(251,146,60,0.08)',
-            border: '1px solid rgba(251,146,60,0.25)',
-            borderRadius: 8,
-            padding: '0.85rem 1rem',
-            marginBottom: '2rem',
-            color: '#fb923c',
-            fontSize: '0.8rem',
-            lineHeight: 1.5,
-          }}
-        >
-          Not yet wired into the live site - these fields save to the database but the public site currently reads business
-          name, tagline, contact info, and social links from hardcoded values in the code instead. See TYN-326 to connect them.
-        </div>
-
         <Section title="Branding">
           <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
             Logo and favicon are managed from the Design editor, alongside your site&apos;s colors and fonts.

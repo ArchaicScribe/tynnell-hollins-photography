@@ -9,8 +9,10 @@ import styles from './page.module.css'
 
 export const revalidate = 3600
 
+// Plain title - the (site) layout's dynamic template appends " | {business
+// name}" automatically (TYN-326), so this never needs its own config fetch.
 export const metadata: Metadata = {
-  title: 'Blog | Tynnell Hollins Photography',
+  title: 'Blog',
   description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',
 }
 

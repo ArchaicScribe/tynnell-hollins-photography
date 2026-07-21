@@ -4,24 +4,30 @@ import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import styles from './page.module.css'
 import type { Photo } from '@/payload-types'
 
 export const revalidate = 120
 
+// Plain title - the (site) layout's dynamic template appends " | {business
+// name}" automatically (TYN-326), so this never needs its own config fetch.
 export const metadata: Metadata = {
-  title: 'Client Words | Tynnell Hollins Photography',
+  title: 'Client Words',
   description: 'Kind words from couples, families, and portrait clients who have worked with Tynnell Hollins Photography.',
 }
 
 export default async function TestimonialsPage() {
   const payload = await getPayload({ config })
-  const { docs: testimonials } = await payload.find({
-    collection: 'testimonials',
-    sort: 'displayOrder',
-    depth: 1,
-    limit: 200,
-  })
+  const [{ docs: testimonials }, siteConfig] = await Promise.all([
+    payload.find({
+      collection: 'testimonials',
+      sort: 'displayOrder',
+      depth: 1,
+      limit: 200,
+    }),
+    getSiteConfig(),
+  ])
 
   const reviewSchema = testimonials.length > 0 ? {
     '@context': 'https://schema.org',
@@ -32,7 +38,7 @@ export default async function TestimonialsPage() {
       reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
       itemReviewed: {
         '@type': 'LocalBusiness',
-        name: 'Tynnell Hollins Photography',
+        name: siteConfig.title,
         url: 'https://tynnellhollinsphotography.com',
       },
     })),

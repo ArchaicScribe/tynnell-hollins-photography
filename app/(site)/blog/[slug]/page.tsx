@@ -9,6 +9,7 @@ import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { blogBlocksConfig } from '@/app/blog-editor/blog-blocks.config'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import styles from './page.module.css'
 
 // Post content rarely changes once published - revalidate every 2 minutes for fresh edits
@@ -60,7 +61,7 @@ export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params
   const payload = await getPayload({ config })
 
-  const [{ docs }, { docs: relatedDocs }] = await Promise.all([
+  const [{ docs }, { docs: relatedDocs }, siteConfig] = await Promise.all([
     payload.find({
       collection: 'posts',
       where: { and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }] },
@@ -79,6 +80,7 @@ export default async function BlogPostPage({ params }: Props) {
       depth: 1,
       limit: 3,
     }),
+    getSiteConfig(),
   ])
 
   const post = docs[0]
@@ -114,7 +116,7 @@ export default async function BlogPostPage({ params }: Props) {
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Tynnell Hollins Photography',
+      name: siteConfig.title,
       url: 'https://tynnellhollinsphotography.com',
     },
     mainEntityOfPage: {

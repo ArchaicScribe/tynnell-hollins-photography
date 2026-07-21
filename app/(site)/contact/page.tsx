@@ -4,7 +4,7 @@ import config from '@payload-config'
 import ContactForm from './ContactForm'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
-import { CONTACT_EMAIL } from '@/app/lib/constants'
+import { getSiteConfig, instagramHandle } from '@/app/lib/siteConfig'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 import { MIN_LEAD_TIME_HOURS, MAX_BOOKING_MONTHS } from '@/app/lib/validation'
 
@@ -49,6 +49,8 @@ export default async function ContactPage() {
   let minDate: string
   let maxDate: string
 
+  const siteConfig = await getSiteConfig()
+
   try {
     const payload = await getPayload({ config })
     const [availability, bookingSettings] = await Promise.all([
@@ -83,13 +85,13 @@ export default async function ContactPage() {
   const contactPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
-    name: 'Contact Tynnell Hollins Photography',
+    name: `Contact ${siteConfig.title}`,
     description: 'Book a session or send an inquiry. Weddings, engagements, portraits, and more.',
     url: 'https://tynnellhollinsphotography.com/contact',
     mainEntity: {
       '@type': 'LocalBusiness',
-      name: 'Tynnell Hollins Photography',
-      email: CONTACT_EMAIL,
+      name: siteConfig.title,
+      email: siteConfig.email,
       url: 'https://tynnellhollinsphotography.com',
     },
   }
@@ -113,19 +115,23 @@ export default async function ContactPage() {
             Fill out the form and I&apos;ll be in touch within 48 hours.
           </p>
           <div className={styles.directContact}>
-            <a href={`mailto:${CONTACT_EMAIL}`} className={styles.contactLink}>
-              {CONTACT_EMAIL}
+            <a href={`mailto:${siteConfig.email}`} className={styles.contactLink}>
+              {siteConfig.email}
             </a>
-            <span className={styles.contactDivider}>·</span>
-            <a href="https://instagram.com/tynnellhollinsphotography" className={styles.contactLink} target="_blank" rel="noopener noreferrer">
-              @tynnellhollinsphotography
-            </a>
+            {siteConfig.instagramUrl && (
+              <>
+                <span className={styles.contactDivider}>·</span>
+                <a href={siteConfig.instagramUrl} className={styles.contactLink} target="_blank" rel="noopener noreferrer">
+                  {instagramHandle(siteConfig.instagramUrl)}
+                </a>
+              </>
+            )}
           </div>
         </div>
 
         {/* Right - form */}
         <div className={styles.formColumn}>
-          <ContactForm minDate={minDate} maxDate={maxDate} />
+          <ContactForm minDate={minDate} maxDate={maxDate} contactEmail={siteConfig.email} />
         </div>
 
       </div>

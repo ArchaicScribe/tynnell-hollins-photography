@@ -5,13 +5,17 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import styles from './portfolio-landing.module.css'
 
 export const revalidate = 120
 
-export const metadata: Metadata = {
-  title: 'Portfolio',
-  description: 'Browse portraits, family sessions, and weddings by Tynnell Hollins Photography.',
+export async function generateMetadata(): Promise<Metadata> {
+  const siteConfig = await getSiteConfig()
+  return {
+    title: 'Portfolio',
+    description: `Browse portraits, family sessions, and weddings by ${siteConfig.title}.`,
+  }
 }
 
 const CATEGORIES = [
@@ -37,6 +41,7 @@ const CATEGORIES = [
 
 export default async function PortfolioPage() {
   const payload = await getPayload({ config })
+  const siteConfig = await getSiteConfig()
 
   const coverPhotos = await Promise.all(
     CATEGORIES.map(async cat => {
@@ -69,7 +74,7 @@ export default async function PortfolioPage() {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: 'Portfolio',
-    description: 'Browse portraits, family sessions, and weddings by Tynnell Hollins Photography.',
+    description: `Browse portraits, family sessions, and weddings by ${siteConfig.title}.`,
     url: 'https://tynnellhollinsphotography.com/portfolio',
     author: { '@type': 'Person', name: 'Tynnell Hollins', url: 'https://tynnellhollinsphotography.com/about' },
   }
