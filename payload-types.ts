@@ -468,7 +468,7 @@ export interface Page {
   /**
    * Make this page render at one of your real site routes instead of its own URL. Only one page can be promoted to a given route at a time.
    */
-  promotedRoute?: 'about' | null;
+  promotedRoute?: ('about' | 'portfolio' | 'portfolio/portraits' | 'portfolio/family') | null;
   updatedAt: string;
   createdAt: string;
 }

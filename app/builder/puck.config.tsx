@@ -15,6 +15,7 @@ import type { ReactNode } from 'react'
 import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
+import CategoryPhotoGrid from '@/app/(site)/portfolio/_components/CategoryPhotoGrid'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
@@ -369,7 +370,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
     content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
   },
 
   components: {
@@ -969,6 +970,64 @@ export const config: Config = {
           </section>
         )
       },
+    },
+
+    // ------------------------------------------------------- PortfolioGrid
+    // Live-bound to the real photos collection by category, unlike
+    // PhotoGallery above (which is a manually-picked, static list of
+    // images baked into the page content). This is what lets /portfolio's
+    // category pages be promoted to the block editor (see TYN-341 phase 2)
+    // without losing the real, always-current photo grid - matching
+    // Pixieset's reference, where the Portfolio pages are ordinary editable
+    // canvases with a live photo grid inside, not a locked preview.
+    //
+    // resolveData (not a plain fetch inside render) because this same
+    // config runs in two environments: the interactive editor (browser)
+    // and the public page's server render (@measured/puck/rsc's
+    // resolveAllData, wired in app/(site)/page.tsx and
+    // app/(site)/[...slug]/page.tsx). It fetches the dedicated
+    // /api/portfolio-photos route rather than Payload's own /api/photos:
+    // the Photos collection has no public `read` access (confirmed - a
+    // direct request returns 403), and even if it did, that endpoint
+    // returns every field on every photo where this only needs a handful
+    // for display. /api/portfolio-photos runs the same local-API query the
+    // hardcoded category pages already use, just exposed as a small public,
+    // read-only, category-scoped JSON endpoint.
+    PortfolioGrid: {
+      label: 'Portfolio Photo Grid',
+      fields: {
+        category: {
+          type: 'select',
+          label: 'Category',
+          options: [
+            { label: 'Portraits', value: 'portraits' },
+            { label: 'Family', value: 'families' },
+            { label: 'Weddings', value: 'weddings' },
+            { label: 'Couples', value: 'couples' },
+            { label: 'Brands', value: 'brands' },
+          ],
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { category: 'portraits', ...styleDefaults, ...responsiveDefaults },
+      resolveData: async ({ props }: any) => {
+        const category = props.category ?? 'portraits'
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/portfolio-photos?category=${category}`)
+          if (!res.ok) return { props: { resolvedPhotos: [] } }
+          const data = await res.json()
+          return { props: { resolvedPhotos: data.photos ?? [] } }
+        } catch {
+          return { props: { resolvedPhotos: [] } }
+        }
+      },
+      render: ({ resolvedPhotos, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <CategoryPhotoGrid photos={resolvedPhotos ?? []} />
+        </Section>
+      ),
     },
 
     // ------------------------------------------------------- PhotoCarousel
