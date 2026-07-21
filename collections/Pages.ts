@@ -15,7 +15,12 @@ import { revalidatePath } from 'next/cache'
 //   Home into its options - isHomepage already shipped and works, and Home's
 //   check lives in a different file (app/(site)/page.tsx) than every other
 //   promoted route would, so unifying them isn't worth the migration risk.
-const PROMOTABLE_ROUTES = ['about'] as const
+// 'portfolio/weddings' is deliberately NOT here yet: unlike Portraits/Family,
+// that page also renders real Gallery album cards (a distinct display mode
+// from a plain photo grid) - promoting it today, before a matching "album
+// grid" block exists, would silently drop that feature. Add it once that
+// block is built.
+const PROMOTABLE_ROUTES = ['about', 'portfolio', 'portfolio/portraits', 'portfolio/family'] as const
 
 // Only one page may claim a given real route at a time - unlike isHomepage
 // (which has no such guard and silently first-match-wins if ever duplicated),

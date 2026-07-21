@@ -23,11 +23,13 @@ export interface SitePage {
   updatedAt?: string | null
 }
 
-// Kept in sync by hand with collections/Pages.ts's PROMOTABLE_ROUTES - the
-// only route promotable today is About, per the phased rollout plan (see
-// app/(site)/about/page.tsx). Add an entry here when a new route is promoted.
+// Kept in sync by hand with collections/Pages.ts's PROMOTABLE_ROUTES.
+// 'portfolio/weddings' isn't here yet - see the comment in Pages.ts on why.
 const PROMOTABLE_ROUTES: { route: string; label: string }[] = [
   { route: 'about', label: 'About' },
+  { route: 'portfolio', label: 'Portfolio' },
+  { route: 'portfolio/portraits', label: 'Portfolio - Portraits' },
+  { route: 'portfolio/family', label: 'Portfolio - Family' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -404,7 +406,7 @@ function PuckPageRow({ page, onDelete, onToggleNav, onTogglePromote, onRefresh }
           {[
             { label: 'Edit in builder', action: () => { window.location.href = `/builder/${page.slug ?? ''}` } },
             { label: page.showInNav ? 'Remove from menu' : 'Add to menu', action: () => { void onToggleNav(page.id, Boolean(page.showInNav)); onRefresh(); setMenuOpen(false); setHovered(false) } },
-            ...PROMOTABLE_ROUTES.map(({ route, label }) => {
+            ...PROMOTABLE_ROUTES.map(({ route }) => {
               const isThisRoute = page.promotedRoute === route
               return {
                 label: isThisRoute ? `Un-promote (currently /${route})` : `Replace /${route} with this page`,
