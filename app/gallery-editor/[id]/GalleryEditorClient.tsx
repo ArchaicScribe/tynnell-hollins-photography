@@ -1357,48 +1357,23 @@ export function GalleryEditorClient({
                                 </div>
                               </div>
                             )}
-                            {/* Controls overlay (hidden in select mode). Rendered unconditionally
+                            {/* Consolidated hover pill (reorder/set-cover/remove) - matches
+                                SectionHoverToolbar's visual language in the page builder
+                                (app/builder/SectionHoverToolbar.tsx). Rendered unconditionally
                                 (not just on hover) so a keyboard user tabbing through can reach
-                                Remove/Set cover - opacity is the only hover-driven part. */}
+                                it - opacity is the only hover-driven part. */}
                             {!selectMode && (
-                              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: (isHovered || isCover) ? 1 : 0, transition: 'opacity .15s', pointerEvents: (isHovered || isCover) ? 'auto' : 'none' }}>
-                                {isCover ? (
-                                  <span style={{ fontSize: '0.65rem', color: 'rgba(201,162,39,0.95)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                                    <span aria-hidden="true">&#9733; </span>Cover
-                                  </span>
-                                ) : (
-                                  <button type="button" onClick={() => setCover(photo)} onFocus={() => setFocusedIdx(i)} style={{ fontSize: '0.65rem', color: '#fff', background: 'none', border: '1px solid rgba(255,255,255,0.4)', padding: '0.2rem 0.5rem', borderRadius: 3, cursor: 'pointer' }}>Set cover</button>
-                                )}
-                                <button type="button" onClick={() => removePhoto(i)} onFocus={() => setFocusedIdx(i)} aria-label="Remove" style={{ fontSize: '0.75rem', color: '#fff', background: 'rgba(0,0,0,0.5)', border: 'none', width: 22, height: 22, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&times;</button>
-                              </div>
-                            )}
-
-                            {/* Keyboard/screen-reader equivalent of drag-to-reorder (hidden in select mode).
-                                Rendered unconditionally (not just on hover) so a keyboard user tabbing
-                                through can actually reach these - opacity is the only hover-driven part. */}
-                            {!selectMode && (
-                              <div style={{ position: 'absolute', top: '0.4rem', left: '50%', transform: 'translateX(-50%)', zIndex: 3, display: 'flex', gap: '0.25rem', opacity: isHovered ? 1 : 0, transition: 'opacity .15s' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => move(i, i - 1)}
-                                  onFocus={() => setFocusedIdx(i)}
-                                  disabled={i === 0}
-                                  aria-label={`Move photo ${i + 1} earlier`}
-                                  style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '0.7rem', cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                >
-                                  &#8592;
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => move(i, i + 1)}
-                                  onFocus={() => setFocusedIdx(i)}
-                                  disabled={i === photos.length - 1}
-                                  aria-label={`Move photo ${i + 1} later`}
-                                  style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '0.7rem', cursor: i === photos.length - 1 ? 'default' : 'pointer', opacity: i === photos.length - 1 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                >
-                                  &#8594;
-                                </button>
-                              </div>
+                              <PhotoHoverPill
+                                visible={isHovered || isCover}
+                                isCover={isCover}
+                                canMoveLeft={i > 0}
+                                canMoveRight={i < photos.length - 1}
+                                onSetCover={() => setCover(photo)}
+                                onMoveLeft={() => move(i, i - 1)}
+                                onMoveRight={() => move(i, i + 1)}
+                                onRemove={() => removePhoto(i)}
+                                onFocusAny={() => setFocusedIdx(i)}
+                              />
                             )}
                           </div>
                         </div>
@@ -1454,60 +1429,23 @@ export function GalleryEditorClient({
                       {/* Position number (hidden in select mode) */}
                       {!selectMode && <span style={{ position: 'absolute', top: '0.4rem', left: '0.4rem', fontSize: '0.6rem', fontWeight: 700, background: 'rgba(0,0,0,0.65)', color: '#d6d1ce', padding: '0.15rem 0.35rem', borderRadius: 3 }}>{i + 1}</span>}
 
-                      {/* Remove button (hidden in select mode) */}
+                      {/* Consolidated hover pill (reorder/set-cover/remove) - matches
+                          SectionHoverToolbar's visual language in the page builder
+                          (app/builder/SectionHoverToolbar.tsx). Rendered unconditionally
+                          (not just on hover) so a keyboard user tabbing through can reach
+                          it - opacity is the only hover-driven part. */}
                       {!selectMode && (
-                        <button
-                          type="button"
-                          onClick={() => removePhoto(i)}
-                          onFocus={() => setFocusedIdx(i)}
-                          aria-label={`Remove photo ${i + 1}`}
-                          style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', width: 24, height: 24, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isHovered ? 1 : 0, transition: 'opacity .15s' }}
-                        >
-                          &times;
-                        </button>
-                      )}
-
-                      {/* Keyboard/screen-reader equivalent of drag-to-reorder (hidden in select mode).
-                          Rendered unconditionally (not just on hover) so a keyboard user tabbing
-                          through can actually reach these - opacity is the only hover-driven part. */}
-                      {!selectMode && (
-                        <div style={{ position: 'absolute', top: '0.4rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '0.25rem', opacity: isHovered ? 1 : 0, transition: 'opacity .15s' }}>
-                          <button
-                            type="button"
-                            onClick={() => move(i, i - 1)}
-                            onFocus={() => setFocusedIdx(i)}
-                            disabled={i === 0}
-                            aria-label={`Move photo ${i + 1} earlier`}
-                            style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.7rem', cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                          >
-                            &#8592;
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => move(i, i + 1)}
-                            onFocus={() => setFocusedIdx(i)}
-                            disabled={i === photos.length - 1}
-                            aria-label={`Move photo ${i + 1} later`}
-                            style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.7rem', cursor: i === photos.length - 1 ? 'default' : 'pointer', opacity: i === photos.length - 1 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                          >
-                            &#8594;
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Cover / set cover (hidden in select mode) */}
-                      {!selectMode && (
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.4rem 0.6rem', background: 'linear-gradient(transparent, rgba(0,0,0,0.75))', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isHovered || isCover) ? 1 : 0, transition: 'opacity .15s' }}>
-                          {isCover ? (
-                            <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'rgba(201,162,39,0.95)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                              <span aria-hidden="true">&#9733; </span>Cover photo
-                            </span>
-                          ) : (
-                            <button type="button" onClick={() => setCover(photo)} style={{ fontSize: '0.62rem', color: '#d6d1ce', background: 'none', border: '1px solid rgba(214,209,206,0.4)', borderRadius: 3, padding: '0.15rem 0.4rem', cursor: 'pointer' }}>
-                              Set as cover
-                            </button>
-                          )}
-                        </div>
+                        <PhotoHoverPill
+                          visible={isHovered || isCover}
+                          isCover={isCover}
+                          canMoveLeft={i > 0}
+                          canMoveRight={i < photos.length - 1}
+                          onSetCover={() => setCover(photo)}
+                          onMoveLeft={() => move(i, i - 1)}
+                          onMoveRight={() => move(i, i + 1)}
+                          onRemove={() => removePhoto(i)}
+                          onFocusAny={() => setFocusedIdx(i)}
+                        />
                       )}
 
                       {/* Drag grip dots (hidden in select mode) */}
@@ -1564,5 +1502,176 @@ export function GalleryEditorClient({
         </div>
       </footer>
     </div>
+  )
+}
+
+// Consolidated hover-action pill for the photo grid (Tynnell asked for the
+// toolbar "on my Portfolio Galleries" too, not just builder pages) - matches
+// SectionHoverToolbar's visual language in the page builder
+// (app/builder/SectionHoverToolbar.tsx) so the two editors read as one design
+// language. Same three actions the grid already had scattered across
+// separate buttons (reorder/remove/set-cover), just restyled and grouped -
+// no new functionality or state.
+function PhotoHoverPill({
+  visible,
+  isCover,
+  canMoveLeft,
+  canMoveRight,
+  onSetCover,
+  onMoveLeft,
+  onMoveRight,
+  onRemove,
+  onFocusAny,
+}: {
+  visible: boolean
+  isCover: boolean
+  canMoveLeft: boolean
+  canMoveRight: boolean
+  onSetCover: () => void
+  onMoveLeft: () => void
+  onMoveRight: () => void
+  onRemove: () => void
+  onFocusAny: () => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        zIndex: 3,
+        display: 'flex',
+        background: '#1a1a1a',
+        border: '1px solid rgba(255,255,255,0.14)',
+        borderRadius: 8,
+        overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity .15s',
+        pointerEvents: visible ? 'auto' : 'none',
+      }}
+    >
+      <PillIconButton title={isCover ? 'Cover photo' : 'Set as cover'} onClick={onSetCover} onFocus={onFocusAny} active={isCover}>
+        <StarIcon filled={isCover} />
+      </PillIconButton>
+      <PillReorderButton canLeft={canMoveLeft} canRight={canMoveRight} onLeft={onMoveLeft} onRight={onMoveRight} onFocus={onFocusAny} />
+      <PillIconButton title="Remove" onClick={onRemove} onFocus={onFocusAny} last>
+        <TrashIcon />
+      </PillIconButton>
+    </div>
+  )
+}
+
+function PillIconButton({
+  children,
+  title,
+  onClick,
+  onFocus,
+  active,
+  last,
+}: {
+  children: React.ReactNode
+  title: string
+  onClick?: () => void
+  onFocus?: () => void
+  active?: boolean
+  last?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onFocus={onFocus}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick?.()
+      }}
+      style={{
+        width: 30,
+        height: 30,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'transparent',
+        color: active ? 'rgba(201,162,39,0.95)' : '#e6e1de',
+        border: 'none',
+        borderRight: last ? 'none' : '1px solid rgba(255,255,255,0.14)',
+        cursor: 'pointer',
+        padding: 0,
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+// One combined visual slot with two independently-clickable halves (left/
+// right) - matches SectionHoverToolbar's up/down ReorderButton, just rotated
+// 90deg since these tiles reorder left-to-right in a grid, not top-to-bottom.
+function PillReorderButton({
+  canLeft,
+  canRight,
+  onLeft,
+  onRight,
+  onFocus,
+}: {
+  canLeft: boolean
+  canRight: boolean
+  onLeft: () => void
+  onRight: () => void
+  onFocus?: () => void
+}) {
+  return (
+    <div style={{ position: 'relative', width: 30, height: 30, borderRight: '1px solid rgba(255,255,255,0.14)' }}>
+      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e6e1de', pointerEvents: 'none' }}>
+        <ReorderIcon />
+      </span>
+      <button
+        type="button"
+        title="Move earlier"
+        aria-label="Move earlier"
+        disabled={!canLeft}
+        onFocus={onFocus}
+        onClick={(e) => { e.stopPropagation(); onLeft() }}
+        style={{ position: 'absolute', inset: '0 50% 0 0', background: 'transparent', border: 'none', cursor: canLeft ? 'pointer' : 'default', padding: 0 }}
+      />
+      <button
+        type="button"
+        title="Move later"
+        aria-label="Move later"
+        disabled={!canRight}
+        onFocus={onFocus}
+        onClick={(e) => { e.stopPropagation(); onRight() }}
+        style={{ position: 'absolute', inset: '0 0 0 50%', background: 'transparent', border: 'none', cursor: canRight ? 'pointer' : 'default', padding: 0 }}
+      />
+    </div>
+  )
+}
+
+function StarIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+    </svg>
+  )
+}
+
+function ReorderIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 8l-4 4 4 4" />
+      <path d="M17 8l4 4-4 4" />
+    </svg>
   )
 }

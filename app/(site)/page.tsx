@@ -1,6 +1,6 @@
 import { preload } from 'react-dom'
 import { getPayload } from 'payload'
-import { Render } from '@measured/puck/rsc'
+import { Render, resolveAllData } from '@measured/puck/rsc'
 import type { Data } from '@measured/puck'
 import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
@@ -34,7 +34,12 @@ export default async function Home() {
   const homepage = homepageDocs[0]
   if (homepage) {
     const data = (homepage.content as Data | undefined) ?? { content: [], root: {} }
-    return <Render config={puckConfig} data={data} />
+    // resolveAllData runs each block's own resolveData hook (if it defines
+    // one) before render - Render() itself does not do this automatically.
+    // No block defines resolveData yet, so this is currently a no-op; it's
+    // the prerequisite plumbing future data-bound blocks (e.g. live
+    // Services/Testimonials) depend on.
+    return <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
   }
 
   const [heroData, { docs: featuredPhotos }, { docs: testimonials }, aboutData] =

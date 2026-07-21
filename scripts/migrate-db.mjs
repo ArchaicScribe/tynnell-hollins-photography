@@ -758,6 +758,19 @@ async function run() {
       ALTER TABLE "galleries" ALTER COLUMN "cover_photo_id" DROP NOT NULL
     `)
     console.log('✓ galleries.cover_photo_id now nullable')
+
+    // ------------------------------------------------------------------
+    // Migration 20260721_200000: pages.promoted_route column
+    // Lets a builder page replace a real, hand-coded route (e.g. /about)
+    // instead of rendering at its own slug - same idea as is_homepage's
+    // promotion of "/", generalized so each new promotable route doesn't
+    // need its own boolean column. See collections/Pages.ts.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "promoted_route" varchar
+    `)
+    console.log('✓ pages.promoted_route column ready')
   } finally {
     client.release()
     await pool.end()

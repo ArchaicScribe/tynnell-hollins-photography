@@ -35,6 +35,7 @@ export default async function BuilderHome({
     published: p.published,
     showInNav: p.showInNav,
     isHomepage: p.isHomepage,
+    promotedRoute: p.promotedRoute,
     displayOrder: p.displayOrder,
     updatedAt: p.updatedAt,
   }))

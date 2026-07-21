@@ -31,6 +31,6 @@ const EditorClient = dynamic(() => import('./EditorClient').then((m) => m.Editor
   loading: () => <LoadingShell />,
 })
 
-export function EditorLoader(props: { slug: string; title: string; published: boolean; initialData: Data }) {
+export function EditorLoader(props: { slug: string; title: string; published: boolean; initialData: Data; promotedRoute: string | null }) {
   return <EditorClient {...props} />
 }

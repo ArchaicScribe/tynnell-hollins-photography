@@ -5,7 +5,10 @@ import Image from 'next/image'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from 'lexical'
 import { getPayload } from 'payload'
+import { Render, resolveAllData } from '@measured/puck/rsc'
+import type { Data } from '@measured/puck'
 import config from '@payload-config'
+import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
@@ -18,7 +21,26 @@ const getAboutData = cache(async () => {
   return payload.findGlobal({ slug: 'about-page', depth: 1 })
 })
 
+// A builder page can be promoted to replace this real route (same idea as
+// isHomepage's promotion of "/", generalized - see collections/Pages.ts).
+// Shared via cache() so generateMetadata and the page body see one DB read.
+const getPromotedAboutPage = cache(async () => {
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'pages',
+    where: { and: [{ promotedRoute: { equals: 'about' } }, { published: { equals: true } }] },
+    limit: 1,
+    depth: 0,
+  })
+  return docs[0] ?? null
+})
+
 export async function generateMetadata(): Promise<Metadata> {
+  const promoted = await getPromotedAboutPage()
+  if (promoted) {
+    return { title: promoted.title }
+  }
+
   const about = await getAboutData()
   const headshotPhoto = typeof about?.headshot === 'object' && about.headshot !== null
     ? about.headshot as Photo
@@ -49,7 +71,44 @@ const DEFAULT_VALUES: AboutValue[] = [
   { heading: 'Events' },
 ]
 
+// Static Person schema used for the promoted (Puck) branch - deliberately not
+// derived from the about-page global or any Puck block props (no "schema-
+// aware block" convention exists in this codebase). Kept separate from the
+// hardcoded branch's personSchema below, which additionally includes the
+// live headshot image.
+const PROMOTED_PERSON_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Tynnell Hollins',
+  jobTitle: 'Photographer',
+  url: 'https://tynnellhollinsphotography.com/about',
+  sameAs: ['https://instagram.com/tynnellhollinsphotography'],
+  worksFor: {
+    '@type': 'LocalBusiness',
+    name: 'Tynnell Hollins Photography',
+    url: 'https://tynnellhollinsphotography.com',
+  },
+  knowsAbout: ['Wedding Photography', 'Portrait Photography', 'Family Photography', 'Engagement Photography', 'Maternity Photography'],
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Albuquerque',
+    addressRegion: 'NM',
+    addressCountry: 'US',
+  },
+}
+
 export default async function AboutPage() {
+  const promoted = await getPromotedAboutPage()
+  if (promoted) {
+    const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
+    return (
+      <>
+        <JsonLd data={PROMOTED_PERSON_SCHEMA} />
+        <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
+      </>
+    )
+  }
+
   const about = await getAboutData()
 
   const headshotPhoto = typeof about?.headshot === 'object' && about.headshot !== null
