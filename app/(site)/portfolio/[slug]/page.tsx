@@ -12,6 +12,7 @@ import { GalleryViewer, type LightboxPhoto } from './GalleryViewer'
 import { GalleryPasswordGate } from './GalleryPasswordGate'
 import { GalleryExpiredNotice } from './GalleryExpiredNotice'
 import { isGalleryExpired } from '@/app/lib/galleryExpiry'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import { DownloadAllButtonLoader as DownloadAllButton } from './DownloadButtonLoader'
 import styles from './page.module.css'
 
@@ -68,10 +69,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? gallery.coverPhoto as Photo
     : null
   const ogImageUrl = cover?.sizes?.hero?.url ?? cover?.url ?? null
+  const siteConfig = await getSiteConfig()
 
   return {
     title: `${gallery.title}`,
-    description: `${gallery.title}, a ${gallery.category} session by Tynnell Hollins Photography.`,
+    description: `${gallery.title}, a ${gallery.category} session by ${siteConfig.title}.`,
     ...(ogImageUrl && {
       openGraph: {
         images: [{ url: ogImageUrl, width: 1920, height: 1080, alt: gallery.title }],
@@ -95,12 +97,15 @@ export default async function GalleryPage({ params, searchParams }: Props) {
   const backHref = from ? `/portfolio?category=${from}` : '/portfolio'
   const backText = from ? `Back to ${from.charAt(0).toUpperCase() + from.slice(1)}` : 'Back to Portfolio'
   const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'galleries',
-    where: { slug: { equals: slug } },
-    depth: 1,
-    limit: 1,
-  })
+  const [{ docs }, siteConfig] = await Promise.all([
+    payload.find({
+      collection: 'galleries',
+      where: { slug: { equals: slug } },
+      depth: 1,
+      limit: 1,
+    }),
+    getSiteConfig(),
+  ])
   const gallery = docs[0]
 
   if (!gallery || gallery.status === 'draft') notFound()
@@ -166,7 +171,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
     '@context': 'https://schema.org',
     '@type': 'ImageGallery',
     name: gallery.title,
-    description: `${gallery.title}, a ${gallery.category} session by Tynnell Hollins Photography.`,
+    description: `${gallery.title}, a ${gallery.category} session by ${siteConfig.title}.`,
     url: pageUrl,
     author: { '@type': 'Person', name: 'Tynnell Hollins' },
     ...(coverUrl && { thumbnailUrl: coverUrl }),

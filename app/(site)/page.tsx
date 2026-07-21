@@ -5,7 +5,7 @@ import type { Data } from '@measured/puck'
 import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
-import { CONTACT_EMAIL } from '@/app/lib/constants'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import Hero from '@/app/components/Hero/Hero'
 import PortfolioTeaser from '@/app/components/PortfolioTeaser/PortfolioTeaser'
 import AboutPreview from '@/app/components/AboutPreview/AboutPreview'
@@ -37,12 +37,13 @@ export default async function Home() {
     return <Render config={puckConfig} data={data} />
   }
 
-  const [heroData, { docs: featuredPhotos }, { docs: testimonials }, aboutData] =
+  const [heroData, { docs: featuredPhotos }, { docs: testimonials }, aboutData, siteConfig] =
     await Promise.all([
       payload.findGlobal({ slug: 'hero-slides', depth: 1 }),
       payload.find({ collection: 'photos', where: { featured: { equals: true } }, sort: 'displayOrder', depth: 0, limit: 6 }),
       payload.find({ collection: 'testimonials', where: { featured: { equals: true } }, sort: 'displayOrder', depth: 0, limit: 20 }),
       payload.findGlobal({ slug: 'about-page', depth: 1 }),
+      getSiteConfig(),
     ])
 
   type RawSlide = { image: import('@/payload-types').Photo | string | number; caption?: string | null }
@@ -83,7 +84,7 @@ export default async function Home() {
 
   // Fall back to the static hero image if no slides have been configured in the admin yet.
   const fallbackSlide: HeroSlide[] = [
-    { id: 'revamp-bg', imageUrl: '/hero-background.jpg', alt: 'Tynnell Hollins Photography' },
+    { id: 'revamp-bg', imageUrl: '/hero-background.jpg', alt: siteConfig.title },
   ]
 
   // Preload the actual first hero image (admin slide or fallback) for LCP.
@@ -94,11 +95,11 @@ export default async function Home() {
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: 'Tynnell Hollins Photography',
+    name: siteConfig.title,
     description:
       'Tynnell Hollins is a wedding and portrait photographer capturing authentic moments for couples and families.',
     url: 'https://tynnellhollinsphotography.com',
-    email: CONTACT_EMAIL,
+    email: siteConfig.email,
     image: 'https://tynnellhollinsphotography.com/og-image.jpg',
     address: {
       '@type': 'PostalAddress',
@@ -111,8 +112,8 @@ export default async function Home() {
       { '@type': 'State', name: 'New Mexico' },
     ],
     sameAs: [
-      'https://instagram.com/tynnellhollinsphotography',
-    ],
+      siteConfig.instagramUrl,
+    ].filter(Boolean),
     founder: {
       '@type': 'Person',
       name: 'Tynnell Hollins',
@@ -123,7 +124,7 @@ export default async function Home() {
   return (
     <main>
       <JsonLd data={localBusinessSchema} />
-      <Hero slides={slides.length ? slides : fallbackSlide} />
+      <Hero slides={slides.length ? slides : fallbackSlide} defaultTagline={siteConfig.tagline} />
       <PortfolioTeaser photos={photos} />
       <AboutPreview about={about} />
       <Testimonials testimonials={testimonialItems} />

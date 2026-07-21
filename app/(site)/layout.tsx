@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar/Navbar'
 import Footer from '../components/Footer/Footer'
 import { getBuilderNavLinks } from '@/app/lib/nav'
 import { getSiteDesign, themeToCssVars } from '@/app/lib/siteDesign'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import { DesignPreviewBridge } from '../components/DesignPreviewBridge'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -46,20 +47,20 @@ const abrialFatface = Abril_Fatface({
 // only allows one or the other per layout. getSiteDesign() is wrapped in
 // React's cache(), so this and the layout body's own call share one DB read.
 export async function generateMetadata(): Promise<Metadata> {
-  const theme = await getSiteDesign()
+  const [theme, siteConfig] = await Promise.all([getSiteDesign(), getSiteConfig()])
   return {
     metadataBase: new URL('https://tynnellhollinsphotography.com'),
     title: {
-      default: 'Tynnell Hollins Photography',
-      template: '%s | Tynnell Hollins Photography',
+      default: siteConfig.title,
+      template: `%s | ${siteConfig.title}`,
     },
     description:
       'Albuquerque, New Mexico wedding and portrait photographer. Tynnell Hollins captures authentic, timeless moments for couples, families, and engagements.',
     openGraph: {
       type: 'website',
-      siteName: 'Tynnell Hollins Photography',
+      siteName: siteConfig.title,
       locale: 'en_US',
-      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Tynnell Hollins Photography' }],
+      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: siteConfig.title }],
     },
     twitter: {
       card: 'summary_large_image',

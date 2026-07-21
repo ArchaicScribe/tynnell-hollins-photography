@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import styles from './page.module.css'
 
 // About content rarely changes - revalidate every 2 minutes
@@ -50,7 +51,7 @@ const DEFAULT_VALUES: AboutValue[] = [
 ]
 
 export default async function AboutPage() {
-  const about = await getAboutData()
+  const [about, siteConfig] = await Promise.all([getAboutData(), getSiteConfig()])
 
   const headshotPhoto = typeof about?.headshot === 'object' && about.headshot !== null
     ? about.headshot as Photo
@@ -69,10 +70,10 @@ export default async function AboutPage() {
     name: 'Tynnell Hollins',
     jobTitle: 'Photographer',
     url: 'https://tynnellhollinsphotography.com/about',
-    sameAs: ['https://instagram.com/tynnellhollinsphotography'],
+    sameAs: [siteConfig.instagramUrl].filter(Boolean),
     worksFor: {
       '@type': 'LocalBusiness',
-      name: 'Tynnell Hollins Photography',
+      name: siteConfig.title,
       url: 'https://tynnellhollinsphotography.com',
     },
     knowsAbout: ['Wedding Photography', 'Portrait Photography', 'Family Photography', 'Engagement Photography', 'Maternity Photography'],

@@ -61,12 +61,14 @@ const EMPTY_FORM: FormFields = {
   howHeard: '',
 }
 
-// minDate/maxDate are optional (TYN-332) so this component can be embedded
+// contactEmail is optional (TYN-326) so the builder's embedded ContactFormBlock
+// (which doesn't have Site Settings data threaded through it) still falls back
+// to the constants.ts value. minDate/maxDate are optional (TYN-332) so this component can be embedded
 // via the builder's Contact Form block without a server-side BookingSettings
 // fetch - the date input simply won't proactively restrict the calendar
 // widget in that case, but /api/contact still enforces the real lead-time/
 // booking-window rules server-side on submit regardless.
-export default function ContactForm({ minDate, maxDate }: { minDate?: string; maxDate?: string }) {
+export default function ContactForm({ minDate, maxDate, contactEmail = CONTACT_EMAIL }: { minDate?: string; maxDate?: string; contactEmail?: string }) {
   const [fields, setFields] = useState<FormFields>(EMPTY_FORM)
   const [status, setStatus] = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<ReactNode>('')
@@ -124,8 +126,8 @@ export default function ContactForm({ minDate, maxDate }: { minDate?: string; ma
           message = (
             <>
               Something went wrong. Please try again or reach out directly at{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                {CONTACT_EMAIL}
+              <a href={`mailto:${contactEmail}`} style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                {contactEmail}
               </a>
               .
             </>
