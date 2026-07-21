@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import config from '@payload-config'
 import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { applyWatermarkIfEnabled } from '@/app/lib/watermark'
+import { applySharpeningIfEnabled } from '@/app/lib/sharpening'
 import type { Photo } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -143,6 +144,17 @@ export async function POST(request: Request) {
       })
 
       console.log(`[photos/ingest] payload.create done for ${filename} in ${Date.now() - createStart}ms (total: ${Date.now() - requestStart}ms)`)
+
+      // Sharpen the preview sizes if enabled (TYN-325), before watermarking so
+      // the watermark itself is never re-sharpened. Both are best-effort and
+      // never fail the upload. The full original stays untouched.
+      try {
+        const sharpenStart = Date.now()
+        await applySharpeningIfEnabled({ s3, bucket, sizes: (doc as Photo).sizes })
+        console.log(`[photos/ingest] sharpening step for ${filename} took ${Date.now() - sharpenStart}ms`)
+      } catch (err) {
+        console.warn(`[photos/ingest] sharpening step failed for ${filename} (non-fatal):`, err)
+      }
 
       // Watermark the preview sizes if enabled (TYN-322) - best-effort,
       // never fails the upload. The full original stays untouched.

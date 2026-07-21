@@ -136,5 +136,19 @@ export const SiteDesign: GlobalConfig = {
       label: 'Enable animations',
       defaultValue: true,
     },
+    {
+      // TYN-325: applied to new uploads' web display sizes only, never the
+      // full original (see app/lib/sharpening.ts).
+      name: 'sharpeningLevel',
+      type: 'select',
+      label: 'Photo sharpening',
+      defaultValue: 'none',
+      options: [
+        { label: 'None', value: 'none' },
+        { label: 'Subtle', value: 'subtle' },
+        { label: 'Moderate', value: 'moderate' },
+        { label: 'Strong', value: 'strong' },
+      ],
+    },
   ],
 }

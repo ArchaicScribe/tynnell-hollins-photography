@@ -26,6 +26,7 @@ const FIELDS = [
   'spacingScale',
   'buttonStyle',
   'animationsEnabled',
+  'sharpeningLevel',
 ] as const
 
 export async function POST(request: Request) {

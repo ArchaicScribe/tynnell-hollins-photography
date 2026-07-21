@@ -23,6 +23,7 @@ export interface SiteTheme {
   spacingScale: 'compact' | 'normal' | 'spacious'
   buttonStyle: 'sharp' | 'rounded' | 'pill'
   animationsEnabled: boolean
+  sharpeningLevel: 'none' | 'subtle' | 'moderate' | 'strong'
 }
 
 export const DEFAULT_THEME: SiteTheme = {
@@ -43,6 +44,7 @@ export const DEFAULT_THEME: SiteTheme = {
   spacingScale: 'normal',
   buttonStyle: 'sharp',
   animationsEnabled: true,
+  sharpeningLevel: 'none',
 }
 
 const FONT_ROLE_VAR: Record<'tangerine' | 'abril', string> = {

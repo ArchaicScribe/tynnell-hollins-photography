@@ -99,6 +99,7 @@ export default async function GalleryEditorPage({ params }: Props) {
       initialIsPasswordProtected={gallery.isPasswordProtected ?? false}
       initialPasswordSet={typeof gallery.password === 'string' && gallery.password.length > 0}
       initialAllowDownload={gallery.allowDownload ?? false}
+      initialSeoIndexable={gallery.seoIndexable ?? true}
       initialClientName={gallery.clientName ?? ''}
       initialClientEmail={gallery.clientEmail ?? ''}
       initialExpiresAt={typeof gallery.expiresAt === 'string' ? gallery.expiresAt.slice(0, 10) : ''}

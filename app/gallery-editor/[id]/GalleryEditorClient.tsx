@@ -18,6 +18,7 @@ type Props = {
   initialIsPasswordProtected: boolean
   initialPasswordSet: boolean
   initialAllowDownload: boolean
+  initialSeoIndexable: boolean
   initialClientName: string
   initialClientEmail: string
   initialExpiresAt: string
@@ -39,6 +40,7 @@ export function GalleryEditorClient({
   initialIsPasswordProtected,
   initialPasswordSet,
   initialAllowDownload,
+  initialSeoIndexable,
   initialClientName,
   initialClientEmail,
   initialExpiresAt,
@@ -57,6 +59,7 @@ export function GalleryEditorClient({
   const [featured, setFeatured] = useState(initialFeatured)
   const [isPasswordProtected, setIsPasswordProtected] = useState(initialIsPasswordProtected)
   const [allowDownload, setAllowDownload] = useState(initialAllowDownload)
+  const [seoIndexable, setSeoIndexable] = useState(initialSeoIndexable)
   const [clientName, setClientName] = useState(initialClientName)
   const [clientEmail, setClientEmail] = useState(initialClientEmail)
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt)
@@ -376,6 +379,7 @@ export function GalleryEditorClient({
           tapedStyle,
           isPasswordProtected,
           allowDownload,
+          seoIndexable,
           // Only send a password value when the admin typed a new one.
           // When isPasswordProtected is true and the field is blank, we omit `password`
           // entirely so the server keeps the existing bcrypt hash unchanged.
@@ -427,7 +431,7 @@ export function GalleryEditorClient({
     autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, galleryPassword, coverId, photos, clientName, clientEmail, expiresAt])
+  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, seoIndexable, galleryPassword, coverId, photos, clientName, clientEmail, expiresAt])
 
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
@@ -458,7 +462,7 @@ export function GalleryEditorClient({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, galleryPassword, coverId, photos])
+  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, seoIndexable, galleryPassword, coverId, photos])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
@@ -1035,6 +1039,20 @@ export function GalleryEditorClient({
                     <div>
                       <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#d6d1ce', fontFamily: ui }}>Allow downloads</div>
                       <div style={{ fontSize: '0.7rem', color: '#4b4b4b', fontFamily: ui, marginTop: '0.1rem' }}>Clients can download photos</div>
+                    </div>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={seoIndexable}
+                      onChange={e => setField(setSeoIndexable)(e.target.checked)}
+                      style={{ width: 15, height: 15, accentColor: '#1db954', cursor: 'pointer', flexShrink: 0, marginTop: '0.15rem' }}
+                      aria-label="Search engine visible"
+                    />
+                    <div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#d6d1ce', fontFamily: ui }}>Search engine visible</div>
+                      <div style={{ fontSize: '0.7rem', color: '#4b4b4b', fontFamily: ui, marginTop: '0.1rem' }}>Uncheck to hide this gallery from Google search results (still viewable via direct link)</div>
                     </div>
                   </label>
                 </div>

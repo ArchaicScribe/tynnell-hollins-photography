@@ -22,6 +22,12 @@ export const BUTTON_OPTIONS: { label: string; value: SiteTheme['buttonStyle'] }[
   { label: 'Rounded', value: 'rounded' },
   { label: 'Pill', value: 'pill' },
 ]
+export const SHARPENING_OPTIONS: { label: string; value: SiteTheme['sharpeningLevel'] }[] = [
+  { label: 'None', value: 'none' },
+  { label: 'Subtle', value: 'subtle' },
+  { label: 'Moderate', value: 'moderate' },
+  { label: 'Strong', value: 'strong' },
+]
 
 export const COLOR_FIELDS: { key: keyof Pick<SiteTheme, 'colorBg' | 'colorBgAccent' | 'colorHeading' | 'colorBody' | 'colorDetail' | 'colorBtnBg'>; label: string }[] = [
   { key: 'colorBg', label: 'Background color' },
@@ -174,6 +180,15 @@ export function DesignSections({
       <AccordionRow label="Buttons" isOpen={open === 'buttons'} onToggle={() => setOpen(open === 'buttons' ? null : 'buttons')}>
         <FieldLabel>Button shape</FieldLabel>
         <Select value={theme.buttonStyle} onChange={(v) => set('buttonStyle', v as SiteTheme['buttonStyle'])} options={BUTTON_OPTIONS} />
+      </AccordionRow>
+
+      <AccordionRow label="Photo Sharpening" isOpen={open === 'sharpening'} onToggle={() => setOpen(open === 'sharpening' ? null : 'sharpening')}>
+        <FieldLabel>Sharpening level</FieldLabel>
+        <Select value={theme.sharpeningLevel} onChange={(v) => set('sharpeningLevel', v as SiteTheme['sharpeningLevel'])} options={SHARPENING_OPTIONS} />
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          Applies to new uploads only, on the web-display copies shown in your galleries and portfolio. The full-resolution
+          original a client downloads is never altered.
+        </p>
       </AccordionRow>
     </>
   )

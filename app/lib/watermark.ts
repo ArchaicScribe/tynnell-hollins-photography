@@ -1,6 +1,7 @@
 import sharp from 'sharp'
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSiteDesign } from './siteDesign'
+import { streamToBuffer } from './r2Stream'
 
 // Watermarking (TYN-322): composites the site's configured watermark image
 // onto a newly-uploaded photo's thumbnail/card/hero preview sizes - the ones
@@ -15,14 +16,6 @@ import { getSiteDesign } from './siteDesign'
 // because the watermark step had a problem.
 
 type SizeSlot = { filename?: string | null; mimeType?: string | null } | null | undefined
-
-async function streamToBuffer(stream: AsyncIterable<Uint8Array>): Promise<Buffer> {
-  const chunks: Buffer[] = []
-  for await (const chunk of stream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-  }
-  return Buffer.concat(chunks)
-}
 
 async function watermarkOneSize(params: {
   s3: S3Client

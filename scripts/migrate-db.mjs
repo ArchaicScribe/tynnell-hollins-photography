@@ -726,6 +726,25 @@ async function run() {
     `)
 
     console.log('✓ email_templates table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260720_100000: galleries.seo_indexable + site_design
+    // sharpening_level columns (TYN-325)
+    // seo_indexable controls whether a gallery is excluded from search-engine
+    // indexing (robots noindex), independent of `status`. sharpening_level
+    // is a sitewide default applied to newly-uploaded photos' web display
+    // sizes only (see app/lib/sharpening.ts) - the full original is untouched.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "seo_indexable" boolean DEFAULT true
+    `)
+    console.log('✓ galleries.seo_indexable column ready')
+
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "sharpening_level" varchar DEFAULT 'none'
+    `)
+    console.log('✓ site_design.sharpening_level column ready')
   } finally {
     client.release()
     await pool.end()

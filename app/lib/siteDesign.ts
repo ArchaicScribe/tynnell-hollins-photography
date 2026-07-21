@@ -40,6 +40,7 @@ export const getSiteDesign = cache(async (): Promise<SiteTheme> => {
       spacingScale: doc.spacingScale || DEFAULT_THEME.spacingScale,
       buttonStyle: doc.buttonStyle || DEFAULT_THEME.buttonStyle,
       animationsEnabled: doc.animationsEnabled ?? true,
+      sharpeningLevel: doc.sharpeningLevel || DEFAULT_THEME.sharpeningLevel,
     }
   } catch {
     return DEFAULT_THEME
