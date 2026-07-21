@@ -3,6 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { PortfolioTab } from './PortfolioTab'
 import { ImagePickerField } from './ImagePickerField'
 import { DesignSections, useDesignPreviewSync } from './DesignPanelShared'
+import { getTemplateContent } from './templates'
 import type { SiteTheme } from '@/app/lib/siteTheme'
 
 // System font stack matches Pixieset's clean UI look
@@ -17,9 +18,17 @@ export interface SitePage {
   published?: boolean | null
   showInNav?: boolean | null
   isHomepage?: boolean | null
+  promotedRoute?: string | null
   displayOrder?: number | null
   updatedAt?: string | null
 }
+
+// Kept in sync by hand with collections/Pages.ts's PROMOTABLE_ROUTES - the
+// only route promotable today is About, per the phased rollout plan (see
+// app/(site)/about/page.tsx). Add an entry here when a new route is promoted.
+const PROMOTABLE_ROUTES: { route: string; label: string }[] = [
+  { route: 'about', label: 'About' },
+]
 
 // ---------------------------------------------------------------------------
 // Hardcoded site navigation - mirrors the actual public site structure
@@ -328,10 +337,11 @@ function SubPageRow({ child, isActive, onSelect }: {
 // Custom Puck page row (NOT IN MENU section)
 // ---------------------------------------------------------------------------
 
-function PuckPageRow({ page, onDelete, onToggleNav, onRefresh }: {
+function PuckPageRow({ page, onDelete, onToggleNav, onTogglePromote, onRefresh }: {
   page: SitePage
   onDelete: (id: string | number) => void
   onToggleNav: (id: string | number, current: boolean) => void
+  onTogglePromote: (id: string | number, route: string | null) => void
   onRefresh: () => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -363,6 +373,14 @@ function PuckPageRow({ page, onDelete, onToggleNav, onRefresh }: {
       <span style={{ flex: 1, fontSize: '0.875rem', fontFamily: ui, color: '#c0bcb8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
         {page.title ?? 'Untitled'}
       </span>
+      {page.promotedRoute && (
+        <span
+          title={`Live at /${page.promotedRoute} instead of its own URL`}
+          style={{ flexShrink: 0, fontSize: '0.62rem', fontFamily: mono, color: teal, background: 'rgba(29,180,142,0.12)', border: '1px solid rgba(29,180,142,0.3)', borderRadius: 4, padding: '0.1rem 0.35rem' }}
+        >
+          /{page.promotedRoute}
+        </span>
+      )}
       {hovered && (
         <button
           type="button"
@@ -386,6 +404,13 @@ function PuckPageRow({ page, onDelete, onToggleNav, onRefresh }: {
           {[
             { label: 'Edit in builder', action: () => { window.location.href = `/builder/${page.slug ?? ''}` } },
             { label: page.showInNav ? 'Remove from menu' : 'Add to menu', action: () => { void onToggleNav(page.id, Boolean(page.showInNav)); onRefresh(); setMenuOpen(false); setHovered(false) } },
+            ...PROMOTABLE_ROUTES.map(({ route, label }) => {
+              const isThisRoute = page.promotedRoute === route
+              return {
+                label: isThisRoute ? `Un-promote (currently /${route})` : `Replace /${route} with this page`,
+                action: () => { onTogglePromote(page.id, isThisRoute ? null : route); setMenuOpen(false); setHovered(false) },
+              }
+            }),
             { label: 'Delete', danger: true, action: () => { onDelete(page.id); setMenuOpen(false); setHovered(false) } },
           ].map(item => (
             <button
@@ -424,7 +449,18 @@ function NewPageModal({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/pages', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), slug, published: false, displayOrder: Date.now(), template }),
+        body: JSON.stringify({
+          title: title.trim(),
+          slug,
+          published: false,
+          displayOrder: Date.now(),
+          // `template` picks starter content client-side (getTemplateContent) -
+          // the Pages collection has no such field, so it must be resolved into
+          // `content` here rather than sent as-is (it was previously sent raw
+          // and silently dropped by Payload, leaving every new page blank
+          // regardless of the template chosen).
+          content: getTemplateContent(template),
+        }),
       })
       if (res.ok) {
         window.location.href = `/builder/${slug}`
@@ -636,6 +672,25 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website', ini
     reload()
   }
 
+  // Promote this page to replace a real route (e.g. /about), or un-promote it
+  // (route: null). Payload's preventDuplicatePromotion hook (collections/Pages.ts)
+  // rejects the request if another page already claims that route - surfaced
+  // here as a plain alert since this is the only place a non-technical user can
+  // trigger that collision.
+  const togglePromote = async (id: string | number, route: string | null) => {
+    const res = await fetch(`/api/pages/${id}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ promotedRoute: route }),
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => null) as { errors?: { message?: string }[] } | null
+      alert(body?.errors?.[0]?.message ?? 'Could not update this page. Please try again.')
+      return
+    }
+    reload()
+  }
+
   const publishAll = async () => {
     setPublishing(true)
     await Promise.all(
@@ -802,7 +857,7 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website', ini
                   <>
                     <p style={{ margin: '1.25rem 0 0.3rem 0.75rem', fontFamily: mono, fontSize: '0.58rem', letterSpacing: '0.12em', color: '#4a4a4a', textTransform: 'uppercase' }}>Not in Menu</p>
                     {customPages.map(p => (
-                      <PuckPageRow key={String(p.id)} page={p} onDelete={deletePage} onToggleNav={toggleNav} onRefresh={reload} />
+                      <PuckPageRow key={String(p.id)} page={p} onDelete={deletePage} onToggleNav={toggleNav} onTogglePromote={togglePromote} onRefresh={reload} />
                     ))}
                   </>
                 )}

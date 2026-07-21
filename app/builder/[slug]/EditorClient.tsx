@@ -23,12 +23,19 @@ export function EditorClient({
   title,
   published,
   initialData,
+  promotedRoute,
 }: {
   slug: string
   title: string
   published: boolean
   initialData: Data
+  promotedRoute: string | null
 }) {
+  // When this page replaces a real route (see collections/Pages.ts), it goes
+  // live at that route, not at its own slug - "View Page" and the header path
+  // must point there, or an editor clicking "View Page" on a promoted page
+  // would land on the still-hardcoded original instead of their own edits.
+  const publicPath = promotedRoute ? `/${promotedRoute}` : `/${slug}`
   const savedJson = useRef<string>(JSON.stringify(initialData))
   const [dirty, setDirty] = useState(false)
   const [isPublished, setIsPublished] = useState(published)
@@ -127,7 +134,7 @@ export function EditorClient({
         onPublish={onPublish}
         iframe={{ enabled: false }}
         headerTitle={title}
-        headerPath={`/${slug}`}
+        headerPath={publicPath}
         overrides={{
           // Puck's own default action bar (Duplicate/Delete, top-right) is
           // suppressed entirely - SectionHoverToolbar rebuilds those actions
@@ -154,7 +161,7 @@ export function EditorClient({
                 }}
                 title={
                   isPublished
-                    ? `This page is live at /${slug}`
+                    ? `This page is live at ${publicPath}`
                     : 'Click Publish to make this page live on your site'
                 }
               >
@@ -168,11 +175,11 @@ export function EditorClient({
               </Link>
               {isPublished && (
                 <Link
-                  href={`/${slug}`}
+                  href={publicPath}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={headerBtn}
-                  title={`Open the live page at /${slug}`}
+                  title={`Open the live page at ${publicPath}`}
                 >
                   View Page <span aria-hidden="true">&#8599;</span>
                 </Link>

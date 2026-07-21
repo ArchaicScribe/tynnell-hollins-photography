@@ -465,6 +465,10 @@ export interface Page {
   displayOrder?: number | null;
   showInNav?: boolean | null;
   isHomepage?: boolean | null;
+  /**
+   * Make this page render at one of your real site routes instead of its own URL. Only one page can be promoted to a given route at a time.
+   */
+  promotedRoute?: 'about' | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -814,6 +818,9 @@ export interface PagesSelect<T extends boolean = true> {
   content?: T;
   published?: T;
   displayOrder?: T;
+  showInNav?: T;
+  isHomepage?: T;
+  promotedRoute?: T;
   updatedAt?: T;
   createdAt?: T;
 }

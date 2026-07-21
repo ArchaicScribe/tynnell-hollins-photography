@@ -22,5 +22,13 @@ export default async function EditPage({ params }: { params: Promise<{ slug: str
 
   const data = (page.content as Data | undefined) ?? EMPTY
 
-  return <EditorLoader slug={slug} title={page.title} published={Boolean(page.published)} initialData={data} />
+  return (
+    <EditorLoader
+      slug={slug}
+      title={page.title}
+      published={Boolean(page.published)}
+      initialData={data}
+      promotedRoute={typeof page.promotedRoute === 'string' ? page.promotedRoute : null}
+    />
+  )
 }

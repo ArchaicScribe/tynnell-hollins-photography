@@ -2,7 +2,7 @@ import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
-import { Render } from '@measured/puck/rsc'
+import { Render, resolveAllData } from '@measured/puck/rsc'
 import type { Data } from '@measured/puck'
 import payloadConfig from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
@@ -47,5 +47,6 @@ export default async function BuilderPublicPage({ params }: { params: Promise<{ 
   if (!page) notFound()
 
   const data = (page.content as Data | undefined) ?? { content: [], root: {} }
-  return <Render config={puckConfig} data={data} />
+  // See app/(site)/page.tsx's comment on resolveAllData - same reasoning here.
+  return <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
 }
