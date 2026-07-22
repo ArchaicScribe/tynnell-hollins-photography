@@ -1,7 +1,11 @@
+import { cache } from 'react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { getPayload } from 'payload'
+import { Render, resolveAllData } from '@measured/puck/rsc'
+import type { Data } from '@measured/puck'
 import config from '@payload-config'
+import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import BlogClient from './BlogClient'
@@ -9,12 +13,32 @@ import styles from './page.module.css'
 
 export const revalidate = 3600
 
-export const metadata: Metadata = {
-  title: 'Blog | Tynnell Hollins Photography',
-  description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',
+// A builder page can be promoted to replace this real route - same pattern
+// as About/Portfolio/Services/Testimonials/Contact (see collections/Pages.ts,
+// app/(site)/about/page.tsx).
+const getPromotedPage = cache(async () => {
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'pages',
+    where: { and: [{ promotedRoute: { equals: 'blog' } }, { published: { equals: true } }] },
+    limit: 1,
+    depth: 0,
+  })
+  return docs[0] ?? null
+})
+
+export async function generateMetadata(): Promise<Metadata> {
+  const promoted = await getPromotedPage()
+  if (promoted) return { title: promoted.title }
+  return {
+    title: 'Blog | Tynnell Hollins Photography',
+    description: 'Photography tips, session guides, and stories from behind the lens by Tynnell Hollins.',
+  }
 }
 
 export default async function BlogPage() {
+  const promoted = await getPromotedPage()
+
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'posts',
@@ -57,6 +81,16 @@ export default async function BlogPage() {
       url: `https://tynnellhollinsphotography.com/blog/${p.slug}`,
     })),
   } : null
+
+  if (promoted) {
+    const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
+    return (
+      <>
+        {blogSchema && <JsonLd data={blogSchema} />}
+        <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
+      </>
+    )
+  }
 
   return (
     <main className={styles.main}>

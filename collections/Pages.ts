@@ -27,7 +27,10 @@ import { revalidatePath } from 'next/cache'
 // the OOO banner is NOT part of the promoted content, it renders unconditionally
 // above <Render> in both branches since it's time-sensitive server logic, not
 // draggable page content.
-const PROMOTABLE_ROUTES = ['about', 'portfolio', 'portfolio/portraits', 'portfolio/family', 'portfolio/weddings', 'services', 'testimonials', 'contact'] as const
+// 'blog' - phase 6 - promotes via the LiveBlog block, which reuses
+// BlogClient.tsx directly (already a self-contained client component with no
+// server-only dependency, so no markup extraction was needed).
+const PROMOTABLE_ROUTES = ['about', 'portfolio', 'portfolio/portraits', 'portfolio/family', 'portfolio/weddings', 'services', 'testimonials', 'contact', 'blog'] as const
 
 // Only one page may claim a given real route at a time - unlike isHomepage
 // (which has no such guard and silently first-match-wins if ever duplicated),
