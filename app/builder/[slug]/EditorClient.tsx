@@ -170,8 +170,25 @@ export function EditorClient({
               <button type="button" style={headerBtn} aria-pressed={showHelp} onClick={() => setShowHelp((v) => !v)} title="How the builder works">
                 <span aria-hidden="true">?</span> Help
               </button>
-              <Link href="/builder" style={headerBtn} onClick={guardLeave}>
-                <span aria-hidden="true">&#8592;</span> Pages
+              <Link
+                href="/builder"
+                onClick={guardLeave}
+                aria-label="Back to Pages"
+                title="Back to Pages"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                }}
+              >
+                <BackArrowIcon />
               </Link>
               {isPublished && (
                 <Link
@@ -290,6 +307,15 @@ function HelpPanel({ onClose, isPublished }: { onClose: () => void; isPublished:
         </p>
       </div>
     </div>
+  )
+}
+
+function BackArrowIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 12H5" />
+      <path d="M12 19l-7-7 7-7" />
+    </svg>
   )
 }
 
