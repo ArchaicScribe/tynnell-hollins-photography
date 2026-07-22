@@ -19,7 +19,10 @@ import { revalidatePath } from 'next/cache'
 // Puck block (app/builder/puck.config.tsx), alongside PortfolioGrid for its
 // individual wedding photos - together they match what the hardcoded page
 // already shows, so promoting it doesn't drop either feature.
-const PROMOTABLE_ROUTES = ['about', 'portfolio', 'portfolio/portraits', 'portfolio/family', 'portfolio/weddings'] as const
+// 'services' and 'testimonials' promote via the LiveServices/LiveTestimonials
+// blocks, live-bound to the real collections (not the static, manually-typed
+// Services/Testimonials blocks already used on Home) - phase 4 of TYN-341.
+const PROMOTABLE_ROUTES = ['about', 'portfolio', 'portfolio/portraits', 'portfolio/family', 'portfolio/weddings', 'services', 'testimonials'] as const
 
 // Only one page may claim a given real route at a time - unlike isHomepage
 // (which has no such guard and silently first-match-wins if ever duplicated),

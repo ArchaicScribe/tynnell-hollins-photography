@@ -1,0 +1,121 @@
+/* Extracted from testimonials/page.module.css's "Testimonial list" +
+   "Text block" + "Photo" + "Empty state" sections, so the same list markup
+   can be reused by the LiveTestimonials builder block
+   (app/builder/puck.config.tsx) without duplicating styles. */
+
+.list {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 var(--padding-x) 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.item {
+  padding: 3.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.item:first-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.textBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.badge {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0;
+}
+
+.clientName {
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 600;
+  color: var(--color-heading);
+  font-style: normal;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  display: block;
+}
+
+.quote {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--color-body);
+  margin: 0;
+  font-style: italic;
+}
+
+.quoteOpen,
+.quoteClose {
+  font-family: var(--font-display);
+  font-size: 1.4em;
+  line-height: 0;
+  vertical-align: -0.25em;
+  color: var(--color-detail);
+  opacity: 0.6;
+}
+
+.quoteOpen {
+  margin-right: 0.1em;
+}
+
+.quoteClose {
+  margin-left: 0.1em;
+}
+
+.photoWrap {
+  width: 100%;
+  overflow: hidden;
+}
+
+.photo {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  max-height: 600px;
+}
+
+.empty {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--color-detail);
+  text-align: center;
+  padding: 4rem 0 6rem;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .list {
+    padding-bottom: 4rem;
+  }
+
+  .item {
+    padding: 2.5rem 0;
+  }
+
+  .quote {
+    font-size: 1rem;
+  }
+
+  .photo {
+    max-height: 400px;
+  }
+}

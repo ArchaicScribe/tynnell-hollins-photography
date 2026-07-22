@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { slugifyServiceTitle } from '@/app/lib/slug'
 import styles from './page.module.css'
 
 export type BookingPackage = {
@@ -19,14 +20,10 @@ type BookingState = {
   sessionDate: string
 }
 
-function slugify(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-}
-
 export default function BookClient({ packages, minDate, maxDate }: { packages: BookingPackage[]; minDate: string; maxDate: string }) {
   const searchParams = useSearchParams()
   const packageParam = searchParams.get('package')
-  const matched = packageParam ? packages.find(p => slugify(p.title) === packageParam) : null
+  const matched = packageParam ? packages.find(p => slugifyServiceTitle(p.title) === packageParam) : null
 
   const [activeId, setActiveId] = useState<string | null>(matched?.id ?? null)
   const [fields, setFields] = useState<BookingState>({ name: '', email: '', sessionDate: '' })
