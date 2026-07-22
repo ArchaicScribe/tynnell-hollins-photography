@@ -18,6 +18,8 @@ import { FreeformPhotoCanvasField } from './FreeformPhotoCanvasField'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
 import CategoryPhotoGrid from '@/app/(site)/portfolio/_components/CategoryPhotoGrid'
 import AlbumGridComponent from '@/app/(site)/portfolio/_components/AlbumGrid'
+import ServicesGridComponent from '@/app/(site)/services/_components/ServicesGrid'
+import TestimonialsListComponent from '@/app/(site)/testimonials/_components/TestimonialsList'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
@@ -371,7 +373,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
-    content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'LiveServices', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
   },
 
@@ -715,6 +717,42 @@ export const config: Config = {
       ),
     },
 
+    // ------------------------------------------------------- LiveServices
+    // TYN-341 phase 4: live-bound to the real services collection, unlike
+    // Services above (a manually-picked, static list baked into the page
+    // content). This is what lets /services be promoted to the block editor
+    // without losing the real, always-current pricing - matching Pixieset's
+    // reference where every page is an ordinary editable canvas with live
+    // data inside, not a locked preview. Same resolveData pattern as
+    // PortfolioGrid/AlbumGrid above: fetches /api/public-services rather
+    // than Payload's own /api/services (requires auth), and reuses the
+    // exact card component (ServicesGridComponent) the real /services page
+    // now also uses, so there is one markup implementation, not two.
+    LiveServices: {
+      label: 'Services (Live)',
+      fields: {
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { ...styleDefaults, ...responsiveDefaults },
+      resolveData: async () => {
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/public-services`)
+          if (!res.ok) return { props: { resolvedServices: [] } }
+          const data = await res.json()
+          return { props: { resolvedServices: data.services ?? [] } }
+        } catch {
+          return { props: { resolvedServices: [] } }
+        }
+      },
+      render: ({ resolvedServices, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <ServicesGridComponent services={resolvedServices ?? []} />
+        </Section>
+      ),
+    },
+
     // ----------------------------------------------------------- Testimonials
     Testimonials: {
       label: 'Testimonials',
@@ -753,6 +791,39 @@ export const config: Config = {
               </figure>
             ))}
           </div>
+        </Section>
+      ),
+    },
+
+    // ------------------------------------------------------- LiveTestimonials
+    // TYN-341 phase 4: live-bound to the real testimonials collection
+    // (ALL of them, sorted by displayOrder - matching /testimonials, not the
+    // homepage's "featured" subset), unlike Testimonials above (a manually-
+    // picked, static list). Same resolveData pattern as LiveServices above,
+    // fetching /api/public-testimonials and reusing the exact list
+    // component (TestimonialsListComponent) the real /testimonials page now
+    // also uses.
+    LiveTestimonials: {
+      label: 'Testimonials (Live)',
+      fields: {
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { ...styleDefaults, ...responsiveDefaults },
+      resolveData: async () => {
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/public-testimonials`)
+          if (!res.ok) return { props: { resolvedTestimonials: [] } }
+          const data = await res.json()
+          return { props: { resolvedTestimonials: data.testimonials ?? [] } }
+        } catch {
+          return { props: { resolvedTestimonials: [] } }
+        }
+      },
+      render: ({ resolvedTestimonials, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <TestimonialsListComponent testimonials={resolvedTestimonials ?? []} />
         </Section>
       ),
     },

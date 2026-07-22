@@ -771,6 +771,22 @@ async function run() {
       ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "promoted_route" varchar
     `)
     console.log('✓ pages.promoted_route column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260722_180000: services/testimonials promotable routes
+    // Payload's Postgres adapter backs this select field with a real
+    // Postgres enum type (enum_pages_promoted_route), not the plain varchar
+    // the migration above adds - the column had already been created as an
+    // enum by Payload's own schema management before this ran. New select
+    // options need the enum type itself extended, or saving a page with
+    // promotedRoute: 'services' fails with "invalid input value for enum".
+    // ADD VALUE IF NOT EXISTS runs outside a transaction block here (no
+    // surrounding BEGIN in this script), which Postgres requires.
+    // ------------------------------------------------------------------
+
+    await client.query(`ALTER TYPE "enum_pages_promoted_route" ADD VALUE IF NOT EXISTS 'services'`)
+    await client.query(`ALTER TYPE "enum_pages_promoted_route" ADD VALUE IF NOT EXISTS 'testimonials'`)
+    console.log('✓ enum_pages_promoted_route has services/testimonials')
   } finally {
     client.release()
     await pool.end()

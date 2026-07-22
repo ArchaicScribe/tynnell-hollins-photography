@@ -1,0 +1,169 @@
+/* Extracted from services/page.module.css's "Service cards" + "Empty state"
+   sections, so the same card markup can be reused by the LiveServices
+   builder block (app/builder/puck.config.tsx) without duplicating styles. */
+
+.cards {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 5rem var(--padding-x) 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.card {
+  padding: 4rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.card:first-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cardEyebrow {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-heading);
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.cardPrice {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0;
+}
+
+.cardDescription {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--color-body);
+  margin: 0;
+  max-width: 640px;
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--color-body);
+  line-height: 1.5;
+}
+
+.featureDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-detail);
+  flex-shrink: 0;
+  margin-top: 0.45em;
+  opacity: 0.5;
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+}
+
+.bookBtn {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-btn-text);
+  background: var(--color-btn-bg);
+  padding: 0.85rem 2.25rem;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  display: inline-block;
+}
+
+.bookBtn:hover {
+  background: var(--color-btn-hover);
+}
+
+.depositNote {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--color-detail);
+  margin: 0;
+}
+
+.emptyState {
+  padding: 5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.emptyEyebrow {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin: 0;
+}
+
+.emptyText {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--color-body);
+  margin: 0;
+  max-width: 500px;
+}
+
+@media (max-width: 768px) {
+  .cards {
+    padding-top: 3.5rem;
+  }
+
+  .card {
+    padding: 2.75rem 0;
+  }
+}

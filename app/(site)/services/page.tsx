@@ -1,19 +1,42 @@
+import { cache } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayload } from 'payload'
+import { Render, resolveAllData } from '@measured/puck/rsc'
+import type { Data } from '@measured/puck'
 import config from '@payload-config'
+import { config as puckConfig } from '@/app/builder/puck.config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import ServicesGrid from './_components/ServicesGrid'
 import styles from './page.module.css'
 
 // Service packages/pricing rarely change - revalidate every 2 minutes
 export const revalidate = 120
 
-export const metadata: Metadata = {
-  title: 'Services',
-  description: "Photography packages for weddings, portraits, families, couples, and brands. View pricing and what's included.",
+// A builder page can be promoted to replace this real route - same pattern
+// as About/Portfolio (see collections/Pages.ts, app/(site)/about/page.tsx).
+const getPromotedPage = cache(async () => {
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'pages',
+    where: { and: [{ promotedRoute: { equals: 'services' } }, { published: { equals: true } }] },
+    limit: 1,
+    depth: 0,
+  })
+  return docs[0] ?? null
+})
+
+export async function generateMetadata(): Promise<Metadata> {
+  const promoted = await getPromotedPage()
+  if (promoted) return { title: promoted.title }
+  return {
+    title: 'Services',
+    description: "Photography packages for weddings, portraits, families, couples, and brands. View pricing and what's included.",
+  }
 }
 
 export default async function ServicesPage() {
+  const promoted = await getPromotedPage()
   const payload = await getPayload({ config })
   const { docs: services } = await payload.find({
     collection: 'services',
@@ -45,6 +68,16 @@ export default async function ServicesPage() {
     })),
   } : null
 
+  if (promoted) {
+    const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
+    return (
+      <>
+        {servicesSchema && <JsonLd data={servicesSchema} />}
+        <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
+      </>
+    )
+  }
+
   return (
     <main className={styles.main}>
       {servicesSchema && <JsonLd data={servicesSchema} />}
@@ -58,59 +91,17 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      {/* Service cards */}
-      <section className={styles.cards} aria-label="Service packages">
-        {services.length > 0 ? services.map((service, i) => (
-          <article key={service.id} className={`${styles.card} ${i % 2 === 1 ? styles.cardAlt : ''}`}>
-            <div className={styles.cardBody}>
-              {service.eyebrow && (
-                <p className={styles.cardEyebrow}>{service.eyebrow}</p>
-              )}
-              <h2 className={styles.cardTitle}>{service.title}</h2>
-
-              {service.price && (
-                <p className={styles.cardPrice}>{service.price}</p>
-              )}
-
-              {service.description && (
-                <p className={styles.cardDescription}>{service.description}</p>
-              )}
-
-              {service.features && service.features.length > 0 && (
-                <ul className={styles.featureList}>
-                  {service.features.map((item, fi) => (
-                    <li key={fi} className={styles.featureItem}>
-                      <span className={styles.featureDot} aria-hidden="true" />
-                      {item.feature}
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              <div className={styles.cardActions}>
-                <Link
-                  href={`/book?package=${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
-                  className={styles.bookBtn}
-                  aria-label={`Book ${service.title} session`}
-                >
-                  Reserve Your Date
-                </Link>
-                {service.depositAmount != null && (
-                  <p className={styles.depositNote}>
-                    ${service.depositAmount.toLocaleString()} deposit to secure
-                  </p>
-                )}
-              </div>
-            </div>
-          </article>
-        )) : (
-          <div className={styles.emptyState}>
-            <p className={styles.emptyEyebrow}>Coming Soon</p>
-            <p className={styles.emptyText}>Packages are being finalised. Reach out directly to discuss your vision.</p>
-            <Link href="/contact" className={styles.bookBtn}>Get in Touch</Link>
-          </div>
-        )}
-      </section>
+      <ServicesGrid
+        services={services.map((s) => ({
+          id: s.id,
+          eyebrow: s.eyebrow ?? null,
+          title: s.title,
+          price: s.price ?? null,
+          description: s.description ?? null,
+          features: (s.features ?? []).map((f) => f.feature),
+          depositAmount: s.depositAmount ?? null,
+        }))}
+      />
 
       {/* Bottom CTA */}
       <section className={styles.cta}>
