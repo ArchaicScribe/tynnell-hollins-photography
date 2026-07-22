@@ -22,7 +22,7 @@ type SaveState = 'idle' | 'saving' | 'error' | 'saved'
 // header row (2 icon buttons + header padding) - measured directly against
 // the rendered header rather than guessed, so the back button sits right
 // after them without overlapping.
-const BACK_BUTTON_LEFT_OFFSET = 90
+const BACK_BUTTON_LEFT_OFFSET = 90 // px
 
 export function EditorClient({
   slug,
