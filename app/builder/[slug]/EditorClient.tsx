@@ -18,6 +18,12 @@ import { DrawerItemClickToAdd } from '../DrawerItemClickToAdd'
 // in-editor help panel for a non-technical user.
 type SaveState = 'idle' | 'saving' | 'error' | 'saved'
 
+// Puck's own sidebar-toggle icons occupy roughly the first 90px of the
+// header row (2 icon buttons + header padding) - measured directly against
+// the rendered header rather than guessed, so the back button sits right
+// after them without overlapping.
+const BACK_BUTTON_LEFT_OFFSET = 90
+
 export function EditorClient({
   slug,
   title,
@@ -144,8 +150,42 @@ export function EditorClient({
           actionBar: () => <></>,
           componentOverlay: SectionHoverToolbar,
           drawerItem: DrawerItemClickToAdd,
+          // headerActions only injects into Puck's right-side action row - that's
+          // why the back button used to land sandwiched between Help and View
+          // Page instead of reading as a true "back" control. Puck's own header
+          // is a CSS Grid item sized by its own stylesheet; wrapping it in a
+          // `header` override to reposition things breaks that sizing (tried and
+          // reverted - the header collapsed to a ~225px column). `position: fixed`
+          // on just this one button sidesteps Puck's layout entirely and lands it
+          // in the true upper-left, just past Puck's own sidebar-toggle icons -
+          // BACK_BUTTON_LEFT_OFFSET below was measured against their real
+          // rendered position.
           headerActions: ({ children }) => (
             <>
+              <Link
+                href="/builder"
+                onClick={guardLeave}
+                aria-label="Back to Pages"
+                title="Back to Pages"
+                style={{
+                  position: 'fixed',
+                  top: '19px',
+                  left: `${BACK_BUTTON_LEFT_OFFSET}px`,
+                  zIndex: 10,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                }}
+              >
+                <BackArrowIcon />
+              </Link>
               <span
                 style={{
                   display: 'inline-flex',
@@ -170,26 +210,6 @@ export function EditorClient({
               <button type="button" style={headerBtn} aria-pressed={showHelp} onClick={() => setShowHelp((v) => !v)} title="How the builder works">
                 <span aria-hidden="true">?</span> Help
               </button>
-              <Link
-                href="/builder"
-                onClick={guardLeave}
-                aria-label="Back to Pages"
-                title="Back to Pages"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'inherit',
-                  cursor: 'pointer',
-                }}
-              >
-                <BackArrowIcon />
-              </Link>
               {isPublished && (
                 <Link
                   href={publicPath}
