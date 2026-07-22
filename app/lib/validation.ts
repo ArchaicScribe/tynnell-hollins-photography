@@ -72,6 +72,24 @@ export const MIN_LEAD_TIME_HOURS = 48
 export const MAX_BOOKING_MONTHS = 24
 
 /**
+ * Computes the min/max date strings (YYYY-MM-DD) for the contact form's
+ * session-date picker. Shared by app/(site)/contact/page.tsx and the
+ * builder's ContactFormBlock (app/builder/puck.config.tsx, via
+ * /api/public-booking-dates) so both compute the same bounds the same way.
+ */
+export function computeBookingDateBounds(options?: { minLeadTimeHours?: number; maxBookingMonths?: number }): { minDate: string; maxDate: string } {
+  const minLeadHours = options?.minLeadTimeHours ?? MIN_LEAD_TIME_HOURS
+  const maxMonths = options?.maxBookingMonths ?? MAX_BOOKING_MONTHS
+
+  const minD = new Date()
+  minD.setTime(minD.getTime() + minLeadHours * 60 * 60 * 1000)
+  const maxD = new Date()
+  maxD.setMonth(maxD.getMonth() + maxMonths)
+
+  return { minDate: minD.toISOString().split('T')[0], maxDate: maxD.toISOString().split('T')[0] }
+}
+
+/**
  * Validates a session date string submitted via the contact form.
  *
  * Accepts optional overrides for lead time and booking window - used when

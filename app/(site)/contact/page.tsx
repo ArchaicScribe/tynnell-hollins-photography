@@ -1,19 +1,45 @@
+import { cache } from 'react'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
+import { Render, resolveAllData } from '@measured/puck/rsc'
+import type { Data } from '@measured/puck'
 import config from '@payload-config'
+import { config as puckConfig } from '@/app/builder/puck.config'
 import ContactForm from './ContactForm'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
-import { MIN_LEAD_TIME_HOURS, MAX_BOOKING_MONTHS } from '@/app/lib/validation'
+import { computeBookingDateBounds } from '@/app/lib/validation'
 
 // OOO banner is time-sensitive - shorter revalidate so it appears within 1 minute of being set
 export const revalidate = 60
 
-export const metadata: Metadata = {
-  title: 'Contact',
-  description: 'Book a session with Tynnell Hollins Photography. Weddings, engagements, portraits, and more.',
+// A builder page can be promoted to replace this real route - same pattern
+// as About/Portfolio/Services/Testimonials (see collections/Pages.ts,
+// app/(site)/about/page.tsx). Unlike those, the OOO banner below is NOT part
+// of the promoted Puck content - it's time-sensitive server logic, the wrong
+// affordance for a draggable block, so it renders unconditionally above
+// <Render> in the promoted branch too, exactly as it does in the hardcoded
+// branch.
+const getPromotedPage = cache(async () => {
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'pages',
+    where: { and: [{ promotedRoute: { equals: 'contact' } }, { published: { equals: true } }] },
+    limit: 1,
+    depth: 0,
+  })
+  return docs[0] ?? null
+})
+
+export async function generateMetadata(): Promise<Metadata> {
+  const promoted = await getPromotedPage()
+  if (promoted) return { title: promoted.title }
+  return {
+    title: 'Contact',
+    description: 'Book a session with Tynnell Hollins Photography. Weddings, engagements, portraits, and more.',
+  }
 }
 
 function findActiveOrUpcoming(ranges: BlockedRange[]): string | null {
@@ -44,8 +70,9 @@ function findActiveOrUpcoming(ranges: BlockedRange[]): string | null {
 }
 
 export default async function ContactPage() {
-  let oooMessage: string | null = null
+  const promoted = await getPromotedPage()
 
+  let oooMessage: string | null = null
   let minDate: string
   let maxDate: string
 
@@ -58,26 +85,17 @@ export default async function ContactPage() {
     if (Array.isArray(availability?.blockedRanges)) {
       oooMessage = findActiveOrUpcoming(availability.blockedRanges)
     }
-    const minLeadHours = typeof bookingSettings?.minLeadTimeHours === 'number'
-      ? bookingSettings.minLeadTimeHours
-      : MIN_LEAD_TIME_HOURS
-    const maxMonths = typeof bookingSettings?.maxBookingMonths === 'number'
-      ? bookingSettings.maxBookingMonths
-      : MAX_BOOKING_MONTHS
-    const minD = new Date()
-    minD.setTime(minD.getTime() + minLeadHours * 60 * 60 * 1000)
-    minDate = minD.toISOString().split('T')[0]
-    const maxD = new Date()
-    maxD.setMonth(maxD.getMonth() + maxMonths)
-    maxDate = maxD.toISOString().split('T')[0]
+    const bounds = computeBookingDateBounds({
+      minLeadTimeHours: typeof bookingSettings?.minLeadTimeHours === 'number' ? bookingSettings.minLeadTimeHours : undefined,
+      maxBookingMonths: typeof bookingSettings?.maxBookingMonths === 'number' ? bookingSettings.maxBookingMonths : undefined,
+    })
+    minDate = bounds.minDate
+    maxDate = bounds.maxDate
   } catch {
     // Non-fatal: fall back to defaults
-    const minD = new Date()
-    minD.setTime(minD.getTime() + MIN_LEAD_TIME_HOURS * 60 * 60 * 1000)
-    minDate = minD.toISOString().split('T')[0]
-    const maxD = new Date()
-    maxD.setMonth(maxD.getMonth() + MAX_BOOKING_MONTHS)
-    maxDate = maxD.toISOString().split('T')[0]
+    const bounds = computeBookingDateBounds()
+    minDate = bounds.minDate
+    maxDate = bounds.maxDate
   }
 
   const contactPageSchema = {
@@ -92,6 +110,21 @@ export default async function ContactPage() {
       email: CONTACT_EMAIL,
       url: 'https://tynnellhollinsphotography.com',
     },
+  }
+
+  if (promoted) {
+    const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
+    return (
+      <>
+        <JsonLd data={contactPageSchema} />
+        {oooMessage && (
+          <div className={styles.oooBanner} role="note" aria-label="Availability notice">
+            <p className={styles.oooMessage}>{oooMessage}</p>
+          </div>
+        )}
+        <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
+      </>
+    )
   }
 
   return (

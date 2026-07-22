@@ -862,6 +862,11 @@ export const config: Config = {
       ),
     },
     // ------------------------------------------------------- ContactFormBlock
+    // TYN-341 phase 5: resolveData fetches the same min/max session-date
+    // bounds the real /contact page computes from BookingSettings (via
+    // /api/public-booking-dates), rather than the bare, unbounded date input
+    // this block previously rendered - the gap the page-promotion plan
+    // flagged before /contact could be safely promoted.
     ContactFormBlock: {
       label: 'Contact Form',
       fields: {
@@ -878,13 +883,24 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ eyebrow, heading, subtext, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      resolveData: async () => {
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/public-booking-dates`)
+          if (!res.ok) return { props: {} }
+          const data = await res.json()
+          return { props: { resolvedMinDate: data.minDate, resolvedMaxDate: data.maxDate } }
+        } catch {
+          return { props: {} }
+        }
+      },
+      render: ({ eyebrow, heading, subtext, resolvedMinDate, resolvedMaxDate, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ maxWidth: '640px', margin: '0 auto' }}>
             {eyebrow && <p style={{ ...eyebrowStyle, textAlign: 'center' }}>{eyebrow}</p>}
             {heading && <h2 style={{ ...headingStyle('clamp(1.5rem,3vw,2.4rem)'), textAlign: 'center' }}>{heading}</h2>}
             {subtext && <p style={{ marginTop: '0.85rem', marginBottom: '2rem', color: C.detail, textAlign: 'center' }}>{subtext}</p>}
-            <ContactForm />
+            <ContactForm minDate={resolvedMinDate} maxDate={resolvedMaxDate} />
           </div>
         </Section>
       ),

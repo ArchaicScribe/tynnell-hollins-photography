@@ -32,6 +32,7 @@ const PROMOTABLE_ROUTES: { route: string; label: string }[] = [
   { route: 'portfolio/weddings', label: 'Portfolio - Weddings' },
   { route: 'services', label: 'Services' },
   { route: 'testimonials', label: 'Testimonials' },
+  { route: 'contact', label: 'Contact' },
 ]
 
 // ---------------------------------------------------------------------------

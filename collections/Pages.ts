@@ -22,7 +22,12 @@ import { revalidatePath } from 'next/cache'
 // 'services' and 'testimonials' promote via the LiveServices/LiveTestimonials
 // blocks, live-bound to the real collections (not the static, manually-typed
 // Services/Testimonials blocks already used on Home) - phase 4 of TYN-341.
-const PROMOTABLE_ROUTES = ['about', 'portfolio', 'portfolio/portraits', 'portfolio/family', 'portfolio/weddings', 'services', 'testimonials'] as const
+// 'contact' - phase 5 - required ContactFormBlock to gain its own resolveData
+// for the session-date min/max bounds first (see app/(site)/contact/page.tsx);
+// the OOO banner is NOT part of the promoted content, it renders unconditionally
+// above <Render> in both branches since it's time-sensitive server logic, not
+// draggable page content.
+const PROMOTABLE_ROUTES = ['about', 'portfolio', 'portfolio/portraits', 'portfolio/family', 'portfolio/weddings', 'services', 'testimonials', 'contact'] as const
 
 // Only one page may claim a given real route at a time - unlike isHomepage
 // (which has no such guard and silently first-match-wins if ever duplicated),
