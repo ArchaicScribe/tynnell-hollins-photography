@@ -795,6 +795,14 @@ async function run() {
 
     await client.query(`ALTER TYPE "enum_pages_promoted_route" ADD VALUE IF NOT EXISTS 'contact'`)
     console.log('✓ enum_pages_promoted_route has contact')
+
+    // ------------------------------------------------------------------
+    // Migration 20260722_200000: blog promotable route (phase 6)
+    // Same enum-extend requirement as the routes above.
+    // ------------------------------------------------------------------
+
+    await client.query(`ALTER TYPE "enum_pages_promoted_route" ADD VALUE IF NOT EXISTS 'blog'`)
+    console.log('✓ enum_pages_promoted_route has blog')
   } finally {
     client.release()
     await pool.end()

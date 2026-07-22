@@ -20,6 +20,7 @@ import CategoryPhotoGrid from '@/app/(site)/portfolio/_components/CategoryPhotoG
 import AlbumGridComponent from '@/app/(site)/portfolio/_components/AlbumGrid'
 import ServicesGridComponent from '@/app/(site)/services/_components/ServicesGrid'
 import TestimonialsListComponent from '@/app/(site)/testimonials/_components/TestimonialsList'
+import BlogClientComponent from '@/app/(site)/blog/BlogClient'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
@@ -374,7 +375,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
     content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'LiveServices', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
   },
 
   components: {
@@ -1162,6 +1163,41 @@ export const config: Config = {
       render: ({ resolvedAlbums, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <AlbumGridComponent albums={resolvedAlbums ?? []} />
+        </Section>
+      ),
+    },
+
+    // ----------------------------------------------------------- LiveBlog
+    // TYN-341 phase 6: live-bound to the real posts collection, making
+    // /blog promotable. Unlike the other Live* blocks, this reuses
+    // BlogClient.tsx directly (not a newly-extracted shared component) -
+    // it was already a self-contained 'use client' component taking only
+    // posts/categories props with no server-only dependency, so the same
+    // category-filter + Load More behavior works identically here and on
+    // the hardcoded page with zero markup duplication. Fetches
+    // /api/public-posts rather than Payload's own /api/posts (requires
+    // auth), same reasoning as every other Live* block's route.
+    LiveBlog: {
+      label: 'Blog Posts (Live)',
+      fields: {
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { ...styleDefaults, ...responsiveDefaults },
+      resolveData: async () => {
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/public-posts`)
+          if (!res.ok) return { props: { resolvedPosts: [], resolvedCategories: [] } }
+          const data = await res.json()
+          return { props: { resolvedPosts: data.posts ?? [], resolvedCategories: data.categories ?? [] } }
+        } catch {
+          return { props: { resolvedPosts: [], resolvedCategories: [] } }
+        }
+      },
+      render: ({ resolvedPosts, resolvedCategories, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <BlogClientComponent posts={resolvedPosts ?? []} categories={resolvedCategories ?? []} />
         </Section>
       ),
     },
