@@ -14,6 +14,7 @@
 import type { ReactNode } from 'react'
 import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
+import { FreeformPhotoCanvasField } from './FreeformPhotoCanvasField'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
 import CategoryPhotoGrid from '@/app/(site)/portfolio/_components/CategoryPhotoGrid'
 import AlbumGridComponent from '@/app/(site)/portfolio/_components/AlbumGrid'
@@ -371,7 +372,7 @@ export const config: Config = {
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
     content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'Testimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
-    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'PhotoCarousel', 'ImageGrid', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
+    media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
   },
 
   components: {
@@ -1166,6 +1167,67 @@ export const config: Config = {
               </div>
             )}
           </section>
+        )
+      },
+    },
+
+    // ------------------------------------------------- FreeformPhotoCanvas
+    // TYN-341: Tynnell wants a photo to land exactly where she drops it, not
+    // snapped into a preset grid cell. Position/size are percentages of the
+    // canvas (not pixels), so placement holds up responsively. Dragging and
+    // resizing happen in the Fields sidebar (FreeformPhotoCanvasField), not
+    // by manipulating this render directly - see that file for why. Adding
+    // this as a block (rather than baking it into one page) is what makes it
+    // available on every existing and future builder page, per the request.
+    FreeformPhotoCanvas: {
+      label: 'Freeform Photo Canvas',
+      fields: {
+        photos: {
+          type: 'custom',
+          label: 'Photos',
+          render: ({ value, onChange }: any) => <FreeformPhotoCanvasField value={value} onChange={onChange} />,
+        },
+        canvasHeight: {
+          type: 'select',
+          label: 'Canvas height',
+          options: [
+            { label: 'Short', value: '45vh' },
+            { label: 'Medium', value: '65vh' },
+            { label: 'Tall', value: '90vh' },
+          ],
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { photos: [], canvasHeight: '65vh', ...styleDefaults, ...responsiveDefaults },
+      render: ({ photos, canvasHeight, background, backgroundImage, backgroundFade, spacing, hideOnMobile, hideOnDesktop }: any) => {
+        const valid = (photos ?? []).filter((p: any) => p?.url)
+        return (
+          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+            <div style={{ position: 'relative', width: '100%', height: canvasHeight }}>
+              {valid.length === 0 ? (
+                <p style={{ color: C.detail, textAlign: 'center' }}>Add photos in the Fields panel, then drag them into place.</p>
+              ) : (
+                valid.map((p: any) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={p.id}
+                    src={p.url}
+                    alt=""
+                    style={{
+                      position: 'absolute',
+                      left: `${p.x}%`,
+                      top: `${p.y}%`,
+                      width: `${p.width}%`,
+                      height: `${p.height}%`,
+                      objectFit: 'cover',
+                      transform: p.rotate ? `rotate(${p.rotate}deg)` : undefined,
+                    }}
+                  />
+                ))
+              )}
+            </div>
+          </Section>
         )
       },
     },
