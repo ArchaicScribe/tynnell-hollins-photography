@@ -117,6 +117,18 @@ export const AboutPage: GlobalConfig = {
             rows: 2,
           },
         },
+        {
+          // TYN-345: clicking/hovering this item on the About page transitions
+          // a photo panel to show this photo, if set. Optional - items without
+          // one simply don't change the panel when clicked.
+          name: 'photo',
+          type: 'upload',
+          relationTo: 'photos',
+          label: 'Photo (optional)',
+          admin: {
+            description: 'Shown when a visitor clicks or hovers this item on your About page.',
+          },
+        },
       ],
     },
   ],
