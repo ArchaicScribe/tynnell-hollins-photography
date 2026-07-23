@@ -140,6 +140,7 @@ export default async function BlogPostPage({ params }: Props) {
               fill
               priority
               sizes="100vw"
+              quality={90}
               className={styles.coverPhoto}
             />
             <div className={styles.coverOverlay} />
@@ -210,6 +211,7 @@ export default async function BlogPostPage({ params }: Props) {
                             alt={rpCover?.alt ?? rp.title}
                             fill
                             sizes="(max-width: 768px) 100vw, 33vw"
+                            quality={90}
                             className={styles.relatedPhoto}
                           />
                         </div>

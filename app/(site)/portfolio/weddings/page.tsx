@@ -136,6 +136,7 @@ export default async function WeddingsPage() {
             priority
             className={styles.heroImg}
             sizes="100vw"
+            quality={90}
           />
         )}
         <div className={styles.heroOverlay} />

@@ -135,6 +135,7 @@ export default async function PortfolioPage() {
                   alt={cat.label}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
+                  quality={90}
                   className={styles.tileImg}
                   priority={i === 0}
                 />

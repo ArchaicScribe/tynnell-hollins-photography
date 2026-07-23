@@ -43,24 +43,35 @@ export const Photos: CollectionConfig = {
     staticDir: 'media',
     adminThumbnail: 'thumbnail',
     bulkUpload: true,
+    // Widths bumped and an explicit JPEG quality set (TYN-344) - card/hero
+    // were sized for a 1x display. A photography portfolio is disproportionately
+    // viewed on high-DPI screens (2x/3x), where a 1920px "hero" gets upscaled by
+    // the browser for any full-bleed section wider than that in physical
+    // pixels - the actual complaint (About page hero "looks noticeably
+    // blurry"). Sharp's own default quality (~80) was also being re-compressed
+    // a second time by next/image's default (75); setting quality explicitly
+    // here avoids stacking two lossy passes at a low setting.
     imageSizes: [
       {
         name: 'thumbnail',
         width: 400,
         height: 300,
         position: 'centre',
+        formatOptions: { format: 'jpeg', options: { quality: 80 } },
       },
       {
         name: 'card',
-        width: 800,
-        height: 600,
+        width: 1200,
+        height: 900,
         position: 'centre',
+        formatOptions: { format: 'jpeg', options: { quality: 85 } },
       },
       {
         name: 'hero',
-        width: 1920,
-        height: 1080,
+        width: 2560,
+        height: 1440,
         position: 'centre',
+        formatOptions: { format: 'jpeg', options: { quality: 88 } },
       },
     ],
     mimeTypes: ['image/*'],
