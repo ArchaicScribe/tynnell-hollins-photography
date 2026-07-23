@@ -23,6 +23,16 @@ export type FreeformPhoto = {
   width: number // percent of canvas width
   height: number // percent of canvas height
   rotate: number // degrees - a slight tilt reads as hand-placed, not mechanical
+  // Full image-control parity with the Background Image treatment (TYN-351) -
+  // all optional so existing placed photos keep working with sensible
+  // defaults (centered focal point, full opacity, no overlay, no link).
+  alt?: string
+  focalX?: number // percent, 0-100
+  focalY?: number // percent, 0-100
+  imageOpacity?: number // 0-100
+  overlayOpacity?: number // 0-100
+  overlayColor?: string
+  anchorHref?: string
 }
 
 type PhotoDoc = IngestedPhoto
@@ -44,6 +54,8 @@ export function FreeformPhotoCanvasField({ value, onChange }: { value?: Freeform
   const photos = value ?? []
   const canvasRef = useRef<HTMLDivElement>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [settingsId, setSettingsId] = useState<string | null>(null)
+  const [replacingId, setReplacingId] = useState<string | null>(null)
 
   const update = (id: string, patch: Partial<FreeformPhoto>) => {
     onChange(photos.map((p) => (p.id === id ? { ...p, ...patch } : p)))
@@ -56,6 +68,8 @@ export function FreeformPhotoCanvasField({ value, onChange }: { value?: Freeform
     onChange([...photos, next])
     setPickerOpen(false)
   }
+
+  const settingsPhoto = photos.find((p) => p.id === settingsId) ?? null
 
   const startDrag = (e: React.MouseEvent, photo: FreeformPhoto, mode: 'move' | 'resize') => {
     e.preventDefault()
@@ -116,7 +130,28 @@ export function FreeformPhotoCanvasField({ value, onChange }: { value?: Freeform
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', display: 'block' }} />
+            <img
+              src={p.url}
+              alt={p.alt ?? ''}
+              style={{
+                width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', display: 'block',
+                objectPosition: `${p.focalX ?? 50}% ${p.focalY ?? 50}%`,
+                opacity: (p.imageOpacity ?? 100) / 100,
+              }}
+            />
+            {(p.overlayOpacity ?? 0) > 0 && (
+              <div style={{ position: 'absolute', inset: 0, background: p.overlayColor ?? '#000000', opacity: (p.overlayOpacity ?? 0) / 100, pointerEvents: 'none' }} />
+            )}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setSettingsId(p.id) }}
+              onMouseDown={(e) => e.stopPropagation()}
+              aria-label="Photo settings"
+              title="Change Image, Alt Text, Focal Point, Opacity, Overlay, Link"
+              style={{ position: 'absolute', top: -8, left: -8, width: 20, height: 20, borderRadius: '50%', background: '#1a1a1a', color: '#e6e1de', border: '1px solid rgba(155,154,154,0.4)', fontSize: '0.7rem', lineHeight: '18px', cursor: 'pointer', padding: 0 }}
+            >
+              &#9881;
+            </button>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); remove(p.id) }}
@@ -140,6 +175,126 @@ export function FreeformPhotoCanvasField({ value, onChange }: { value?: Freeform
       </button>
 
       {pickerOpen && <PhotoPickerModal onPick={addPhoto} onClose={() => setPickerOpen(false)} />}
+
+      {settingsPhoto && (
+        <PhotoSettingsModal
+          photo={settingsPhoto}
+          onChange={(patch) => update(settingsPhoto.id, patch)}
+          onReplace={() => { setReplacingId(settingsPhoto.id); setSettingsId(null) }}
+          onClose={() => setSettingsId(null)}
+        />
+      )}
+
+      {replacingId && (
+        <PhotoPickerModal
+          onPick={(url) => { update(replacingId, { url }); setReplacingId(null) }}
+          onClose={() => setReplacingId(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+// Full image-control parity with the Background Image treatment (TYN-351):
+// Change Image, Alt Text, Set Focal (click the preview to set focal point),
+// Image Opacity, Overlay Opacity + Color, and an Anchor Link.
+function PhotoSettingsModal({ photo, onChange, onReplace, onClose }: {
+  photo: FreeformPhoto
+  onChange: (patch: Partial<FreeformPhoto>) => void
+  onReplace: () => void
+  onClose: () => void
+}) {
+  const previewRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  const setFocalFromClick = (e: React.MouseEvent) => {
+    const rect = previewRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const x = clamp(((e.clientX - rect.left) / rect.width) * 100, 0, 100)
+    const y = clamp(((e.clientY - rect.top) / rect.height) * 100, 0, 100)
+    onChange({ focalX: Math.round(x), focalY: Math.round(y) })
+  }
+
+  const focalX = photo.focalX ?? 50
+  const focalY = photo.focalY ?? 50
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="photo-settings-heading"
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: '#1a1a1a', border: '1px solid rgba(155,154,154,0.18)', borderRadius: 6, width: 'min(92vw, 420px)', maxHeight: '88vh', overflowY: 'auto', padding: '1rem 1.2rem' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+          <span id="photo-settings-heading" style={{ color: '#d6d1ce', fontWeight: 600, fontSize: '0.9rem' }}>Photo Settings</span>
+          <button type="button" onClick={onClose} style={{ ...btn, background: 'transparent' }}>Done</button>
+        </div>
+
+        <button type="button" onClick={onReplace} style={{ ...btn, width: '100%', marginBottom: '0.9rem' }}>Change Image</button>
+
+        <label style={fieldLabel}>Set Focal (click the photo)</label>
+        <div
+          ref={previewRef}
+          onClick={setFocalFromClick}
+          style={{ position: 'relative', width: '100%', aspectRatio: '4 / 3', borderRadius: 4, overflow: 'hidden', cursor: 'crosshair', marginBottom: '0.9rem' }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+          <div
+            style={{
+              position: 'absolute', left: `${focalX}%`, top: `${focalY}%`, transform: 'translate(-50%, -50%)',
+              width: 16, height: 16, borderRadius: '50%', border: '2px solid #fff', boxShadow: '0 0 0 1px rgba(0,0,0,0.6)', pointerEvents: 'none',
+            }}
+          />
+        </div>
+
+        <label style={fieldLabel}>Alt Text</label>
+        <input
+          type="text"
+          value={photo.alt ?? ''}
+          onChange={(e) => onChange({ alt: e.target.value })}
+          placeholder="Describe this photo"
+          style={inputStyle}
+        />
+
+        <label style={fieldLabel}>Image Opacity ({photo.imageOpacity ?? 100}%)</label>
+        <input
+          type="range" min={0} max={100} value={photo.imageOpacity ?? 100}
+          onChange={(e) => onChange({ imageOpacity: Number(e.target.value) })}
+          style={{ width: '100%', marginBottom: '0.9rem' }}
+        />
+
+        <label style={fieldLabel}>Overlay Opacity ({photo.overlayOpacity ?? 0}%)</label>
+        <input
+          type="range" min={0} max={100} value={photo.overlayOpacity ?? 0}
+          onChange={(e) => onChange({ overlayOpacity: Number(e.target.value) })}
+          style={{ width: '100%', marginBottom: '0.4rem' }}
+        />
+
+        <label style={fieldLabel}>Overlay Color</label>
+        <input
+          type="color"
+          value={photo.overlayColor ?? '#000000'}
+          onChange={(e) => onChange({ overlayColor: e.target.value })}
+          style={{ width: '100%', height: 32, marginBottom: '0.9rem', cursor: 'pointer', border: '1px solid rgba(155,154,154,0.3)', borderRadius: 4, background: 'transparent' }}
+        />
+
+        <label style={fieldLabel}>Anchor Link (optional)</label>
+        <input
+          type="text"
+          value={photo.anchorHref ?? ''}
+          onChange={(e) => onChange({ anchorHref: e.target.value })}
+          placeholder="/portfolio or https://..."
+          style={inputStyle}
+        />
+      </div>
     </div>
   )
 }
@@ -277,4 +432,24 @@ const btn: React.CSSProperties = {
   background: 'rgba(155,154,154,0.12)',
   color: '#e6e1de',
   padding: '0.4rem 0.75rem',
+}
+
+const fieldLabel: React.CSSProperties = {
+  display: 'block',
+  fontSize: '0.7rem',
+  color: '#9b9a9a',
+  marginBottom: '0.3rem',
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  fontFamily: 'inherit',
+  fontSize: '0.8rem',
+  padding: '0.4rem 0.6rem',
+  borderRadius: 4,
+  border: '1px solid rgba(155,154,154,0.3)',
+  background: '#111',
+  color: '#e6e1de',
+  marginBottom: '0.9rem',
+  boxSizing: 'border-box',
 }
