@@ -8,6 +8,7 @@ import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import ServicesGrid from './_components/ServicesGrid'
+import { isPreviewMode } from '@/app/lib/builderPreview'
 import styles from './page.module.css'
 
 // Service packages/pricing rarely change - revalidate every 2 minutes
@@ -17,9 +18,12 @@ export const revalidate = 120
 // as About/Portfolio (see collections/Pages.ts, app/(site)/about/page.tsx).
 const getPromotedPage = cache(async () => {
   const payload = await getPayload({ config })
+  const preview = await isPreviewMode()
   const { docs } = await payload.find({
     collection: 'pages',
-    where: { and: [{ promotedRoute: { equals: 'services' } }, { published: { equals: true } }] },
+    where: preview
+      ? { promotedRoute: { equals: 'services' } }
+      : { and: [{ promotedRoute: { equals: 'services' } }, { published: { equals: true } }] },
     limit: 1,
     depth: 0,
   })

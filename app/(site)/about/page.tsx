@@ -11,6 +11,7 @@ import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { isPreviewMode } from '@/app/lib/builderPreview'
 import styles from './page.module.css'
 
 // About content rarely changes - revalidate every 2 minutes
@@ -26,9 +27,12 @@ const getAboutData = cache(async () => {
 // Shared via cache() so generateMetadata and the page body see one DB read.
 const getPromotedAboutPage = cache(async () => {
   const payload = await getPayload({ config })
+  const preview = await isPreviewMode()
   const { docs } = await payload.find({
     collection: 'pages',
-    where: { and: [{ promotedRoute: { equals: 'about' } }, { published: { equals: true } }] },
+    where: preview
+      ? { promotedRoute: { equals: 'about' } }
+      : { and: [{ promotedRoute: { equals: 'about' } }, { published: { equals: true } }] },
     limit: 1,
     depth: 0,
   })

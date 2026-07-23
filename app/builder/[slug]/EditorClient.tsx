@@ -95,6 +95,23 @@ export function EditorClient({
   const onPublish = (data: Data) => persist(data, true)
   const onSaveDraft = (data: Data) => persist(data, false)
 
+  // Preview (TYN-343): "View Page" only ever showed the live published
+  // version, with no way to see draft edits in context before hitting
+  // Publish. Saves the current canvas as a draft first (so what opens
+  // matches exactly what's on screen), then opens /api/builder-preview in a
+  // new tab, which turns on Next.js Draft Mode and redirects to wherever
+  // this page actually renders.
+  const [previewing, setPreviewing] = useState(false)
+  const onPreview = async (data: Data) => {
+    setPreviewing(true)
+    try {
+      await persist(data, false)
+      window.open(`/api/builder-preview?slug=${encodeURIComponent(slug)}`, '_blank', 'noopener,noreferrer')
+    } finally {
+      setPreviewing(false)
+    }
+  }
+
   // Plain-English status shown in the header.
   const pill =
     saveState === 'saving'
@@ -221,6 +238,7 @@ export function EditorClient({
                   View Page <span aria-hidden="true">&#8599;</span>
                 </Link>
               )}
+              <PreviewButton onPreview={onPreview} style={headerBtn} busy={previewing || saveState === 'saving'} />
               <SaveDraftButton onSave={onSaveDraft} style={headerBtn} saving={saveState === 'saving'} />
               {children}
             </>
@@ -230,6 +248,20 @@ export function EditorClient({
 
       {showHelp && <HelpPanel onClose={() => setShowHelp(false)} isPublished={isPublished} />}
     </div>
+  )
+}
+
+// Preview: saves the current draft, then opens it in a new tab with Draft
+// Mode on - shows the actual unpublished edits in context, unlike "View
+// Page" which only ever reflects what's currently live (TYN-343). Reads the
+// live Puck state via usePuck so it always previews exactly what's on the
+// canvas, same as SaveDraftButton below.
+function PreviewButton({ onPreview, style, busy }: { onPreview: (data: Data) => void; style: React.CSSProperties; busy: boolean }) {
+  const { appState } = usePuck()
+  return (
+    <button type="button" style={{ ...style, opacity: busy ? 0.6 : 1, cursor: busy ? 'default' : 'pointer' }} disabled={busy} aria-busy={busy} onClick={() => onPreview(appState.data)} title="Preview your unpublished edits in a new tab">
+      {busy ? 'Opening preview...' : 'Preview'}
+    </button>
   )
 }
 

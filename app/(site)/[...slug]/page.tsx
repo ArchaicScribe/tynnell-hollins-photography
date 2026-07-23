@@ -6,6 +6,7 @@ import { Render, resolveAllData } from '@measured/puck/rsc'
 import type { Data } from '@measured/puck'
 import payloadConfig from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
+import { isPreviewMode } from '@/app/lib/builderPreview'
 
 // Public render of a builder page (TYN-216). This catch-all only handles slugs
 // NOT already owned by an explicit route (/, /about, /portfolio, ...): Next.js
@@ -23,9 +24,12 @@ export const revalidate = 120
 // single request render, so a published-page view hits the DB once, not twice.
 const findPublishedPage = cache(async (path: string) => {
   const payload = await getPayload({ config: payloadConfig })
+  const preview = await isPreviewMode()
   const { docs } = await payload.find({
     collection: 'pages',
-    where: { and: [{ slug: { equals: path } }, { published: { equals: true } }] },
+    where: preview
+      ? { slug: { equals: path } }
+      : { and: [{ slug: { equals: path } }, { published: { equals: true } }] },
     limit: 1,
     depth: 0,
   })
