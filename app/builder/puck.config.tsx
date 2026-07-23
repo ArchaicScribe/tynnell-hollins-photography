@@ -16,6 +16,7 @@ import type { Config } from '@measured/puck'
 import { ImagePickerField } from './ImagePickerField'
 import { FreeformPhotoCanvasField } from './FreeformPhotoCanvasField'
 import { ScrollFadeImage } from './ScrollFadeImage'
+import { SpecialtiesRevealBlock } from './SpecialtiesRevealBlock'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
 import CategoryPhotoGrid from '@/app/(site)/portfolio/_components/CategoryPhotoGrid'
 import AlbumGridComponent from '@/app/(site)/portfolio/_components/AlbumGrid'
@@ -393,7 +394,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
-    content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'LiveServices', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
   },
 
@@ -747,6 +748,48 @@ export const config: Config = {
               </div>
             ))}
           </div>
+        </Section>
+      ),
+    },
+
+    // ------------------------------------------------------- SpecialtiesReveal
+    // TYN-345: click (or hover) a session-type item to crossfade a photo panel
+    // to match it. Puck-block equivalent of the same interaction shipped on
+    // the hardcoded About page (app/(site)/about/SpecialtyReveal.tsx) - needed
+    // separately since About is currently promoted to a Puck page, so the
+    // hardcoded branch's version never renders on the live site.
+    SpecialtiesReveal: {
+      label: 'Session Types (click to reveal photo)',
+      fields: {
+        items: {
+          type: 'array',
+          label: 'Session Types',
+          arrayFields: {
+            heading: { type: 'text', label: 'Name' },
+            body: { type: 'textarea', label: 'Description (optional)' },
+            photo: imageField('Photo (optional)'),
+          },
+          defaultItemProps: { heading: 'Weddings', body: '', photo: '' },
+          getItemSummary: (item: any) => item?.heading || 'Session type',
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        items: [
+          { heading: 'Weddings', body: '', photo: '' },
+          { heading: 'Engagements', body: '', photo: '' },
+          { heading: 'Portraits', body: '', photo: '' },
+          { heading: 'Family Sessions', body: '', photo: '' },
+          { heading: 'Maternity', body: '', photo: '' },
+          { heading: 'Events', body: '', photo: '' },
+        ],
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ items, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <SpecialtiesRevealBlock items={items ?? []} bodyColor={C.body} detailColor={C.detail} bodyFont={BODY_FONT} />
         </Section>
       ),
     },
