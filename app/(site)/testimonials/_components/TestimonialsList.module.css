@@ -92,6 +92,85 @@
   max-height: 600px;
 }
 
+/* ── Sticky-scroll photo pairing (TYN-354) ──────────────────────────── */
+
+.stickyLayout {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(2rem, 4vw, 4rem);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--padding-x) 6rem;
+}
+
+.stickyPhotoCol {
+  flex: 1 1 40%;
+  min-width: 0;
+  position: sticky;
+  top: 6rem;
+  align-self: flex-start;
+}
+
+.stickyPhotoWrap {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  position: relative;
+}
+
+.stickyPhotoWrap .photo {
+  max-height: none;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  animation: stickyPhotoFade 0.6s ease;
+}
+
+@keyframes stickyPhotoFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.stickyQuoteCol {
+  flex: 1 1 60%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.stickyItem {
+  padding: 4rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stickyItem:first-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 0;
+}
+
+.stickyItem:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .stickyLayout {
+    flex-direction: column;
+  }
+
+  .stickyPhotoCol {
+    position: static;
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .stickyPhotoWrap {
+    aspect-ratio: 16 / 10;
+  }
+}
+
 .empty {
   font-family: var(--font-body);
   font-size: 0.8rem;
