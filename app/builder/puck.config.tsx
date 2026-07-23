@@ -136,13 +136,20 @@ const responsiveDefaults = { hideOnMobile: false, hideOnDesktop: false }
 // so every content block has consistent, Pixieset-style design options.
 // backgroundImage/backgroundFade (TYN-305) layer a user-picked, dimmed photo
 // behind the content instead of/under the flat background color.
-function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, spacing, className, children }: { background?: string; backgroundImage?: string; backgroundFade?: string; scrollFadeIn?: boolean; spacing?: string; className?: string; children?: ReactNode }) {
+function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, className, children }: { background?: string; backgroundImage?: string; backgroundFade?: string; scrollFadeIn?: boolean; scrollOverlap?: boolean; spacing?: string; className?: string; children?: ReactNode }) {
   const padY = SPACING[spacing ?? 'normal'] ?? SPACING.normal
   const bg = background && background !== 'transparent' ? background : undefined
   const fade = backgroundFade ? Number(backgroundFade) : 0.55
   const bgImageStyle: React.CSSProperties = { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
+  // TYN-304: "sticky" sections catch at the top of the viewport and stay put
+  // while the page keeps scrolling - later sections in DOM order naturally
+  // paint over earlier ones in the same stacking context, no z-index math
+  // needed, which is the exact stacked-cover effect the Rising Roots
+  // reference site uses. Only covers content if the section also has an
+  // opaque Background (color or photo) - with Background left "None" the
+  // sticky section is still transparent, so pair the two for the full effect.
   return (
-    <section className={className} style={{ position: 'relative', background: bg, overflow: backgroundImage ? 'hidden' : undefined }}>
+    <section className={className} style={{ position: scrollOverlap ? 'sticky' : 'relative', top: scrollOverlap ? 0 : undefined, zIndex: scrollOverlap ? 1 : undefined, background: bg, overflow: backgroundImage ? 'hidden' : undefined }}>
       {backgroundImage && (
         <>
           {scrollFadeIn ? (
@@ -364,11 +371,23 @@ const scrollFadeInField = {
     { label: 'On', value: true },
   ],
 }
+// TYN-304: sticky-stack scroll transition, spread into every block via
+// styleFields alongside scrollFadeIn - see the Section component for how it
+// actually produces the "next section covers this one" effect.
+const scrollOverlapField = {
+  type: 'radio' as const,
+  label: 'Scroll overlap (this section stacks under the next one)',
+  options: [
+    { label: 'Off', value: false },
+    { label: 'On', value: true },
+  ],
+}
 const styleFields = {
   background: bgField,
   backgroundImage: backgroundImageField,
   backgroundFade: backgroundFadeField,
   scrollFadeIn: scrollFadeInField,
+  scrollOverlap: scrollOverlapField,
   spacing: {
     type: 'select' as const,
     label: 'Spacing',
@@ -380,7 +399,7 @@ const styleFields = {
     ],
   },
 }
-const styleDefaults = { background: 'transparent', backgroundImage: '', backgroundFade: '0.55', scrollFadeIn: false, spacing: 'normal' }
+const styleDefaults = { background: 'transparent', backgroundImage: '', backgroundFade: '0.55', scrollFadeIn: false, scrollOverlap: false, spacing: 'normal' }
 
 export const config: Config = {
   root: {
@@ -512,8 +531,8 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: { eyebrow: 'My Work', heading: 'A Section Heading', subtext: '', align: 'center', ...styleDefaults, ...responsiveDefaults },
-      render: ({ eyebrow, heading, subtext, align, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ eyebrow, heading, subtext, align, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: align, maxWidth: align === 'center' ? '70ch' : undefined, margin: align === 'center' ? '0 auto' : undefined }}>
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle()}>{heading}</h2>
@@ -533,8 +552,8 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: { text: 'Tell your story here.', align: 'left', ...styleDefaults, ...responsiveDefaults },
-      render: ({ text, align, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ text, align, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ maxWidth: '70ch', margin: align === 'center' ? '0 auto' : undefined, textAlign: align }}>
             <p style={{ color: C.body, fontSize: '1.05rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
           </div>
@@ -579,8 +598,8 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ prefix, phrases, size, align, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ prefix, phrases, size, align, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <p style={{ ...headingStyle(size), textAlign: align, maxWidth: align === 'center' ? '70ch' : undefined, margin: align === 'center' ? '0 auto' : 0 }}>
             {prefix}
             <TypewriterText phrases={(phrases ?? []).map((p: any) => p.text).filter(Boolean)} />
@@ -614,6 +633,7 @@ export const config: Config = {
         buttonHref: { type: 'text', label: 'Button link' },
         background: bgField,
         scrollFadeIn: scrollFadeInField,
+        scrollOverlap: scrollOverlapField,
         ...responsiveFields,
       },
       defaultProps: {
@@ -627,15 +647,17 @@ export const config: Config = {
         buttonHref: '',
         background: 'transparent',
         scrollFadeIn: false,
+        scrollOverlap: false,
         ...responsiveDefaults,
       },
-      render: ({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, background, scrollFadeIn, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, background, scrollFadeIn, scrollOverlap, hideOnMobile, hideOnDesktop }: any) => {
         const bg = background && background !== 'transparent' ? background : undefined
         const cls = visClass(hideOnMobile, hideOnDesktop)
+        const overlapStyle: React.CSSProperties = scrollOverlap ? { position: 'sticky', top: 0, zIndex: 1 } : {}
 
         if (layout === 'overlay') {
           return (
-            <section className={cls} style={{ position: 'relative', minHeight: '50vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
+            <section className={cls} style={{ position: 'relative', ...overlapStyle, minHeight: '50vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
               {imageUrl ? (
                 scrollFadeIn ? (
                   <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -659,7 +681,7 @@ export const config: Config = {
 
         if (layout === 'stacked') {
           return (
-            <section className={cls} style={{ background: bg }}>
+            <section className={cls} style={{ ...overlapStyle, background: bg }}>
               <div style={{ minHeight: '280px', position: 'relative', background: C.accent }}>
                 {imageUrl && (
                   scrollFadeIn ? (
@@ -701,7 +723,7 @@ export const config: Config = {
           </div>
         )
         return (
-          <section className={cls} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
+          <section className={cls} style={{ ...overlapStyle, display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
             {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
           </section>
         )
@@ -736,8 +758,8 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
@@ -787,8 +809,8 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ items, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ items, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <SpecialtiesRevealBlock items={items ?? []} bodyColor={C.body} detailColor={C.detail} bodyFont={BODY_FONT} />
         </Section>
       ),
@@ -823,8 +845,8 @@ export const config: Config = {
           return { props: { resolvedServices: [] } }
         }
       },
-      render: ({ resolvedServices, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ resolvedServices, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <ServicesGridComponent services={resolvedServices ?? []} />
         </Section>
       ),
@@ -857,8 +879,8 @@ export const config: Config = {
         spacing: 'normal',
         ...responsiveDefaults,
       },
-      render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
@@ -910,8 +932,8 @@ export const config: Config = {
           return { props: { resolvedTestimonials: [] } }
         }
       },
-      render: ({ resolvedTestimonials, stickyPhotoScroll, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ resolvedTestimonials, stickyPhotoScroll, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <TestimonialsListComponent testimonials={resolvedTestimonials ?? []} stickyPhotoScroll={stickyPhotoScroll} />
         </Section>
       ),
@@ -943,8 +965,8 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2rem' }}>{heading}</h2>}
           <AccordionBlock items={items ?? []} />
         </Section>
@@ -983,8 +1005,8 @@ export const config: Config = {
           return { props: {} }
         }
       },
-      render: ({ eyebrow, heading, subtext, resolvedMinDate, resolvedMaxDate, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ eyebrow, heading, subtext, resolvedMinDate, resolvedMaxDate, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ maxWidth: '640px', margin: '0 auto' }}>
             {eyebrow && <p style={{ ...eyebrowStyle, textAlign: 'center' }}>{eyebrow}</p>}
             {heading && <h2 style={{ ...headingStyle('clamp(1.5rem,3vw,2.4rem)'), textAlign: 'center' }}>{heading}</h2>}
@@ -1014,8 +1036,8 @@ export const config: Config = {
         spacing: 'spacious',
         ...responsiveDefaults,
       },
-      render: ({ heading, subtext, buttonText, buttonHref, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, subtext, buttonText, buttonHref, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: 'center' }}>
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
             {subtext && <p style={{ marginTop: '0.85rem', color: C.detail, maxWidth: '60ch', margin: '0.85rem auto 0' }}>{subtext}</p>}
@@ -1201,8 +1223,8 @@ export const config: Config = {
           return { props: { resolvedPhotos: [] } }
         }
       },
-      render: ({ resolvedPhotos, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ resolvedPhotos, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <CategoryPhotoGrid photos={resolvedPhotos ?? []} />
         </Section>
       ),
@@ -1248,8 +1270,8 @@ export const config: Config = {
           return { props: { resolvedAlbums: [] } }
         }
       },
-      render: ({ resolvedAlbums, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ resolvedAlbums, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <AlbumGridComponent albums={resolvedAlbums ?? []} />
         </Section>
       ),
@@ -1283,8 +1305,8 @@ export const config: Config = {
           return { props: { resolvedPosts: [], resolvedCategories: [] } }
         }
       },
-      render: ({ resolvedPosts, resolvedCategories, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ resolvedPosts, resolvedCategories, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <BlogClientComponent posts={resolvedPosts ?? []} categories={resolvedCategories ?? []} />
         </Section>
       ),
@@ -1306,10 +1328,10 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: { heading: '', images: [], ...styleDefaults, ...responsiveDefaults },
-      render: ({ heading, images, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ heading, images, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => {
         const valid = (images ?? []).filter((i: any) => i?.url)
         return (
-          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
             {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '1.5rem' }}>{heading}</h2>}
             {valid.length === 0 ? (
               <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the carousel.</p>
@@ -1411,10 +1433,10 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: { photos: [], canvasHeight: '65vh', ...styleDefaults, ...responsiveDefaults },
-      render: ({ photos, canvasHeight, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ photos, canvasHeight, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => {
         const valid = (photos ?? []).filter((p: any) => p?.url)
         return (
-          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
             <div style={{ position: 'relative', width: '100%', height: canvasHeight }}>
               {valid.length === 0 ? (
                 <p style={{ color: C.detail, textAlign: 'center' }}>Add photos in the Fields panel, then drag them into place.</p>
@@ -1799,8 +1821,8 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ heading, address, height, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, address, height, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '1.5rem' }}>{heading}</h2>}
           <div style={{ position: 'relative', width: '100%', height }}>
             {address ? (
@@ -1852,8 +1874,8 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ heading, embedUrl, height, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, embedUrl, height, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '1.5rem' }}>{heading}</h2>}
           <div style={{ position: 'relative', width: '100%', height }}>
             {embedUrl ? (
@@ -1910,8 +1932,8 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ heading, embedUrl, height, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ heading, embedUrl, height, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '1.5rem' }}>{heading}</h2>}
           <div style={{ position: 'relative', width: '100%', height }}>
             {embedUrl ? (
