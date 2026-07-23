@@ -40,25 +40,31 @@ const PROMOTABLE_ROUTES: { route: string; label: string }[] = [
 // Hardcoded site navigation - mirrors the actual public site structure
 // ---------------------------------------------------------------------------
 
-type NavChild = { key: string; label: string; href: string }
-type NavItem  = { key: string; label: string; href: string; children?: NavChild[] }
+// `route` matches a PROMOTABLE_ROUTES value (collections/Pages.ts) - used to
+// look up the Puck page currently promoted to that slot, if any, so the row
+// can open that page's editor directly instead of just previewing it.
+// `home` has no `route` (it uses `isHomepage`, a separate boolean field) and
+// `book` has none at all - it's deliberately never promotable (real Stripe
+// checkout flow, see CLAUDE.md).
+type NavChild = { key: string; label: string; href: string; route?: string }
+type NavItem  = { key: string; label: string; href: string; route?: string; children?: NavChild[] }
 
 const SITE_NAV: NavItem[] = [
   { key: 'home',         label: 'Home',         href: '/' },
-  { key: 'about',        label: 'About',         href: '/about' },
+  { key: 'about',        label: 'About',        href: '/about', route: 'about' },
   {
-    key: 'portfolio', label: 'Portfolio', href: '/portfolio',
+    key: 'portfolio', label: 'Portfolio', href: '/portfolio', route: 'portfolio',
     children: [
-      { key: 'portraits', label: 'Portraits', href: '/portfolio/portraits' },
-      { key: 'family',    label: 'Family',    href: '/portfolio/family'    },
-      { key: 'weddings',  label: 'Weddings',  href: '/portfolio/weddings'  },
+      { key: 'portraits', label: 'Portraits', href: '/portfolio/portraits', route: 'portfolio/portraits' },
+      { key: 'family',    label: 'Family',    href: '/portfolio/family',    route: 'portfolio/family'    },
+      { key: 'weddings',  label: 'Weddings',  href: '/portfolio/weddings',  route: 'portfolio/weddings'  },
     ],
   },
-  { key: 'services',     label: 'Services',      href: '/services'      },
-  { key: 'testimonials', label: 'Testimonials',  href: '/testimonials'  },
-  { key: 'contact',      label: 'Contact',       href: '/contact'       },
+  { key: 'services',     label: 'Services',      href: '/services',     route: 'services'     },
+  { key: 'testimonials', label: 'Testimonials',  href: '/testimonials', route: 'testimonials' },
+  { key: 'contact',      label: 'Contact',       href: '/contact',      route: 'contact'      },
   { key: 'book',         label: 'Book',          href: '/book'          },
-  { key: 'blog',         label: 'Blog',          href: '/blog'          },
+  { key: 'blog',         label: 'Blog',          href: '/blog',          route: 'blog'         },
 ]
 
 // ---------------------------------------------------------------------------
@@ -181,13 +187,14 @@ function IconPlus() {
 // ---------------------------------------------------------------------------
 
 function NavPageRow({
-  item, selectedKey, onSelect, expanded, onToggleExpand,
+  item, selectedKey, onSelect, expanded, onToggleExpand, resolveEditSlug,
 }: {
   item: NavItem
   selectedKey: string
   onSelect: (key: string, href: string) => void
   expanded: boolean
   onToggleExpand: () => void
+  resolveEditSlug: (target: { key: string; route?: string }) => string | undefined
 }) {
   const [hovered, setHovered] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -195,6 +202,16 @@ function NavPageRow({
   const isActive   = selectedKey === item.key
   const hasChildren = (item.children?.length ?? 0) > 0
   const isBlog = item.key === 'blog'
+  // If a Puck page is currently promoted to this route (or, for Home, flagged
+  // isHomepage), clicking the row opens that page's editor directly rather
+  // than just swapping the preview pane - TYN-348/349/350.
+  const editSlug = resolveEditSlug(item)
+
+  const handleRowClick = () => {
+    if (editSlug) { window.location.href = `/builder/${editSlug}`; return }
+    if (hasChildren) onToggleExpand()
+    onSelect(item.key, item.href)
+  }
 
   useEffect(() => {
     if (!menuOpen) return
@@ -210,8 +227,8 @@ function NavPageRow({
       <div
         role="button"
         tabIndex={0}
-        onClick={() => { if (hasChildren) onToggleExpand(); onSelect(item.key, item.href) }}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { if (hasChildren) onToggleExpand(); onSelect(item.key, item.href) } }}
+        onClick={handleRowClick}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleRowClick() }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { if (!menuOpen) setHovered(false) }}
         style={{
@@ -235,9 +252,17 @@ function NavPageRow({
         </span>
 
         {hasChildren && (
-          <span style={{ color: '#4a4a4a', display: 'flex', alignItems: 'center' }}>
+          // Its own button, separate from the row's click-to-edit handler,
+          // so browsing sub-pages never gets short-circuited by a navigation
+          // away to the parent's editor (TYN-350).
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); onToggleExpand() }}
+            aria-label={expanded ? `Collapse ${item.label}` : `Expand ${item.label}`}
+            style={{ background: 'none', border: 'none', color: '#4a4a4a', cursor: 'pointer', padding: '0.15rem', borderRadius: 4, display: 'flex', alignItems: 'center', flexShrink: 0 }}
+          >
             <IconChevronDown rotated={expanded} />
-          </span>
+          </button>
         )}
 
         {isBlog && hovered && (
@@ -297,24 +322,30 @@ function NavPageRow({
           child={child}
           isActive={selectedKey === child.key}
           onSelect={onSelect}
+          editSlug={resolveEditSlug(child)}
         />
       ))}
     </>
   )
 }
 
-function SubPageRow({ child, isActive, onSelect }: {
+function SubPageRow({ child, isActive, onSelect, editSlug }: {
   child: NavChild
   isActive: boolean
   onSelect: (key: string, href: string) => void
+  editSlug?: string
 }) {
   const [hovered, setHovered] = useState(false)
+  const handleClick = () => {
+    if (editSlug) { window.location.href = `/builder/${editSlug}`; return }
+    onSelect(child.key, child.href)
+  }
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={() => onSelect(child.key, child.href)}
-      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onSelect(child.key, child.href) }}
+      onClick={handleClick}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleClick() }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -650,6 +681,15 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website', ini
   // Portfolio sub-pages expand/collapse
   const [portfolioExpanded, setPortfolioExpanded] = useState(false)
 
+  // Resolves a SITE_NAV item/child to the Puck page currently backing it, if
+  // any - Home via isHomepage, everything else via promotedRoute. Used so
+  // clicking a nav row opens that page's editor directly (TYN-348/349/350).
+  const resolveEditSlug = useCallback((target: { key: string; route?: string }): string | undefined => {
+    if (target.key === 'home') return pages.find(p => p.isHomepage)?.slug ?? undefined
+    if (!target.route) return undefined
+    return pages.find(p => p.promotedRoute === target.route)?.slug ?? undefined
+  }, [pages])
+
   const reload = useCallback(() => {
     fetch('/api/pages?sort=displayOrder&limit=100&depth=0', { credentials: 'include' })
       .then(r => r.json())
@@ -712,8 +752,11 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website', ini
     setPublishing(false)
   }
 
-  // Custom Puck builder pages always go in NOT IN MENU
-  const customPages = pages.filter(p => !p.showInNav)
+  // Genuinely standalone custom pages - anything backing a SITE_NAV row
+  // (isHomepage, or promotedRoute) is already represented by that row above,
+  // so excluding those here is what collapses the old duplicate "Site Menu" /
+  // "Not in Menu" split into one unified list (TYN-348).
+  const customPages = pages.filter(p => !p.showInNav && !p.isHomepage && !p.promotedRoute)
 
   const tabs: { id: Tab; icon: React.ReactNode; label: string }[] = [
     { id: 'pages',    icon: <IconPages />,   label: 'Pages'    },
@@ -845,8 +888,10 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website', ini
 
               <div style={{ flex: 1, overflowY: 'auto', padding: '0.25rem 0.5rem' }}>
 
-                {/* SITE MENU - hardcoded real pages */}
-                <p style={{ margin: '0.5rem 0 0.3rem 0.75rem', fontFamily: mono, fontSize: '0.58rem', letterSpacing: '0.12em', color: '#4a4a4a', textTransform: 'uppercase' }}>Site Menu</p>
+                {/* One unified list (TYN-348) - real site routes first, each
+                    resolved to its backing Puck page if one is promoted to it,
+                    followed by any genuinely standalone custom pages. No
+                    section split, no duplicate entries. */}
                 {SITE_NAV.map(item => (
                   <NavPageRow
                     key={item.key}
@@ -855,13 +900,12 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website', ini
                     onSelect={handleSelect}
                     expanded={item.key === 'portfolio' ? portfolioExpanded : false}
                     onToggleExpand={() => { if (item.key === 'portfolio') setPortfolioExpanded(x => !x) }}
+                    resolveEditSlug={resolveEditSlug}
                   />
                 ))}
 
-                {/* NOT IN MENU - custom Puck builder pages */}
                 {customPages.length > 0 && (
                   <>
-                    <p style={{ margin: '1.25rem 0 0.3rem 0.75rem', fontFamily: mono, fontSize: '0.58rem', letterSpacing: '0.12em', color: '#4a4a4a', textTransform: 'uppercase' }}>Not in Menu</p>
                     {customPages.map(p => (
                       <PuckPageRow key={String(p.id)} page={p} onDelete={deletePage} onToggleNav={toggleNav} onTogglePromote={togglePromote} onRefresh={reload} />
                     ))}
