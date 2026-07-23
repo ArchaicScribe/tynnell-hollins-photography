@@ -100,6 +100,7 @@ export default function BlogClient({
                         alt={post.coverImage?.alt ?? post.title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        quality={90}
                         className={styles.cardPhoto}
                       />
                     ) : (

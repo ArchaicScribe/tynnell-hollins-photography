@@ -47,6 +47,11 @@ const nextConfig = {
     optimizePackageImports: ['swiper'],
   },
   images: {
+    // next/image only allows quality values listed here (default: [75]).
+    // 90 is used site-wide for photos (ProtectedImage, hero banners - TYN-344)
+    // since photography work reads visibly compressed at the default 75,
+    // stacked on top of the resize sharp already does at upload time.
+    qualities: [75, 90],
     // Photos are served from Cloudflare R2. next/image rejects any remote host
     // not listed here. This block was lost when Sanity (cdn.sanity.io) was
     // removed and must cover the R2 host that now serves every image.

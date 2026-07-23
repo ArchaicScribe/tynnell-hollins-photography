@@ -157,6 +157,7 @@ export default async function AboutPage() {
             fill
             priority
             sizes="100vw"
+            quality={90}
             className={styles.heroImg}
           />
         )}
@@ -179,6 +180,7 @@ export default async function AboutPage() {
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 50vw"
+                quality={90}
                 className={styles.headshotImg}
               />
             ) : (

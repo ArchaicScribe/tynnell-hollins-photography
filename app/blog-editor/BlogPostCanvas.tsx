@@ -79,7 +79,7 @@ export function BlogPostCanvas({
         <HeroCoverPicker onSelect={(id) => { void handleCoverSelect(id) }}>
           {coverUrl && (
             <div className={styles.coverImage}>
-              <Image src={coverUrl} alt={cover?.alt ?? title} fill priority sizes="100vw" className={styles.coverPhoto} />
+              <Image src={coverUrl} alt={cover?.alt ?? title} fill priority sizes="100vw" quality={90} className={styles.coverPhoto} />
               <div className={styles.coverOverlay} />
             </div>
           )}
