@@ -52,6 +52,13 @@ const nextConfig = {
     // since photography work reads visibly compressed at the default 75,
     // stacked on top of the resize sharp already does at upload time.
     qualities: [75, 90],
+    // Default minimumCacheTTL is 60s (TYN-187) - far too short for photos that
+    // never change once uploaded. Re-optimizing the same photo against R2
+    // every minute on a busy portfolio page is pure waste. A photo's URL only
+    // ever changes if the underlying file is replaced (new upload = new id),
+    // so a long TTL is safe: one year, matching the immutable-asset convention
+    // Vercel already applies to _next/static.
+    minimumCacheTTL: 31536000,
     // Photos are served from Cloudflare R2. next/image rejects any remote host
     // not listed here. This block was lost when Sanity (cdn.sanity.io) was
     // removed and must cover the R2 host that now serves every image.
