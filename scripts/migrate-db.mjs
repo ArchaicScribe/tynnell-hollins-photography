@@ -803,6 +803,33 @@ async function run() {
 
     await client.query(`ALTER TYPE "enum_pages_promoted_route" ADD VALUE IF NOT EXISTS 'blog'`)
     console.log('✓ enum_pages_promoted_route has blog')
+
+    // ------------------------------------------------------------------
+    // Migration 20260723_100000: about_page_values.photo_id column (TYN-345)
+    // Lets each About page "value"/specialty item carry an optional photo,
+    // shown when a visitor clicks or hovers that item. FK set null on
+    // delete so removing a photo from the library doesn't break the row.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "about_page_values" ADD COLUMN IF NOT EXISTS "photo_id" integer
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "about_page_values"
+          ADD CONSTRAINT "about_page_values_photo_id_fk"
+          FOREIGN KEY ("photo_id")
+          REFERENCES "photos"("id")
+          ON DELETE SET NULL;
+      EXCEPTION
+        WHEN duplicate_object THEN NULL;
+      END $$;
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "about_page_values_photo_idx"
+        ON "about_page_values" USING btree ("photo_id")
+    `)
+    console.log('✓ about_page_values.photo_id column ready')
   } finally {
     client.release()
     await pool.end()

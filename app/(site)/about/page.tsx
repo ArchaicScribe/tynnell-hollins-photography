@@ -12,6 +12,7 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { isPreviewMode } from '@/app/lib/builderPreview'
+import SpecialtyReveal from './SpecialtyReveal'
 import styles from './page.module.css'
 
 // About content rarely changes - revalidate every 2 minutes
@@ -20,6 +21,32 @@ export const revalidate = 120
 const getAboutData = cache(async () => {
   const payload = await getPayload({ config })
   return payload.findGlobal({ slug: 'about-page', depth: 1 })
+})
+
+// The DEFAULT_VALUES fallback has no photo of its own - fetch one representative
+// photo per matching category (same "featured, else most recent" pattern
+// portfolio/page.tsx already uses for its category tiles) so the click-to-reveal
+// interaction (TYN-345) isn't empty before Tynnell has entered her own values.
+const resolveFallbackSpecialtyPhotos = cache(async (): Promise<AboutValue[]> => {
+  const payload = await getPayload({ config })
+  return Promise.all(
+    DEFAULT_VALUES.map(async (value) => {
+      const category = FALLBACK_CATEGORY_BY_HEADING[value.heading]
+      if (!category) return value
+      const { docs: featured } = await payload.find({
+        collection: 'photos',
+        where: { and: [{ category: { equals: category } }, { featured: { equals: true } }] },
+        sort: '-updatedAt',
+        limit: 1,
+        depth: 0,
+      })
+      const photo = featured[0] ?? (
+        await payload.find({ collection: 'photos', where: { category: { equals: category } }, sort: 'displayOrder', limit: 1, depth: 0 })
+      ).docs[0]
+      const p = photo as Photo | undefined
+      return { ...value, photoUrl: p?.sizes?.card?.url ?? p?.url ?? null }
+    })
+  )
 })
 
 // A builder page can be promoted to replace this real route (same idea as
@@ -64,6 +91,7 @@ export async function generateMetadata(): Promise<Metadata> {
 type AboutValue = {
   heading: string
   body?: string
+  photoUrl?: string | null
 }
 
 const DEFAULT_VALUES: AboutValue[] = [
@@ -74,6 +102,17 @@ const DEFAULT_VALUES: AboutValue[] = [
   { heading: 'Maternity' },
   { heading: 'Events' },
 ]
+
+// TYN-345: the fallback list above has no photo field of its own (unlike
+// about.values, which now carries an optional `photo` per item) - these
+// headings happen to line up with real Photos categories, so the fallback
+// state still gets a representative photo per item instead of shipping
+// with the click-to-reveal interaction visibly doing nothing.
+const FALLBACK_CATEGORY_BY_HEADING: Record<string, string> = {
+  Weddings: 'weddings',
+  Portraits: 'portraits',
+  'Family Sessions': 'families',
+}
 
 // Static Person schema used for the promoted (Puck) branch - deliberately not
 // derived from the about-page global or any Puck block props (no "schema-
@@ -121,10 +160,16 @@ export default async function AboutPage() {
   const headshotHeroUrl = headshotPhoto?.sizes?.hero?.url ?? headshotPhoto?.url ?? null
   const headshotUrl = headshotPhoto?.sizes?.card?.url ?? headshotPhoto?.url ?? null
 
-  type RawValue = { heading?: string | null; body?: string | null }
+  type RawValue = { heading?: string | null; body?: string | null; photo?: Photo | number | null }
   const specialties: AboutValue[] = about?.values?.length
-    ? about.values.map((v: RawValue) => ({ heading: v.heading ?? '', body: v.body ?? undefined }))
-    : DEFAULT_VALUES
+    ? about.values.map((v: RawValue) => ({
+        heading: v.heading ?? '',
+        body: v.body ?? undefined,
+        photoUrl: typeof v.photo === 'object' && v.photo !== null
+          ? (v.photo.sizes?.card?.url ?? v.photo.url ?? null)
+          : null,
+      }))
+    : await resolveFallbackSpecialtyPhotos()
 
   const personSchema = {
     '@context': 'https://schema.org',
@@ -237,19 +282,7 @@ export default async function AboutPage() {
         <h2 className={styles.sectionHeading}>
           {"Capturing Life’s Most"}<br />Meaningful Moments
         </h2>
-        <ul className={styles.specialtyList}>
-          {specialties.map((item) => (
-            <li key={item.heading} className={styles.specialtyItem}>
-              <span className={styles.specialtyDot} aria-hidden="true" />
-              <span className={styles.specialtyContent}>
-                <span className={styles.specialtyHeading}>{item.heading}</span>
-                {item.body && (
-                  <span className={styles.specialtyBody}>{item.body}</span>
-                )}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <SpecialtyReveal items={specialties} />
       </section>
 
       {/* CTA */}

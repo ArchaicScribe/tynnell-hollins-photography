@@ -999,6 +999,10 @@ export interface AboutPage {
          * A sentence or two describing what this value means to you.
          */
         body?: string | null;
+        /**
+         * Shown when a visitor clicks or hovers this item on your About page.
+         */
+        photo?: (number | null) | Photo;
         id?: string | null;
       }[]
     | null;
@@ -1221,6 +1225,7 @@ export interface AboutPageSelect<T extends boolean = true> {
     | {
         heading?: T;
         body?: T;
+        photo?: T;
         id?: T;
       };
   updatedAt?: T;
