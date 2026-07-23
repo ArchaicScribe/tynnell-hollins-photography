@@ -6,6 +6,7 @@ import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
+import { isPreviewMode } from '@/app/lib/builderPreview'
 import Hero from '@/app/components/Hero/Hero'
 import PortfolioTeaser from '@/app/components/PortfolioTeaser/PortfolioTeaser'
 import AboutPreview from '@/app/components/AboutPreview/AboutPreview'
@@ -25,9 +26,12 @@ export default async function Home() {
 
   // A builder page can be promoted to the site homepage (TYN-227). When one is
   // flagged + published it renders at "/" in place of the built-in home below.
+  const preview = await isPreviewMode()
   const { docs: homepageDocs } = await payload.find({
     collection: 'pages',
-    where: { and: [{ isHomepage: { equals: true } }, { published: { equals: true } }] },
+    where: preview
+      ? { isHomepage: { equals: true } }
+      : { and: [{ isHomepage: { equals: true } }, { published: { equals: true } }] },
     limit: 1,
     depth: 0,
   })

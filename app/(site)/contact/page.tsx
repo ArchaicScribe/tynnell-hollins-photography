@@ -11,6 +11,7 @@ import styles from './page.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 import { computeBookingDateBounds } from '@/app/lib/validation'
+import { isPreviewMode } from '@/app/lib/builderPreview'
 
 // OOO banner is time-sensitive - shorter revalidate so it appears within 1 minute of being set
 export const revalidate = 60
@@ -24,9 +25,12 @@ export const revalidate = 60
 // branch.
 const getPromotedPage = cache(async () => {
   const payload = await getPayload({ config })
+  const preview = await isPreviewMode()
   const { docs } = await payload.find({
     collection: 'pages',
-    where: { and: [{ promotedRoute: { equals: 'contact' } }, { published: { equals: true } }] },
+    where: preview
+      ? { promotedRoute: { equals: 'contact' } }
+      : { and: [{ promotedRoute: { equals: 'contact' } }, { published: { equals: true } }] },
     limit: 1,
     depth: 0,
   })

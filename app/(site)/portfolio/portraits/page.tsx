@@ -10,6 +10,7 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import CategoryPhotoGrid, { type CategoryPhoto } from '../_components/CategoryPhotoGrid'
+import { isPreviewMode } from '@/app/lib/builderPreview'
 import styles from '../_components/CategoryPage.module.css'
 
 export const revalidate = 120
@@ -18,9 +19,12 @@ export const revalidate = 120
 // as About (see collections/Pages.ts, app/(site)/about/page.tsx).
 const getPromotedPage = cache(async () => {
   const payload = await getPayload({ config })
+  const preview = await isPreviewMode()
   const { docs } = await payload.find({
     collection: 'pages',
-    where: { and: [{ promotedRoute: { equals: 'portfolio/portraits' } }, { published: { equals: true } }] },
+    where: preview
+      ? { promotedRoute: { equals: 'portfolio/portraits' } }
+      : { and: [{ promotedRoute: { equals: 'portfolio/portraits' } }, { published: { equals: true } }] },
     limit: 1,
     depth: 0,
   })

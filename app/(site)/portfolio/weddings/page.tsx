@@ -11,6 +11,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import CategoryPhotoGrid, { type CategoryPhoto } from '../_components/CategoryPhotoGrid'
 import AlbumGrid, { type AlbumItem } from '../_components/AlbumGrid'
+import { isPreviewMode } from '@/app/lib/builderPreview'
 import styles from '../_components/CategoryPage.module.css'
 
 export const revalidate = 120
@@ -23,9 +24,12 @@ export const revalidate = 120
 // silently dropped that feature.
 const getPromotedPage = cache(async () => {
   const payload = await getPayload({ config })
+  const preview = await isPreviewMode()
   const { docs } = await payload.find({
     collection: 'pages',
-    where: { and: [{ promotedRoute: { equals: 'portfolio/weddings' } }, { published: { equals: true } }] },
+    where: preview
+      ? { promotedRoute: { equals: 'portfolio/weddings' } }
+      : { and: [{ promotedRoute: { equals: 'portfolio/weddings' } }, { published: { equals: true } }] },
     limit: 1,
     depth: 0,
   })

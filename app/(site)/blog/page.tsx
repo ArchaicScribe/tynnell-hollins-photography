@@ -9,6 +9,7 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import BlogClient from './BlogClient'
+import { isPreviewMode } from '@/app/lib/builderPreview'
 import styles from './page.module.css'
 
 export const revalidate = 3600
@@ -18,9 +19,12 @@ export const revalidate = 3600
 // app/(site)/about/page.tsx).
 const getPromotedPage = cache(async () => {
   const payload = await getPayload({ config })
+  const preview = await isPreviewMode()
   const { docs } = await payload.find({
     collection: 'pages',
-    where: { and: [{ promotedRoute: { equals: 'blog' } }, { published: { equals: true } }] },
+    where: preview
+      ? { promotedRoute: { equals: 'blog' } }
+      : { and: [{ promotedRoute: { equals: 'blog' } }, { published: { equals: true } }] },
     limit: 1,
     depth: 0,
   })
