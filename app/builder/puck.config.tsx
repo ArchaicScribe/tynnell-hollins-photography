@@ -1331,23 +1331,43 @@ export const config: Config = {
               {valid.length === 0 ? (
                 <p style={{ color: C.detail, textAlign: 'center' }}>Add photos in the Fields panel, then drag them into place.</p>
               ) : (
-                valid.map((p: any) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={p.id}
-                    src={p.url}
-                    alt=""
-                    style={{
-                      position: 'absolute',
-                      left: `${p.x}%`,
-                      top: `${p.y}%`,
-                      width: `${p.width}%`,
-                      height: `${p.height}%`,
-                      objectFit: 'cover',
-                      transform: p.rotate ? `rotate(${p.rotate}deg)` : undefined,
-                    }}
-                  />
-                ))
+                valid.map((p: any) => {
+                  // Full image-control parity with the Background Image treatment
+                  // (TYN-351): focal point, opacity, color overlay, optional link.
+                  const Wrapper = p.anchorHref ? 'a' : 'div'
+                  return (
+                    <Wrapper
+                      key={p.id}
+                      {...(p.anchorHref ? { href: p.anchorHref } : {})}
+                      style={{
+                        position: 'absolute',
+                        left: `${p.x}%`,
+                        top: `${p.y}%`,
+                        width: `${p.width}%`,
+                        height: `${p.height}%`,
+                        transform: p.rotate ? `rotate(${p.rotate}deg)` : undefined,
+                        display: 'block',
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.url}
+                        alt={p.alt ?? ''}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: `${p.focalX ?? 50}% ${p.focalY ?? 50}%`,
+                          opacity: (p.imageOpacity ?? 100) / 100,
+                          display: 'block',
+                        }}
+                      />
+                      {(p.overlayOpacity ?? 0) > 0 && (
+                        <div style={{ position: 'absolute', inset: 0, background: p.overlayColor ?? '#000000', opacity: (p.overlayOpacity ?? 0) / 100 }} />
+                      )}
+                    </Wrapper>
+                  )
+                })
               )}
             </div>
           </Section>
