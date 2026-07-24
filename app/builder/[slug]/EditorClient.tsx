@@ -47,6 +47,15 @@ export function EditorClient({
   const [isPublished, setIsPublished] = useState(published)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [showHelp, setShowHelp] = useState(false)
+  // Device-preview width (TYN-355 Phase 3). Puck's own `viewports` config
+  // needs iframe.enabled: true, which this project can't use (the preview
+  // iframe drops the session cookie on save - see the `iframe` prop below).
+  // Rather than override Puck's `header`/`puck` layout keys to build a real
+  // device frame (the documented, already-reverted `header` override attempt
+  // shows how easily that breaks Puck's own CSS Grid sizing), this just
+  // toggles a class on the outer wrapper and constrains the root dropzone's
+  // width in puck-theme.css - it never touches Puck's component tree.
+  const [previewWidth, setPreviewWidth] = useState<'full' | 'mobile'>('full')
 
   // Warn on tab close / reload while there are unsaved edits.
   useEffect(() => {
@@ -149,7 +158,7 @@ export function EditorClient({
   }
 
   return (
-    <div className="puck-dark" style={{ height: '100vh' }}>
+    <div className={`puck-dark${previewWidth === 'mobile' ? ' pk-preview-mobile' : ''}`} style={{ height: '100vh' }}>
       <Puck
         config={config}
         data={initialData}
@@ -238,6 +247,26 @@ export function EditorClient({
                   View Page <span aria-hidden="true">&#8599;</span>
                 </Link>
               )}
+              <div style={{ display: 'inline-flex', border: '1px solid var(--puck-color-grey-09, #d4d4d4)', borderRadius: '4px', overflow: 'hidden' }}>
+                <button
+                  type="button"
+                  aria-pressed={previewWidth === 'full'}
+                  title="Preview at full width"
+                  onClick={() => setPreviewWidth('full')}
+                  style={{ ...headerBtn, border: 'none', borderRadius: 0, background: previewWidth === 'full' ? 'var(--puck-color-grey-09, #d4d4d4)' : 'transparent' }}
+                >
+                  <DesktopIcon />
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={previewWidth === 'mobile'}
+                  title="Preview at mobile width"
+                  onClick={() => setPreviewWidth('mobile')}
+                  style={{ ...headerBtn, border: 'none', borderRadius: 0, background: previewWidth === 'mobile' ? 'var(--puck-color-grey-09, #d4d4d4)' : 'transparent' }}
+                >
+                  <MobileIcon />
+                </button>
+              </div>
               <PreviewButton onPreview={onPreview} style={headerBtn} busy={previewing || saveState === 'saving'} />
               <SaveDraftButton onSave={onSaveDraft} style={headerBtn} saving={saveState === 'saving'} />
               {children}
@@ -367,6 +396,24 @@ function BackArrowIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M19 12H5" />
       <path d="M12 19l-7-7 7-7" />
+    </svg>
+  )
+}
+
+function DesktopIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="13" rx="1.5" />
+      <path d="M8 21h8M12 17v4" />
+    </svg>
+  )
+}
+
+function MobileIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="7" y="2" width="10" height="20" rx="2" />
+      <path d="M11 18h2" />
     </svg>
   )
 }

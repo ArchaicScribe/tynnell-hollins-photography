@@ -67,3 +67,21 @@
   flex: 1 1 auto;
   min-height: 0;
 }
+
+/* Device-preview width toggle (TYN-355 Phase 3). Puck's native `viewports`
+ * config needs iframe.enabled: true, which this project can't use (session
+ * cookie drops on the save fetch inside an iframe). Rather than override
+ * Puck's own header/puck layout keys - a real device-frame simulation would
+ * need to - this just constrains the root dropzone's width when the toggle
+ * is on, leaving Puck's own component tree completely untouched. The
+ * `[data-testid]` selector only exists in the editor's DOM (confirmed against
+ * @measured/puck/dist/rsc.js - the public site render has no such attribute),
+ * so this rule can never affect the live site even if it were accidentally
+ * loaded there.
+ */
+.pk-preview-mobile [data-testid="dropzone:root:default-zone"] {
+  max-width: 390px;
+  margin: 0 auto;
+  border-left: 1px solid rgba(155, 154, 154, 0.25);
+  border-right: 1px solid rgba(155, 154, 154, 0.25);
+}
