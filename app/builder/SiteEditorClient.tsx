@@ -537,6 +537,7 @@ function NewPageModal({ onClose }: { onClose: () => void }) {
             <option value="landing">Landing Page</option>
             <option value="about">About</option>
             <option value="gallery">Gallery Showcase</option>
+            <option value="freeform">Freeform Layout</option>
           </select>
         </label>
         {error && <p role="alert" style={{ margin: 0, fontFamily: mono, fontSize: '0.75rem', color: '#f87171' }}>{error}</p>}
