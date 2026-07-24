@@ -18,6 +18,7 @@ import { FreeformPhotoCanvasField } from './FreeformPhotoCanvasField'
 import { ScrollFadeImage } from './ScrollFadeImage'
 import { SpecialtiesRevealBlock } from './SpecialtiesRevealBlock'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
+import { ImageSlideshowBlock } from './ImageSlideshowBlock'
 import CategoryPhotoGrid from '@/app/(site)/portfolio/_components/CategoryPhotoGrid'
 import AlbumGridComponent from '@/app/(site)/portfolio/_components/AlbumGrid'
 import ServicesGridComponent from '@/app/(site)/services/_components/ServicesGrid'
@@ -86,6 +87,25 @@ const POLAROID_CSS = `
 .pk-polaroid:hover{transform:rotate(0deg) scale(1.015) !important;z-index:2}
 .pk-polaroid img{display:block;width:100%;height:auto}
 `
+
+// FreeformSection (TYN-355): in the EDITOR only, Puck wraps every slot child
+// in its own `position:relative` div (for hover/overlay tracking) with no
+// explicit height - since that wrapper's only content is a position:absolute
+// element (taken out of flow), the wrapper collapses to 0 height, which
+// breaks percent-based `top`/`height` on freeform elements (percentages need
+// an ancestor with a definite height to resolve against - `left`/`width`
+// happen to still work since block-level width defaults to 100% of the
+// parent regardless of content). Forcing the dropzone and each wrapper to
+// `position:absolute;inset:0` makes each one exactly fill the FreeformSection
+// canvas div (which does have an explicit height), so a freeform element's own
+// percent left/top/width/height resolves correctly again. `[data-puck-dropzone]`/
+// `[data-puck-component]` attributes only exist in the editor's DOM - the
+// public RSC render (`@measured/puck/rsc`) renders slot children directly with
+// no such wrapper - so this rule is inert (never matches) on the live site.
+const FREEFORM_CSS = `
+.freeform-canvas > [data-puck-dropzone]{position:absolute !important;inset:0}
+.freeform-canvas > [data-puck-dropzone] > [data-puck-component]{position:absolute !important;inset:0}
+`
 // Detects a YouTube/Vimeo URL and extracts its video ID so it can be rendered
 // as a proper embed iframe; anything else is treated as a direct video file
 // URL (R2-hosted or otherwise) and rendered with a native <video> element.
@@ -124,6 +144,15 @@ function visClass(hideOnMobile?: boolean, hideOnDesktop?: boolean): string | und
   if (hideOnDesktop) c.push('pk-hide-desktop')
   return c.length ? c.join(' ') : undefined
 }
+
+// Shared percent-of-canvas positioning for freeform elements (TYN-355) - x/y/
+// width/height/rotate are never exposed as sidebar fields (see TextElement's
+// comment), only set by dragging/resizing on the canvas via
+// FreeformElementToolbar, so every element applies this the same way.
+function freeformStyle(x: number, y: number, width: number, height: number, rotate: number): React.CSSProperties {
+  return { position: 'absolute', left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%`, transform: rotate ? `rotate(${rotate}deg)` : undefined }
+}
+const freeformPositionDefaults = { x: 8, y: 8, width: 40, height: 30, rotate: 0 }
 
 // Per-block device-visibility controls, spread into every block's fields.
 const responsiveFields = {
@@ -386,16 +415,33 @@ export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
       <div style={{ background: C.bg, color: C.body, minHeight: '100%', fontFamily: BODY_FONT }}>
-        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + TAPE_CSS + POLAROID_CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
         {children}
       </div>
     ),
   },
 
   categories: {
-    layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks'] },
+    layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
     content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
+    // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
+    // are real registered components (so they can live inside a FreeformSection's
+    // `elements` slot) but are only ever inserted via AddElementPanel.tsx, never
+    // dragged from the main drawer - `visible: false` keeps this category (and
+    // therefore these four components) out of the drawer/"Other" bucket entirely,
+    // while still "claiming" them so they don't fall into the auto-generated
+    // Other category (confirmed against Puck's ComponentList source, which marks
+    // a category's components as matched before checking `category.visible`).
+    freeformElements: {
+      title: 'Freeform Elements',
+      visible: false,
+      components: [
+        'TextElement', 'ImageElement', 'ButtonElement', 'ShapeElement',
+        'VideoElement', 'LineElement', 'ImageCarouselElement', 'ImageGridElement', 'ImageSlideshowElement',
+        'ContactFormElement', 'MapElement', 'SocialLinksElement', 'InstagramFeedElement', 'AccordionElement', 'TypewriterTextElement',
+      ],
+    },
   },
 
   components: {
@@ -1461,6 +1507,547 @@ export const config: Config = {
           </Section>
         )
       },
+    },
+
+    // ------------------------------------------------------- FreeformSection
+    // TYN-355: Pixieset-style freeform canvas - unlike every other section,
+    // this one holds a real Puck `slot` field (`elements`) so children are
+    // genuine registered components (TextElement/ImageElement/ButtonElement/
+    // ShapeElement below), each individually draggable/resizable directly on
+    // the canvas via FreeformElementToolbar.tsx (wired through BuilderOverlay
+    // in EditorClient.tsx), not a hand-rolled parallel data structure. New
+    // elements are added via AddElementPanel.tsx, shown next to this section's
+    // own hover toolbar (SectionHoverToolbar, unchanged - handles Settings/
+    // Duplicate/Delete/Move for the section itself same as every other block).
+    //
+    // canvasHeight is a fixed stage size (Short/Medium/Tall), matching
+    // FreeformPhotoCanvas's own convention, rather than auto-growing to fit
+    // content - overflow is clipped so elements dragged past the edge don't
+    // spill into the next section.
+    FreeformSection: {
+      label: 'Freeform Section',
+      fields: {
+        canvasHeight: {
+          type: 'select',
+          label: 'Canvas height',
+          options: [
+            { label: 'Short', value: '45vh' },
+            { label: 'Medium', value: '65vh' },
+            { label: 'Tall', value: '90vh' },
+          ],
+        },
+        elements: { type: 'slot' },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { canvasHeight: '65vh', elements: [], ...styleDefaults, ...responsiveDefaults },
+      render: ({ elements: Elements, canvasHeight, background, backgroundImage, backgroundFade, scrollFadeIn, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <div className="freeform-canvas" style={{ position: 'relative', width: '100%', height: canvasHeight, overflow: 'hidden' }}>
+            <Elements />
+          </div>
+        </Section>
+      ),
+    },
+
+    // ---------------------------------------------------------- TextElement
+    // Freeform child element (FreeformSection only - see comment above).
+    // Position (x/y/width/height/rotate, percent-of-canvas) is intentionally
+    // absent from `fields`: it's not meant to be typed into the sidebar, only
+    // set by dragging/resizing directly on the canvas via FreeformElementToolbar.
+    TextElement: {
+      label: 'Text',
+      fields: {
+        text: { type: 'textarea', label: 'Text' },
+        align: alignField,
+      },
+      defaultProps: { text: 'Tell your story here.', align: 'left', x: 8, y: 8, width: 40, height: 20, rotate: 0 },
+      render: ({ text, align, x, y, width, height, rotate }: any) => (
+        <div style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%`, transform: rotate ? `rotate(${rotate}deg)` : undefined, textAlign: align }}>
+          <p style={{ color: C.body, fontSize: '1.05rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
+        </div>
+      ),
+    },
+
+    // --------------------------------------------------------- ImageElement
+    // Freeform child element - image controls ported verbatim from
+    // FreeformPhotoCanvas's per-photo render (focal point, opacity, overlay,
+    // optional link), the closest existing analog.
+    ImageElement: {
+      label: 'Image',
+      fields: {
+        url: imageField('Image'),
+        alt: { type: 'text', label: 'Alt text' },
+        focalX: { type: 'number', label: 'Focal point X (%)' },
+        focalY: { type: 'number', label: 'Focal point Y (%)' },
+        imageOpacity: { type: 'number', label: 'Image opacity (%)' },
+        overlayOpacity: { type: 'number', label: 'Overlay opacity (%)' },
+        overlayColor: { type: 'text', label: 'Overlay color' },
+        anchorHref: { type: 'text', label: 'Link (optional)' },
+      },
+      defaultProps: {
+        url: '', alt: '', focalX: 50, focalY: 50, imageOpacity: 100, overlayOpacity: 0, overlayColor: '#000000', anchorHref: '',
+        x: 8, y: 8, width: 40, height: 40, rotate: 0,
+      },
+      render: ({ url, alt, focalX, focalY, imageOpacity, overlayOpacity, overlayColor, anchorHref, x, y, width, height, rotate }: any) => {
+        const Wrapper = anchorHref ? 'a' : 'div'
+        return (
+          <Wrapper
+            {...(anchorHref ? { href: anchorHref } : {})}
+            style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%`, transform: rotate ? `rotate(${rotate}deg)` : undefined, display: 'block' }}
+          >
+            {url ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={alt ?? ''}
+                  style={{
+                    width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                    objectPosition: `${focalX ?? 50}% ${focalY ?? 50}%`,
+                    opacity: (imageOpacity ?? 100) / 100,
+                  }}
+                />
+                {(overlayOpacity ?? 0) > 0 && (
+                  <div style={{ position: 'absolute', inset: 0, background: overlayColor ?? '#000000', opacity: (overlayOpacity ?? 0) / 100 }} />
+                )}
+              </>
+            ) : (
+              <div style={{ width: '100%', height: '100%', background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.detail, fontSize: '0.75rem', textAlign: 'center', padding: '0.5rem' }}>
+                Choose an image
+              </div>
+            )}
+          </Wrapper>
+        )
+      },
+    },
+
+    // -------------------------------------------------------- ButtonElement
+    // Freeform child element - new (no standalone equivalent existed before;
+    // CTA's button is baked into that block's own layout). Reuses the shared
+    // btnStyle() so it matches every other button on the site.
+    ButtonElement: {
+      label: 'Button',
+      fields: {
+        text: { type: 'text', label: 'Button text' },
+        href: { type: 'text', label: 'Button link' },
+        align: alignField,
+      },
+      defaultProps: { text: 'Learn More', href: '/contact', align: 'left', x: 8, y: 8, width: 24, height: 10, rotate: 0 },
+      render: ({ text, href, align, x, y, width, height, rotate }: any) => (
+        <div
+          style={{
+            position: 'absolute', left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%`,
+            transform: rotate ? `rotate(${rotate}deg)` : undefined,
+            display: 'flex', alignItems: 'center', justifyContent: align === 'center' ? 'center' : 'flex-start',
+          }}
+        >
+          <a href={href || '#'} style={{ ...btnStyle(), marginTop: 0 }}>{text}</a>
+        </div>
+      ),
+    },
+
+    // --------------------------------------------------------- ShapeElement
+    // Freeform child element - ported from the Shape block, but fills its own
+    // positioned box instead of a fixed pixel size + flex alignment.
+    ShapeElement: {
+      label: 'Shape',
+      fields: {
+        shapeType: {
+          type: 'radio',
+          label: 'Shape',
+          options: [{ label: 'Rectangle', value: 'rectangle' }, { label: 'Circle', value: 'circle' }],
+        },
+        color: {
+          type: 'select',
+          label: 'Color',
+          options: [
+            { label: 'Heading', value: 'var(--color-heading, #D6D1CE)' },
+            { label: 'Detail', value: 'var(--color-detail, #9B9A9A)' },
+            { label: 'Button', value: 'var(--color-btn-bg, #9B9A9A)' },
+            { label: 'Accent background', value: 'var(--color-bg-accent, #131313)' },
+          ],
+        },
+        opacity: {
+          type: 'select',
+          label: 'Opacity',
+          options: [
+            { label: 'Light', value: '0.25' },
+            { label: 'Medium', value: '0.6' },
+            { label: 'Solid', value: '1' },
+          ],
+        },
+      },
+      defaultProps: { shapeType: 'circle', color: 'var(--color-detail, #9B9A9A)', opacity: '0.6', x: 8, y: 8, width: 20, height: 20, rotate: 0 },
+      render: ({ shapeType, color, opacity, x, y, width, height, rotate }: any) => (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute', left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%`,
+            transform: rotate ? `rotate(${rotate}deg)` : undefined,
+            background: color, opacity: Number(opacity), borderRadius: shapeType === 'circle' ? '50%' : '4px',
+          }}
+        />
+      ),
+    },
+
+    // ---------------------------------------------------------- VideoElement
+    // Freeform child element - ported from the Video block; height is now
+    // drag-controlled (freeformPositionDefaults) instead of a fixed select.
+    VideoElement: {
+      label: 'Video',
+      fields: {
+        videoUrl: { type: 'text', label: 'Video URL (YouTube, Vimeo, or direct file link)' },
+        autoplay: { type: 'radio', label: 'Autoplay', options: [{ label: 'Off', value: false }, { label: 'On', value: true }] },
+        loop: { type: 'radio', label: 'Loop', options: [{ label: 'Off', value: false }, { label: 'On', value: true }] },
+        muted: { type: 'radio', label: 'Muted (required for autoplay to work in most browsers)', options: [{ label: 'Off', value: false }, { label: 'On', value: true }] },
+      },
+      defaultProps: { videoUrl: '', autoplay: false, loop: false, muted: true, ...freeformPositionDefaults },
+      render: ({ videoUrl, autoplay, loop, muted, x, y, width, height, rotate }: any) => {
+        const embed = parseVideoEmbed(videoUrl)
+        const effectiveMuted = muted || autoplay
+        return (
+          <div style={{ ...freeformStyle(x, y, width, height, rotate), background: C.accent }}>
+            {!embed ? (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.detail, fontSize: '0.85rem' }}>
+                Add a video URL
+              </div>
+            ) : embed.type === 'file' ? (
+              <video src={videoUrl} autoPlay={autoplay} loop={loop} muted={effectiveMuted} controls={!autoplay} playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <iframe
+                src={
+                  embed.type === 'youtube'
+                    ? `https://www.youtube.com/embed/${embed.id}?${autoplay ? `autoplay=1&mute=${effectiveMuted ? 1 : 0}&` : ''}${loop ? `loop=1&playlist=${embed.id}&` : ''}`
+                    : `https://player.vimeo.com/video/${embed.id}?${autoplay ? 'autoplay=1&' : ''}${loop ? 'loop=1&' : ''}${effectiveMuted ? 'muted=1&' : ''}`
+                }
+                title="Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+              />
+            )}
+          </div>
+        )
+      },
+    },
+
+    // ----------------------------------------------------------- LineElement
+    // Freeform child element - ported from Line; length/margin are dropped
+    // since freeform width/height (drag-controlled) replace them.
+    LineElement: {
+      label: 'Line',
+      fields: {
+        thickness: { type: 'select', label: 'Thickness', options: [{ label: 'Thin', value: '1px' }, { label: 'Medium', value: '2px' }, { label: 'Thick', value: '4px' }] },
+        color: {
+          type: 'select',
+          label: 'Color',
+          options: [
+            { label: 'Detail', value: 'var(--color-detail, #9B9A9A)' },
+            { label: 'Heading', value: 'var(--color-heading, #D6D1CE)' },
+            { label: 'Subtle', value: 'rgba(155,154,154,0.18)' },
+          ],
+        },
+      },
+      defaultProps: { thickness: '2px', color: 'var(--color-detail, #9B9A9A)', x: 8, y: 8, width: 40, height: 1, rotate: 0 },
+      render: ({ thickness, color, x, y, width, height, rotate }: any) => (
+        <div style={{ ...freeformStyle(x, y, width, height, rotate), display: 'flex', alignItems: 'center' }}>
+          <div style={{ width: '100%', height: thickness, background: color }} aria-hidden="true" />
+        </div>
+      ),
+    },
+
+    // ------------------------------------------------- ImageCarouselElement
+    // Freeform child element - ported from PhotoCarousel + PhotoCarouselBlock
+    // (Swiper-based, swipeable) - distinct from ImageSlideshowElement, which
+    // has no swipe interaction.
+    ImageCarouselElement: {
+      label: 'Image Carousel',
+      fields: {
+        images: {
+          type: 'array',
+          label: 'Photos',
+          arrayFields: { url: imageField('Image') },
+          defaultItemProps: { url: '' },
+          getItemSummary: (item: any) => item?.url || 'Photo',
+        },
+      },
+      defaultProps: { images: [], ...freeformPositionDefaults, height: 50 },
+      render: ({ images, x, y, width, height, rotate }: any) => {
+        const valid = (images ?? []).filter((i: any) => i?.url)
+        return (
+          <div style={freeformStyle(x, y, width, height, rotate)}>
+            {valid.length === 0 ? (
+              <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the carousel.</p>
+            ) : (
+              <PhotoCarouselBlock images={valid} />
+            )}
+          </div>
+        )
+      },
+    },
+
+    // ----------------------------------------------------- ImageGridElement
+    // Freeform child element - ported from ImageGrid.
+    ImageGridElement: {
+      label: 'Image Grid',
+      fields: {
+        images: {
+          type: 'array',
+          label: 'Photos',
+          arrayFields: { url: imageField('Image') },
+          defaultItemProps: { url: '' },
+          getItemSummary: (item: any) => item?.url || 'Photo',
+        },
+        columns: { type: 'select', label: 'Columns', options: [{ label: '2 columns', value: '2' }, { label: '3 columns', value: '3' }, { label: '4 columns', value: '4' }] },
+        gap: { type: 'select', label: 'Gap', options: [{ label: 'None', value: '0' }, { label: 'Small', value: '0.5rem' }, { label: 'Medium', value: '1rem' }] },
+      },
+      defaultProps: { images: [], columns: '2', gap: '0.5rem', ...freeformPositionDefaults, height: 50 },
+      render: ({ images, columns, gap, x, y, width, height, rotate }: any) => {
+        const valid = (images ?? []).filter((i: any) => i?.url)
+        return (
+          <div style={{ ...freeformStyle(x, y, width, height, rotate), overflow: 'auto' }}>
+            {valid.length === 0 ? (
+              <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the grid.</p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap, height: '100%' }}>
+                {valid.map((img: any, i: number) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      },
+    },
+
+    // -------------------------------------------------- ImageSlideshowElement
+    // Freeform child element - auto-advancing crossfade, no swipe interaction
+    // (see ImageSlideshowBlock.tsx's comment for how this differs from
+    // ImageCarouselElement).
+    ImageSlideshowElement: {
+      label: 'Image Slideshow',
+      fields: {
+        images: {
+          type: 'array',
+          label: 'Photos',
+          arrayFields: { url: imageField('Image') },
+          defaultItemProps: { url: '' },
+          getItemSummary: (item: any) => item?.url || 'Photo',
+        },
+      },
+      defaultProps: { images: [], ...freeformPositionDefaults, height: 50 },
+      render: ({ images, x, y, width, height, rotate }: any) => {
+        const valid = (images ?? []).filter((i: any) => i?.url)
+        return (
+          <div style={freeformStyle(x, y, width, height, rotate)}>
+            {valid.length === 0 ? (
+              <p style={{ color: C.detail, textAlign: 'center' }}>Add photos to populate the slideshow.</p>
+            ) : (
+              <ImageSlideshowBlock images={valid} />
+            )}
+          </div>
+        )
+      },
+    },
+
+    // -------------------------------------------------- ContactFormElement
+    // Freeform child element - ported from ContactFormBlock, keeps the same
+    // resolveData for booking-date bounds (TYN-341 phase 5); resolveData works
+    // the same way for any component regardless of nesting depth.
+    ContactFormElement: {
+      label: 'Contact Form',
+      fields: {
+        eyebrow: { type: 'text', label: 'Eyebrow (optional)' },
+        heading: { type: 'text', label: 'Heading (optional)' },
+        subtext: { type: 'textarea', label: 'Subtext (optional)' },
+      },
+      defaultProps: { eyebrow: '', heading: "Let's Connect", subtext: '', ...freeformPositionDefaults, width: 60, height: 70 },
+      resolveData: async () => {
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/public-booking-dates`)
+          if (!res.ok) return { props: {} }
+          const data = await res.json()
+          return { props: { resolvedMinDate: data.minDate, resolvedMaxDate: data.maxDate } }
+        } catch {
+          return { props: {} }
+        }
+      },
+      render: ({ eyebrow, heading, subtext, resolvedMinDate, resolvedMaxDate, x, y, width, height, rotate }: any) => (
+        <div style={{ ...freeformStyle(x, y, width, height, rotate), overflow: 'auto' }}>
+          {eyebrow && <p style={{ ...eyebrowStyle, textAlign: 'center' }}>{eyebrow}</p>}
+          {heading && <h2 style={{ ...headingStyle('clamp(1.3rem,2.5vw,2rem)'), textAlign: 'center' }}>{heading}</h2>}
+          {subtext && <p style={{ marginTop: '0.85rem', marginBottom: '1.5rem', color: C.detail, textAlign: 'center' }}>{subtext}</p>}
+          <ContactForm minDate={resolvedMinDate} maxDate={resolvedMaxDate} />
+        </div>
+      ),
+    },
+
+    // ----------------------------------------------------------- MapElement
+    // Freeform child element - ported from Map (plain Google Maps
+    // output=embed iframe, no API key - see Map's own comment).
+    MapElement: {
+      label: 'Map',
+      fields: {
+        address: { type: 'text', label: 'Address or location' },
+      },
+      defaultProps: { address: 'Los Angeles, CA', ...freeformPositionDefaults, height: 40 },
+      render: ({ address, x, y, width, height, rotate }: any) => (
+        <div style={freeformStyle(x, y, width, height, rotate)}>
+          {address ? (
+            <iframe
+              src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Map"
+            />
+          ) : (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.accent, color: C.detail }}>
+              Add an address to show the map.
+            </div>
+          )}
+        </div>
+      ),
+    },
+
+    // ---------------------------------------------------- SocialLinksElement
+    // Freeform child element - ported from SocialLinks; align is dropped since
+    // freeform x/y positioning replaces it.
+    SocialLinksElement: {
+      label: 'Social Links',
+      fields: {
+        instagramUrl: { type: 'text', label: 'Instagram URL' },
+        facebookUrl: { type: 'text', label: 'Facebook URL' },
+        tiktokUrl: { type: 'text', label: 'TikTok URL' },
+        pinterestUrl: { type: 'text', label: 'Pinterest URL' },
+        size: { type: 'select', label: 'Icon size', options: [{ label: 'Small', value: '18' }, { label: 'Medium', value: '24' }, { label: 'Large', value: '32' }] },
+        color: {
+          type: 'select',
+          label: 'Icon color',
+          options: [
+            { label: 'Detail', value: 'var(--color-detail, #9B9A9A)' },
+            { label: 'Heading', value: 'var(--color-heading, #D6D1CE)' },
+            { label: 'Button', value: 'var(--color-btn-bg, #9B9A9A)' },
+          ],
+        },
+      },
+      defaultProps: {
+        instagramUrl: 'https://instagram.com/tynnellhollinsphotography', facebookUrl: '', tiktokUrl: 'https://tiktok.com/@tynnellhollinsphotography', pinterestUrl: '',
+        size: '24', color: 'var(--color-detail, #9B9A9A)', x: 8, y: 8, width: 30, height: 8, rotate: 0,
+      },
+      render: ({ instagramUrl, facebookUrl, tiktokUrl, pinterestUrl, size, color, x, y, width, height, rotate }: any) => {
+        const links: { platform: string; href: string; label: string }[] = [
+          instagramUrl && { platform: 'instagram', href: instagramUrl, label: 'Instagram' },
+          facebookUrl && { platform: 'facebook', href: facebookUrl, label: 'Facebook' },
+          tiktokUrl && { platform: 'tiktok', href: tiktokUrl, label: 'TikTok' },
+          pinterestUrl && { platform: 'pinterest', href: pinterestUrl, label: 'Pinterest' },
+        ].filter(Boolean) as { platform: string; href: string; label: string }[]
+        const iconSize = Number(size) || 24
+        return (
+          <div style={{ ...freeformStyle(x, y, width, height, rotate), display: 'flex', alignItems: 'center', gap: '1.1rem' }}>
+            {links.map(({ platform, href, label }) => (
+              <a key={platform} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} style={{ display: 'flex' }}>
+                <SocialIcon platform={platform} size={iconSize} color={color} />
+              </a>
+            ))}
+          </div>
+        )
+      },
+    },
+
+    // -------------------------------------------------- InstagramFeedElement
+    // Freeform child element - ported from InstagramFeed (SnapWidget embed).
+    InstagramFeedElement: {
+      label: 'Instagram Feed',
+      fields: {
+        embedUrl: { type: 'text', label: 'SnapWidget embed URL (from snapwidget.com, looks like https://snapwidget.com/embed/123456)' },
+      },
+      defaultProps: { embedUrl: '', ...freeformPositionDefaults, height: 50 },
+      render: ({ embedUrl, x, y, width, height, rotate }: any) => (
+        <div style={freeformStyle(x, y, width, height, rotate)}>
+          {embedUrl ? (
+            <iframe
+              src={embedUrl}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+              loading="lazy"
+              scrolling="no"
+              title="Instagram Feed"
+            />
+          ) : (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.accent, color: C.detail, textAlign: 'center', padding: '1rem' }}>
+              Add a SnapWidget embed URL to show the feed.
+            </div>
+          )}
+        </div>
+      ),
+    },
+
+    // ------------------------------------------------------ AccordionElement
+    // Freeform child element - ported from Accordion + AccordionBlock.
+    AccordionElement: {
+      label: 'Accordion',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        items: {
+          type: 'array',
+          label: 'Sections',
+          arrayFields: { title: { type: 'text', label: 'Title' }, body: { type: 'textarea', label: 'Body' } },
+          defaultItemProps: { title: 'A common question', body: 'The answer, in a sentence or two.' },
+          getItemSummary: (item: any) => item?.title || 'Section',
+        },
+      },
+      defaultProps: {
+        heading: 'Frequently Asked Questions',
+        items: [{ title: 'How far in advance should I book?', body: 'Most sessions book 4-8 weeks out - weddings often further ahead.' }],
+        ...freeformPositionDefaults, width: 50, height: 50,
+      },
+      render: ({ heading, items, x, y, width, height, rotate }: any) => (
+        <div style={{ ...freeformStyle(x, y, width, height, rotate), overflow: 'auto' }}>
+          {heading && <h2 style={{ ...headingStyle('clamp(1.3rem,2.5vw,2rem)'), textAlign: 'center', marginBottom: '1.25rem' }}>{heading}</h2>}
+          <AccordionBlock items={items ?? []} />
+        </div>
+      ),
+    },
+
+    // ------------------------------------------------- TypewriterTextElement
+    // Freeform child element - ported from TypewriterHeading + TypewriterText.
+    TypewriterTextElement: {
+      label: 'Typewriter Text',
+      fields: {
+        prefix: { type: 'text', label: 'Prefix (optional, stays static)' },
+        phrases: {
+          type: 'array',
+          label: 'Phrases (typed one at a time, in a loop)',
+          arrayFields: { text: { type: 'text', label: 'Phrase' } },
+          defaultItemProps: { text: 'A new phrase' },
+          getItemSummary: (item: any) => item?.text || 'Phrase',
+        },
+        size: {
+          type: 'select',
+          label: 'Size',
+          options: [
+            { label: 'Small', value: 'clamp(1.1rem, 2.5vw, 1.5rem)' },
+            { label: 'Medium', value: 'clamp(1.6rem, 3.5vw, 2.75rem)' },
+            { label: 'Large', value: 'clamp(2rem, 5vw, 3.75rem)' },
+          ],
+        },
+        align: alignField,
+      },
+      defaultProps: {
+        prefix: 'I photograph ',
+        phrases: [{ text: 'weddings.' }, { text: 'portraits.' }, { text: 'families.' }],
+        size: 'clamp(1.6rem, 3.5vw, 2.75rem)', align: 'center',
+        ...freeformPositionDefaults, width: 50,
+      },
+      render: ({ prefix, phrases, size, align, x, y, width, height, rotate }: any) => (
+        <p style={{ ...freeformStyle(x, y, width, height, rotate), ...headingStyle(size), textAlign: align, margin: 0 }}>
+          {prefix}
+          <TypewriterText phrases={(phrases ?? []).map((p: any) => p.text).filter(Boolean)} />
+        </p>
+      ),
     },
 
     // ------------------------------------------------------- FullWidthImage
