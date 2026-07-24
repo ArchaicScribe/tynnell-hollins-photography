@@ -16,7 +16,11 @@ import { AddElementTrigger } from './AddElementPanel'
 //   rather than nested, since SectionHoverToolbar has no slot for extra UI and
 //   deliberately stays untouched per the freeform-builder plan.
 // - Every other existing block keeps exactly the toolbar it has today.
-const FREEFORM_ELEMENT_TYPES = new Set(['TextElement', 'ImageElement', 'ButtonElement', 'ShapeElement'])
+const FREEFORM_ELEMENT_TYPES = new Set([
+  'TextElement', 'ImageElement', 'ButtonElement', 'ShapeElement',
+  'VideoElement', 'LineElement', 'ImageCarouselElement', 'ImageGridElement', 'ImageSlideshowElement',
+  'ContactFormElement', 'MapElement', 'SocialLinksElement', 'InstagramFeedElement', 'AccordionElement', 'TypewriterTextElement',
+])
 
 export function BuilderOverlay(props: {
   children: React.ReactNode

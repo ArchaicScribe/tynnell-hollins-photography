@@ -16,8 +16,19 @@ import { usePuck } from '@measured/puck'
 const ELEMENT_TYPES: { type: string; label: string; icon: () => React.ReactNode }[] = [
   { type: 'TextElement', label: 'Text', icon: TextIcon },
   { type: 'ImageElement', label: 'Image', icon: ImageIcon },
-  { type: 'ButtonElement', label: 'Button', icon: ButtonIcon },
+  { type: 'VideoElement', label: 'Video', icon: VideoIcon },
   { type: 'ShapeElement', label: 'Shape', icon: ShapeIcon },
+  { type: 'ButtonElement', label: 'Button', icon: ButtonIcon },
+  { type: 'LineElement', label: 'Line', icon: LineIcon },
+  { type: 'ImageSlideshowElement', label: 'Slideshow', icon: SlideshowIcon },
+  { type: 'ImageCarouselElement', label: 'Carousel', icon: CarouselIcon },
+  { type: 'ImageGridElement', label: 'Image Grid', icon: GridIcon },
+  { type: 'ContactFormElement', label: 'Contact Form', icon: ContactFormIcon },
+  { type: 'MapElement', label: 'Map', icon: MapIcon },
+  { type: 'SocialLinksElement', label: 'Social Links', icon: SocialLinksIcon },
+  { type: 'InstagramFeedElement', label: 'Instagram Feed', icon: InstagramFeedIcon },
+  { type: 'AccordionElement', label: 'Accordion', icon: AccordionIcon },
+  { type: 'TypewriterTextElement', label: 'Typewriter Text', icon: TypewriterIcon },
 ]
 
 export function AddElementTrigger({
@@ -157,6 +168,114 @@ function ShapeIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="9" />
+    </svg>
+  )
+}
+
+function VideoIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function LineIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20L20 4" />
+    </svg>
+  )
+}
+
+function SlideshowIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="12" rx="2" />
+      <circle cx="9" cy="20" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="20" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="20" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function CarouselIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="7" y="4" width="10" height="16" rx="1.5" />
+      <path d="M3 9v6M21 9v6" />
+    </svg>
+  )
+}
+
+function GridIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="8" height="8" rx="1" />
+      <rect x="13" y="3" width="8" height="8" rx="1" />
+      <rect x="3" y="13" width="8" height="8" rx="1" />
+      <rect x="13" y="13" width="8" height="8" rx="1" />
+    </svg>
+  )
+}
+
+function ContactFormIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 7l9 6 9-6" />
+    </svg>
+  )
+}
+
+function MapIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  )
+}
+
+function SocialLinksIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49" />
+    </svg>
+  )
+}
+
+function InstagramFeedIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function AccordionIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="5" rx="1" />
+      <rect x="3" y="11" width="18" height="9" rx="1" />
+      <path d="M17 15l-2 2-2-2" />
+    </svg>
+  )
+}
+
+function TypewriterIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7V4h13v3" />
+      <path d="M4 20h9" />
+      <path d="M8.5 4v16" />
+      <path d="M19 9v11" />
     </svg>
   )
 }
