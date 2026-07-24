@@ -6,7 +6,7 @@ import '../puck-theme.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { config } from '../puck.config'
-import { SectionHoverToolbar } from '../SectionHoverToolbar'
+import { BuilderOverlay } from '../BuilderOverlay'
 import { DrawerItemClickToAdd } from '../DrawerItemClickToAdd'
 
 // Per-page Puck editor (TYN-216). Saves the document for `slug` via the save
@@ -165,7 +165,7 @@ export function EditorClient({
           // reference layout, since actionBar's own props don't reliably
           // identify which block they belong to (see SectionHoverToolbar.tsx).
           actionBar: () => <></>,
-          componentOverlay: SectionHoverToolbar,
+          componentOverlay: BuilderOverlay,
           drawerItem: DrawerItemClickToAdd,
           // headerActions only injects into Puck's right-side action row - that's
           // why the back button used to land sandwiched between Help and View
