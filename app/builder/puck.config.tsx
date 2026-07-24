@@ -1559,14 +1559,35 @@ export const config: Config = {
       label: 'Text',
       fields: {
         text: { type: 'textarea', label: 'Text' },
+        variant: {
+          type: 'select',
+          label: 'Style',
+          options: [
+            { label: 'Body text', value: 'body' },
+            { label: 'Heading', value: 'heading' },
+            { label: 'Eyebrow (small label)', value: 'eyebrow' },
+          ],
+        },
         align: alignField,
       },
-      defaultProps: { text: 'Tell your story here.', align: 'left', x: 8, y: 8, width: 40, height: 20, rotate: 0 },
-      render: ({ text, align, x, y, width, height, rotate }: any) => (
-        <div style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%`, transform: rotate ? `rotate(${rotate}deg)` : undefined, textAlign: align }}>
-          <p style={{ color: C.body, fontSize: '1.05rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
-        </div>
-      ),
+      defaultProps: { text: 'Tell your story here.', variant: 'body', align: 'left', x: 8, y: 8, width: 40, height: 20, rotate: 0 },
+      render: ({ text, variant, align, x, y, width, height, rotate }: any) => {
+        // Reuses the same shared style helpers every other block's heading/
+        // eyebrow/body text already renders with, so a converted heading
+        // (see freeformConversions.ts) actually reads as a heading rather
+        // than plain paragraph text.
+        const style =
+          variant === 'heading'
+            ? headingStyle('clamp(1.4rem, 3vw, 2.25rem)')
+            : variant === 'eyebrow'
+              ? eyebrowStyle
+              : { color: C.body, fontSize: '1.05rem', lineHeight: 1.6, fontFamily: BODY_FONT }
+        return (
+          <div style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%`, transform: rotate ? `rotate(${rotate}deg)` : undefined, textAlign: align, overflow: 'auto' }}>
+            <p style={{ ...style, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
+          </div>
+        )
+      },
     },
 
     // --------------------------------------------------------- ImageElement

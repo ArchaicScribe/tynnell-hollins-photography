@@ -22,10 +22,14 @@ const imageDefaults = { alt: '', focalX: 50, focalY: 50, imageOpacity: 100, over
 export const FREEFORM_CONVERSIONS: Record<string, (props: Record<string, any>) => FreeformElementSeed[]> = {
   Hero: (p) => {
     const els: FreeformElementSeed[] = []
-    if (p.imageUrl) els.push({ type: 'ImageElement', props: { ...imageDefaults, url: p.imageUrl, x: 0, y: 0, width: 100, height: 100, rotate: 0 } })
-    if (p.eyebrow) els.push({ type: 'TextElement', props: { text: p.eyebrow, align: p.align ?? 'left', x: 8, y: 15, width: 60, height: 10, rotate: 0 } })
-    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, align: p.align ?? 'left', x: 8, y: 28, width: 70, height: 20, rotate: 0 } })
-    if (p.subheading) els.push({ type: 'TextElement', props: { text: p.subheading, align: p.align ?? 'left', x: 8, y: 50, width: 60, height: 15, rotate: 0 } })
+    // Hero's own render always darkens its background image for text
+    // legibility (rgba(12,12,12,0.45) centered / a top-fade gradient
+    // otherwise) - approximated here with a flat ~45% dark overlay, since
+    // ImageElement's overlay is a solid color+opacity, not a gradient.
+    if (p.imageUrl) els.push({ type: 'ImageElement', props: { ...imageDefaults, url: p.imageUrl, overlayOpacity: 45, overlayColor: '#0C0C0C', x: 0, y: 0, width: 100, height: 100, rotate: 0 } })
+    if (p.eyebrow) els.push({ type: 'TextElement', props: { text: p.eyebrow, variant: 'eyebrow', align: p.align ?? 'left', x: 8, y: 15, width: 60, height: 10, rotate: 0 } })
+    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, variant: 'heading', align: p.align ?? 'left', x: 8, y: 28, width: 70, height: 20, rotate: 0 } })
+    if (p.subheading) els.push({ type: 'TextElement', props: { text: p.subheading, variant: 'body', align: p.align ?? 'left', x: 8, y: 50, width: 60, height: 15, rotate: 0 } })
     if (p.buttonText) els.push({ type: 'ButtonElement', props: { text: p.buttonText, href: p.buttonHref ?? '', align: p.align ?? 'left', x: 8, y: 68, width: 24, height: 9, rotate: 0 } })
     return els
   },
@@ -35,30 +39,30 @@ export const FREEFORM_CONVERSIONS: Record<string, (props: Record<string, any>) =
     const imageRight = p.imagePosition === 'right'
     if (p.imageUrl) els.push({ type: 'ImageElement', props: { ...imageDefaults, url: p.imageUrl, x: imageRight ? 55 : 0, y: 0, width: 45, height: 100, rotate: 0 } })
     const textX = imageRight ? 5 : 52
-    if (p.eyebrow) els.push({ type: 'TextElement', props: { text: p.eyebrow, align: 'left', x: textX, y: 10, width: 40, height: 10, rotate: 0 } })
-    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, align: 'left', x: textX, y: 25, width: 40, height: 20, rotate: 0 } })
-    if (p.body) els.push({ type: 'TextElement', props: { text: p.body, align: 'left', x: textX, y: 48, width: 40, height: 30, rotate: 0 } })
+    if (p.eyebrow) els.push({ type: 'TextElement', props: { text: p.eyebrow, variant: 'eyebrow', align: 'left', x: textX, y: 10, width: 40, height: 10, rotate: 0 } })
+    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, variant: 'heading', align: 'left', x: textX, y: 25, width: 40, height: 20, rotate: 0 } })
+    if (p.body) els.push({ type: 'TextElement', props: { text: p.body, variant: 'body', align: 'left', x: textX, y: 48, width: 40, height: 30, rotate: 0 } })
     if (p.buttonText) els.push({ type: 'ButtonElement', props: { text: p.buttonText, href: p.buttonHref ?? '', align: 'left', x: textX, y: 80, width: 24, height: 9, rotate: 0 } })
     return els
   },
 
   CTA: (p) => {
     const els: FreeformElementSeed[] = []
-    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, align: 'center', x: 15, y: 25, width: 70, height: 20, rotate: 0 } })
-    if (p.subtext) els.push({ type: 'TextElement', props: { text: p.subtext, align: 'center', x: 20, y: 48, width: 60, height: 15, rotate: 0 } })
+    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, variant: 'heading', align: 'center', x: 15, y: 25, width: 70, height: 20, rotate: 0 } })
+    if (p.subtext) els.push({ type: 'TextElement', props: { text: p.subtext, variant: 'body', align: 'center', x: 20, y: 48, width: 60, height: 15, rotate: 0 } })
     if (p.buttonText) els.push({ type: 'ButtonElement', props: { text: p.buttonText, href: p.buttonHref ?? '', align: 'center', x: 38, y: 66, width: 24, height: 9, rotate: 0 } })
     return els
   },
 
   SectionHeading: (p) => {
     const els: FreeformElementSeed[] = []
-    if (p.eyebrow) els.push({ type: 'TextElement', props: { text: p.eyebrow, align: p.align ?? 'center', x: 10, y: 10, width: 80, height: 12, rotate: 0 } })
-    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, align: p.align ?? 'center', x: 10, y: 28, width: 80, height: 20, rotate: 0 } })
-    if (p.subtext) els.push({ type: 'TextElement', props: { text: p.subtext, align: p.align ?? 'center', x: 10, y: 52, width: 80, height: 20, rotate: 0 } })
+    if (p.eyebrow) els.push({ type: 'TextElement', props: { text: p.eyebrow, variant: 'eyebrow', align: p.align ?? 'center', x: 10, y: 10, width: 80, height: 12, rotate: 0 } })
+    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, variant: 'heading', align: p.align ?? 'center', x: 10, y: 28, width: 80, height: 20, rotate: 0 } })
+    if (p.subtext) els.push({ type: 'TextElement', props: { text: p.subtext, variant: 'body', align: p.align ?? 'center', x: 10, y: 52, width: 80, height: 20, rotate: 0 } })
     return els
   },
 
-  RichText: (p) => [{ type: 'TextElement', props: { text: p.text ?? '', align: p.align ?? 'left', x: 10, y: 10, width: 80, height: 60, rotate: 0 } }],
+  RichText: (p) => [{ type: 'TextElement', props: { text: p.text ?? '', variant: 'body', align: p.align ?? 'left', x: 10, y: 10, width: 80, height: 60, rotate: 0 } }],
 
   Shape: (p) => {
     const sizePct = p.size === '80px' ? 15 : p.size === '280px' ? 35 : 25
@@ -79,14 +83,14 @@ export const FREEFORM_CONVERSIONS: Record<string, (props: Record<string, any>) =
 
   Map: (p) => {
     const els: FreeformElementSeed[] = []
-    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, align: 'center', x: 10, y: 5, width: 80, height: 12, rotate: 0 } })
+    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, variant: 'heading', align: 'center', x: 10, y: 5, width: 80, height: 12, rotate: 0 } })
     els.push({ type: 'MapElement', props: { address: p.address ?? '', x: 10, y: p.heading ? 20 : 10, width: 80, height: p.heading ? 70 : 80, rotate: 0 } })
     return els
   },
 
   InstagramFeed: (p) => {
     const els: FreeformElementSeed[] = []
-    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, align: 'center', x: 10, y: 5, width: 80, height: 12, rotate: 0 } })
+    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, variant: 'heading', align: 'center', x: 10, y: 5, width: 80, height: 12, rotate: 0 } })
     els.push({ type: 'InstagramFeedElement', props: { embedUrl: p.embedUrl ?? '', x: 10, y: p.heading ? 20 : 10, width: 80, height: p.heading ? 70 : 80, rotate: 0 } })
     return els
   },
@@ -99,7 +103,7 @@ export const FREEFORM_CONVERSIONS: Record<string, (props: Record<string, any>) =
 
   PhotoCarousel: (p) => {
     const els: FreeformElementSeed[] = []
-    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, align: 'center', x: 10, y: 5, width: 80, height: 12, rotate: 0 } })
+    if (p.heading) els.push({ type: 'TextElement', props: { text: p.heading, variant: 'heading', align: 'center', x: 10, y: 5, width: 80, height: 12, rotate: 0 } })
     els.push({ type: 'ImageCarouselElement', props: { images: p.images ?? [], x: 10, y: p.heading ? 20 : 10, width: 80, height: p.heading ? 70 : 80, rotate: 0 } })
     return els
   },
