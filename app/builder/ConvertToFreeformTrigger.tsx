@@ -1,6 +1,6 @@
 'use client'
 
-import { usePuck } from '@measured/puck'
+import { useGetPuck } from '@measured/puck'
 import { FREEFORM_CONVERSIONS, canConvertToFreeform } from './freeformConversions'
 
 // TYN-355 Phase 4 follow-up: one-way "Convert to Freeform" button, composed
@@ -20,12 +20,13 @@ export function ConvertToFreeformTrigger({
   hover: boolean
   isSelected: boolean
 }) {
-  const { dispatch, getItemById, getSelectorForId } = usePuck()
+  const getPuck = useGetPuck()
   const visible = (hover || isSelected) && canConvertToFreeform(componentType)
 
   if (!visible) return null
 
   const convert = () => {
+    const { dispatch, getItemById, getSelectorForId } = getPuck()
     const item = getItemById(componentId)
     const selector = getSelectorForId(componentId)
     if (!item || !selector) return

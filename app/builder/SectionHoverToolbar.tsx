@@ -1,6 +1,17 @@
 'use client'
 
-import { usePuck } from '@measured/puck'
+import { createUsePuck, useGetPuck } from '@measured/puck'
+
+// Scoped hook (per Puck's own guidance - the bare `usePuck()` hook subscribes
+// to the ENTIRE app state and re-renders on every store tick, including every
+// pointer-move while dragging/hovering anywhere on the canvas, not just this
+// block. That was the real cause of the toolbar visibly flashing on hover -
+// confirmed via Puck's own dev-mode console warning firing 100+ times per
+// hover). `content` is the only piece this component needs reactively (to
+// keep `index`/reorder-button-disabled state correct after edits elsewhere);
+// dispatch/getSelectorForId are only ever used inside click handlers, so they
+// go through useGetPuck() below instead (a stable getter, zero subscriptions).
+const usePuck = createUsePuck()
 
 // TYN-328 (rebuilt to match the real Pixieset reference exactly, per screenshots
 // of website.pixieset.com/pages/... - not just loose inspiration): floating
@@ -42,8 +53,9 @@ export function SectionHoverToolbar({
   hover: boolean
   isSelected: boolean
 }) {
-  const { appState, dispatch, config, getSelectorForId } = usePuck()
-  const content = appState.data.content
+  const content = usePuck((s) => s.appState.data.content)
+  const config = usePuck((s) => s.config)
+  const getPuck = useGetPuck()
   const index = content.findIndex((item) => item.props.id === componentId)
   const visible = (hover || isSelected) && index !== -1
   const hasLayout = Boolean(
@@ -51,6 +63,7 @@ export function SectionHoverToolbar({
   )
 
   const select = () => {
+    const { dispatch, getSelectorForId } = getPuck()
     const selector = getSelectorForId(componentId)
     if (!selector) return
     dispatch({ type: 'setUi', ui: { itemSelector: selector } })
@@ -60,7 +73,7 @@ export function SectionHoverToolbar({
     if (index === -1) return
     const clone = structuredClone(content[index]) as (typeof content)[number]
     clone.props.id = `${componentType}-${crypto.randomUUID()}`
-    dispatch({
+    getPuck().dispatch({
       type: 'setData',
       data: (prev) => {
         const next = [...prev.content]
@@ -72,7 +85,7 @@ export function SectionHoverToolbar({
 
   const remove = () => {
     if (index === -1) return
-    dispatch({
+    getPuck().dispatch({
       type: 'setData',
       data: (prev) => ({ ...prev, content: prev.content.filter((item) => item.props.id !== componentId) }),
     })
@@ -81,7 +94,7 @@ export function SectionHoverToolbar({
   const move = (direction: -1 | 1) => {
     const target = index + direction
     if (index === -1 || target < 0 || target >= content.length) return
-    dispatch({
+    getPuck().dispatch({
       type: 'setData',
       data: (prev) => {
         const next = [...prev.content]
