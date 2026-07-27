@@ -1,11 +1,21 @@
 'use client'
 
-import { usePuck } from '@measured/puck'
+import { useGetPuck } from '@measured/puck'
 
 // Bottom insert-block toolbar, replacing Puck's default left-side drag
 // palette (hidden via overrides.drawer in BlogPostCanvas). Must render inside
-// <Puck> so usePuck() has a live dispatch. Inserting a block auto-selects it,
-// so the (still-visible) fields panel immediately shows its editable props.
+// <Puck> so useGetPuck() has a live dispatch. Inserting a block auto-selects
+// it, so the (still-visible) fields panel immediately shows its editable
+// props.
+//
+// Uses useGetPuck() (a stable getter, not a subscription) rather than the
+// bare usePuck() this file previously called - this toolbar is ALWAYS
+// mounted (not hover-gated like the page builder's overlays), so subscribing
+// to the full app state re-rendered it on every keystroke/edit anywhere in
+// the blog body, the same re-render-storm bug found and fixed in the page
+// builder's SectionHoverToolbar/FreeformElementToolbar (see app/builder/).
+// dispatch/appState are only ever read inside the click handler, never for
+// render output, so there's nothing here that needs to be reactive.
 const BLOCKS: { type: string; label: string; icon: string }[] = [
   { type: 'Text', label: 'Text', icon: 'T' },
   { type: 'Image', label: 'Image', icon: '\u{1F5BC}' },
@@ -14,9 +24,10 @@ const BLOCKS: { type: string; label: string; icon: string }[] = [
 ]
 
 export function BlogBodyToolbar() {
-  const { appState, dispatch } = usePuck()
+  const getPuck = useGetPuck()
 
   const insert = (componentType: string) => {
+    const { appState, dispatch } = getPuck()
     dispatch({
       type: 'insert',
       componentType,
