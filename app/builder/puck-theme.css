@@ -85,3 +85,52 @@
   border-left: 1px solid rgba(155, 154, 154, 0.25);
   border-right: 1px solid rgba(155, 154, 154, 0.25);
 }
+
+/* Components drawer as a Pixieset-style icon grid (TYN-355 follow-up).
+ * `[data-puck-drawer]`/`[data-puck-drawer-item]` are stable data attributes
+ * Puck renders around every category's item list - not hashed CSS-module
+ * classnames - so this is safe to target directly instead of fighting Puck's
+ * own row layout. DrawerItemClickToAdd.tsx supplies the tile content
+ * (icon + label); this just arranges the tiles and styles the tile itself.
+ */
+[data-puck-drawer] {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+[data-puck-drawer-item] {
+  /* Puck's own row background/border is dropped in favor of .pk-drawer-tile */
+  background: transparent;
+}
+.pk-drawer-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 62px;
+  padding: 10px 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(155, 154, 154, 0.18);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  color: var(--puck-color-black, #e6e1de);
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.pk-drawer-tile:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(155, 154, 154, 0.4);
+}
+.pk-drawer-tile-icon {
+  display: flex;
+  color: var(--puck-color-grey-04, #b8b4b1);
+}
+.pk-drawer-tile-label {
+  font-size: 10.5px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+[data-puck-drawer-item][data-testid$=":FreeformSection"] .pk-drawer-tile {
+  border-color: rgba(214, 209, 206, 0.45);
+}
