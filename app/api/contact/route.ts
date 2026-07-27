@@ -24,7 +24,17 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
-  const { name, email, phone, contactPreference, sessionType, date, location, message, howHeard } = body
+  const { name, email, phone, contactPreference, sessionType, date, location, message, howHeard, website, turnstileToken } = body
+
+  // Honeypot (TYN-357): a real visitor never sees or fills in `website` (see
+  // ContactForm.tsx). A bot that fills every field blindly trips this. Return
+  // a fake success rather than a 400/403 - telling the bot it was caught
+  // just teaches it to route around this specific check next time. Checked
+  // before rate limiting/validation so obvious bot traffic costs nothing.
+  if (typeof website === 'string' && website.trim().length > 0) {
+    console.log('[contact] honeypot triggered, silently dropping submission')
+    return NextResponse.json({ success: true })
+  }
 
   const { success } = await safeLimit(contactRatelimit, getClientIp(request))
   if (!success) {
@@ -45,6 +55,36 @@ export async function POST(request: Request) {
 
   if (!isValidPhone(phone)) {
     return NextResponse.json({ error: 'Please enter a valid phone number (at least 7 digits).' }, { status: 400 })
+  }
+
+  // Cloudflare Turnstile (TYN-357): fails open (skips verification) when no
+  // secret key is configured, so the form keeps working exactly as before
+  // until a real Turnstile widget is set up for this domain and the site/
+  // secret keys are added to env vars - see ContactForm.tsx for the matching
+  // client-side skip.
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
+  if (turnstileSecret) {
+    if (typeof turnstileToken !== 'string' || !turnstileToken) {
+      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
+    }
+    try {
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          secret: turnstileSecret,
+          response: turnstileToken,
+          remoteip: getClientIp(request),
+        }),
+      })
+      const verifyJson = (await verifyRes.json()) as { success: boolean }
+      if (!verifyJson.success) {
+        return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
+      }
+    } catch (e) {
+      console.error('[contact] Turnstile verification request failed:', e)
+      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
+    }
   }
 
   // Fetch booking settings and availability from the admin - fall back to
