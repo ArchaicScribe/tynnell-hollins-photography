@@ -67,3 +67,90 @@
   flex: 1 1 auto;
   min-height: 0;
 }
+
+/* Device-preview width toggle (TYN-355 Phase 3). Puck's native `viewports`
+ * config needs iframe.enabled: true, which this project can't use (session
+ * cookie drops on the save fetch inside an iframe). Rather than override
+ * Puck's own header/puck layout keys - a real device-frame simulation would
+ * need to - this just constrains the root dropzone's width when the toggle
+ * is on, leaving Puck's own component tree completely untouched. The
+ * `[data-testid]` selector only exists in the editor's DOM (confirmed against
+ * @measured/puck/dist/rsc.js - the public site render has no such attribute),
+ * so this rule can never affect the live site even if it were accidentally
+ * loaded there.
+ */
+.pk-preview-mobile [data-testid="dropzone:root:default-zone"] {
+  max-width: 390px;
+  margin: 0 auto;
+  border-left: 1px solid rgba(155, 154, 154, 0.25);
+  border-right: 1px solid rgba(155, 154, 154, 0.25);
+}
+
+/* Components drawer as a Pixieset-style icon grid (TYN-355 follow-up).
+ * `[data-puck-drawer]`/`[data-puck-drawer-item]` are stable data attributes
+ * Puck renders around every category's item list - not hashed CSS-module
+ * classnames - so this is safe to target directly instead of fighting Puck's
+ * own row layout. DrawerItemClickToAdd.tsx supplies the tile content
+ * (icon + label); this just arranges the tiles and styles the tile itself.
+ */
+[data-puck-drawer] {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+[data-puck-drawer-item] {
+  /* Puck's own row background/border is dropped in favor of .pk-drawer-tile */
+  background: transparent;
+}
+.pk-drawer-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 62px;
+  padding: 10px 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(155, 154, 154, 0.18);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  color: var(--puck-color-black, #e6e1de);
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.pk-drawer-tile:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(155, 154, 154, 0.4);
+}
+.pk-drawer-tile-icon {
+  display: flex;
+  color: var(--puck-color-grey-04, #b8b4b1);
+}
+.pk-drawer-tile-label {
+  font-size: 10.5px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+[data-puck-drawer-item][data-testid$=":FreeformSection"] .pk-drawer-tile {
+  border-color: rgba(214, 209, 206, 0.45);
+}
+
+/* Puck's own native Publish button - the one remaining default header action
+ * after headerActions injects Help/View Page/Preview/Save draft - still
+ * ships with Puck's stock bright-blue primary-button color (rgb(1,88,173)),
+ * hardcoded rather than driven by the --puck-color-* vars this theme already
+ * overrides. It was the one glaring "different app" element left in an
+ * otherwise fully dark-themed header. Recolored to the site's own button
+ * token instead of reimplementing Puck's publish wiring (onPublish/dirty
+ * state stays exactly as Puck implements it - only the paint changes).
+ * `[class*="_Button--primary_"]` matches the CSS-module class regardless of
+ * its build hash suffix, since Puck ships no stable un-hashed alias for it.
+ */
+.puck-dark [class*="_Button--primary_"] {
+  background: var(--color-btn-bg, #9b9a9a);
+  color: #141414;
+  border-color: transparent;
+}
+.puck-dark [class*="_Button--primary_"]:hover {
+  filter: brightness(1.1);
+}
