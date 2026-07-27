@@ -1,6 +1,6 @@
 'use client'
 
-import { Puck, usePuck } from '@measured/puck'
+import { Puck, createUsePuck, useGetPuck } from '@measured/puck'
 
 // Puck's default layout puts Puck.Fields in a permanent right sidebar as part
 // of its own header/sidebar/preview grid. BlogPostCanvas replaces that whole
@@ -8,13 +8,26 @@ import { Puck, usePuck } from '@measured/puck'
 // panel an inserted block would have no way to edit its props. Only shows
 // once a block is selected (clicking a block in the preview sets this
 // automatically), and closing it deselects rather than deleting anything.
+//
+// Scoped selector (createUsePuck) instead of the bare usePuck() this file
+// previously called - the panel is always mounted (just conditionally
+// returns null), so the bare hook re-rendered it, and everything inside
+// <Puck.Fields />, on every keystroke/edit anywhere in the blog body, not
+// just when selection actually changed. Same re-render-storm bug found and
+// fixed in the page builder (see app/builder/SectionHoverToolbar.tsx).
+// itemSelector/selectedItem genuinely need to be reactive (they drive
+// whether this panel shows and its title); dispatch is only used in the
+// close handler, so it goes through useGetPuck() instead.
+const usePuck = createUsePuck()
+
 export function BlogBodyFieldsPanel() {
-  const { appState, dispatch, selectedItem } = usePuck()
-  const selector = appState.ui.itemSelector
+  const selector = usePuck((s) => s.appState.ui.itemSelector)
+  const selectedItem = usePuck((s) => s.selectedItem)
+  const getPuck = useGetPuck()
 
   if (!selector || !selectedItem) return null
 
-  const close = () => dispatch({ type: 'setUi', ui: { itemSelector: null } })
+  const close = () => getPuck().dispatch({ type: 'setUi', ui: { itemSelector: null } })
 
   return (
     <div
