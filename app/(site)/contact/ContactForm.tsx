@@ -3,6 +3,15 @@ import { useState, useEffect, useRef, FormEvent, ReactNode } from 'react'
 import styles from './ContactForm.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import dynamic from 'next/dynamic'
+import Turnstile from '@/app/components/Turnstile/Turnstile'
+
+// TYN-357: public site key is safe to expose client-side (that's how Turnstile
+// works - verification happens server-side against the secret key in
+// /api/contact). Left unset, the widget simply doesn't render and the server
+// skips verification too - see that route for the matching fail-open logic.
+// Set via Vercel env vars / .env.local once a Turnstile widget exists for
+// this domain in the Cloudflare dashboard.
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 // ssr: false prevents @googlemaps/js-api-loader from being evaluated on the
 // server - it references `window` at module load time and throws during SSR.
@@ -29,6 +38,11 @@ interface FormFields {
   location: string
   message: string
   howHeard: string
+  // Honeypot (TYN-357): real users never see or fill this in - a bot filling
+  // every field blindly will. Kept in the same fields object/state so it
+  // rides along with the normal update()/reset flow rather than needing its
+  // own special-cased plumbing.
+  website: string
 }
 
 const SESSION_TYPES = [
@@ -59,6 +73,7 @@ const EMPTY_FORM: FormFields = {
   location: '',
   message: '',
   howHeard: '',
+  website: '',
 }
 
 // minDate/maxDate are optional (TYN-332) so this component can be embedded
@@ -71,6 +86,7 @@ export default function ContactForm({ minDate, maxDate }: { minDate?: string; ma
   const [status, setStatus] = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<ReactNode>('')
   const [phoneError, setPhoneError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState('')
   const successRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -98,6 +114,15 @@ export default function ContactForm({ minDate, maxDate }: { minDate?: string; ma
       return
     }
 
+    // If a Turnstile widget is configured, its token is required before
+    // submitting - the server enforces the same check (see /api/contact),
+    // this just avoids a round-trip for the obvious case.
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setStatus('error')
+      setErrorMessage('Please complete the verification above.')
+      return
+    }
+
     setStatus('loading')
     setErrorMessage('')
     setPhoneError('')
@@ -106,7 +131,7 @@ export default function ContactForm({ minDate, maxDate }: { minDate?: string; ma
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(fields),
+        body: JSON.stringify({ ...fields, turnstileToken }),
       })
 
       const data = await res.json()
@@ -161,6 +186,22 @@ export default function ContactForm({ minDate, maxDate }: { minDate?: string; ma
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
+
+      {/* Honeypot (TYN-357): visually hidden, not display:none (some bots
+          skip those), kept out of tab order and screen readers. Any real
+          visitor never sees or reaches this field. */}
+      <div className={styles.honeypot} aria-hidden="true">
+        <label htmlFor="website">Website</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={fields.website}
+          onChange={update('website')}
+        />
+      </div>
 
       {/* Row: Name + Email */}
       <div className={styles.row}>
@@ -316,6 +357,12 @@ export default function ContactForm({ minDate, maxDate }: { minDate?: string; ma
           ))}
         </select>
       </div>
+
+      {TURNSTILE_SITE_KEY && (
+        <div className={styles.field}>
+          <Turnstile siteKey={TURNSTILE_SITE_KEY} onVerify={setTurnstileToken} />
+        </div>
+      )}
 
       {status === 'error' && (
         <p className={styles.errorMsg} role="alert">{errorMessage}</p>

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const sendMock = vi.fn()
 const findGlobalMock = vi.fn()
@@ -185,5 +185,70 @@ describe('POST /api/contact - sad paths', () => {
     sendMock.mockRejectedValueOnce(new Error('network failure'))
     const res = await POST(makeRequest(validBody()))
     expect(res.status).toBe(500)
+  })
+})
+
+describe('POST /api/contact - honeypot (TYN-357)', () => {
+  it('silently accepts and drops a submission with the honeypot field filled in', async () => {
+    const res = await POST(makeRequest(validBody({ website: 'http://spam.example.com' })))
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json).toEqual({ success: true })
+    expect(sendMock).not.toHaveBeenCalled()
+    expect(safeLimitMock).not.toHaveBeenCalled()
+  })
+
+  it('proceeds normally when the honeypot field is empty', async () => {
+    const res = await POST(makeRequest(validBody({ website: '' })))
+    expect(res.status).toBe(200)
+    expect(sendMock).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('POST /api/contact - Turnstile (TYN-357)', () => {
+  const originalSecret = process.env.TURNSTILE_SECRET_KEY
+
+  afterEach(() => {
+    if (originalSecret === undefined) delete process.env.TURNSTILE_SECRET_KEY
+    else process.env.TURNSTILE_SECRET_KEY = originalSecret
+    vi.unstubAllGlobals()
+  })
+
+  it('skips verification entirely when no secret key is configured', async () => {
+    delete process.env.TURNSTILE_SECRET_KEY
+    const res = await POST(makeRequest(validBody()))
+    expect(res.status).toBe(200)
+  })
+
+  it('rejects a submission missing a token when a secret key is configured', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'test-secret'
+    const res = await POST(makeRequest(validBody({ turnstileToken: '' })))
+    expect(res.status).toBe(400)
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects a submission when Cloudflare reports the token as invalid', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'test-secret'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ json: () => Promise.resolve({ success: false }) }))
+    const res = await POST(makeRequest(validBody({ turnstileToken: 'bad-token' })))
+    expect(res.status).toBe(400)
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('proceeds when Cloudflare confirms the token is valid', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'test-secret'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ json: () => Promise.resolve({ success: true }) }))
+    const res = await POST(makeRequest(validBody({ turnstileToken: 'good-token' })))
+    expect(res.status).toBe(200)
+    expect(sendMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns 400 when the Cloudflare verification request itself fails', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'test-secret'
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
+    const res = await POST(makeRequest(validBody({ turnstileToken: 'some-token' })))
+    expect(res.status).toBe(400)
+    expect(sendMock).not.toHaveBeenCalled()
   })
 })

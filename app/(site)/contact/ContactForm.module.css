@@ -4,6 +4,18 @@
   gap: 1.5rem;
 }
 
+/* Honeypot (TYN-357): off-screen rather than display:none/visibility:hidden -
+ * some bots specifically skip fields hidden that way, but still fill in
+ * anything positioned off-screen since it reads as "visible" to a naive
+ * parser. Real users never see or tab into it (tabIndex=-1 in the markup). */
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* ── Layout helpers ──────────────────────────────────────── */
 
 .row {
