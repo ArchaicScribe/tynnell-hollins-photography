@@ -1,6 +1,6 @@
 'use client'
 
-import { Puck, usePuck, type Data } from '@measured/puck'
+import { Puck, useGetPuck, type Data } from '@measured/puck'
 import '@measured/puck/puck.css'
 import '../puck-theme.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -286,20 +286,26 @@ export function EditorClient({
 // live Puck state via usePuck so it always previews exactly what's on the
 // canvas, same as SaveDraftButton below.
 function PreviewButton({ onPreview, style, busy }: { onPreview: (data: Data) => void; style: React.CSSProperties; busy: boolean }) {
-  const { appState } = usePuck()
+  // useGetPuck() (a stable getter, not a subscription) instead of usePuck() -
+  // this button only needs the current data at click time, not a live prop,
+  // so subscribing to the full app state would re-render it on every canvas
+  // pointer move for no benefit (see SectionHoverToolbar.tsx for the full
+  // writeup of this bug class).
+  const getPuck = useGetPuck()
   return (
-    <button type="button" style={{ ...style, opacity: busy ? 0.6 : 1, cursor: busy ? 'default' : 'pointer' }} disabled={busy} aria-busy={busy} onClick={() => onPreview(appState.data)} title="Preview your unpublished edits in a new tab">
+    <button type="button" style={{ ...style, opacity: busy ? 0.6 : 1, cursor: busy ? 'default' : 'pointer' }} disabled={busy} aria-busy={busy} onClick={() => onPreview(getPuck().appState.data)} title="Preview your unpublished edits in a new tab">
       {busy ? 'Opening preview...' : 'Preview'}
     </button>
   )
 }
 
-// Save draft: persists the current document without publishing. Reads the live
-// Puck state via usePuck so it always saves exactly what is on the canvas.
+// Save draft: persists the current document without publishing. Reads the
+// live Puck state via useGetPuck so it always saves exactly what is on the
+// canvas, without subscribing to every app-state tick (see PreviewButton).
 function SaveDraftButton({ onSave, style, saving }: { onSave: (data: Data) => void; style: React.CSSProperties; saving: boolean }) {
-  const { appState } = usePuck()
+  const getPuck = useGetPuck()
   return (
-    <button type="button" style={{ ...style, opacity: saving ? 0.6 : 1, cursor: saving ? 'default' : 'pointer' }} disabled={saving} aria-busy={saving} onClick={() => onSave(appState.data)} title="Save your work without making it live">
+    <button type="button" style={{ ...style, opacity: saving ? 0.6 : 1, cursor: saving ? 'default' : 'pointer' }} disabled={saving} aria-busy={saving} onClick={() => onSave(getPuck().appState.data)} title="Save your work without making it live">
       {saving ? 'Saving...' : 'Save draft'}
     </button>
   )

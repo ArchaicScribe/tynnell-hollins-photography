@@ -1,6 +1,6 @@
 'use client'
 
-import { usePuck } from '@measured/puck'
+import { useGetPuck } from '@measured/puck'
 
 // TYN-355: componentOverlay for freeform child elements (TextElement/
 // ImageElement/ButtonElement/ShapeElement), routed here by BuilderOverlay.tsx.
@@ -38,9 +38,11 @@ export function FreeformElementToolbar({
   hover: boolean
   isSelected: boolean
 }) {
-  const { dispatch, config, getItemById, getSelectorForId } = usePuck()
+  const getPuck = useGetPuck()
   const visible = hover || isSelected
-  const label = (config.components as Record<string, { label?: string }>)[componentType]?.label ?? componentType
+  // config is a static prop passed once to <Puck> - never changes at runtime,
+  // so reading it once here (not subscribing) is always correct.
+  const label = (getPuck().config.components as Record<string, { label?: string }>)[componentType]?.label ?? componentType
 
   const getCanvasRect = (): DOMRect | null => {
     const el = document.querySelector(`[data-puck-component="${CSS.escape(componentId)}"]`)
@@ -52,6 +54,7 @@ export function FreeformElementToolbar({
   const startDrag = (e: React.MouseEvent, mode: 'move' | 'resize') => {
     e.preventDefault()
     e.stopPropagation()
+    const { dispatch, getItemById, getSelectorForId } = getPuck()
     const rect = getCanvasRect()
     const item = getItemById(componentId)
     const selector = getSelectorForId(componentId)
@@ -84,24 +87,28 @@ export function FreeformElementToolbar({
   }
 
   const select = () => {
+    const { dispatch, getSelectorForId } = getPuck()
     const selector = getSelectorForId(componentId)
     if (!selector) return
     dispatch({ type: 'setUi', ui: { itemSelector: selector } })
   }
 
   const duplicate = () => {
+    const { dispatch, getSelectorForId } = getPuck()
     const selector = getSelectorForId(componentId)
     if (!selector) return
     dispatch({ type: 'duplicate', sourceIndex: selector.index, sourceZone: selector.zone })
   }
 
   const remove = () => {
+    const { dispatch, getSelectorForId } = getPuck()
     const selector = getSelectorForId(componentId)
     if (!selector) return
     dispatch({ type: 'remove', index: selector.index, zone: selector.zone })
   }
 
   const reorder = (direction: -1 | 1) => {
+    const { dispatch, getSelectorForId } = getPuck()
     const selector = getSelectorForId(componentId)
     if (!selector) return
     const destinationIndex = selector.index + direction

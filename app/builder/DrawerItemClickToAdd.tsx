@@ -1,6 +1,6 @@
 'use client'
 
-import { usePuck } from '@measured/puck'
+import { useGetPuck } from '@measured/puck'
 import { DRAWER_ICONS, DefaultDrawerIcon } from './DrawerIcons'
 
 // TYN-340: the builder's own Help panel claims a block can be added by
@@ -28,11 +28,15 @@ import { DRAWER_ICONS, DefaultDrawerIcon } from './DrawerIcons'
 // classnames) get the grid/tile layout in puck-theme.css; this component only
 // needs to supply the tile's actual content.
 export function DrawerItemClickToAdd({ name }: { children: React.ReactNode; name: string }) {
-  const { dispatch, config } = usePuck()
+  const getPuck = useGetPuck()
   const Icon = DRAWER_ICONS[name] ?? DefaultDrawerIcon
+  // config is a static prop passed once to <Puck> - never changes at runtime,
+  // so reading it once here (not subscribing) is always correct.
+  const config = getPuck().config
   const label = (config.components as Record<string, { label?: string }>)[name]?.label ?? name
 
   const handleClick = () => {
+    const { dispatch, config } = getPuck()
     const componentConfig = (config.components as Record<string, { defaultProps?: Record<string, unknown> }>)[name]
     if (!componentConfig) return
     const id = `${name}-${crypto.randomUUID()}`

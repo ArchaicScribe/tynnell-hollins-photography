@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { usePuck } from '@measured/puck'
+import { useGetPuck } from '@measured/puck'
 
 // TYN-355: "+ Add Element" trigger + icon-grid panel, shown alongside
 // SectionHoverToolbar (unmodified) only for FreeformSection - see
@@ -40,13 +40,14 @@ export function AddElementTrigger({
   hover: boolean
   isSelected: boolean
 }) {
-  const { dispatch, getItemById } = usePuck()
+  const getPuck = useGetPuck()
   const [open, setOpen] = useState(false)
   const visible = hover || isSelected
 
   if (!visible && !open) return null
 
   const addElement = (type: string) => {
+    const { dispatch, getItemById } = getPuck()
     const section = getItemById(componentId)
     const elements = (section?.props as { elements?: unknown[] } | undefined)?.elements ?? []
     dispatch({
