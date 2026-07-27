@@ -134,3 +134,23 @@
 [data-puck-drawer-item][data-testid$=":FreeformSection"] .pk-drawer-tile {
   border-color: rgba(214, 209, 206, 0.45);
 }
+
+/* Puck's own native Publish button - the one remaining default header action
+ * after headerActions injects Help/View Page/Preview/Save draft - still
+ * ships with Puck's stock bright-blue primary-button color (rgb(1,88,173)),
+ * hardcoded rather than driven by the --puck-color-* vars this theme already
+ * overrides. It was the one glaring "different app" element left in an
+ * otherwise fully dark-themed header. Recolored to the site's own button
+ * token instead of reimplementing Puck's publish wiring (onPublish/dirty
+ * state stays exactly as Puck implements it - only the paint changes).
+ * `[class*="_Button--primary_"]` matches the CSS-module class regardless of
+ * its build hash suffix, since Puck ships no stable un-hashed alias for it.
+ */
+.puck-dark [class*="_Button--primary_"] {
+  background: var(--color-btn-bg, #9b9a9a);
+  color: #141414;
+  border-color: transparent;
+}
+.puck-dark [class*="_Button--primary_"]:hover {
+  filter: brightness(1.1);
+}
