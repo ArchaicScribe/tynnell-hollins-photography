@@ -12,7 +12,10 @@ import { withPayload } from '@payloadcms/next/withPayload'
 // throughout the admin UI.
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com`,
+  // Cloudflare Turnstile (TYN-357, contact form spam filtering) loads its
+  // widget script from challenges.cloudflare.com and renders the challenge
+  // itself in an iframe from the same origin (frame-src, below).
+  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://challenges.cloudflare.com`,
   `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
   `font-src 'self' https://fonts.gstatic.com`,
   `img-src 'self' data: https://pub-db2dd9a6665142e4adcd4f822fbe2683.r2.dev https://media.tynnellhollinsphotography.com`,
@@ -23,7 +26,7 @@ const csp = [
   // S3-compatible endpoint (app/lib/uploadPhoto.ts) - without this, every photo
   // upload sitewide (Photo Library, galleries, blog covers, builder/Design
   // image pickers) is silently blocked by the browser as a CSP violation.
-  `connect-src 'self' https://va.vercel-scripts.com https://c5edbede1b4e1c8723a363615b47bb4c.r2.cloudflarestorage.com`,
+  `connect-src 'self' https://va.vercel-scripts.com https://c5edbede1b4e1c8723a363615b47bb4c.r2.cloudflarestorage.com https://challenges.cloudflare.com`,
   // YouTube/Vimeo embeds for the builder Video block (TYN-330), Google Maps
   // for the builder Map block (TYN-333, plain output=embed iframe, no API
   // key needed), SnapWidget for the builder Instagram Feed block (TYN-335),
@@ -33,7 +36,7 @@ const csp = [
   // browser silently blocks the embed. The Elfsight entry is a best-effort
   // default (see TikTokFeed's comment in puck.config.tsx) - swap it for
   // whichever provider Tynnell actually uses if it's not Elfsight.
-  `frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://snapwidget.com https://apps.elfsight.com`,
+  `frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://snapwidget.com https://apps.elfsight.com https://challenges.cloudflare.com`,
   `frame-ancestors 'self'`,
   `object-src 'none'`,
   `base-uri 'self'`,
