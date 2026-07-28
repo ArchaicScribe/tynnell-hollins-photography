@@ -7,6 +7,7 @@ import { InviteUserModal } from './InviteUserModal'
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+// TYN-357: trigger a fresh production build to pick up Turnstile env vars.
 
 interface RecentPhoto { id: number; url?: string | null; alt?: string | null; filename?: string | null }
 interface RecentGallery { id: number; title?: string | null; status?: string | null; updatedAt?: string | null; coverPhoto?: { url?: string | null } | null; photos?: unknown[] }
