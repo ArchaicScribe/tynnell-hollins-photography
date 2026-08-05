@@ -14,16 +14,27 @@ import type { Photo } from '@/payload-types'
 // a new exposure.
 const VALID_CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
 
+// `all` is a real, selectable value on the PortfolioGrid block (see
+// app/builder/puck.config.tsx) and is what the promoted /portfolio page
+// stores. It means "every category", NOT "every photo": a photo with no
+// category set is library staging (untagged uploads, texture assets) and has
+// never been reachable from any public page, so `all` deliberately keeps
+// excluding it rather than newly publishing it.
+const ALL = 'all'
+
 export async function GET(req: NextRequest) {
   const category = req.nextUrl.searchParams.get('category')
-  if (!category || !(VALID_CATEGORIES as readonly string[]).includes(category)) {
+  const wantsAll = category === ALL
+  if (!category || (!wantsAll && !(VALID_CATEGORIES as readonly string[]).includes(category))) {
     return NextResponse.json({ photos: [] })
   }
 
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'photos',
-    where: { category: { equals: category } },
+    where: wantsAll
+      ? { category: { in: [...VALID_CATEGORIES] } }
+      : { category: { equals: category } },
     sort: 'displayOrder',
     depth: 0,
     limit: 500,
