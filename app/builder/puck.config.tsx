@@ -1224,6 +1224,7 @@ export const config: Config = {
           type: 'select',
           label: 'Category',
           options: [
+            { label: 'All', value: 'all' },
             { label: 'Portraits', value: 'portraits' },
             { label: 'Family', value: 'families' },
             { label: 'Weddings', value: 'weddings' },
