@@ -1,24 +1,31 @@
+/* Three columns so the brand mark stays optically centred no matter how wide
+   the link groups are. space-between would drift it off-centre the moment one
+   side gains a link (a builder page flagged show-in-nav, for instance). */
+
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 1.5rem var(--padding-x);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem var(--padding-x);
   background: transparent;
   transition: background 0.35s ease, padding 0.3s ease;
 }
 
-.scrolled {
-  background: var(--color-bg);
-  padding: 1rem var(--padding-x);
-}
-
+/* Solid brand-olive bar on scroll, matching the reference. This reuses the
+   button tokens rather than inventing a hardcoded olive, so it stays
+   adjustable from /design (Colors > Button color / Button text color). If the
+   nav ever needs a colour independent of the buttons, that wants its own
+   SiteDesign field rather than a literal here. */
+.scrolled,
 .menuOpen {
-  background: var(--color-bg);
+  background: var(--color-btn-bg);
+  padding: 0.85rem var(--padding-x);
 }
 
 /* ── Brand ───────────────────────────────────────────────── */
@@ -26,8 +33,9 @@
 .brand {
   display: flex;
   flex-direction: column;
+  align-items: center;
   text-decoration: none;
-  line-height: 1.08;
+  line-height: 1.05;
   flex-shrink: 0;
 }
 
@@ -38,30 +46,44 @@
   object-fit: contain;
 }
 
-.brandLine {
+.brandMark {
   display: block;
   font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.96);
   transition: color 0.3s ease;
 }
 
-.scrolled .brandLine,
-.menuOpen .brandLine {
-  color: var(--color-heading);
+.brandSub {
+  display: block;
+  font-family: var(--font-label, var(--font-body));
+  font-size: 0.52rem;
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  /* The tracking adds a trailing gap on the last letter; pull it back so the
+     subline stays optically centred under the mark. */
+  text-indent: 0.42em;
+  color: rgba(255, 255, 255, 0.62);
+  margin-top: 0.28rem;
+  transition: color 0.3s ease;
+}
+
+.scrolled .brandMark,
+.menuOpen .brandMark {
+  color: var(--color-btn-text);
+}
+
+.scrolled .brandSub,
+.menuOpen .brandSub {
+  color: color-mix(in srgb, var(--color-btn-text) 70%, transparent);
 }
 
 /* ── Desktop link rows ───────────────────────────────────── */
-
-.linksWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.35rem;
-}
 
 .row {
   list-style: none;
@@ -72,8 +94,37 @@
   gap: 1.75rem;
 }
 
-.row2 {
-  align-self: flex-end;
+.rowLeft {
+  justify-content: flex-start;
+}
+
+.rowRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.75rem;
+}
+
+/* ── Inquire CTA ─────────────────────────────────────────── */
+/* The one script moment in the chrome, exactly as the reference uses it. */
+
+.cta {
+  font-family: var(--font-script-role, var(--font-display));
+  font-size: 1.5rem;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.cta:hover {
+  opacity: 0.75;
+}
+
+.scrolled .cta,
+.menuOpen .cta {
+  color: var(--color-btn-text);
 }
 
 /* ── Nav links ───────────────────────────────────────────── */
@@ -103,12 +154,12 @@
 
 .scrolled .link,
 .menuOpen .link {
-  color: var(--color-detail);
+  color: color-mix(in srgb, var(--color-btn-text) 82%, transparent);
 }
 
 .scrolled .link:hover,
 .menuOpen .link:hover {
-  color: var(--color-heading);
+  color: var(--color-btn-text);
 }
 
 /* ── Portfolio dropdown ──────────────────────────────────── */
@@ -200,7 +251,7 @@
 
 .scrolled .bar,
 .menuOpen .bar {
-  background: var(--color-heading);
+  background: var(--color-btn-text);
 }
 
 .hamburgerOpen .bar:nth-child(1) {
@@ -216,15 +267,34 @@
 
 /* ── Responsive ──────────────────────────────────────────── */
 
-@media (min-width: 769px) and (max-width: 1080px) {
-  .row { gap: 1.1rem; }
+/* The three-column grid needs more room than the old stacked rows, so the
+   collapse point moves up: below 1024px the link groups go and the hamburger
+   takes over, leaving brand + CTA + burger. */
+
+@media (min-width: 1025px) and (max-width: 1240px) {
+  .row,
+  .rowRight { gap: 1.05rem; }
   .link { font-size: 0.6rem; letter-spacing: 0.12em; }
-  .brandLine { font-size: 0.85rem; }
+  .brandMark { font-size: 1.1rem; letter-spacing: 0.12em; }
+  .brandSub { font-size: 0.46rem; letter-spacing: 0.3em; text-indent: 0.3em; }
+  .cta { font-size: 1.25rem; }
 }
 
-@media (max-width: 768px) {
-  .linksWrapper { display: none; }
+@media (max-width: 1024px) {
+  .row { display: none; }
   .hamburger { display: flex; }
-  .brandLine { font-size: 0.9rem; }
-  .navbar { align-items: center; }
+  /* Collapse to two columns: brand hard left, CTA + burger hard right. The
+     empty 1fr on the left would otherwise push the brand off-centre with
+     nothing to balance it. */
+  .navbar { grid-template-columns: auto 1fr; }
+  .brand { align-items: flex-start; }
+  .brandMark { font-size: 1.1rem; }
+}
+
+@media (max-width: 560px) {
+  /* The script CTA and the burger start fighting for the same space; the
+     burger wins since the menu contains Contact anyway. */
+  .cta { display: none; }
+  .brandMark { font-size: 1rem; letter-spacing: 0.12em; }
+  .brandSub { font-size: 0.46rem; letter-spacing: 0.3em; text-indent: 0.3em; }
 }

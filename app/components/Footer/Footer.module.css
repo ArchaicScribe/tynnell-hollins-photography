@@ -114,6 +114,109 @@
   transform: scale(1.04);
 }
 
+/* ── Main footer (wordmark / contact / nav) ──────────────── */
+
+.main {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 2.5rem;
+  align-items: start;
+  padding: 3.5rem var(--padding-x) 2.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.footerBrand {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  line-height: 1.05;
+}
+
+.footerMark {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+  white-space: nowrap;
+}
+
+.footerSub {
+  font-family: var(--font-label, var(--font-body));
+  font-size: 0.5rem;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  margin-top: 0.3rem;
+}
+
+.contactBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  justify-self: center;
+}
+
+.location,
+.contactEmail {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  text-decoration: none;
+}
+
+.contactEmail {
+  transition: color 0.2s ease;
+}
+
+.contactEmail:hover {
+  color: var(--color-heading);
+}
+
+.footerNav {
+  display: flex;
+  gap: 3rem;
+}
+
+.footerNavColumn {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.footerNavLink {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-detail);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footerNavLink:hover {
+  color: var(--color-heading);
+}
+
+@media (max-width: 900px) {
+  .main {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+    justify-items: center;
+  }
+  .footerBrand { align-items: center; }
+  .contactBlock { justify-self: center; align-items: center; }
+  .footerNav { gap: 2.5rem; }
+  .footerNavColumn { align-items: center; }
+}
+
 /* ── Bottom bar ──────────────────────────────────────────── */
 
 .bottom {
