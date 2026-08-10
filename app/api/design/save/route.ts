@@ -15,6 +15,8 @@ const FIELDS = [
   'watermarkUrl',
   'headingFont',
   'bodyFont',
+  'accentFont',
+  'scriptFont',
   'colorBg',
   'colorBgAccent',
   'colorHeading',

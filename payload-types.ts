@@ -1062,8 +1062,10 @@ export interface SiteDesign {
   faviconUrl?: string | null;
   watermarkEnabled?: boolean | null;
   watermarkUrl?: string | null;
-  headingFont?: ('poppins' | 'tangerine' | 'abril') | null;
-  bodyFont?: ('poppins' | 'tangerine' | 'abril') | null;
+  headingFont?: ('poppins' | 'tangerine' | 'abril' | 'cormorant' | 'barlow' | 'jost') | null;
+  bodyFont?: ('poppins' | 'tangerine' | 'abril' | 'cormorant' | 'barlow' | 'jost') | null;
+  accentFont?: ('cormorant' | 'poppins' | 'tangerine' | 'abril' | 'barlow' | 'jost') | null;
+  scriptFont?: ('parisienne' | 'tangerine') | null;
   colorBg?: string | null;
   colorBgAccent?: string | null;
   colorHeading?: string | null;
@@ -1268,6 +1270,8 @@ export interface SiteDesignSelect<T extends boolean = true> {
   watermarkUrl?: T;
   headingFont?: T;
   bodyFont?: T;
+  accentFont?: T;
+  scriptFont?: T;
   colorBg?: T;
   colorBgAccent?: T;
   colorHeading?: T;

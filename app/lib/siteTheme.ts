@@ -5,13 +5,22 @@
 // payload.config.ts, which breaks the client bundle for /design's
 // 'use client' editor if it's imported from the same module as
 // getSiteDesign() (see app/lib/siteDesign.ts, the server-only counterpart).
+// Rising Roots adds a display serif, a body sans, a letterspaced label sans and
+// a script to the original Poppins/Tangerine/Abril set. NyghtSerif and Nostalgia
+// (what the reference template actually uses) are commercially licensed and are
+// deliberately not embedded - Cormorant Garamond and Parisienne stand in.
+export type FontChoice = 'poppins' | 'tangerine' | 'abril' | 'cormorant' | 'barlow' | 'jost'
+export type ScriptChoice = 'parisienne' | 'tangerine'
+
 export interface SiteTheme {
   logoUrl: string
   faviconUrl: string
   watermarkEnabled: boolean
   watermarkUrl: string
-  headingFont: 'poppins' | 'tangerine' | 'abril'
-  bodyFont: 'poppins' | 'tangerine' | 'abril'
+  headingFont: FontChoice
+  bodyFont: FontChoice
+  accentFont: FontChoice
+  scriptFont: ScriptChoice
   colorBg: string
   colorBgAccent: string
   colorHeading: string
@@ -41,6 +50,8 @@ export const DEFAULT_THEME: SiteTheme = {
   watermarkUrl: '',
   headingFont: 'poppins',
   bodyFont: 'poppins',
+  accentFont: 'cormorant',
+  scriptFont: 'parisienne',
   colorBg: '#0C0C0C',
   colorBgAccent: '#131313',
   colorHeading: '#D6D1CE',
@@ -63,9 +74,24 @@ export const DEFAULT_THEME: SiteTheme = {
   sharpeningLevel: 'none',
 }
 
-const FONT_ROLE_VAR: Record<'tangerine' | 'abril', string> = {
+// Every face except poppins maps to its own next/font variable. poppins is the
+// historic default for heading/body, so those two roles skip the override
+// entirely and fall through to tokens.css rather than emitting a redundant var.
+const FONT_ROLE_VAR: Record<Exclude<FontChoice, 'poppins'> | 'parisienne', string> = {
   tangerine: 'var(--font-display)',
   abril: 'var(--font-display-bold)',
+  cormorant: 'var(--font-serif)',
+  barlow: 'var(--font-sans)',
+  jost: 'var(--font-label)',
+  parisienne: 'var(--font-script)',
+}
+
+const POPPINS_VAR = "'Poppins', sans-serif"
+
+// Unlike heading/body, the accent and script roles have no historic default to
+// fall through to, so they always emit a concrete value.
+function fontVar(choice: FontChoice | ScriptChoice): string {
+  return choice === 'poppins' ? POPPINS_VAR : FONT_ROLE_VAR[choice]
 }
 
 const SPACE_SCALE: Record<SiteTheme['spacingScale'], number> = {
@@ -106,6 +132,8 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
   }
   if (theme.headingFont !== 'poppins') map['--font-heading'] = FONT_ROLE_VAR[theme.headingFont]
   if (theme.bodyFont !== 'poppins') map['--font-body'] = FONT_ROLE_VAR[theme.bodyFont]
+  map['--font-accent'] = fontVar(theme.accentFont)
+  map['--font-script-role'] = fontVar(theme.scriptFont)
   return map
 }
 

@@ -862,6 +862,55 @@ async function run() {
       )
     }
     console.log('✓ site_design palette columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260806_110000: Rising Roots type system (four font roles)
+    // heading_font and body_font are REAL Postgres enums, so new faces need
+    // ALTER TYPE ... ADD VALUE rather than a plain column change - same trap
+    // as enum_pages_promoted_route above. The two new roles (accent, script)
+    // get their own enum types.
+    // ------------------------------------------------------------------
+
+    for (const face of ['cormorant', 'barlow', 'jost']) {
+      await client.query(
+        `ALTER TYPE "enum_site_design_heading_font" ADD VALUE IF NOT EXISTS '${face}'`
+      )
+      await client.query(
+        `ALTER TYPE "enum_site_design_body_font" ADD VALUE IF NOT EXISTS '${face}'`
+      )
+    }
+    console.log('✓ site_design font enums extended')
+
+    await client.query(`
+      DO $$ BEGIN
+        CREATE TYPE "enum_site_design_accent_font" AS ENUM
+          ('poppins', 'tangerine', 'abril', 'cormorant', 'barlow', 'jost');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        CREATE TYPE "enum_site_design_script_font" AS ENUM ('parisienne', 'tangerine');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      ALTER TABLE "site_design"
+        ADD COLUMN IF NOT EXISTS "accent_font" "enum_site_design_accent_font"
+        DEFAULT 'cormorant'
+    `)
+    await client.query(`
+      ALTER TABLE "site_design"
+        ADD COLUMN IF NOT EXISTS "script_font" "enum_site_design_script_font"
+        DEFAULT 'parisienne'
+    `)
+    await client.query(
+      `UPDATE "site_design" SET "accent_font" = 'cormorant' WHERE "accent_font" IS NULL`
+    )
+    await client.query(
+      `UPDATE "site_design" SET "script_font" = 'parisienne' WHERE "script_font" IS NULL`
+    )
+    console.log('✓ site_design accent/script font columns ready')
   } finally {
     client.release()
     await pool.end()

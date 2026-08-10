@@ -40,6 +40,19 @@
   --font-body:            'Poppins', sans-serif;
   --font-mono:            var(--font-body);
 
+  /* Rising Roots faces. Set for real by next/font in app/(site)/layout.tsx;
+     these are the same fallback arrangement as the four above. */
+  --font-serif:           'Cormorant Garamond', serif;
+  --font-sans:            'Barlow', sans-serif;
+  --font-label:           'Jost', sans-serif;
+  --font-script:          'Parisienne', cursive;
+
+  /* Role vars, selectable per role in /design. --font-accent is the italic
+     serif used for emotional accent lines; consumers apply font-style: italic,
+     since italic is a style rather than a separate family. */
+  --font-accent:          var(--font-serif);
+  --font-script-role:     var(--font-script);
+
   /* ── Spacing ──────────────────────────────────────────────── */
   /* --space-scale (Design editor "Overall spacing": 0.75 compact / 1
      normal / 1.35 spacious) multiplies both spacing tokens below, so a
