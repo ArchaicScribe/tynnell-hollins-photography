@@ -18,6 +18,14 @@ export interface SiteTheme {
   colorBody: string
   colorDetail: string
   colorBtnBg: string
+  colorBgCard: string
+  colorBgHover: string
+  colorBgOverlay: string
+  colorBtnText: string
+  colorBtnHover: string
+  colorBorder: string
+  colorBorderSubtle: string
+  colorBorderSolid: string
   tapeMatColor: string
   tapeColor: string
   spacingScale: 'compact' | 'normal' | 'spacious'
@@ -39,6 +47,14 @@ export const DEFAULT_THEME: SiteTheme = {
   colorBody: '#E6E1DE',
   colorDetail: '#9B9A9A',
   colorBtnBg: '#9B9A9A',
+  colorBgCard: '#1a1a1a',
+  colorBgHover: '#222222',
+  colorBgOverlay: 'rgba(12, 12, 12, 0.76)',
+  colorBtnText: '#E6E1DE',
+  colorBtnHover: '#807F7F',
+  colorBorder: 'rgba(214, 209, 206, 0.08)',
+  colorBorderSubtle: 'rgba(214, 209, 206, 0.06)',
+  colorBorderSolid: '#1e1e1e',
   tapeMatColor: '#f4efe8',
   tapeColor: 'rgba(214, 209, 206, 0.42)',
   spacingScale: 'normal',
@@ -75,6 +91,14 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--color-body': theme.colorBody,
     '--color-detail': theme.colorDetail,
     '--color-btn-bg': theme.colorBtnBg,
+    '--color-bg-card': theme.colorBgCard,
+    '--color-bg-hover': theme.colorBgHover,
+    '--color-bg-overlay': theme.colorBgOverlay,
+    '--color-btn-text': theme.colorBtnText,
+    '--color-btn-hover': theme.colorBtnHover,
+    '--color-border': theme.colorBorder,
+    '--color-border-subtle': theme.colorBorderSubtle,
+    '--color-border-solid': theme.colorBorderSolid,
     '--tape-mat': theme.tapeMatColor,
     '--tape-color': theme.tapeColor,
     '--space-scale': String(SPACE_SCALE[theme.spacingScale]),

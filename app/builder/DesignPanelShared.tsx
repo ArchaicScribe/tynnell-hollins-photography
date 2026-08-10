@@ -29,13 +29,43 @@ export const SHARPENING_OPTIONS: { label: string; value: SiteTheme['sharpeningLe
   { label: 'Strong', value: 'strong' },
 ]
 
-export const COLOR_FIELDS: { key: keyof Pick<SiteTheme, 'colorBg' | 'colorBgAccent' | 'colorHeading' | 'colorBody' | 'colorDetail' | 'colorBtnBg'>; label: string }[] = [
+export const COLOR_FIELDS: {
+  key: keyof Pick<
+    SiteTheme,
+    | 'colorBg'
+    | 'colorBgAccent'
+    | 'colorHeading'
+    | 'colorBody'
+    | 'colorDetail'
+    | 'colorBtnBg'
+    | 'colorBgCard'
+    | 'colorBgHover'
+    | 'colorBgOverlay'
+    | 'colorBtnText'
+    | 'colorBtnHover'
+    | 'colorBorder'
+    | 'colorBorderSubtle'
+    | 'colorBorderSolid'
+  >
+  label: string
+}[] = [
   { key: 'colorBg', label: 'Background color' },
   { key: 'colorBgAccent', label: 'Accent background color' },
   { key: 'colorHeading', label: 'Heading text color' },
   { key: 'colorBody', label: 'Body text color' },
   { key: 'colorDetail', label: 'Detail / muted text color' },
   { key: 'colorBtnBg', label: 'Button color' },
+  // Added so a light/dark inversion is achievable entirely from /design.
+  // These were hardcoded dark in tokens.css, which meant switching to a light
+  // ground left dark cards and near-invisible borders behind.
+  { key: 'colorBtnText', label: 'Button text color' },
+  { key: 'colorBtnHover', label: 'Button hover color' },
+  { key: 'colorBgCard', label: 'Card background color' },
+  { key: 'colorBgHover', label: 'Hover background color' },
+  { key: 'colorBgOverlay', label: 'Overlay box color (sits on photos)' },
+  { key: 'colorBorder', label: 'Border color' },
+  { key: 'colorBorderSubtle', label: 'Subtle border color' },
+  { key: 'colorBorderSolid', label: 'Solid border color' },
 ]
 
 // TYN-338: the taped/polaroid photo-frame treatment (gallery album, portfolio
