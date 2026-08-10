@@ -27,6 +27,12 @@
      Overlay boxes (--color-bg-overlay) sit on top of photos, so they usually
      want to stay dark even on a light ground. It is adjustable regardless. */
 
+  /* ── Shell finishes (paper grain + photo treatment) ───────── */
+  /* Both driven by SiteDesign and editable in /design; the values here are
+     the "off" fallback for before SiteDesign has been read. */
+  --paper-grain-opacity:  0;
+  --photo-saturation:     1;
+
   /* ── Tape treatment ───────────────────────────────────────── */
   --tape-mat:             #f4efe8;
   --tape-color:           rgba(214, 209, 206, 0.42);

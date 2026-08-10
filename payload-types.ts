@@ -1082,6 +1082,8 @@ export interface SiteDesign {
   colorBorderSolid?: string | null;
   tapeMatColor?: string | null;
   tapeColor?: string | null;
+  paperGrain?: ('none' | 'subtle' | 'medium' | 'strong') | null;
+  photoTreatment?: ('color' | 'muted' | 'faded' | 'bw') | null;
   spacingScale?: ('compact' | 'normal' | 'spacious') | null;
   buttonStyle?: ('sharp' | 'rounded' | 'pill') | null;
   animationsEnabled?: boolean | null;
@@ -1288,6 +1290,8 @@ export interface SiteDesignSelect<T extends boolean = true> {
   colorBorderSolid?: T;
   tapeMatColor?: T;
   tapeColor?: T;
+  paperGrain?: T;
+  photoTreatment?: T;
   spacingScale?: T;
   buttonStyle?: T;
   animationsEnabled?: T;
