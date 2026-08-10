@@ -196,6 +196,33 @@ export const SiteDesign: GlobalConfig = {
       label: 'Tape strip color',
       defaultValue: 'rgba(214, 209, 206, 0.42)',
     },
+    // Two shell-level finishes (Rising Roots). Both are applied BY the shell
+    // rather than baked into any individual photo, so they work on whatever
+    // Tynnell uploads later. Both default to off, so this is inert until set.
+    {
+      name: 'paperGrain',
+      type: 'select',
+      label: 'Paper grain texture',
+      defaultValue: 'none',
+      options: [
+        { label: 'None', value: 'none' },
+        { label: 'Subtle', value: 'subtle' },
+        { label: 'Medium', value: 'medium' },
+        { label: 'Strong', value: 'strong' },
+      ],
+    },
+    {
+      name: 'photoTreatment',
+      type: 'select',
+      label: 'Photo color treatment',
+      defaultValue: 'color',
+      options: [
+        { label: 'Full color', value: 'color' },
+        { label: 'Muted', value: 'muted' },
+        { label: 'Nearly black & white', value: 'faded' },
+        { label: 'Black & white', value: 'bw' },
+      ],
+    },
     {
       name: 'spacingScale',
       type: 'select',

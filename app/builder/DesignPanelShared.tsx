@@ -33,6 +33,18 @@ export const BUTTON_OPTIONS: { label: string; value: SiteTheme['buttonStyle'] }[
   { label: 'Rounded', value: 'rounded' },
   { label: 'Pill', value: 'pill' },
 ]
+export const GRAIN_OPTIONS: { label: string; value: SiteTheme['paperGrain'] }[] = [
+  { label: 'None', value: 'none' },
+  { label: 'Subtle', value: 'subtle' },
+  { label: 'Medium', value: 'medium' },
+  { label: 'Strong', value: 'strong' },
+]
+export const PHOTO_TREATMENT_OPTIONS: { label: string; value: SiteTheme['photoTreatment'] }[] = [
+  { label: 'Full color', value: 'color' },
+  { label: 'Muted', value: 'muted' },
+  { label: 'Nearly black & white', value: 'faded' },
+  { label: 'Black & white', value: 'bw' },
+]
 export const SHARPENING_OPTIONS: { label: string; value: SiteTheme['sharpeningLevel'] }[] = [
   { label: 'None', value: 'none' },
   { label: 'Subtle', value: 'subtle' },
@@ -225,6 +237,21 @@ export function DesignSections({
       <AccordionRow label="Buttons" isOpen={open === 'buttons'} onToggle={() => setOpen(open === 'buttons' ? null : 'buttons')}>
         <FieldLabel>Button shape</FieldLabel>
         <Select value={theme.buttonStyle} onChange={(v) => set('buttonStyle', v as SiteTheme['buttonStyle'])} options={BUTTON_OPTIONS} />
+      </AccordionRow>
+
+      <AccordionRow label="Texture" isOpen={open === 'texture'} onToggle={() => setOpen(open === 'texture' ? null : 'texture')}>
+        <FieldLabel>Paper grain</FieldLabel>
+        <Select value={theme.paperGrain} onChange={(v) => set('paperGrain', v as SiteTheme['paperGrain'])} options={GRAIN_OPTIONS} />
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          A fine paper texture over the whole site. Keep it low: past &quot;Medium&quot; it starts competing with your photos
+          instead of sitting under them.
+        </p>
+        <FieldLabel style={{ marginTop: 12 }}>Photo color treatment</FieldLabel>
+        <Select value={theme.photoTreatment} onChange={(v) => set('photoTreatment', v as SiteTheme['photoTreatment'])} options={PHOTO_TREATMENT_OPTIONS} />
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          Changes how photos are displayed sitewide. Your uploaded files are never altered, and a client&apos;s download is
+          always the untouched original.
+        </p>
       </AccordionRow>
 
       <AccordionRow label="Photo Sharpening" isOpen={open === 'sharpening'} onToggle={() => setOpen(open === 'sharpening' ? null : 'sharpening')}>

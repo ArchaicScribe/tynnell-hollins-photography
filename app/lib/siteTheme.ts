@@ -12,6 +12,11 @@
 export type FontChoice = 'poppins' | 'tangerine' | 'abril' | 'cormorant' | 'barlow' | 'jost'
 export type ScriptChoice = 'parisienne' | 'tangerine'
 
+// Shell-level finishes: applied by the shell over whatever photos exist,
+// rather than baked into the files themselves.
+export type PaperGrain = 'none' | 'subtle' | 'medium' | 'strong'
+export type PhotoTreatment = 'color' | 'muted' | 'faded' | 'bw'
+
 export interface SiteTheme {
   logoUrl: string
   faviconUrl: string
@@ -37,6 +42,8 @@ export interface SiteTheme {
   colorBorderSolid: string
   tapeMatColor: string
   tapeColor: string
+  paperGrain: PaperGrain
+  photoTreatment: PhotoTreatment
   spacingScale: 'compact' | 'normal' | 'spacious'
   buttonStyle: 'sharp' | 'rounded' | 'pill'
   animationsEnabled: boolean
@@ -68,6 +75,8 @@ export const DEFAULT_THEME: SiteTheme = {
   colorBorderSolid: '#1e1e1e',
   tapeMatColor: '#f4efe8',
   tapeColor: 'rgba(214, 209, 206, 0.42)',
+  paperGrain: 'none',
+  photoTreatment: 'color',
   spacingScale: 'normal',
   buttonStyle: 'sharp',
   animationsEnabled: true,
@@ -100,6 +109,24 @@ const SPACE_SCALE: Record<SiteTheme['spacingScale'], number> = {
   spacious: 1.35,
 }
 
+// Grain opacity is kept low on purpose. Above ~0.09 the texture starts
+// competing with the photography instead of sitting under it.
+const GRAIN_OPACITY: Record<PaperGrain, string> = {
+  none: '0',
+  subtle: '0.035',
+  medium: '0.06',
+  strong: '0.09',
+}
+
+// saturate() rather than grayscale() so "muted" and "faded" are real points on
+// the same axis; bw is the 0 end of it.
+const PHOTO_SATURATION: Record<PhotoTreatment, string> = {
+  color: '1',
+  muted: '0.65',
+  faded: '0.3',
+  bw: '0',
+}
+
 const BTN_RADIUS: Record<SiteTheme['buttonStyle'], string> = {
   sharp: '2px',
   rounded: '8px',
@@ -127,6 +154,8 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--color-border-solid': theme.colorBorderSolid,
     '--tape-mat': theme.tapeMatColor,
     '--tape-color': theme.tapeColor,
+    '--paper-grain-opacity': GRAIN_OPACITY[theme.paperGrain],
+    '--photo-saturation': PHOTO_SATURATION[theme.photoTreatment],
     '--space-scale': String(SPACE_SCALE[theme.spacingScale]),
     '--btn-radius': BTN_RADIUS[theme.buttonStyle],
   }

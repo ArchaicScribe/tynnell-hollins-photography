@@ -47,6 +47,8 @@ export const getSiteDesign = cache(async (): Promise<SiteTheme> => {
       colorBorderSolid: doc.colorBorderSolid || DEFAULT_THEME.colorBorderSolid,
       tapeMatColor: doc.tapeMatColor || DEFAULT_THEME.tapeMatColor,
       tapeColor: doc.tapeColor || DEFAULT_THEME.tapeColor,
+      paperGrain: doc.paperGrain || DEFAULT_THEME.paperGrain,
+      photoTreatment: doc.photoTreatment || DEFAULT_THEME.photoTreatment,
       spacingScale: doc.spacingScale || DEFAULT_THEME.spacingScale,
       buttonStyle: doc.buttonStyle || DEFAULT_THEME.buttonStyle,
       animationsEnabled: doc.animationsEnabled ?? true,

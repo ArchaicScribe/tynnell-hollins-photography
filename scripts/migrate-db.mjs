@@ -911,6 +911,46 @@ async function run() {
       `UPDATE "site_design" SET "script_font" = 'parisienne' WHERE "script_font" IS NULL`
     )
     console.log('✓ site_design accent/script font columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260810_120000: shell finishes (paper grain + photo
+    // treatment). Both are Payload selects, which the postgres adapter backs
+    // with real enum types, so they need CREATE TYPE rather than plain
+    // varchar columns. Defaults are the "off" values, so this is inert until
+    // someone changes them in /design.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      DO $$ BEGIN
+        CREATE TYPE "enum_site_design_paper_grain" AS ENUM
+          ('none', 'subtle', 'medium', 'strong');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        CREATE TYPE "enum_site_design_photo_treatment" AS ENUM
+          ('color', 'muted', 'faded', 'bw');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      ALTER TABLE "site_design"
+        ADD COLUMN IF NOT EXISTS "paper_grain" "enum_site_design_paper_grain"
+        DEFAULT 'none'
+    `)
+    await client.query(`
+      ALTER TABLE "site_design"
+        ADD COLUMN IF NOT EXISTS "photo_treatment" "enum_site_design_photo_treatment"
+        DEFAULT 'color'
+    `)
+    await client.query(
+      `UPDATE "site_design" SET "paper_grain" = 'none' WHERE "paper_grain" IS NULL`
+    )
+    await client.query(
+      `UPDATE "site_design" SET "photo_treatment" = 'color' WHERE "photo_treatment" IS NULL`
+    )
+    console.log('✓ site_design paper_grain/photo_treatment columns ready')
   } finally {
     client.release()
     await pool.end()
