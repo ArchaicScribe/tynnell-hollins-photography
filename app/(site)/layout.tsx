@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from 'next'
 import {
-  Tangerine,
-  Poppins,
-  Abril_Fatface,
-  Cormorant_Garamond,
-  Barlow,
-  Jost,
-  Parisienne,
-} from 'next/font/google'
+  tangerine,
+  poppinsHeading,
+  poppinsBody,
+  abrilFatface,
+  cormorant,
+  barlow,
+  jost,
+  parisienne,
+} from '@/app/fonts/fonts'
 import './globals.css'
 import './styles/tokens.css'
 import Navbar from '../components/Navbar/Navbar'
@@ -17,73 +18,6 @@ import { getSiteDesign, themeToCssVars } from '@/app/lib/siteDesign'
 import { DesignPreviewBridge } from '../components/DesignPreviewBridge'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-
-const tangerine = Tangerine({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-})
-
-// Poppins matches the Pixieset builder's typeface. Used for both headings and
-// body copy (two loader instances so each gets its own CSS variable), keeping
-// the site's typography uniform outside of the Tangerine/Abril script accents.
-const poppinsHeading = Poppins({
-  weight: ['400', '500', '600', '700', '800'],
-  subsets: ['latin'],
-  variable: '--font-heading',
-  display: 'swap',
-})
-
-const poppinsBody = Poppins({
-  weight: ['300', '400', '500'],
-  subsets: ['latin'],
-  variable: '--font-body',
-  display: 'swap',
-})
-
-const abrialFatface = Abril_Fatface({
-  weight: ['400'],
-  subsets: ['latin'],
-  variable: '--font-display-bold',
-  display: 'swap',
-})
-
-// Rising Roots type system. The reference template uses NyghtSerif Light (+
-// its italic) and Nostalgia for the script, both commercially licensed, so
-// they are deliberately NOT embedded here. Barlow and Jost are exactly what
-// the reference uses and are OFL-licensed; Cormorant Garamond stands in for
-// NyghtSerif (very close at light weight, and the face Tynnell already chose
-// in her own Showit draft), and Parisienne stands in for the script.
-// Italic is loaded explicitly because the accent role is an italic serif.
-const cormorant = Cormorant_Garamond({
-  weight: ['300', '400', '500', '600'],
-  style: ['normal', 'italic'],
-  subsets: ['latin'],
-  variable: '--font-serif',
-  display: 'swap',
-})
-
-const barlow = Barlow({
-  weight: ['300', '400', '500', '600'],
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-})
-
-const jost = Jost({
-  weight: ['300', '400', '500'],
-  subsets: ['latin'],
-  variable: '--font-label',
-  display: 'swap',
-})
-
-const parisienne = Parisienne({
-  weight: ['400'],
-  subsets: ['latin'],
-  variable: '--font-script',
-  display: 'swap',
-})
 
 // Favicon (TYN-321) is the one piece of metadata that depends on the
 // SiteDesign global, so this can't stay a static `metadata` export - Next.js
@@ -133,7 +67,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${tangerine.variable} ${poppinsHeading.variable} ${poppinsBody.variable} ${abrialFatface.variable} ${cormorant.variable} ${barlow.variable} ${jost.variable} ${parisienne.variable}`}
+      className={`${tangerine.variable} ${poppinsHeading.variable} ${poppinsBody.variable} ${abrilFatface.variable} ${cormorant.variable} ${barlow.variable} ${jost.variable} ${parisienne.variable}`}
       data-animations={theme.animationsEnabled ? undefined : 'off'}
     >
       {/* Site-wide theme (TYN-314), read fresh on every request from the

@@ -1,0 +1,218 @@
+{
+  "tangerine": [
+    {
+      "file": "tangerine-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 23304
+    },
+    {
+      "file": "tangerine-700-normal.woff2",
+      "weight": "700",
+      "style": "normal",
+      "bytes": 24804
+    }
+  ],
+  "poppins": [
+    {
+      "file": "poppins-300-normal.woff2",
+      "weight": "300",
+      "style": "normal",
+      "bytes": 7840
+    },
+    {
+      "file": "poppins-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 7884
+    },
+    {
+      "file": "poppins-500-normal.woff2",
+      "weight": "500",
+      "style": "normal",
+      "bytes": 7748
+    },
+    {
+      "file": "poppins-600-normal.woff2",
+      "weight": "600",
+      "style": "normal",
+      "bytes": 8000
+    },
+    {
+      "file": "poppins-700-normal.woff2",
+      "weight": "700",
+      "style": "normal",
+      "bytes": 7816
+    },
+    {
+      "file": "poppins-800-normal.woff2",
+      "weight": "800",
+      "style": "normal",
+      "bytes": 7824
+    }
+  ],
+  "abril-fatface": [
+    {
+      "file": "abril-fatface-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 13156
+    }
+  ],
+  "cormorant-garamond": [
+    {
+      "file": "cormorant-garamond-300-italic.woff2",
+      "weight": "300",
+      "style": "italic",
+      "bytes": 39260
+    },
+    {
+      "file": "cormorant-garamond-400-italic.woff2",
+      "weight": "400",
+      "style": "italic",
+      "bytes": 39260
+    },
+    {
+      "file": "cormorant-garamond-500-italic.woff2",
+      "weight": "500",
+      "style": "italic",
+      "bytes": 39260
+    },
+    {
+      "file": "cormorant-garamond-600-italic.woff2",
+      "weight": "600",
+      "style": "italic",
+      "bytes": 39260
+    },
+    {
+      "file": "cormorant-garamond-300-normal.woff2",
+      "weight": "300",
+      "style": "normal",
+      "bytes": 37640
+    },
+    {
+      "file": "cormorant-garamond-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 37640
+    },
+    {
+      "file": "cormorant-garamond-500-normal.woff2",
+      "weight": "500",
+      "style": "normal",
+      "bytes": 37640
+    },
+    {
+      "file": "cormorant-garamond-600-normal.woff2",
+      "weight": "600",
+      "style": "normal",
+      "bytes": 37640
+    }
+  ],
+  "barlow": [
+    {
+      "file": "barlow-300-normal.woff2",
+      "weight": "300",
+      "style": "normal",
+      "bytes": 22076
+    },
+    {
+      "file": "barlow-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 22196
+    },
+    {
+      "file": "barlow-500-normal.woff2",
+      "weight": "500",
+      "style": "normal",
+      "bytes": 22008
+    },
+    {
+      "file": "barlow-600-normal.woff2",
+      "weight": "600",
+      "style": "normal",
+      "bytes": 22772
+    }
+  ],
+  "jost": [
+    {
+      "file": "jost-300-normal.woff2",
+      "weight": "300",
+      "style": "normal",
+      "bytes": 26576
+    },
+    {
+      "file": "jost-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 26576
+    },
+    {
+      "file": "jost-500-normal.woff2",
+      "weight": "500",
+      "style": "normal",
+      "bytes": 26576
+    }
+  ],
+  "parisienne": [
+    {
+      "file": "parisienne-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 22600
+    }
+  ],
+  "archivo": [
+    {
+      "file": "archivo-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 34928
+    },
+    {
+      "file": "archivo-500-normal.woff2",
+      "weight": "500",
+      "style": "normal",
+      "bytes": 34928
+    },
+    {
+      "file": "archivo-600-normal.woff2",
+      "weight": "600",
+      "style": "normal",
+      "bytes": 34928
+    },
+    {
+      "file": "archivo-700-normal.woff2",
+      "weight": "700",
+      "style": "normal",
+      "bytes": 34928
+    }
+  ],
+  "roboto-mono": [
+    {
+      "file": "roboto-mono-400-italic.woff2",
+      "weight": "400",
+      "style": "italic",
+      "bytes": 13928
+    },
+    {
+      "file": "roboto-mono-300-normal.woff2",
+      "weight": "300",
+      "style": "normal",
+      "bytes": 32796
+    },
+    {
+      "file": "roboto-mono-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 32796
+    },
+    {
+      "file": "roboto-mono-500-normal.woff2",
+      "weight": "500",
+      "style": "normal",
+      "bytes": 32796
+    }
+  ]
+}
