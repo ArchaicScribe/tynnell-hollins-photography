@@ -830,6 +830,38 @@ async function run() {
         ON "about_page_values" USING btree ("photo_id")
     `)
     console.log('✓ about_page_values.photo_id column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260806_100000: full palette coverage on site_design
+    // Only 6 of the site's color tokens were adjustable from /design. The
+    // card, hover, overlay, button-text, button-hover and border tokens were
+    // hardcoded dark in app/(site)/styles/tokens.css, which made a light/dark
+    // inversion impossible without a code change. Plain varchar columns (the
+    // existing color columns are varchar too), backfilled with the previous
+    // hardcoded values so this is a no-op until someone edits them.
+    // ------------------------------------------------------------------
+
+    const SITE_DESIGN_COLORS = [
+      ['color_bg_card', '#1a1a1a'],
+      ['color_bg_hover', '#222222'],
+      ['color_bg_overlay', 'rgba(12, 12, 12, 0.76)'],
+      ['color_btn_text', '#E6E1DE'],
+      ['color_btn_hover', '#807F7F'],
+      ['color_border', 'rgba(214, 209, 206, 0.08)'],
+      ['color_border_subtle', 'rgba(214, 209, 206, 0.06)'],
+      ['color_border_solid', '#1e1e1e'],
+    ]
+
+    for (const [column, fallback] of SITE_DESIGN_COLORS) {
+      await client.query(
+        `ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "${column}" varchar`
+      )
+      await client.query(
+        `UPDATE "site_design" SET "${column}" = $1 WHERE "${column}" IS NULL`,
+        [fallback]
+      )
+    }
+    console.log('✓ site_design palette columns ready')
   } finally {
     client.release()
     await pool.end()

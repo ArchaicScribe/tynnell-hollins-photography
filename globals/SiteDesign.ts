@@ -96,6 +96,60 @@ export const SiteDesign: GlobalConfig = {
       label: 'Button color',
       defaultValue: '#9B9A9A',
     },
+    // The six colors above cover text and the two page grounds, but a real
+    // light/dark inversion also needs the card, hover, button-text, and border
+    // tokens, which used to be hardcoded dark in tokens.css. Without these,
+    // switching to a light ground leaves dark cards and invisible borders
+    // behind. Defaults deliberately match the previous hardcoded values, so
+    // adding them changes nothing until someone edits them in /design.
+    {
+      name: 'colorBgCard',
+      type: 'text',
+      label: 'Card background color',
+      defaultValue: '#1a1a1a',
+    },
+    {
+      name: 'colorBgHover',
+      type: 'text',
+      label: 'Hover background color',
+      defaultValue: '#222222',
+    },
+    {
+      name: 'colorBgOverlay',
+      type: 'text',
+      label: 'Overlay box color (sits on photos)',
+      defaultValue: 'rgba(12, 12, 12, 0.76)',
+    },
+    {
+      name: 'colorBtnText',
+      type: 'text',
+      label: 'Button text color',
+      defaultValue: '#E6E1DE',
+    },
+    {
+      name: 'colorBtnHover',
+      type: 'text',
+      label: 'Button hover color',
+      defaultValue: '#807F7F',
+    },
+    {
+      name: 'colorBorder',
+      type: 'text',
+      label: 'Border color',
+      defaultValue: 'rgba(214, 209, 206, 0.08)',
+    },
+    {
+      name: 'colorBorderSubtle',
+      type: 'text',
+      label: 'Subtle border color',
+      defaultValue: 'rgba(214, 209, 206, 0.06)',
+    },
+    {
+      name: 'colorBorderSolid',
+      type: 'text',
+      label: 'Solid border color',
+      defaultValue: '#1e1e1e',
+    },
     {
       name: 'tapeMatColor',
       type: 'text',

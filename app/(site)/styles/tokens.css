@@ -18,8 +18,14 @@
   --btn-radius:           2px;
 
   /* ── Colors: light mode override ─────────────────────────── */
-  /* Overlay boxes (--color-bg-overlay) intentionally stay dark since they
-     sit on top of photos in both modes. */
+  /* Every --color-* token above is now driven by the SiteDesign global and
+     editable in /design (see app/lib/siteTheme.ts themeToCssVarMap). The
+     values above are only the fallback for when SiteDesign has not been read
+     yet, same arrangement as the tape tokens below (TYN-338). Change the
+     palette in /design, not here.
+
+     Overlay boxes (--color-bg-overlay) sit on top of photos, so they usually
+     want to stay dark even on a light ground. It is adjustable regardless. */
 
   /* ── Tape treatment ───────────────────────────────────────── */
   --tape-mat:             #f4efe8;
