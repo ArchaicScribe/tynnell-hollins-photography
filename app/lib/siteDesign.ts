@@ -29,6 +29,8 @@ export const getSiteDesign = cache(async (): Promise<SiteTheme> => {
       watermarkUrl: doc.watermarkUrl || DEFAULT_THEME.watermarkUrl,
       headingFont: doc.headingFont || DEFAULT_THEME.headingFont,
       bodyFont: doc.bodyFont || DEFAULT_THEME.bodyFont,
+      accentFont: doc.accentFont || DEFAULT_THEME.accentFont,
+      scriptFont: doc.scriptFont || DEFAULT_THEME.scriptFont,
       colorBg: doc.colorBg || DEFAULT_THEME.colorBg,
       colorBgAccent: doc.colorBgAccent || DEFAULT_THEME.colorBgAccent,
       colorHeading: doc.colorHeading || DEFAULT_THEME.colorHeading,

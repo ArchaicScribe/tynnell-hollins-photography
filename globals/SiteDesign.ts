@@ -47,6 +47,9 @@ export const SiteDesign: GlobalConfig = {
         { label: 'Poppins', value: 'poppins' },
         { label: 'Tangerine', value: 'tangerine' },
         { label: 'Abril Fatface', value: 'abril' },
+        { label: 'Cormorant Garamond', value: 'cormorant' },
+        { label: 'Barlow', value: 'barlow' },
+        { label: 'Jost', value: 'jost' },
       ],
     },
     {
@@ -58,6 +61,9 @@ export const SiteDesign: GlobalConfig = {
         { label: 'Poppins', value: 'poppins' },
         { label: 'Tangerine', value: 'tangerine' },
         { label: 'Abril Fatface', value: 'abril' },
+        { label: 'Cormorant Garamond', value: 'cormorant' },
+        { label: 'Barlow', value: 'barlow' },
+        { label: 'Jost', value: 'jost' },
       ],
     },
     {
@@ -95,6 +101,34 @@ export const SiteDesign: GlobalConfig = {
       type: 'text',
       label: 'Button color',
       defaultValue: '#9B9A9A',
+    },
+    // Rising Roots works in four type roles rather than two: a display serif,
+    // an italic serif for accent lines, a body sans, and a script reserved for
+    // single-word moments like the Inquire CTA. headingFont/bodyFont above
+    // cover the first and third; these two add the rest.
+    {
+      name: 'accentFont',
+      type: 'select',
+      label: 'Accent font (italic serif)',
+      defaultValue: 'cormorant',
+      options: [
+        { label: 'Cormorant Garamond', value: 'cormorant' },
+        { label: 'Poppins', value: 'poppins' },
+        { label: 'Tangerine', value: 'tangerine' },
+        { label: 'Abril Fatface', value: 'abril' },
+        { label: 'Barlow', value: 'barlow' },
+        { label: 'Jost', value: 'jost' },
+      ],
+    },
+    {
+      name: 'scriptFont',
+      type: 'select',
+      label: 'Script font (accents and CTAs)',
+      defaultValue: 'parisienne',
+      options: [
+        { label: 'Parisienne', value: 'parisienne' },
+        { label: 'Tangerine', value: 'tangerine' },
+      ],
     },
     // The six colors above cover text and the two page grounds, but a real
     // light/dark inversion also needs the card, hover, button-text, and border

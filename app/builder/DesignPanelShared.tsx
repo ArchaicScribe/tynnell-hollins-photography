@@ -11,6 +11,17 @@ export const FONT_OPTIONS: { label: string; value: SiteTheme['headingFont'] }[] 
   { label: 'Poppins', value: 'poppins' },
   { label: 'Tangerine', value: 'tangerine' },
   { label: 'Abril Fatface', value: 'abril' },
+  { label: 'Cormorant Garamond', value: 'cormorant' },
+  { label: 'Barlow', value: 'barlow' },
+  { label: 'Jost', value: 'jost' },
+]
+
+// The script role is intentionally a short list: it is meant for single-word
+// moments (the Inquire CTA), not body copy, so offering every face invites
+// misuse.
+export const SCRIPT_FONT_OPTIONS: { label: string; value: SiteTheme['scriptFont'] }[] = [
+  { label: 'Parisienne', value: 'parisienne' },
+  { label: 'Tangerine', value: 'tangerine' },
 ]
 export const SPACING_OPTIONS: { label: string; value: SiteTheme['spacingScale'] }[] = [
   { label: 'Compact', value: 'compact' },
@@ -173,6 +184,10 @@ export function DesignSections({
         <Select value={theme.headingFont} onChange={(v) => set('headingFont', v as SiteTheme['headingFont'])} options={FONT_OPTIONS} />
         <FieldLabel style={{ marginTop: 12 }}>Body font</FieldLabel>
         <Select value={theme.bodyFont} onChange={(v) => set('bodyFont', v as SiteTheme['bodyFont'])} options={FONT_OPTIONS} />
+        <FieldLabel style={{ marginTop: 12 }}>Accent font (italic serif)</FieldLabel>
+        <Select value={theme.accentFont} onChange={(v) => set('accentFont', v as SiteTheme['accentFont'])} options={FONT_OPTIONS} />
+        <FieldLabel style={{ marginTop: 12 }}>Script font</FieldLabel>
+        <Select value={theme.scriptFont} onChange={(v) => set('scriptFont', v as SiteTheme['scriptFont'])} options={SCRIPT_FONT_OPTIONS} />
       </AccordionRow>
 
       <AccordionRow label="Colors" isOpen={open === 'colors'} onToggle={() => setOpen(open === 'colors' ? null : 'colors')}>
