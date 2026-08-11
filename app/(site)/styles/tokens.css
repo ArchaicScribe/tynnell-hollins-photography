@@ -36,7 +36,11 @@
   /* ── Tape treatment ───────────────────────────────────────── */
   --tape-mat:             #f4efe8;
   --tape-color:           rgba(214, 209, 206, 0.42);
-  --tape-shadow:          0 10px 26px rgba(0, 0, 0, 0.45);
+  /* Warm and low-alpha, not near-black: the old 0.45 black drop was tuned for
+     the charcoal ground and reads as grime under the print on bone paper.
+     Driven by SiteDesign (/design > Photo Frame > shadow); this is the
+     pre-SiteDesign fallback. */
+  --tape-shadow:          0 4px 14px rgba(60, 55, 40, 0.10);
 
   /* ── Typography ───────────────────────────────────────────── */
   --font-display:         'Tangerine', cursive;

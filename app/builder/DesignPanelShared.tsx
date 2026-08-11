@@ -100,6 +100,12 @@ export const TAPE_FIELDS: { key: keyof Pick<SiteTheme, 'tapeMatColor' | 'tapeCol
   { key: 'tapeMatColor', label: 'Photo mat color' },
   { key: 'tapeColor', label: 'Tape strip color' },
 ]
+export const TAPE_SHADOW_OPTIONS: { label: string; value: SiteTheme['tapeShadow'] }[] = [
+  { label: 'None', value: 'none' },
+  { label: 'Soft', value: 'soft' },
+  { label: 'Medium', value: 'medium' },
+  { label: 'Strong', value: 'strong' },
+]
 
 export function AccordionRow({ label, isOpen, onToggle, children }: { label: string; isOpen: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
@@ -218,6 +224,12 @@ export function DesignSections({
             <ColorInput value={theme[f.key]} onChange={(v) => set(f.key, v)} />
           </div>
         ))}
+        <FieldLabel style={{ marginTop: 12 }}>Photo frame shadow</FieldLabel>
+        <Select value={theme.tapeShadow} onChange={(v) => set('tapeShadow', v as SiteTheme['tapeShadow'])} options={TAPE_SHADOW_OPTIONS} />
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          The taped photo frame is opt-in wherever it appears: per gallery in the gallery settings, and per block in the page
+          builder. Nothing uses it unless you turn it on there.
+        </p>
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>Used by the Taped and Polaroid photo styles across the portfolio, galleries, and builder.</p>
       </AccordionRow>
 

@@ -33,6 +33,7 @@ const FIELDS = [
   'colorBorderSolid',
   'tapeMatColor',
   'tapeColor',
+  'tapeShadow',
   'paperGrain',
   'photoTreatment',
   'spacingScale',

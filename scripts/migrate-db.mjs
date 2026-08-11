@@ -951,6 +951,29 @@ async function run() {
       `UPDATE "site_design" SET "photo_treatment" = 'color' WHERE "photo_treatment" IS NULL`
     )
     console.log('✓ site_design paper_grain/photo_treatment columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20260810_130000: tape frame shadow (TYN-338 follow-on)
+    // The last hardcoded piece of the taped photo treatment. A select, so
+    // the postgres adapter wants a real enum type.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      DO $$ BEGIN
+        CREATE TYPE "enum_site_design_tape_shadow" AS ENUM
+          ('none', 'soft', 'medium', 'strong');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      ALTER TABLE "site_design"
+        ADD COLUMN IF NOT EXISTS "tape_shadow" "enum_site_design_tape_shadow"
+        DEFAULT 'soft'
+    `)
+    await client.query(
+      `UPDATE "site_design" SET "tape_shadow" = 'soft' WHERE "tape_shadow" IS NULL`
+    )
+    console.log('✓ site_design tape_shadow column ready')
   } finally {
     client.release()
     await pool.end()

@@ -16,6 +16,7 @@ export type ScriptChoice = 'parisienne' | 'tangerine'
 // rather than baked into the files themselves.
 export type PaperGrain = 'none' | 'subtle' | 'medium' | 'strong'
 export type PhotoTreatment = 'color' | 'muted' | 'faded' | 'bw'
+export type TapeShadow = 'none' | 'soft' | 'medium' | 'strong'
 
 export interface SiteTheme {
   logoUrl: string
@@ -42,6 +43,7 @@ export interface SiteTheme {
   colorBorderSolid: string
   tapeMatColor: string
   tapeColor: string
+  tapeShadow: TapeShadow
   paperGrain: PaperGrain
   photoTreatment: PhotoTreatment
   spacingScale: 'compact' | 'normal' | 'spacious'
@@ -75,6 +77,7 @@ export const DEFAULT_THEME: SiteTheme = {
   colorBorderSolid: '#1e1e1e',
   tapeMatColor: '#f4efe8',
   tapeColor: 'rgba(214, 209, 206, 0.42)',
+  tapeShadow: 'soft',
   paperGrain: 'none',
   photoTreatment: 'color',
   spacingScale: 'normal',
@@ -127,6 +130,16 @@ const PHOTO_SATURATION: Record<PhotoTreatment, string> = {
   bw: '0',
 }
 
+// Warm, low-alpha shadows rather than near-black. On a bone ground a
+// rgba(0,0,0,0.45) drop reads as grime under the print; these are tinted
+// toward the olive so the frame sits on the paper instead of hovering over it.
+const TAPE_SHADOW: Record<TapeShadow, string> = {
+  none: 'none',
+  soft: '0 4px 14px rgba(60, 55, 40, 0.10)',
+  medium: '0 8px 22px rgba(60, 55, 40, 0.16)',
+  strong: '0 14px 32px rgba(60, 55, 40, 0.24)',
+}
+
 const BTN_RADIUS: Record<SiteTheme['buttonStyle'], string> = {
   sharp: '2px',
   rounded: '8px',
@@ -154,6 +167,7 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--color-border-solid': theme.colorBorderSolid,
     '--tape-mat': theme.tapeMatColor,
     '--tape-color': theme.tapeColor,
+    '--tape-shadow': TAPE_SHADOW[theme.tapeShadow],
     '--paper-grain-opacity': GRAIN_OPACITY[theme.paperGrain],
     '--photo-saturation': PHOTO_SATURATION[theme.photoTreatment],
     '--space-scale': String(SPACE_SCALE[theme.spacingScale]),

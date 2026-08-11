@@ -196,6 +196,23 @@ export const SiteDesign: GlobalConfig = {
       label: 'Tape strip color',
       defaultValue: 'rgba(214, 209, 206, 0.42)',
     },
+    // The frame shadow was the last hardcoded piece of the taped treatment,
+    // and it was tuned for the old charcoal ground: a heavy near-black drop
+    // that reads as dirt on a light paper ground. A select of presets rather
+    // than a raw CSS string, because "0 10px 26px rgba(0,0,0,0.45)" is not a
+    // control Tynnell can reason about.
+    {
+      name: 'tapeShadow',
+      type: 'select',
+      label: 'Photo frame shadow',
+      defaultValue: 'soft',
+      options: [
+        { label: 'None', value: 'none' },
+        { label: 'Soft', value: 'soft' },
+        { label: 'Medium', value: 'medium' },
+        { label: 'Strong', value: 'strong' },
+      ],
+    },
     // Two shell-level finishes (Rising Roots). Both are applied BY the shell
     // rather than baked into any individual photo, so they work on whatever
     // Tynnell uploads later. Both default to off, so this is inert until set.
