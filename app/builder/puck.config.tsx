@@ -65,6 +65,32 @@ const RESPONSIVE_CSS = `
 @media (min-width:${MOBILE_MAX + 1}px){.pk-hide-desktop{display:none !important}}
 `
 
+// Editorial bleed/offset for Split Image + Text (issue 5). The image runs off
+// the canvas edge and sits off the section baseline, which is what stops a run
+// of alternating rows reading as a stack of equal boxes.
+//
+// Classes rather than inline styles for two reasons: the effect MUST switch
+// off once the columns stack, and inline styles cannot carry a media query.
+// Below the stack point a negative outer margin would drag the image (and the
+// page) sideways, so every rule here is gated above it.
+//
+// Horizontal overflow is contained by `html, body { overflow-x: hidden }` in
+// app/(site)/globals.css. Deliberately NOT clipped on the section itself:
+// that would also crop the vertical offset, which is the point of the effect.
+const BLEED_MIN = 900
+const EDITORIAL_CSS = `
+@media (min-width:${BLEED_MIN}px){
+.pk-bleed-left-small{margin-left:-2vw}
+.pk-bleed-left-medium{margin-left:-5vw}
+.pk-bleed-left-large{margin-left:-9vw}
+.pk-bleed-right-small{margin-right:-2vw}
+.pk-bleed-right-medium{margin-right:-5vw}
+.pk-bleed-right-large{margin-right:-9vw}
+.pk-offset-up{margin-top:-4vw;margin-bottom:4vw}
+.pk-offset-down{margin-top:4vw;margin-bottom:-4vw}
+}
+`
+
 // Taped-photo treatment (TYN-233): an editorial "scrapbook" look where each
 // photo sits on a cream mat with a strip of translucent washi tape at the top.
 // Tape strips are pseudo-elements, which inline styles can't express, so the
@@ -195,6 +221,16 @@ const eyebrowStyle: React.CSSProperties = {
   textTransform: 'uppercase',
   color: C.detail,
   margin: '0 0 0.75rem',
+}
+// Hero corner labels. Light rather than C.detail because they always sit over
+// the hero photograph, never over the page ground.
+const cornerLabelStyle: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '0.6rem',
+  letterSpacing: '0.22em',
+  textTransform: 'uppercase',
+  color: 'rgba(255,255,255,0.82)',
+  whiteSpace: 'pre-wrap',
 }
 const headingStyle = (size = 'clamp(1.6rem, 3.5vw, 2.75rem)'): React.CSSProperties => ({
   fontFamily: HEADING_FONT,
@@ -415,7 +451,7 @@ export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
       <div style={{ background: C.bg, color: C.body, minHeight: '100%', fontFamily: BODY_FONT }}>
-        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + EDITORIAL_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
         {children}
       </div>
     ),
@@ -479,6 +515,12 @@ export const config: Config = {
         align: alignField,
         buttonText: { type: 'text', label: 'Button text (optional)' },
         buttonHref: { type: 'text', label: 'Button link' },
+        // Corner labels pinned to the bottom of the hero. These belong to the
+        // hero rather than the site chrome: on a promoted page the hero IS a
+        // block, so anchoring them in the layout would mean guessing where it
+        // ends. Blank by default, so nothing appears unless filled in.
+        cornerLeft: { type: 'text', label: 'Bottom-left label (optional)' },
+        cornerRight: { type: 'text', label: 'Bottom-right label (optional)' },
         ...responsiveFields,
       },
       defaultProps: {
@@ -492,9 +534,11 @@ export const config: Config = {
         align: 'left',
         buttonText: '',
         buttonHref: '',
+        cornerLeft: '',
+        cornerRight: '',
         ...responsiveDefaults,
       },
-      render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, align, buttonText, buttonHref, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, align, buttonText, buttonHref, cornerLeft, cornerRight, hideOnMobile, hideOnDesktop }: any) => {
         const cls = visClass(hideOnMobile, hideOnDesktop)
         if (layout === 'split') {
           const imageLeft = align !== 'center'
@@ -541,6 +585,29 @@ export const config: Config = {
               {subheading && <p style={{ marginTop: '1rem', color: C.body, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
               {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
             </div>
+
+            {/* Corner labels sit above the overlay but outside the text
+                column, pinned to the hero's own bottom edge. Rendered only
+                when filled in, so an empty field costs nothing. */}
+            {(cornerLeft || cornerRight) && (
+              <div
+                className="pk-hero-corners"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  padding: 'clamp(1rem,2.5vw,1.75rem) clamp(1.25rem,5vw,5rem)',
+                  pointerEvents: 'none',
+                }}
+              >
+                <span style={cornerLabelStyle}>{cornerLeft}</span>
+                <span style={{ ...cornerLabelStyle, textAlign: 'right' }}>{cornerRight}</span>
+              </div>
+            )}
           </section>
         )
       },
@@ -658,6 +725,28 @@ export const config: Config = {
         body: { type: 'textarea', label: 'Body text' },
         buttonText: { type: 'text', label: 'Button text (optional)' },
         buttonHref: { type: 'text', label: 'Button link' },
+        // Editorial controls: let the image run off the canvas edge and sit
+        // off the section's own baseline, which is what stops alternating
+        // rows reading as a stack of equal boxes.
+        imageBleed: {
+          type: 'select',
+          label: 'Image bleed off edge (Side by side only)',
+          options: [
+            { label: 'None', value: 'none' },
+            { label: 'Small', value: 'small' },
+            { label: 'Medium', value: 'medium' },
+            { label: 'Large', value: 'large' },
+          ],
+        },
+        imageOffset: {
+          type: 'select',
+          label: 'Image vertical offset (Side by side only)',
+          options: [
+            { label: 'None', value: 'none' },
+            { label: 'Raised', value: 'up' },
+            { label: 'Lowered', value: 'down' },
+          ],
+        },
         background: bgField,
         scrollFadeIn: scrollFadeInField,
         ...responsiveFields,
@@ -671,11 +760,13 @@ export const config: Config = {
         body: 'Share the story behind your work. A sentence or two that gives visitors a sense of who you are.',
         buttonText: '',
         buttonHref: '',
+        imageBleed: 'none',
+        imageOffset: 'none',
         background: 'transparent',
         scrollFadeIn: false,
         ...responsiveDefaults,
       },
-      render: ({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, background, scrollFadeIn, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, hideOnMobile, hideOnDesktop }: any) => {
         const bg = background && background !== 'transparent' ? background : undefined
         const cls = visClass(hideOnMobile, hideOnDesktop)
 
@@ -726,8 +817,18 @@ export const config: Config = {
           )
         }
 
+        // Bleed always runs toward the OUTER edge, so it follows imagePosition
+        // rather than being a separate direction control: an image on the left
+        // bleeds left, on the right bleeds right. A control that let you bleed
+        // an image toward the middle of the page would only ever collide with
+        // the text column.
+        const bleedClass =
+          imageBleed && imageBleed !== 'none' ? `pk-bleed-${imagePosition === 'left' ? 'left' : 'right'}-${imageBleed}` : ''
+        const offsetClass = imageOffset && imageOffset !== 'none' ? `pk-offset-${imageOffset}` : ''
+        const imgCls = [bleedClass, offsetClass].filter(Boolean).join(' ')
+
         const img = (
-          <div style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', background: C.accent }}>
+          <div className={imgCls} style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', background: C.accent }}>
             {imageUrl && (
               scrollFadeIn ? (
                 <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
