@@ -7,7 +7,14 @@ import { useScrollLock } from '@/app/hooks/useScrollLock'
 import MobileMenu from '@/app/components/MobileMenu/MobileMenu'
 import styles from './Navbar.module.css'
 
-const ROW1 = ['Home', 'About', 'Portfolio', 'Services', 'Testimonials']
+// Rising Roots splits the primary links either side of a centred brand mark,
+// with the contact link promoted out of the row into a script CTA. LEFT_LINKS
+// fixes which labels sit on which side; everything else (including builder
+// pages flagged show-in-nav) lands on the right, and CTA_LABEL is pulled out
+// of the rows entirely.
+const LEFT_LINKS = ['Home', 'About', 'Portfolio']
+const CTA_LABEL = 'Contact'
+const CTA_TEXT = 'Inquire now'
 
 export default function Navbar({ builderLinks = [], logoUrl }: { builderLinks?: NavLink[]; logoUrl?: string }) {
   const [scrolled, setScrolled] = useState(false)
@@ -68,8 +75,57 @@ export default function Navbar({ builderLinks = [], logoUrl }: { builderLinks?: 
   useEffect(() => { setPortfolioOpen(false) }, [pathname])
 
   const allLinks = [...navLinks, ...builderLinks]
-  const row1Links = allLinks.filter(l => ROW1.includes(l.label))
-  const row2Links = allLinks.filter(l => !ROW1.includes(l.label))
+  const ctaLink = allLinks.find(l => l.label === CTA_LABEL)
+  const rowLinks = allLinks.filter(l => l.label !== CTA_LABEL)
+  const leftLinks = rowLinks.filter(l => LEFT_LINKS.includes(l.label))
+  const rightLinks = rowLinks.filter(l => !LEFT_LINKS.includes(l.label))
+
+  // Both sides render the same way, dropdown included, so this stays one
+  // implementation rather than two that can drift.
+  const renderLink = (link: NavLink) =>
+    link.children ? (
+      <li
+        key={link.href}
+        className={styles.hasDropdown}
+        ref={dropdownRef}
+        onMouseEnter={openDropdown}
+        onMouseLeave={scheduleCloseDropdown}
+      >
+        <button
+          className={styles.link}
+          onClick={() => setPortfolioOpen(p => !p)}
+          aria-expanded={portfolioOpen}
+          aria-haspopup="true"
+        >
+          {link.label}
+          <span className={`${styles.arrow} ${portfolioOpen ? styles.arrowOpen : ''}`} aria-hidden="true" />
+        </button>
+        <ul className={`${styles.dropdown} ${portfolioOpen ? styles.dropdownOpen : ''}`} role="menu">
+          {link.children.map(child => (
+            <li key={child.href} role="none">
+              <Link
+                href={child.href}
+                className={styles.dropdownItem}
+                role="menuitem"
+                onClick={() => setPortfolioOpen(false)}
+              >
+                {child.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </li>
+    ) : (
+      <li key={link.href}>
+        <Link
+          href={link.href}
+          className={styles.link}
+          aria-current={pathname === link.href ? 'page' : undefined}
+        >
+          {link.label}
+        </Link>
+      </li>
+    )
 
   const navClass = [
     styles.navbar,
@@ -80,96 +136,47 @@ export default function Navbar({ builderLinks = [], logoUrl }: { builderLinks?: 
   return (
     <>
       <nav className={navClass} aria-label="Main navigation">
+        <ul className={`${styles.row} ${styles.rowLeft}`} aria-label="Site navigation">
+          {leftLinks.map(renderLink)}
+        </ul>
+
         <Link href="/" className={styles.brand} aria-label="Tynnell Hollins Photography, home">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt="Tynnell Hollins Photography" className={styles.brandLogo} />
           ) : (
             <>
-              <span className={styles.brandLine}>Tynnell</span>
-              <span className={styles.brandLine}>Hollins</span>
-              <span className={styles.brandLine}>Photography</span>
+              {/* Two lines, not three. The old stacked
+                  Tynnell/Hollins/Photography wordmark is the design problem
+                  CLAUDE.md flags: it reads as a column of shouting rather than
+                  a mark, and it cannot centre. */}
+              <span className={styles.brandMark}>Tynnell Hollins</span>
+              <span className={styles.brandSub}>Photography</span>
             </>
           )}
         </Link>
 
-        <div className={styles.linksWrapper}>
-          <ul className={styles.row} aria-label="Site navigation">
-            {row1Links.map(link =>
-              link.children ? (
-                <li
-                  key={link.href}
-                  className={styles.hasDropdown}
-                  ref={dropdownRef}
-                  onMouseEnter={openDropdown}
-                  onMouseLeave={scheduleCloseDropdown}
-                >
-                  <button
-                    className={styles.link}
-                    onClick={() => setPortfolioOpen(p => !p)}
-                    aria-expanded={portfolioOpen}
-                    aria-haspopup="true"
-                  >
-                    {link.label}
-                    <span className={`${styles.arrow} ${portfolioOpen ? styles.arrowOpen : ''}`} aria-hidden="true" />
-                  </button>
-                  <ul className={`${styles.dropdown} ${portfolioOpen ? styles.dropdownOpen : ''}`} role="menu">
-                    {link.children.map(child => (
-                      <li key={child.href} role="none">
-                        <Link
-                          href={child.href}
-                          className={styles.dropdownItem}
-                          role="menuitem"
-                          onClick={() => setPortfolioOpen(false)}
-                        >
-                          {child.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ) : (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={styles.link}
-                    aria-current={pathname === link.href ? 'page' : undefined}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              )
-            )}
-          </ul>
+        <div className={styles.rowRight}>
+          <ul className={styles.row}>{rightLinks.map(renderLink)}</ul>
 
-          {row2Links.length > 0 && (
-            <ul className={`${styles.row} ${styles.row2}`}>
-              {row2Links.map(link => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={styles.link}
-                    aria-current={pathname === link.href ? 'page' : undefined}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          {ctaLink && (
+            <Link href={ctaLink.href} className={styles.cta}>
+              {CTA_TEXT}
+            </Link>
           )}
-        </div>
 
-        <button
+          <button
           className={`${styles.hamburger} ${menuOpen ? styles.hamburgerOpen : ''}`}
           onClick={() => setMenuOpen(p => !p)}
           aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={menuOpen}
           aria-controls="mobile-menu"
         >
-          <span className={styles.bar} aria-hidden="true" />
-          <span className={styles.bar} aria-hidden="true" />
-          <span className={styles.bar} aria-hidden="true" />
-        </button>
+            <span className={styles.bar} aria-hidden="true" />
+            <span className={styles.bar} aria-hidden="true" />
+            <span className={styles.bar} aria-hidden="true" />
+          </button>
+        </div>
       </nav>
 
       <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} links={allLinks} />

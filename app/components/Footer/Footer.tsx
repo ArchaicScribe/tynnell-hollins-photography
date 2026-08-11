@@ -3,10 +3,25 @@ import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
+import { navLinks, type NavLink } from '@/app/constants/nav'
 import styles from './Footer.module.css'
 
 const INSTAGRAM_URL = 'https://instagram.com/tynnellhollinsphotography'
 const TIKTOK_URL = 'https://tiktok.com/@tynnellhollinsphotography'
+
+// Sourced from Tynnell's own Showit footer. Lives here beside CONTACT_EMAIL
+// for now (app/lib/constants.ts is the existing single-source-of-truth
+// pattern); SiteConfig has no location field yet, and adding one would collide
+// with the open TYN-326 PR that wires SiteConfig into the site.
+const STUDIO_LOCATION = 'Based in New Mexico | Travel Worldwide'
+
+// Two columns, matching the reference and her Showit draft. Built from the
+// shared nav constant so a route rename cannot leave the footer pointing at a
+// dead link.
+const FOOTER_NAV_COLUMNS: NavLink[][] = [
+  navLinks.filter(l => ['Home', 'About', 'Portfolio'].includes(l.label)),
+  navLinks.filter(l => ['Services', 'Contact', 'Blog'].includes(l.label)),
+]
 
 export default async function Footer() {
   const year = new Date().getFullYear()
@@ -67,7 +82,38 @@ export default async function Footer() {
         )}
       </div>
 
-      {/* Bottom bar */}
+      {/* Main footer: wordmark, contact block, two-column nav. Mirrors the
+          Rising Roots footer and Tynnell's own Showit draft, which read
+          wordmark / location + email / two nav columns. */}
+      <div className={styles.main}>
+        <Link href="/" className={styles.footerBrand} aria-label="Tynnell Hollins Photography, home">
+          <span className={styles.footerMark}>Tynnell Hollins</span>
+          <span className={styles.footerSub}>Photography</span>
+        </Link>
+
+        <div className={styles.contactBlock}>
+          <p className={styles.location}>{STUDIO_LOCATION}</p>
+          <a href={`mailto:${CONTACT_EMAIL}`} className={styles.contactEmail}>
+            {CONTACT_EMAIL}
+          </a>
+        </div>
+
+        <nav className={styles.footerNav} aria-label="Footer navigation">
+          {FOOTER_NAV_COLUMNS.map((column, i) => (
+            <ul key={i} className={styles.footerNavColumn}>
+              {column.map(link => (
+                <li key={link.href}>
+                  <Link href={link.href} className={styles.footerNavLink}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ))}
+        </nav>
+      </div>
+
+      {/* Legal row */}
       <div className={styles.bottom}>
         <div className={styles.socials}>
           <a
