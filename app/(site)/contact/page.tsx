@@ -8,7 +8,7 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 import ContactForm from './ContactForm'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
-import { CONTACT_EMAIL } from '@/app/lib/constants'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 import { computeBookingDateBounds } from '@/app/lib/validation'
 import { isPreviewMode } from '@/app/lib/builderPreview'
@@ -74,7 +74,7 @@ function findActiveOrUpcoming(ranges: BlockedRange[]): string | null {
 }
 
 export default async function ContactPage() {
-  const promoted = await getPromotedPage()
+  const [promoted, site] = await Promise.all([getPromotedPage(), getSiteConfig()])
 
   let oooMessage: string | null = null
   let minDate: string
@@ -105,13 +105,13 @@ export default async function ContactPage() {
   const contactPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
-    name: 'Contact Tynnell Hollins Photography',
+    name: `Contact ${site.title}`,
     description: 'Book a session or send an inquiry. Weddings, engagements, portraits, and more.',
     url: 'https://tynnellhollinsphotography.com/contact',
     mainEntity: {
       '@type': 'LocalBusiness',
-      name: 'Tynnell Hollins Photography',
-      email: CONTACT_EMAIL,
+      name: site.title,
+      email: site.email,
       url: 'https://tynnellhollinsphotography.com',
     },
   }
@@ -150,11 +150,11 @@ export default async function ContactPage() {
             Fill out the form and I&apos;ll be in touch within 48 hours.
           </p>
           <div className={styles.directContact}>
-            <a href={`mailto:${CONTACT_EMAIL}`} className={styles.contactLink}>
-              {CONTACT_EMAIL}
+            <a href={`mailto:${site.email}`} className={styles.contactLink}>
+              {site.email}
             </a>
             <span className={styles.contactDivider}>·</span>
-            <a href="https://instagram.com/tynnellhollinsphotography" className={styles.contactLink} target="_blank" rel="noopener noreferrer">
+            <a href={site.instagramUrl} className={styles.contactLink} target="_blank" rel="noopener noreferrer">
               @tynnellhollinsphotography
             </a>
           </div>

@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const promoted = await getPromotedPage()
   if (promoted) return { title: promoted.title }
   return {
-    title: 'Client Words | Tynnell Hollins Photography',
+    title: 'Client Words',
     description: 'Kind words from couples, families, and portrait clients who have worked with Tynnell Hollins Photography.',
   }
 }

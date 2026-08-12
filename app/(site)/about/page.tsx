@@ -11,6 +11,7 @@ import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
+import { getSiteConfig, type SiteConfigData } from '@/app/lib/siteConfig'
 import { isPreviewMode } from '@/app/lib/builderPreview'
 import SpecialtyReveal from './SpecialtyReveal'
 import styles from './page.module.css'
@@ -119,16 +120,16 @@ const FALLBACK_CATEGORY_BY_HEADING: Record<string, string> = {
 // aware block" convention exists in this codebase). Kept separate from the
 // hardcoded branch's personSchema below, which additionally includes the
 // live headshot image.
-const PROMOTED_PERSON_SCHEMA = {
+const promotedPersonSchema = (site: SiteConfigData) => ({
   '@context': 'https://schema.org',
   '@type': 'Person',
   name: 'Tynnell Hollins',
   jobTitle: 'Photographer',
   url: 'https://tynnellhollinsphotography.com/about',
-  sameAs: ['https://instagram.com/tynnellhollinsphotography'],
+  sameAs: [site.instagramUrl].filter(Boolean),
   worksFor: {
     '@type': 'LocalBusiness',
-    name: 'Tynnell Hollins Photography',
+    name: site.title,
     url: 'https://tynnellhollinsphotography.com',
   },
   knowsAbout: ['Wedding Photography', 'Portrait Photography', 'Family Photography', 'Engagement Photography', 'Maternity Photography'],
@@ -138,15 +139,15 @@ const PROMOTED_PERSON_SCHEMA = {
     addressRegion: 'NM',
     addressCountry: 'US',
   },
-}
+})
 
 export default async function AboutPage() {
-  const promoted = await getPromotedAboutPage()
+  const [promoted, site] = await Promise.all([getPromotedAboutPage(), getSiteConfig()])
   if (promoted) {
     const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
     return (
       <>
-        <JsonLd data={PROMOTED_PERSON_SCHEMA} />
+        <JsonLd data={promotedPersonSchema(site)} />
         <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
       </>
     )
@@ -177,7 +178,7 @@ export default async function AboutPage() {
     name: 'Tynnell Hollins',
     jobTitle: 'Photographer',
     url: 'https://tynnellhollinsphotography.com/about',
-    sameAs: ['https://instagram.com/tynnellhollinsphotography'],
+    sameAs: [site.instagramUrl].filter(Boolean),
     worksFor: {
       '@type': 'LocalBusiness',
       name: 'Tynnell Hollins Photography',

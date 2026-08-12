@@ -2,17 +2,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { CONTACT_EMAIL } from '@/app/lib/constants'
+import { getSiteConfig, instagramHandle } from '@/app/lib/siteConfig'
+import { splitBrand } from '@/app/lib/constants'
 import { navLinks, type NavLink } from '@/app/constants/nav'
 import styles from './Footer.module.css'
 
-const INSTAGRAM_URL = 'https://instagram.com/tynnellhollinsphotography'
-const TIKTOK_URL = 'https://tiktok.com/@tynnellhollinsphotography'
-
-// Sourced from Tynnell's own Showit footer. Lives here beside CONTACT_EMAIL
-// for now (app/lib/constants.ts is the existing single-source-of-truth
-// pattern); SiteConfig has no location field yet, and adding one would collide
-// with the open TYN-326 PR that wires SiteConfig into the site.
+// Sourced from Tynnell's own Showit footer. Still a constant: SiteConfig has
+// no location field, and adding one is a schema change beyond the scope of
+// wiring up the fields that already exist. Worth promoting later.
 const STUDIO_LOCATION = 'Based in New Mexico | Travel Worldwide'
 
 // Two columns, matching the reference and her Showit draft. Built from the
@@ -26,6 +23,8 @@ const FOOTER_NAV_COLUMNS: NavLink[][] = [
 export default async function Footer() {
   const year = new Date().getFullYear()
 
+  const site = await getSiteConfig()
+  const brand = splitBrand(site.title)
   const payload = await getPayload({ config })
   const { docs: stripPhotos } = await payload.find({
     collection: 'photos',
@@ -52,13 +51,13 @@ export default async function Footer() {
         <div className={styles.igInfo}>
           <p className={styles.igLabel}>Follow me on Instagram</p>
           <a
-            href={INSTAGRAM_URL}
+            href={site.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.igHandle}
-            aria-label="Tynnell Hollins Photography on Instagram"
+            aria-label={`${site.title} on Instagram`}
           >
-            @tynnellhollinsphotography
+            {instagramHandle(site.instagramUrl)}
           </a>
         </div>
         {stripPhotos.length > 0 && (
@@ -86,15 +85,15 @@ export default async function Footer() {
           Rising Roots footer and Tynnell's own Showit draft, which read
           wordmark / location + email / two nav columns. */}
       <div className={styles.main}>
-        <Link href="/" className={styles.footerBrand} aria-label="Tynnell Hollins Photography, home">
-          <span className={styles.footerMark}>Tynnell Hollins</span>
-          <span className={styles.footerSub}>Photography</span>
+        <Link href="/" className={styles.footerBrand} aria-label={`${site.title}, home`}>
+          <span className={styles.footerMark}>{brand.mark}</span>
+          {brand.sub && <span className={styles.footerSub}>{brand.sub}</span>}
         </Link>
 
         <div className={styles.contactBlock}>
           <p className={styles.location}>{STUDIO_LOCATION}</p>
-          <a href={`mailto:${CONTACT_EMAIL}`} className={styles.contactEmail}>
-            {CONTACT_EMAIL}
+          <a href={`mailto:${site.email}`} className={styles.contactEmail}>
+            {site.email}
           </a>
         </div>
 
@@ -117,7 +116,7 @@ export default async function Footer() {
       <div className={styles.bottom}>
         <div className={styles.socials}>
           <a
-            href={INSTAGRAM_URL}
+            href={site.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.socialLink}
@@ -128,7 +127,7 @@ export default async function Footer() {
             </svg>
           </a>
           <a
-            href={TIKTOK_URL}
+            href={site.tiktokUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.socialLink}
@@ -139,16 +138,16 @@ export default async function Footer() {
             </svg>
           </a>
           <a
-            href={`mailto:${CONTACT_EMAIL}`}
+            href={`mailto:${site.email}`}
             className={styles.socialLink}
-            aria-label={`Email ${CONTACT_EMAIL}`}
+            aria-label={`Email ${site.email}`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
             </svg>
           </a>
         </div>
-        <p className={styles.copy}>&copy; {year} Tynnell Hollins Photography</p>
+        <p className={styles.copy}>&copy; {year} {site.title}</p>
       </div>
     </footer>
   )

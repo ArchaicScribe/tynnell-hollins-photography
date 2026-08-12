@@ -15,6 +15,7 @@ import Navbar from '../components/Navbar/Navbar'
 import Footer from '../components/Footer/Footer'
 import { getBuilderNavLinks } from '@/app/lib/nav'
 import { getSiteDesign, themeToCssVars } from '@/app/lib/siteDesign'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import { DesignPreviewBridge } from '../components/DesignPreviewBridge'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -24,20 +25,23 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 // only allows one or the other per layout. getSiteDesign() is wrapped in
 // React's cache(), so this and the layout body's own call share one DB read.
 export async function generateMetadata(): Promise<Metadata> {
-  const theme = await getSiteDesign()
+  const [theme, site] = await Promise.all([getSiteDesign(), getSiteConfig()])
   return {
     metadataBase: new URL('https://tynnellhollinsphotography.com'),
+    // The template is what lets every child route set a bare title ("Blog")
+    // and still get the business name appended. Child routes that spell the
+    // business name out themselves would double it.
     title: {
-      default: 'Tynnell Hollins Photography',
-      template: '%s | Tynnell Hollins Photography',
+      default: site.title,
+      template: `%s | ${site.title}`,
     },
     description:
       'Albuquerque, New Mexico wedding and portrait photographer. Tynnell Hollins captures authentic, timeless moments for couples, families, and engagements.',
     openGraph: {
       type: 'website',
-      siteName: 'Tynnell Hollins Photography',
+      siteName: site.title,
       locale: 'en_US',
-      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Tynnell Hollins Photography' }],
+      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: site.title }],
     },
     twitter: {
       card: 'summary_large_image',
@@ -62,7 +66,11 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [builderLinks, theme] = await Promise.all([getBuilderNavLinks(), getSiteDesign()])
+  const [builderLinks, theme, site] = await Promise.all([
+    getBuilderNavLinks(),
+    getSiteDesign(),
+    getSiteConfig(),
+  ])
 
   return (
     <html
@@ -77,7 +85,7 @@ export default async function RootLayout({
       <style dangerouslySetInnerHTML={{ __html: `:root {\n  ${themeToCssVars(theme)}\n}` }} />
       <body suppressHydrationWarning>
         <a href="#main-content" className="skipLink">Skip to content</a>
-        <Navbar builderLinks={builderLinks} logoUrl={theme.logoUrl} />
+        <Navbar builderLinks={builderLinks} logoUrl={theme.logoUrl} siteTitle={site.title} />
         <div id="main-content" tabIndex={-1}>{children}</div>
         <Footer />
         <DesignPreviewBridge />
