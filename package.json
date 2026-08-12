@@ -36,7 +36,7 @@
     "react": "^19",
     "react-dom": "^19",
     "resend": "^6.9.3",
-    "sharp": "^0.35.0",
+    "sharp": "^0.34.5",
     "stripe": "^20.4.1",
     "styled-components": "^6.3.11",
     "swiper": "^12.1.2"
