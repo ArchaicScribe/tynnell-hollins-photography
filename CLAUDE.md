@@ -100,7 +100,7 @@ Two confirmed rules for reliable production deploys:
 
 ### Media (Cloudflare R2)
 - Bucket: `tynnell-hollins-photos`
-- Public URL via `r2.dev` (custom domain `media.tynnellhollinsphotography.com` pending — TYN-144)
+- Public URL is the custom domain `media.tynnellhollinsphotography.com` (TYN-144, done: verified live 2026-08-10)
 - `generateFileURL` pattern in `payload.config.ts` (not `baseURL`)
 
 ### Database migrations
@@ -139,7 +139,19 @@ Any time a custom component is added to a collection or global config (Cell, Fie
 4. **Never skip this.** A stale importMap causes `getFromImportMap` failures that blank the entire admin.
 
 ### Payload types
-After changing collection/global field types, regenerate:
+
+**This does not currently work on Node v24.** The command below fails with
+`TypeError: T.registerHooks is not a function` inside tsx, the same class of
+tsx/ESM breakage that already stops `npx payload migrate` (see the migrations
+section above). Confirmed repeatedly on 2026-08-10.
+
+Until that is fixed, **hand-edit `payload-types.ts`** after a field change. It is
+a generated file, so this is not ideal, but a stale `payload-types.ts` fails
+`next build` at the typecheck step, which is worse. Both places need the field:
+the `SiteDesign`/collection interface *and* its matching `...Select<T>` interface
+further down.
+
+The command, for when tsx is fixed or on an older Node:
 ```powershell
 $env:DATABASE_URI = (op read "op://Personal/Tynnell_Hollins_Photography_Payload/DATABASE_URI")
 node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
@@ -183,7 +195,13 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 
 ## Design tokens (public site)
 
+**These are FALLBACKS, not the live values.** Every `--color-*` and font-role
+token is driven by the `SiteDesign` global and edited in `/design`; the values in
+`app/(site)/styles/tokens.css` only apply before SiteDesign has been read (e.g.
+isolated tooling). Do not "fix" the site by editing them; change it in `/design`.
+
 ```css
+/* tokens.css fallbacks (the original dark palette) */
 --color-bg: #0C0C0C
 --color-bg-accent: #131313
 --color-heading: #D6D1CE
@@ -195,6 +213,34 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 --font-body: Poppins
 --padding-x: max(1.25rem, 2.5vw)
 ```
+
+**What is actually live** (Rising Roots shell, 2026-08-10): a warm bone ground
+`#E4E2D8` with olive `#6F6950` headings and buttons, body text `#242424`,
+Cormorant Garamond headings and Barlow body, paper grain at 0.06 and photos at
+0.65 saturation. All of it is data in `site_design`, none of it is in the repo.
+
+The full token set is larger than the list above: card, hover, overlay,
+button-text, button-hover and three border tokens were promoted out of
+`tokens.css` and are adjustable too. See `themeToCssVarMap` in
+`app/lib/siteTheme.ts` for the authoritative list.
+
+**The theme chain has six links and missing any one silently breaks it:** the
+`SiteDesign` global, `SiteTheme`, `DEFAULT_THEME`, `themeToCssVarMap`,
+`getSiteDesign` (which maps every field by hand with a `|| DEFAULT_THEME`
+fallback, so an unmapped field emits `undefined` into the CSS), the `/design`
+panel in `DesignPanelShared.tsx`, and the field allowlist in
+`app/api/design/save/route.ts`.
+
+**Payload selects are backed by real Postgres enums**, so a new font face or
+style option needs `ALTER TYPE ... ADD VALUE` (or `CREATE TYPE`) in
+`scripts/migrate-db.mjs`, never a plain varchar column. Same trap as
+`promotedRoute`.
+
+**Writing `site_design` directly via SQL skips the `revalidatePath` that
+`/api/design/save` performs**, so ISR-cached pages keep serving the old theme
+until their window expires or a rebuild happens. When applying design data
+around a deploy, write it *before* merging so the production build prerenders
+with the final values in one pass.
 
 ### Style-exposure convention (TYN-338)
 
@@ -324,7 +370,8 @@ Prompt injection is the primary risk: a client submits input designed to make th
 - **Live preview pane (TYN-200 + TYN-231, SHIPPED)** - Payload `admin.livePreview` is wired for Galleries (`/portfolio/[slug]`), About Page (`/about`), and Blog Posts (via `/api/preview?slug=` which enables Next.js draft mode so unpublished drafts render). Mobile/tablet/desktop breakpoints. Photos have no dedicated page so no pane (use "View in Portfolio" contextual link instead).
 - **How a photo reaches the public site (important mental model)** - Uploading a photo to the library does NOT automatically publish it to a gallery. A Photo doc has no dedicated page. Its appearance is distributed: (1) `/portfolio` masonry shows individual photos filtered by `category` on the All/Portraits/Families/Couples/Brands tabs; (2) the Weddings tab shows ONLY gallery album cards, so a `weddings`-category photo that is not in a gallery is invisible on the Weddings tab (it still appears under All); (3) `/portfolio/[slug]` shows only photos added to that gallery, in gallery order; (4) the homepage portfolio teaser shows up to 6 `featured` photos. So "preview this photo" has no single target URL - the right UX is a contextual "View in Portfolio" link, not a per-document live-preview pane.
 - **Admin `next dev` occasionally hangs mid-hydration on `/admin/login`/other admin routes (TYN-303, root-caused 2026-07-08, confirmed dev-only)** — in dev mode, Next.js's RSC pipeline embeds an oversized debug payload for Payload's config that isn't run through Payload's own client-config sanitizer; this can stall hydration and, worse, the payload includes `PAYLOAD_SECRET` in cleartext (verified via raw `curl`, no browser JS involved). Confirmed via a full production build (`next build && next start`) that this is 100% dev-only: prod response is 48KB with zero `secret` occurrences vs dev's 237KB with the secret present, and the login form renders instantly in prod. Vercel always deploys from a production build, so the live site was never affected. No code fix available/needed. If the hang gets disruptive, test admin changes against a local production build instead of `next dev`. (Unrelated to TYN-179, which was a different, already-fixed public-site hydration mismatch caused by the Grammarly browser extension.)
-- **R2 custom domain (TYN-144)** — media URLs still use `r2.dev`. CNAME `media` is Active in Cloudflare. Remaining step: update `R2_PUBLIC_URL` in Vercel env vars to `https://media.tynnellhollinsphotography.com`. No code change needed.
+- ~~**R2 custom domain (TYN-144)**~~ DONE. `R2_PUBLIC_URL` is set to the custom domain; photo URLs resolve to `https://media.tynnellhollinsphotography.com`, verified against production 2026-08-10.
+- **Fonts are self-hosted, do not add `next/font/google` back.** `next/font/google` fetches every face from `fonts.gstatic.com` at BUILD time. With nine layouts pulling nine families, one throttled response fails the whole build, which is exactly what killed a qa deploy on 2026-08-10 when four branches built at once. All faces now load via `next/font/local` from `app/fonts/google` (basic-latin woff2 only, ~840 KB) through one shared `app/fonts/fonts.ts`. Regenerate with `node scripts/fetch-google-fonts.mjs` if a weight is added. **`next/font` requires explicitly written literals**: a `w(file, weight)` helper or a shared `const POPPINS_ALL = [...]` array both fail the build with "Font loader values must be explicitly written literals", which is why every `src` entry is longhand. Do not refactor them. Note `app/(payload)/custom.css` still `@import`s three families from Google at RUNTIME (a browser fetch, not a build-time one, so it cannot fail a build). Until that goes, the CSP must keep `fonts.googleapis.com` and `fonts.gstatic.com`.
 - **Stripe webhook secret (TYN-182)** — Vercel flags "Needs Attention." Rotate secret in Stripe dashboard and update `STRIPE_WEBHOOK_SECRET` in Vercel env vars.
 - **Upstash Redis** — Rate limits contact form, coming-soon inquiry, and checkout. Credentials live in 1Password under `op://Personal/Tynnell_Hollins_Photography/UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`. If the database is deleted or the URL changes: (1) create a new Regional database at console.upstash.com/redis (US East 1), (2) copy the REST URL and token, (3) add/update both env vars in Vercel, (4) redeploy. The `safeLimit()` wrapper in `app/lib/ratelimit.ts` fails open if Redis is unreachable, so forms still work without rate limiting -- but fix Upstash promptly. Do NOT remove or comment out the Upstash env vars; use dummy placeholder values locally if needed.
 - **Gallery bulk photo adding** — resolved (TYN-197). `GalleryBulkPhotoPicker` modal lets Tynnell multi-select photos. Single-row "Add Row" still works for one-off additions.
