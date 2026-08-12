@@ -5,7 +5,7 @@ import type { Data } from '@measured/puck'
 import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
-import { CONTACT_EMAIL } from '@/app/lib/constants'
+import { getSiteConfig } from '@/app/lib/siteConfig'
 import { isPreviewMode } from '@/app/lib/builderPreview'
 import Hero from '@/app/components/Hero/Hero'
 import PortfolioTeaser from '@/app/components/PortfolioTeaser/PortfolioTeaser'
@@ -22,6 +22,7 @@ import type { Photo } from '@/payload-types'
 export const revalidate = 120
 
 export default async function Home() {
+  const site = await getSiteConfig()
   const payload = await getPayload({ config })
 
   // A builder page can be promoted to the site homepage (TYN-227). When one is
@@ -107,7 +108,7 @@ export default async function Home() {
     description:
       'Tynnell Hollins is a wedding and portrait photographer capturing authentic moments for couples and families.',
     url: 'https://tynnellhollinsphotography.com',
-    email: CONTACT_EMAIL,
+    email: site.email,
     image: 'https://tynnellhollinsphotography.com/og-image.jpg',
     address: {
       '@type': 'PostalAddress',
@@ -120,7 +121,7 @@ export default async function Home() {
       { '@type': 'State', name: 'New Mexico' },
     ],
     sameAs: [
-      'https://instagram.com/tynnellhollinsphotography',
+      site.instagramUrl,
     ],
     founder: {
       '@type': 'Person',

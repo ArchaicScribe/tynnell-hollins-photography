@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { navLinks, type NavLink } from '@/app/constants/nav'
+import { splitBrand } from '@/app/lib/constants'
 import { useScrollLock } from '@/app/hooks/useScrollLock'
 import MobileMenu from '@/app/components/MobileMenu/MobileMenu'
 import styles from './Navbar.module.css'
@@ -16,7 +17,15 @@ const LEFT_LINKS = ['Home', 'About', 'Portfolio']
 const CTA_LABEL = 'Contact'
 const CTA_TEXT = 'Inquire now'
 
-export default function Navbar({ builderLinks = [], logoUrl }: { builderLinks?: NavLink[]; logoUrl?: string }) {
+export default function Navbar({
+  builderLinks = [],
+  logoUrl,
+  siteTitle = 'Tynnell Hollins Photography',
+}: {
+  builderLinks?: NavLink[]
+  logoUrl?: string
+  siteTitle?: string
+}) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [portfolioOpen, setPortfolioOpen] = useState(false)
@@ -74,6 +83,7 @@ export default function Navbar({ builderLinks = [], logoUrl }: { builderLinks?: 
 
   useEffect(() => { setPortfolioOpen(false) }, [pathname])
 
+  const brand = splitBrand(siteTitle)
   const allLinks = [...navLinks, ...builderLinks]
   const ctaLink = allLinks.find(l => l.label === CTA_LABEL)
   const rowLinks = allLinks.filter(l => l.label !== CTA_LABEL)
@@ -140,18 +150,18 @@ export default function Navbar({ builderLinks = [], logoUrl }: { builderLinks?: 
           {leftLinks.map(renderLink)}
         </ul>
 
-        <Link href="/" className={styles.brand} aria-label="Tynnell Hollins Photography, home">
+        <Link href="/" className={styles.brand} aria-label={`${siteTitle}, home`}>
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt="Tynnell Hollins Photography" className={styles.brandLogo} />
+            <img src={logoUrl} alt={siteTitle} className={styles.brandLogo} />
           ) : (
             <>
               {/* Two lines, not three. The old stacked
                   Tynnell/Hollins/Photography wordmark is the design problem
                   CLAUDE.md flags: it reads as a column of shouting rather than
                   a mark, and it cannot centre. */}
-              <span className={styles.brandMark}>Tynnell Hollins</span>
-              <span className={styles.brandSub}>Photography</span>
+              <span className={styles.brandMark}>{brand.mark}</span>
+              {brand.sub && <span className={styles.brandSub}>{brand.sub}</span>}
             </>
           )}
         </Link>
