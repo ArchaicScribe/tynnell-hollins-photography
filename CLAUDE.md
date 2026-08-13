@@ -305,11 +305,19 @@ The Payload admin sidebar is organized into four groups:
 
 - `AdminLogo` / `AdminIcon`: registered in `payload.config.ts` under `admin.components.graphics`
 - `Dashboard`: registered under `admin.components.views.dashboard`
-  - Shows count cards for all collections including Users
-  - Posts card shows published vs. draft split beneath total count
-  - OOO status card fetches `/api/globals/availability` and shows: Out of Office (amber, with internal label + return date), Next Unavailable (grey, upcoming range), or Available (green). All states link to `/admin/globals/availability`.
-  - Recent Activity section (TYN-200): 8 most recently updated photos as a thumbnail strip + 5 most recently updated posts as a list with status + date. Only renders when data exists.
-  - Featured sub-counts (TYN-206): Photos shows "X featured", Galleries shows "X featured", Testimonials shows "X on homepage", in addition to Posts' "published / drafts" split.
+  - **Rebuilt as a Pixieset-style hub, not a stats page.** Four product cards
+    (Portfolio, Website, Blog, Studio), each a labelled list of destinations
+    rather than a document count. Most point at the custom surfaces
+    (`/builder`, `/blog-editor`, `/site-settings`, `/availability`); a few deep
+    link into Payload for collections with no custom screen yet
+    (`/admin/collections/photos`, `/admin/globals/hero-slides`).
+  - OOO status card fetches `/api/globals/availability?depth=0` and links to
+    **`/availability`**, the custom studio page. It deliberately does NOT link to
+    `/admin/globals/availability`, which would break the no-raw-admin rule above.
+  - Recent activity: 8 most recently updated photos, 5 most recently updated
+    **galleries** (not posts), and recent orders via `/api/admin/recent-orders`.
+  - There are no per-collection count cards, no Posts published/draft split, and
+    no "X featured" sub-counts. Earlier revisions had those; this one does not.
 - `PhotoGridView`: registered on `Photos` collection under `admin.components.views.list.Component`
   - Shows gallery membership badges on each photo card: fetches all galleries once on mount (`/api/galleries?limit=300&depth=0`), builds a `Record<number, string[]>` map, renders up to 2 gallery name pills (+N overflow) below the category text (TYN-194)
   - Featured star toggle button (top-right of each photo): gold filled star = featured, translucent dark = unfeatured. Clicks PATCH `/api/photos/:id` inline without navigating away (TYN-202)
@@ -343,6 +351,32 @@ The Payload admin sidebar is organized into four groups:
   custom views, no `viewOnSite` field, and no live preview.
 - `PayloadCssGuard`: imported in `app/(payload)/admin/layout.tsx` to force CSS into client bundle
 - All custom components are `'use client'` with inline styles so they survive hydration failures
+
+### Full registration inventory
+
+The entries above cover the components with non-obvious behaviour. **31 are
+registered in total.** This is the complete list, verified against
+`collections/`, `globals/` and `payload.config.ts`:
+
+| Registered in | Components |
+|---|---|
+| `payload.config.ts` | `AdminLogo`, `AdminIcon` (graphics), `Dashboard` (dashboard view), `EmptyNav` (Nav), `BackToStudio` (actions), `ForcePasswordChange` (providers), `GoogleSignInButton` (beforeLogin) |
+| `Photos.ts` | `PhotoGridView`, `PhotoEditHeader`, `PhotoViewInPortfolioButton` |
+| `Galleries.ts` | `GalleryGridView`, `GalleryPhotoArranger`, `GalleryBulkPhotoPicker`, `CoverPhotoPicker`, `CoverPhotoCell`, `GalleryViewOnSiteButton`, `HeroPhotoPicker` |
+| `Testimonials.ts` | `TestimonialsGridView`, `TestimonialsEditHeader` |
+| `Services.ts` | `ServicesGridView`, `ServicesEditHeader` |
+| `Users.ts` | `UsersGridView`, `UsersEditHeader` |
+| `Projects.ts` | `ProjectsKanbanView`, `ProjectsEditHeader` |
+| `AboutPage.ts` | `AboutPageHeader`, `AboutViewOnSiteButton` |
+| `Availability.ts` | `AvailabilityHeader`, `OooWarnings` |
+| `BookingSettings.ts` | `BookingSettingsHeader` |
+| `HeroSlides.ts` | `HeroSlidesHeader` |
+| not registered | `PayloadCssGuard` (imported directly by the admin layout), `GlobalEditHeader`, `PhotoPickerField`, `AdminViewOnSiteLink`, `InviteUserModal` (used by other components rather than registered) |
+
+The `*EditHeader` family is the 2026-07-02 directive in action: each replaces
+Payload's breadcrumb and `[Untitled]` heading on that collection's document
+screen with a branded strip. `Posts` has none, because the blog editor replaced
+its admin entirely.
 
 **After adding any new admin component**, always regenerate importMap (see above) and commit the result.
 
