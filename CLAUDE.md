@@ -15,7 +15,7 @@
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 15.4.x (pinned), App Router, TypeScript |
+| Framework | Next.js 15.5.x (pinned to an exact version in package.json, currently 15.5.19), App Router, TypeScript |
 | CMS | Payload v3 (embedded in Next.js at `/app/(payload)`) |
 | Database | Neon serverless PostgreSQL (Postgres 17, AWS US East 1) |
 | Media | Cloudflare R2 via `@payloadcms/storage-s3` |
@@ -95,8 +95,8 @@ Two confirmed rules for reliable production deploys:
 - Payload is embedded inside Next.js — one Vercel deployment, no separate CMS server
 - All SSR/RSC data fetching uses the **local API** (`payload.find()`, `payload.findGlobal()`) — zero HTTP overhead
 - Admin at `/admin`
-- Collections: Photos, Galleries, Testimonials, Services, Posts, Users, Pages (visual builder)
-- Globals: HeroSlides, AboutPage, SiteConfig, BookingSettings, Availability
+- Collections: Users, Photos, Galleries, Testimonials, Services, Posts, Pages (visual builder), Projects
+- Globals: HeroSlides, AboutPage, SiteConfig, SiteDesign, BookingSettings, Availability, GalleryPresets, EmailTemplates
 
 ### Media (Cloudflare R2)
 - Bucket: `tynnell-hollins-photos`
@@ -118,7 +118,7 @@ Two confirmed rules for reliable production deploys:
 - `Gallery.tapedStyle` (boolean, `taped_style` column) renders the public `/portfolio/[slug]` album with the taped-photo treatment instead of the clean grid (TYN-235)
 
 ### Visual page builder (Puck)
-- Lets Tynnell build custom pages on a drag-and-drop canvas, on brand and self-hosted. Library: `@measured/puck` (MIT). NO recurring SaaS cost (a core reason for leaving Pixieset). Currently on branch `feature/0000124-TYN-217-section-library`, NOT yet merged to main.
+- Lets Tynnell build custom pages on a drag-and-drop canvas, on brand and self-hosted. Library: `@measured/puck` (MIT). NO recurring SaaS cost (a core reason for leaving Pixieset). Merged to main and deployed.
 - Storage: the `pages` collection. Each row is one page: `title`, `slug` (unique), `content` (Puck document JSON), `published`, `displayOrder`, `showInNav`, `isHomepage`. Hidden from the admin nav; managed via `/builder`.
 - Editor: `/builder` (page list, create/rename/delete/duplicate/reorder, plus In-menu / Homepage toggles) and `/builder/[slug]` (the Puck editor, auth-gated). The editor lazy-loads Puck (`next/dynamic`, `ssr:false`).
 - Public render: `app/(site)/[...slug]/page.tsx` catch-all renders published pages via `@measured/puck/rsc`. It only fills slugs not owned by an explicit route; unknown or unpublished slugs `notFound()`. `app/(site)/page.tsx` renders an `isHomepage` page at `/`; `app/lib/nav.ts` merges `showInNav` pages into the site menu (Navbar + MobileMenu, fed from the `(site)` layout).
@@ -175,14 +175,15 @@ node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
 | `components/admin/GalleryGridView.tsx` | Visual gallery card grid with category filter |
 | `components/admin/GalleryPhotoArranger.tsx` | Visual gallery grid: drag-arrange, drag-and-drop upload, remove, set cover (replaces the photos array UI) |
 | `components/admin/PhotoEditHeader.tsx` | Custom photo edit header: large preview, metadata, Featured toggle, gallery membership |
-| `components/admin/PostGridView.tsx` | Visual blog post grid with status filter |
-| `components/admin/PostViewOnSiteButton.tsx` | "View on Site" link in post edit sidebar (dimmed when draft) |
 | `components/admin/PayloadCssGuard.tsx` | Forces Payload CSS into static link tag |
 | `scripts/migrate-db.mjs` | DB migration runner (used by Vercel pre-build) |
 | `app/builder/puck.config.tsx` | Puck block library + per-section style and visibility controls |
 | `app/builder/templates.ts` | Starter templates for new builder pages (blank / landing / about / gallery) |
 | `app/builder/ImagePickerField.tsx` | Puck image field: pick from library or upload (presign -> R2 -> ingest) |
 | `app/builder/[slug]/EditorClient.tsx` | Puck editor: save draft / publish, status pill, help panel, unsaved-changes guard |
+| `app/blog-editor/` | Standalone Puck WYSIWYG for blog posts. Replaced the Posts admin entirely, so `collections/Posts.ts` has no custom views |
+| `app/fonts/fonts.ts` | All self-hosted font faces (`next/font/local`). Do not reintroduce `next/font/google` |
+| `app/lib/siteConfig.ts` | Business name, tagline, email, socials from the SiteConfig global (TYN-326). Server-only, mirrors `siteDesign.ts` |
 | `app/(site)/[...slug]/page.tsx` | Public render of published builder pages (Puck RSC) |
 | `app/lib/nav.ts` | Builder pages flagged show-in-menu, merged into the site nav |
 | `app/lib/constants.ts` | `CONTACT_EMAIL`, `EMAIL_FROM` (single source of truth) |
@@ -255,7 +256,7 @@ TYN-338 is the reference example: the taped/polaroid photo-frame mat and tape-st
 | Route | Description |
 |---|---|
 | `/` | Home: Hero, PortfolioTeaser, AboutPreview, Testimonials, Contact |
-| `/portfolio` | Masonry grid with category filter |
+| `/portfolio` | Category tiles (Portraits / Family / Weddings) linking to each subpage. Currently replaced by a promoted builder page. |
 | `/portfolio/[slug]` | Gallery hero + photo grid (photos in Tynnell's sorted order) |
 | `/about` | Headshot, bio, tagline, values |
 | `/services` | Service cards with features and CTA |
@@ -283,7 +284,6 @@ TYN-338 is the reference example: the taped/polaroid photo-frame mat and tape-st
 | `POST /api/builder/{delete,rename,duplicate,reorder,settings}` | Builder page management + In-menu/Homepage flags |
 | `POST /api/upload-presign` | Presigned R2 PUT URL (step 1 of the photo upload pipeline) |
 | `POST /api/photos/ingest` | Create the Photo record after the R2 PUT (sharp resize) |
-| `GET /api/preview?slug=` | Enables Next.js draft mode + redirects to `/blog/[slug]` (Posts live preview, TYN-231) |
 | `GET /api/exit-preview` | Disables draft mode, redirects to `/` |
 
 ---
@@ -336,13 +336,11 @@ The Payload admin sidebar is organized into four groups:
   - Homepage quick-toggle pill on each card: solid badge = on homepage, dashed border = off. Clicks PATCH `/api/testimonials/:id` inline (TYN-203)
 - `ServicesGridView`: registered on `Services` collection under `admin.components.views.list.Component` (TYN-199)
   - Card: eyebrow category, service name, description excerpt (2-line clamp), price badge, bookable deposit badge (green), included item count, display order
-- `PostGridView`: registered on `Posts` collection under `admin.components.views.list.Component`
-  - Publish/draft quick-toggle: status badge is interactive -- click PATCHes `/api/posts/:id` inline. Draft-to-publish also sets `publishedAt` to now if not yet set (TYN-205)
-- `PostViewOnSiteButton`: registered on `Posts.viewOnSite` ui field as `admin.components.Field` (sidebar position)
-  - Uses `useFormFields` to read the current `slug` and `status` values
-  - Renders a "View on Site" link to `tynnellhollinsphotography.com/blog/[slug]`
-  - Dimmed with "Draft - not visible to visitors yet" note when status is draft
-  - Hides entirely on a new unsaved post (no slug yet)
+- **Posts have no custom admin components.** `PostGridView` and
+  `PostViewOnSiteButton` are gone: the blog editor rebuild replaced the Posts
+  admin entirely with the standalone `/blog-editor` (an in-context Puck WYSIWYG
+  whose canvas is the real blog post). `collections/Posts.ts` registers no
+  custom views, no `viewOnSite` field, and no live preview.
 - `PayloadCssGuard`: imported in `app/(payload)/admin/layout.tsx` to force CSS into client bundle
 - All custom components are `'use client'` with inline styles so they survive hydration failures
 
@@ -367,7 +365,7 @@ Prompt injection is the primary risk: a client submits input designed to make th
 ## Known issues / watch-outs
 
 - **Photo upload 413 + 500 errors (fix deployed, branch 0000115)** - HEIC/HEIF (iPhone default) crashed sharp on Vercel and the error was swallowed, producing an opaque 500. Branch 0000115 rejects HEIC/HEIF/AVIF/TIFF/BMP at presign time (HTTP 415, plain-English message), pre-flights the same check client-side in `PhotoGridView`, wraps the ingest route in catch-all logging so every failure now appears in Vercel runtime logs, corrects `maxDuration` to 60 (Vercel Hobby cap), and adds a 200 MB guard. Any lingering 413 is browser cache (hard refresh: Ctrl+Shift+R). If uploads still fail, check Vercel runtime logs for `/api/photos/ingest` - they now show the exact error.
-- **Live preview pane (TYN-200 + TYN-231, SHIPPED)** - Payload `admin.livePreview` is wired for Galleries (`/portfolio/[slug]`), About Page (`/about`), and Blog Posts (via `/api/preview?slug=` which enables Next.js draft mode so unpublished drafts render). Mobile/tablet/desktop breakpoints. Photos have no dedicated page so no pane (use "View in Portfolio" contextual link instead).
+- **Live preview pane** - `admin.livePreview` is configured centrally in `payload.config.ts` (not per-collection) and covers exactly two things: Galleries (`/portfolio/[slug]`) and the About Page global (`/about`). Mobile/tablet/desktop breakpoints. Photos have no dedicated page so no pane (use "View in Portfolio" contextual link instead). **Blog Posts no longer use it** - the Posts admin was replaced by the standalone `/blog-editor`, and the `/api/preview` route it relied on is gone.
 - **How a photo reaches the public site (important mental model)** - Uploading a photo to the library does NOT automatically publish it to a gallery. A Photo doc has no dedicated page. Its appearance is distributed: (1) `/portfolio` masonry shows individual photos filtered by `category` on the All/Portraits/Families/Couples/Brands tabs; (2) the Weddings tab shows ONLY gallery album cards, so a `weddings`-category photo that is not in a gallery is invisible on the Weddings tab (it still appears under All); (3) `/portfolio/[slug]` shows only photos added to that gallery, in gallery order; (4) the homepage portfolio teaser shows up to 6 `featured` photos. So "preview this photo" has no single target URL - the right UX is a contextual "View in Portfolio" link, not a per-document live-preview pane.
 - **Admin `next dev` occasionally hangs mid-hydration on `/admin/login`/other admin routes (TYN-303, root-caused 2026-07-08, confirmed dev-only)** — in dev mode, Next.js's RSC pipeline embeds an oversized debug payload for Payload's config that isn't run through Payload's own client-config sanitizer; this can stall hydration and, worse, the payload includes `PAYLOAD_SECRET` in cleartext (verified via raw `curl`, no browser JS involved). Confirmed via a full production build (`next build && next start`) that this is 100% dev-only: prod response is 48KB with zero `secret` occurrences vs dev's 237KB with the secret present, and the login form renders instantly in prod. Vercel always deploys from a production build, so the live site was never affected. No code fix available/needed. If the hang gets disruptive, test admin changes against a local production build instead of `next dev`. (Unrelated to TYN-179, which was a different, already-fixed public-site hydration mismatch caused by the Grammarly browser extension.)
 - ~~**R2 custom domain (TYN-144)**~~ DONE. `R2_PUBLIC_URL` is set to the custom domain; photo URLs resolve to `https://media.tynnellhollinsphotography.com`, verified against production 2026-08-10.
