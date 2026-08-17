@@ -16,8 +16,13 @@ const csp = [
   // widget script from challenges.cloudflare.com and renders the challenge
   // itself in an iframe from the same origin (frame-src, below).
   `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://challenges.cloudflare.com`,
-  `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
-  `font-src 'self' https://fonts.gstatic.com`,
+  // No Google Fonts origins: every face is self-hosted. The public site uses
+  // next/font/local (app/fonts/fonts.ts) and the Payload admin uses @font-face
+  // rules pointing at public/fonts/admin (app/(payload)/custom.css). If a
+  // font stops rendering after a change here, something reintroduced a remote
+  // font rather than this being too strict.
+  `style-src 'self' 'unsafe-inline'`,
+  `font-src 'self'`,
   `img-src 'self' data: https://pub-db2dd9a6665142e4adcd4f822fbe2683.r2.dev https://media.tynnellhollinsphotography.com`,
   // Direct video files (builder Video block, TYN-330) may be hosted on R2
   // alongside photos, or same-origin.

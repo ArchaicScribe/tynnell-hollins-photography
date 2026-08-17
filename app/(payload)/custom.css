@@ -1,6 +1,71 @@
 /* Tynnell Hollins Photography - Payload admin brand theme */
 
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Roboto+Mono:ital,wght@0,400;0,500;1,400&family=Tangerine:wght@400;700&display=swap');
+/* Self-hosted from public/fonts/admin rather than @import-ed from Google.
+   The old @import was a RUNTIME browser fetch, so unlike next/font/google it
+   could never fail a build, but it was the last thing keeping
+   fonts.googleapis.com and fonts.gstatic.com in the CSP (see next.config.mjs).
+
+   Family names are deliberately unchanged, so the ~18 `font-family: 'Archivo'`
+   and 'Roboto Mono' declarations below need no edits.
+
+   Only the weights this file actually uses are shipped. Tangerine was in the
+   old @import but is never referenced anywhere in this stylesheet, so it is
+   simply gone: that is one fewer font download on every admin page load.
+
+   These are the same basic-latin woff2 files as app/fonts/google, copied into
+   public/ because Payload's admin CSS needs a stable URL and next/font emits
+   hashed paths. Regenerate the source files with
+   `node scripts/fetch-google-fonts.mjs`. */
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/admin/archivo-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/admin/archivo-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/admin/archivo-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/admin/archivo-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/admin/roboto-mono-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/admin/roboto-mono-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/admin/roboto-mono-400-italic.woff2') format('woff2');
+}
 
 /* Override Payload CSS variables - applied under both themes so the dark
    palette holds regardless of the user's system preference. */
