@@ -104,8 +104,14 @@ Two confirmed rules for reliable production deploys:
 - `generateFileURL` pattern in `payload.config.ts` (not `baseURL`)
 
 ### Database migrations
-- `npx payload migrate` **fails on Node v24** due to ESM issues
-- Use `scripts/migrate-db.mjs` instead — runs DDL directly via `pg`
+- **Use `scripts/migrate-db.mjs`. Do not switch to `payload migrate`.** The
+  Payload CLI now works (the old failure was a stale `tsx`, see Payload types
+  below), but this project has never used Payload's migration system: the
+  `migrations/` directory holds one ancient file that `migrate:status` reports
+  as never run, while the real schema is managed entirely by `migrate-db.mjs`.
+  Running `payload migrate` would try to apply that stale file against a schema
+  it does not describe.
+- `scripts/migrate-db.mjs` runs DDL directly via `pg`
 - This script runs as a Vercel pre-build step (`vercel.json` buildCommand)
 - Every schema change (new table, new column, new index) must have a migration block in this file
 
@@ -140,22 +146,27 @@ Any time a custom component is added to a collection or global config (Cell, Fie
 
 ### Payload types
 
-**This does not currently work on Node v24.** The command below fails with
-`TypeError: T.registerHooks is not a function` inside tsx, the same class of
-tsx/ESM breakage that already stops `npx payload migrate` (see the migrations
-section above). Confirmed repeatedly on 2026-08-10.
+After changing collection/global field types, regenerate:
 
-Until that is fixed, **hand-edit `payload-types.ts`** after a field change. It is
-a generated file, so this is not ideal, but a stale `payload-types.ts` fails
-`next build` at the typecheck step, which is worse. Both places need the field:
-the `SiteDesign`/collection interface *and* its matching `...Select<T>` interface
-further down.
-
-The command, for when tsx is fixed or on an older Node:
 ```powershell
 $env:DATABASE_URI = (op read "op://Personal/Tynnell_Hollins_Photography_Payload/DATABASE_URI")
-node node_modules/tsx/dist/cli.mjs node_modules/payload/bin.js generate:types
+$env:PAYLOAD_SECRET = "placeholder"
+npm run generate:types
 ```
+
+**Never hand-edit `payload-types.ts`.** It was hand-edited for a while because
+this command genuinely failed, and the file silently drifted from the real
+schema: `Gallery.coverPhoto` and `heroPhoto` ended up with the wrong type shape,
+and several field descriptions were stale. Regenerating is now cheap, so there
+is no reason to touch it by hand.
+
+**Root cause of the old failure, for the record:** it was never Node v24. `tsx`
+was a transitive dependency resolving to 4.22.4, which crashes with
+`TypeError: T.registerHooks is not a function`. `tsx` is now an explicit
+devDependency pinned to `^4.23.12`, which fixes it. If that error ever returns,
+check the installed `tsx` version first.
+
+`npm run generate:importmap` exists too, for the admin importMap step above.
 
 ---
 

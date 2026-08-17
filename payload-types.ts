@@ -184,7 +184,7 @@ export interface User {
   collection: 'users';
 }
 /**
- * Your photo library. Drop images here and they upload instantly — title and alt text are filled in automatically from the filename so you can bulk-upload without stopping. Edit any photo afterwards to update the details.
+ * Your photo library. Drop images here and they upload instantly - title and alt text are filled in automatically from the filename so you can bulk-upload without stopping. Edit any photo afterwards to update the details.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "photos".
@@ -192,11 +192,11 @@ export interface User {
 export interface Photo {
   id: number;
   /**
-   * Auto-filled from the filename on upload. Edit this to give the photo a meaningful name — clients never see it. Example: "Smith Wedding - First Dance".
+   * Your private label for this photo - never shown to visitors. Auto-filled from the filename. Rename it to something meaningful for you: "Smith Wedding - First Dance", "Outdoor Portraits - Golden Hour". To add text that appears on your live site beneath this photo, use the Caption field below.
    */
   title?: string | null;
   /**
-   * Describe what is in this photo. Screen readers read this aloud for visually impaired visitors and Google uses it to understand your images. Auto-filled on upload — update it when you have a moment. Example: "Bride and groom laughing during their first dance at an outdoor reception."
+   * Describe what is in this photo. Screen readers read this aloud for visually impaired visitors and Google uses it to understand your images. Auto-filled on upload - update it when you have a moment. Example: "Bride and groom laughing during their first dance at an outdoor reception."
    */
   alt?: string | null;
   /**
@@ -204,7 +204,7 @@ export interface Photo {
    */
   category?: ('weddings' | 'portraits' | 'families' | 'couples' | 'brands') | null;
   /**
-   * Optional text displayed beneath this photo in galleries. Leave blank for no caption.
+   * Optional. This text appears beneath this photo on your live gallery pages - visitors will see it. Leave it blank for no caption. Example: "Dancing under the stars at a Napa Valley vineyard."
    */
   caption?: string | null;
   /**
@@ -266,7 +266,7 @@ export interface Gallery {
    */
   title: string;
   /**
-   * Auto-generated from the title — you do not need to set this. If you want a custom web address, you can edit it here. Use lowercase letters and hyphens only.
+   * Auto-generated from the title - you do not need to set this. If you want a custom web address, you can edit it here. Use lowercase letters and hyphens only.
    */
   slug: string;
   /**
@@ -274,11 +274,15 @@ export interface Gallery {
    */
   category: 'weddings' | 'portraits' | 'families' | 'couples' | 'brands';
   /**
+   * Optional. The photo used as the full-bleed banner at the top of this gallery page. If not set, the Cover Photo is used instead.
+   */
+  heroPhoto?: (number | null) | Photo;
+  /**
    * The photo shown as the preview for this gallery on your portfolio page. Must be a photo already uploaded to All Photos.
    */
-  coverPhoto?: (number | Photo) | null;
+  coverPhoto?: (number | null) | Photo;
   /**
-   * Use the button above to add multiple photos at once, or add one at a time with the row picker below. Drag the handle on the left to reorder. The order here is exactly how photos appear on the site.
+   * Use the button above to add photos. Drag the thumbnails to reorder them - the order here is exactly how they appear on your site. Hover a photo to set it as the cover or remove it.
    */
   photos?:
     | {
@@ -287,29 +291,22 @@ export interface Gallery {
       }[]
     | null;
   /**
-   * Display this gallery with the editorial taped-photo look.
+   * Draft galleries are hidden from your public portfolio.
+   */
+  status?: ('published' | 'draft') | null;
+  /**
+   * Display this gallery with the editorial taped-photo look (each photo on a cream mat with tape corners and a slight tilt). Leave off for a clean grid.
    */
   tapedStyle?: boolean | null;
   /**
    * Turn on to feature this gallery on your homepage.
    */
   featured?: boolean | null;
-  /**
-   * Controls the order this gallery appears on your portfolio page. Lower numbers appear first. Leave blank and galleries display in the order they were added.
-   */
   displayOrder?: number | null;
   isPasswordProtected?: boolean | null;
   password?: string | null;
   allowDownload?: boolean | null;
   seoIndexable?: boolean | null;
-  /**
-   * Draft galleries are hidden from your public portfolio.
-   */
-  status?: ('published' | 'draft') | null;
-  /**
-   * Optional full-width hero photo shown at the top of the gallery page.
-   */
-  heroPhoto?: number | Photo | null;
   clientName?: string | null;
   clientEmail?: string | null;
   expiresAt?: string | null;
@@ -330,7 +327,7 @@ export interface Testimonial {
    */
   clientName: string;
   /**
-   * Paste the client's review exactly as you want it to appear on your website. Keep it genuine — real words from real clients build trust with future bookings.
+   * Paste the client's review exactly as you want it to appear on your website. Keep it genuine - real words from real clients build trust with future bookings.
    */
   quote: string;
   /**
@@ -397,8 +394,6 @@ export interface Service {
   createdAt: string;
 }
 /**
- * Your blog posts, shown on the Blog page and individual post pages.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
  */
@@ -409,7 +404,7 @@ export interface Post {
    */
   title: string;
   /**
-   * Auto-generated from the title — you do not need to set this. Edit here only if you want a custom web address. Use lowercase letters and hyphens only.
+   * Auto-generated from the title - you do not need to set this. Edit here only if you want a custom web address. Use lowercase letters and hyphens only.
    */
   slug: string;
   /**
@@ -417,7 +412,7 @@ export interface Post {
    */
   status: 'draft' | 'published';
   /**
-   * Defaults to today. You can set a future date to schedule the post — it will appear on your blog on that date.
+   * Defaults to today. You can set a future date to schedule the post - it will appear on your blog on that date.
    */
   publishedAt: string;
   /**
@@ -468,7 +463,19 @@ export interface Page {
   /**
    * Make this page render at one of your real site routes instead of its own URL. Only one page can be promoted to a given route at a time.
    */
-  promotedRoute?: ('about' | 'portfolio' | 'portfolio/portraits' | 'portfolio/family' | 'portfolio/weddings' | 'services' | 'testimonials' | 'contact' | 'blog') | null;
+  promotedRoute?:
+    | (
+        | 'about'
+        | 'portfolio'
+        | 'portfolio/portraits'
+        | 'portfolio/family'
+        | 'portfolio/weddings'
+        | 'services'
+        | 'testimonials'
+        | 'contact'
+        | 'blog'
+      )
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -524,6 +531,9 @@ export interface Project {
    */
   payments?:
     | {
+        /**
+         * Example: "Deposit", "Final Payment", "Travel Fee".
+         */
         label: string;
         amount: number;
         dueDate?: string | null;
@@ -537,6 +547,9 @@ export interface Project {
    */
   documents?:
     | {
+        /**
+         * Example: "Smith Wedding Contract", "Invoice #1006".
+         */
         title: string;
         documentType: 'contract' | 'invoice' | 'model-release' | 'other';
         status: 'draft' | 'sent' | 'signed' | 'void';
@@ -607,6 +620,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pages';
         value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -656,6 +673,8 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
+  mustChangePassword?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -738,6 +757,7 @@ export interface GalleriesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   category?: T;
+  heroPhoto?: T;
   coverPhoto?: T;
   photos?:
     | T
@@ -745,6 +765,8 @@ export interface GalleriesSelect<T extends boolean = true> {
         photo?: T;
         id?: T;
       };
+  status?: T;
+  tapedStyle?: T;
   featured?: T;
   displayOrder?: T;
   isPasswordProtected?: T;
@@ -931,7 +953,7 @@ export interface HeroSlide {
          */
         image: number | Photo;
         /**
-         * Optional text displayed over the photo. Keep it short — one line works best. Leave blank for a clean photo with no text.
+         * Optional text displayed over the photo. Keep it short - one line works best. Leave blank for a clean photo with no text.
          */
         caption?: string | null;
         /**
@@ -1010,7 +1032,7 @@ export interface AboutPage {
   createdAt?: string | null;
 }
 /**
- * Global settings for your website — business name, contact info, and social media links.
+ * Global settings for your website - business name, contact info, and social media links.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-config".
@@ -1064,14 +1086,14 @@ export interface SiteDesign {
   watermarkUrl?: string | null;
   headingFont?: ('poppins' | 'tangerine' | 'abril' | 'cormorant' | 'barlow' | 'jost') | null;
   bodyFont?: ('poppins' | 'tangerine' | 'abril' | 'cormorant' | 'barlow' | 'jost') | null;
-  accentFont?: ('cormorant' | 'poppins' | 'tangerine' | 'abril' | 'barlow' | 'jost') | null;
-  scriptFont?: ('parisienne' | 'tangerine') | null;
   colorBg?: string | null;
   colorBgAccent?: string | null;
   colorHeading?: string | null;
   colorBody?: string | null;
   colorDetail?: string | null;
   colorBtnBg?: string | null;
+  accentFont?: ('cormorant' | 'poppins' | 'tangerine' | 'abril' | 'barlow' | 'jost') | null;
+  scriptFont?: ('parisienne' | 'tangerine') | null;
   colorBgCard?: string | null;
   colorBgHover?: string | null;
   colorBgOverlay?: string | null;
@@ -1093,7 +1115,7 @@ export interface SiteDesign {
   createdAt?: string | null;
 }
 /**
- * Controls how far in advance clients can request sessions. Changes take effect immediately — no code change needed.
+ * Controls how far in advance clients can request sessions. Changes take effect immediately - no code change needed.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "booking-settings".
@@ -1112,7 +1134,7 @@ export interface BookingSetting {
   createdAt?: string | null;
 }
 /**
- * Block out dates when you are unavailable — vacations, personal time, recovery periods. Clients requesting sessions during these windows will see your custom message.
+ * Block out dates when you are unavailable - vacations, personal time, recovery periods. Clients requesting sessions during these windows will see your custom message.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "availability".
@@ -1125,7 +1147,7 @@ export interface Availability {
   blockedRanges?:
     | {
         /**
-         * A private note for your reference only — never shown to clients. Example: "Cancun trip" or "Wedding weekend".
+         * A private note for your reference only - never shown to clients. Example: "Cancun trip" or "Wedding weekend".
          */
         internalLabel: string;
         /**
@@ -1194,14 +1216,35 @@ export interface GalleryPreset {
  */
 export interface EmailTemplate {
   id: number;
+  /**
+   * Available variables: {{clientName}}, {{galleryTitle}}
+   */
   shareSubject?: string | null;
+  /**
+   * Available variables: {{clientName}}, {{galleryTitle}}
+   */
   shareHeading?: string | null;
+  /**
+   * Available variables: {{clientName}}, {{galleryTitle}}, {{passwordNote}} (only appears if the gallery is password protected)
+   */
   shareBody?: string | null;
   shareButtonLabel?: string | null;
+  /**
+   * Available variables: {{clientName}}, {{galleryTitle}}, {{expiresAt}}
+   */
   reminderSubject?: string | null;
+  /**
+   * Available variables: {{clientName}}, {{galleryTitle}}, {{expiresAt}}
+   */
   reminderHeading?: string | null;
+  /**
+   * Available variables: {{clientName}}, {{galleryTitle}}, {{expiresAt}}
+   */
   reminderBody?: string | null;
   reminderButtonLabel?: string | null;
+  /**
+   * How many days before a gallery expires to send the reminder email.
+   */
   reminderDaysBefore?: number | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1273,14 +1316,14 @@ export interface SiteDesignSelect<T extends boolean = true> {
   watermarkUrl?: T;
   headingFont?: T;
   bodyFont?: T;
-  accentFont?: T;
-  scriptFont?: T;
   colorBg?: T;
   colorBgAccent?: T;
   colorHeading?: T;
   colorBody?: T;
   colorDetail?: T;
   colorBtnBg?: T;
+  accentFont?: T;
+  scriptFont?: T;
   colorBgCard?: T;
   colorBgHover?: T;
   colorBgOverlay?: T;
@@ -1315,6 +1358,27 @@ export interface BookingSettingsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availability_select".
+ */
+export interface AvailabilitySelect<T extends boolean = true> {
+  blockedRanges?:
+    | T
+    | {
+        internalLabel?: T;
+        startDate?: T;
+        endDate?: T;
+        applyReturnBuffer?: T;
+        returnBufferDays?: T;
+        customerMessage?: T;
+        notificationSent?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "gallery-presets_select".
  */
 export interface GalleryPresetsSelect<T extends boolean = true> {
@@ -1341,27 +1405,6 @@ export interface EmailTemplatesSelect<T extends boolean = true> {
   reminderBody?: T;
   reminderButtonLabel?: T;
   reminderDaysBefore?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "availability_select".
- */
-export interface AvailabilitySelect<T extends boolean = true> {
-  blockedRanges?:
-    | T
-    | {
-        internalLabel?: T;
-        startDate?: T;
-        endDate?: T;
-        applyReturnBuffer?: T;
-        returnBufferDays?: T;
-        customerMessage?: T;
-        notificationSent?: T;
-        id?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
