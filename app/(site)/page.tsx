@@ -21,6 +21,77 @@ import type { Photo } from '@/payload-types'
 // Revalidate every 2 minutes - hero slides, photos, and testimonials change infrequently
 export const revalidate = 120
 
+// Portfolio categories that represent real client work. An uncategorised photo
+// is library staging (untagged uploads, texture assets) and is not something to
+// hand Google as a picture of the business.
+const REAL_CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
+
+// Prefer a featured photo, fall back to any real portfolio photo, and return
+// null rather than something stale. The old value here was the static
+// /og-image.jpg wordmark card, which drifted a whole design system out of date
+// unnoticed and was a poor choice regardless: Google may surface this as the
+// picture of the business, where a photograph serves better than a logo plate.
+async function resolveSchemaImage(payload: Awaited<ReturnType<typeof getPayload>>): Promise<string | null> {
+  const pick = (docs: Photo[]) => {
+    const ph = docs.find(d => d.sizes?.hero?.url ?? d.url)
+    return ph?.sizes?.hero?.url ?? ph?.url ?? null
+  }
+  const { docs: featured } = await payload.find({
+    collection: 'photos',
+    where: { featured: { equals: true } },
+    sort: 'displayOrder',
+    depth: 0,
+    limit: 1,
+  })
+  const fromFeatured = pick(featured as Photo[])
+  if (fromFeatured) return fromFeatured
+
+  const { docs: anyReal } = await payload.find({
+    collection: 'photos',
+    where: { category: { in: [...REAL_CATEGORIES] } },
+    sort: 'displayOrder',
+    depth: 0,
+    limit: 1,
+  })
+  return pick(anyReal as Photo[])
+}
+
+// One schema shared by both render paths. It previously existed only in the
+// hardcoded branch, so once a builder page was promoted to the homepage (which
+// it is), the site's primary page emitted NO structured data at all, while
+// /about and /portfolio both emit theirs in the promoted branch. This closes
+// that gap.
+function buildLocalBusinessSchema(site: { title: string; email: string; instagramUrl: string }, imageUrl: string | null) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: site.title,
+    description:
+      'Tynnell Hollins is a wedding and portrait photographer capturing authentic moments for couples and families.',
+    url: 'https://tynnellhollinsphotography.com',
+    email: site.email,
+    // Conditional spread rather than a stale placeholder, matching the idiom
+    // already used by the About and blog-post schemas.
+    ...(imageUrl && { image: imageUrl }),
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Albuquerque',
+      addressRegion: 'NM',
+      addressCountry: 'US',
+    },
+    areaServed: [
+      { '@type': 'City', name: 'Albuquerque' },
+      { '@type': 'State', name: 'New Mexico' },
+    ],
+    sameAs: [site.instagramUrl].filter(Boolean),
+    founder: {
+      '@type': 'Person',
+      name: 'Tynnell Hollins',
+      jobTitle: 'Photographer',
+    },
+  }
+}
+
 export default async function Home() {
   const site = await getSiteConfig()
   const payload = await getPayload({ config })
@@ -36,6 +107,8 @@ export default async function Home() {
     limit: 1,
     depth: 0,
   })
+  const localBusinessSchema = buildLocalBusinessSchema(site, await resolveSchemaImage(payload))
+
   const homepage = homepageDocs[0]
   if (homepage) {
     const data = (homepage.content as Data | undefined) ?? { content: [], root: {} }
@@ -44,7 +117,12 @@ export default async function Home() {
     // No block defines resolveData yet, so this is currently a no-op; it's
     // the prerequisite plumbing future data-bound blocks (e.g. live
     // Services/Testimonials) depend on.
-    return <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
+    return (
+      <>
+        <JsonLd data={localBusinessSchema} />
+        <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
+      </>
+    )
   }
 
   const [heroData, { docs: featuredPhotos }, { docs: testimonials }, aboutData] =
@@ -100,35 +178,6 @@ export default async function Home() {
   // CSS background-image is not auto-preloaded; this emits a <link rel="preload">.
   const firstHeroUrl = slides.find(s => s.imageUrl)?.imageUrl ?? '/hero-background.jpg'
   preload(firstHeroUrl, { as: 'image', fetchPriority: 'high' })
-
-  const localBusinessSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    name: 'Tynnell Hollins Photography',
-    description:
-      'Tynnell Hollins is a wedding and portrait photographer capturing authentic moments for couples and families.',
-    url: 'https://tynnellhollinsphotography.com',
-    email: site.email,
-    image: 'https://tynnellhollinsphotography.com/og-image.jpg',
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: 'Albuquerque',
-      addressRegion: 'NM',
-      addressCountry: 'US',
-    },
-    areaServed: [
-      { '@type': 'City', name: 'Albuquerque' },
-      { '@type': 'State', name: 'New Mexico' },
-    ],
-    sameAs: [
-      site.instagramUrl,
-    ],
-    founder: {
-      '@type': 'Person',
-      name: 'Tynnell Hollins',
-      jobTitle: 'Photographer',
-    },
-  }
 
   return (
     <main>
