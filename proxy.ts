@@ -29,6 +29,15 @@ export function proxy(request: NextRequest) {
   if (pathname.startsWith('/book')) return NextResponse.next()
   if (pathname.startsWith('/_next')) return NextResponse.next()
   if (pathname.startsWith('/favicon')) return NextResponse.next()
+  // Share-card images from the opengraph-image file convention. These paths
+  // carry a content hash and NO file extension, so the matcher below does not
+  // exclude them the way it excludes /og-image.jpg. Without this bypass the
+  // COMING_SOON rewrite hands the coming-soon HTML to every social platform
+  // that fetches the card, which is exactly what happened when the metadata
+  // stopped pointing at the static jpeg.
+  if (pathname.includes('/opengraph-image') || pathname.includes('/twitter-image')) {
+    return NextResponse.next()
+  }
 
   return NextResponse.rewrite(new URL('/coming-soon', request.url))
 }
