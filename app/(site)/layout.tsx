@@ -37,15 +37,22 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description:
       'Albuquerque, New Mexico wedding and portrait photographer. Tynnell Hollins captures authentic, timeless moments for couples, families, and engagements.',
+    // No explicit `images` here on purpose. Setting them overrides the
+    // opengraph-image file convention, which is what actually generates the
+    // share card. That override is why every share preview kept showing the
+    // static public/og-image.jpg, a charcoal card from before the Rising Roots
+    // palette landed, while app/(site)/opengraph-image.tsx sat unused.
+    //
+    // With these removed, the generated route wins and the card tracks
+    // SiteDesign and SiteConfig automatically. Twitter falls back to og:image
+    // when twitter:image is absent, so the card still resolves.
     openGraph: {
       type: 'website',
       siteName: site.title,
       locale: 'en_US',
-      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: site.title }],
     },
     twitter: {
       card: 'summary_large_image',
-      images: ['/og-image.jpg'],
     },
     robots: {
       index: true,
