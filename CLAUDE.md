@@ -425,3 +425,13 @@ Prompt injection is the primary risk: a client submits input designed to make th
 - **Local dev secrets:** 1Password is often NOT signed in locally. `npm run dev:secure` / `.\dev.ps1` need `op signin` first. To run plain `next dev`, override the 9 `op://` keys in `.env.local` with dummies (only those are `op://` refs; `DATABASE_URI`, `PAYLOAD_SECRET`, and the R2 keys are literal). Minimum set: `UPSTASH_REDIS_REST_URL/TOKEN` (Redis client validates the URL at import). Middleware only gates when `COMING_SOON=true`, so localhost is not auth-walled. See MEMORY.md for the full dummy set.
 - **Visual page builder** (Puck) is merged to main and deployed to production. See the "Visual page builder (Puck)" architecture section.
 - **`feature/page-sections`** exists at commit `eca87f8` — leave it alone.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
