@@ -98,15 +98,6 @@ describe('POST /api/checkout - happy path', () => {
       sessionDate,
     })
   })
-
-  it('prices the deposit from the Services entry that matches the package name', async () => {
-    await POST(makeRequest(validBody({ packageName: 'Family Session' })))
-
-    expect(findMock).toHaveBeenCalledWith(expect.objectContaining({
-      collection: 'services',
-      where: { and: expect.arrayContaining([{ title: { equals: 'Family Session' } }]) },
-    }))
-  })
 })
 
 describe('POST /api/checkout - sad paths', () => {

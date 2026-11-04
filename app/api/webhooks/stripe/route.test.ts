@@ -75,15 +75,26 @@ describe('POST /api/webhooks/stripe - happy path', () => {
     expect(sendMock).toHaveBeenCalledTimes(2)
   })
 
-  it('notifies Tynnell and sends the receipt to the client who paid', async () => {
-    constructEventMock.mockReturnValue(paidSessionEvent())
+  it('notifies Tynnell and sends the receipt to the address the client typed at checkout', async () => {
+    // The booking form's email (metadata) wins over whatever address the
+    // client used inside Stripe's hosted page (customer_email).
+    constructEventMock.mockReturnValue(paidSessionEvent({
+      customer_email: 'typed-into-stripe@example.com',
+      metadata: {
+        clientName: 'Jane Doe',
+        clientEmail: 'from-booking-form@example.com',
+        packageName: 'Wedding Package',
+        sessionDate: '2026-08-15',
+      },
+    }))
 
     await POST(makeRequest('{}'))
 
-    const recipients = sendMock.mock.calls.map(call => call[0].to)
-    expect(recipients).toEqual(expect.arrayContaining([
-      'hello@tynnellhollinsphotography.com',
-      'jane@example.com',
+    const sent = sendMock.mock.calls.map(call => ({ to: call[0].to, subject: call[0].subject as string }))
+    expect(sent).toHaveLength(2)
+    expect(sent).toEqual(expect.arrayContaining([
+      { to: 'hello@tynnellhollinsphotography.com', subject: expect.stringMatching(/^New Booking Deposit/) },
+      { to: 'from-booking-form@example.com', subject: expect.stringMatching(/^Your deposit is confirmed/) },
     ]))
   })
 

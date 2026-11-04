@@ -9,13 +9,6 @@ vi.mock('payload', () => ({
 
 vi.mock('@payload-config', () => ({ default: {} }))
 
-// React's cache() memoizes per request on the server. Pass-through here so
-// every test gets a fresh read instead of the first test's result.
-vi.mock('react', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('react')>()),
-  cache: <T,>(fn: T) => fn,
-}))
-
 const { getSiteDesign, DEFAULT_THEME } = await import('./siteDesign')
 
 // A stored SiteDesign doc where every field holds a value that differs from
