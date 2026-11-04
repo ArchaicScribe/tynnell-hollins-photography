@@ -738,19 +738,32 @@ export function SiteEditorClient({ initialPages, initialProduct = 'website', ini
     reload()
   }
 
+  // Publish puts every page's latest saved version live: unpublished pages
+  // get published, and any saved draft (`draftContent`, see
+  // collections/Pages.ts) is copied into the live `content`. Reads fresh docs
+  // rather than `pages`, which is mapped without the draft field.
   const publishAll = async () => {
     setPublishing(true)
-    await Promise.all(
-      pages.filter(p => !p.published).map(p =>
-        fetch(`/api/pages/${p.id}`, {
-          method: 'PATCH', credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ published: true }),
-        })
+    try {
+      const res = await fetch('/api/pages?limit=100&depth=0', { credentials: 'include' })
+      const { docs = [] } = (await res.json()) as { docs?: (SitePage & { draftContent?: unknown })[] }
+      await Promise.all(
+        docs.filter(p => !p.published || p.draftContent != null).map(p =>
+          fetch(`/api/pages/${p.id}`, {
+            method: 'PATCH', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(
+              p.draftContent != null
+                ? { published: true, content: p.draftContent, draftContent: null }
+                : { published: true },
+            ),
+          })
+        )
       )
-    )
-    reload()
-    setPublishing(false)
+    } finally {
+      reload()
+      setPublishing(false)
+    }
   }
 
   // Genuinely standalone custom pages - anything backing a SITE_NAV row

@@ -20,13 +20,16 @@ export default async function EditPage({ params }: { params: Promise<{ slug: str
   const page = docs[0]
   if (!page) notFound()
 
-  const data = (page.content as Data | undefined) ?? EMPTY
+  // Resume from the unpublished draft when there is one, so a saved draft is
+  // what the editor reopens, not the older live version.
+  const data = ((page.draftContent ?? page.content) as Data | null | undefined) ?? EMPTY
 
   return (
     <EditorLoader
       slug={slug}
       title={page.title}
       published={Boolean(page.published)}
+      hasDraft={page.draftContent != null}
       initialData={data}
       promotedRoute={typeof page.promotedRoute === 'string' ? page.promotedRoute : null}
     />

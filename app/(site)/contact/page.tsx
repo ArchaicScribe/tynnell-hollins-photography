@@ -2,7 +2,6 @@ import { cache } from 'react'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import { Render, resolveAllData } from '@measured/puck/rsc'
-import type { Data } from '@measured/puck'
 import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import ContactForm from './ContactForm'
@@ -11,7 +10,7 @@ import styles from './page.module.css'
 import { getSiteConfig } from '@/app/lib/siteConfig'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 import { computeBookingDateBounds } from '@/app/lib/validation'
-import { isPreviewMode } from '@/app/lib/builderPreview'
+import { isPreviewMode, pageRenderData } from '@/app/lib/builderPreview'
 
 // OOO banner is time-sensitive - shorter revalidate so it appears within 1 minute of being set
 export const revalidate = 60
@@ -117,7 +116,7 @@ export default async function ContactPage() {
   }
 
   if (promoted) {
-    const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
+    const data = await pageRenderData(promoted)
     return (
       <>
         <JsonLd data={contactPageSchema} />

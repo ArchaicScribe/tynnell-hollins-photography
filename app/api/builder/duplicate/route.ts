@@ -36,7 +36,9 @@ export async function POST(request: Request) {
       data: {
         title: `Copy of ${src.title}`,
         slug,
-        content: src.content ?? { content: [], root: {} },
+        // Copy the latest working version (the draft, if any) so the copy
+        // opens with exactly what the editor showed for the original.
+        content: src.draftContent ?? src.content ?? { content: [], root: {} },
         published: false,
         displayOrder: Date.now(),
       },

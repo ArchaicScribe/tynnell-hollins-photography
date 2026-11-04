@@ -3,9 +3,10 @@ import { revalidatePath } from 'next/cache'
 import { requireBuilderUser } from '@/app/lib/builderAuth'
 
 // Persist a builder page's Puck document (TYN-216 / TYN-232). Auth-gated.
-// `publish: true` also marks the page published; otherwise the content is saved
-// without changing the published flag, so a draft can be saved and resumed
-// without going live. Either way the public route is revalidated.
+// Without `publish`, the document is saved to `draftContent` only: the public
+// site keeps rendering `content`, so a draft (or a Preview, which saves first)
+// never goes live. `publish: true` copies the document into `content`, clears
+// the draft, and marks the page published.
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
@@ -42,18 +43,22 @@ export async function POST(request: Request) {
     await payload.update({
       collection: 'pages',
       id: page.id,
-      // Save draft leaves `published` untouched; Publish sets it true.
-      data: publish ? { content: data, published: true } : { content: data },
+      data: publish
+        ? { content: data, draftContent: null, published: true }
+        : { draftContent: data },
     })
   } catch (err) {
     console.error('[builder/save] failed to save page:', err)
     return NextResponse.json({ error: 'Failed to save page' }, { status: 500 })
   }
 
-  try {
-    revalidatePath(`/${slug}`)
-  } catch {
-    // No-op outside a request scope.
+  // A draft changes nothing visitors see, so only Publish revalidates.
+  if (publish) {
+    try {
+      revalidatePath(`/${slug}`)
+    } catch {
+      // No-op outside a request scope.
+    }
   }
 
   return NextResponse.json({ ok: true })

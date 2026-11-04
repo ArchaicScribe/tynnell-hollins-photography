@@ -3,10 +3,9 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import { Render, resolveAllData } from '@measured/puck/rsc'
-import type { Data } from '@measured/puck'
 import payloadConfig from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
-import { isPreviewMode } from '@/app/lib/builderPreview'
+import { isPreviewMode, pageRenderData } from '@/app/lib/builderPreview'
 
 // Public render of a builder page (TYN-216). This catch-all only handles slugs
 // NOT already owned by an explicit route (/, /about, /portfolio, ...): Next.js
@@ -50,7 +49,7 @@ export default async function BuilderPublicPage({ params }: { params: Promise<{ 
   const page = await findPublishedPage(slug.join('/'))
   if (!page) notFound()
 
-  const data = (page.content as Data | undefined) ?? { content: [], root: {} }
+  const data = await pageRenderData(page)
   // See app/(site)/page.tsx's comment on resolveAllData - same reasoning here.
   return <Render config={puckConfig} data={await resolveAllData(data, puckConfig)} />
 }
