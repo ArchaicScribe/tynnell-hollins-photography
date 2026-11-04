@@ -1,0 +1,95 @@
+import { describe, it, expect } from 'vitest'
+import { DEFAULT_THEME, themeToCssVarMap, themeToCssVars, type SiteTheme } from './siteTheme'
+import { SITE_DESIGN_FIELDS } from '@/test/siteDesignFields'
+
+function isRealCssValue(value: unknown): boolean {
+  return typeof value === 'string' && value.length > 0 && !value.includes('undefined')
+}
+
+describe('themeToCssVarMap', () => {
+  // Every select in the /design editor feeds a lookup table here (fonts,
+  // grain, shadow, saturation, spacing, radius). An option added to the
+  // global without a matching table entry emits `undefined` into the
+  // site-wide <style> and silently breaks that property on every page.
+  const selects = SITE_DESIGN_FIELDS.filter((f) => f.type === 'select')
+
+  for (const field of selects) {
+    for (const option of field.options) {
+      it(`emits a real CSS value for ${field.name} = ${option}`, () => {
+        const theme = { ...DEFAULT_THEME, [field.name]: option } as SiteTheme
+
+        const map = themeToCssVarMap(theme)
+
+        for (const [cssVar, value] of Object.entries(map)) {
+          expect(isRealCssValue(value), `${cssVar} is ${JSON.stringify(value)}`).toBe(true)
+        }
+      })
+    }
+  }
+
+  it('wires each color field to its own CSS variable', () => {
+    const theme: SiteTheme = {
+      ...DEFAULT_THEME,
+      colorBg: '#000001',
+      colorBgAccent: '#000002',
+      colorHeading: '#000003',
+      colorBody: '#000004',
+      colorDetail: '#000005',
+      colorBtnBg: '#000006',
+      colorBgCard: '#000007',
+      colorBgHover: '#000008',
+      colorBgOverlay: '#000009',
+      colorBtnText: '#00000a',
+      colorBtnHover: '#00000b',
+      colorBorder: '#00000c',
+      colorBorderSubtle: '#00000d',
+      colorBorderSolid: '#00000e',
+      tapeMatColor: '#00000f',
+      tapeColor: '#000010',
+    }
+
+    const map = themeToCssVarMap(theme)
+
+    expect(map).toMatchObject({
+      '--color-bg': '#000001',
+      '--color-bg-accent': '#000002',
+      '--color-heading': '#000003',
+      '--color-body': '#000004',
+      '--color-detail': '#000005',
+      '--color-btn-bg': '#000006',
+      '--color-bg-card': '#000007',
+      '--color-bg-hover': '#000008',
+      '--color-bg-overlay': '#000009',
+      '--color-btn-text': '#00000a',
+      '--color-btn-hover': '#00000b',
+      '--color-border': '#00000c',
+      '--color-border-subtle': '#00000d',
+      '--color-border-solid': '#00000e',
+      '--tape-mat': '#00000f',
+      '--tape-color': '#000010',
+    })
+  })
+
+  it('leaves heading and body fonts to tokens.css when they are Poppins', () => {
+    const map = themeToCssVarMap({ ...DEFAULT_THEME, headingFont: 'poppins', bodyFont: 'poppins' })
+
+    expect(map).not.toHaveProperty('--font-heading')
+    expect(map).not.toHaveProperty('--font-body')
+  })
+
+  it('overrides the heading font when a non-default face is chosen', () => {
+    const map = themeToCssVarMap({ ...DEFAULT_THEME, headingFont: 'cormorant', bodyFont: 'barlow' })
+
+    expect(map['--font-heading']).toBe('var(--font-serif)')
+    expect(map['--font-body']).toBe('var(--font-sans)')
+  })
+})
+
+describe('themeToCssVars', () => {
+  it('renders one declaration per variable for the root <style> tag', () => {
+    const css = themeToCssVars({ ...DEFAULT_THEME, colorBg: '#E4E2D8', paperGrain: 'medium' })
+
+    expect(css).toContain('--color-bg: #E4E2D8;')
+    expect(css).toContain('--paper-grain-opacity: 0.06;')
+  })
+})

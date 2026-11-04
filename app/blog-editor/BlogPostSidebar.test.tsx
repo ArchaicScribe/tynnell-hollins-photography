@@ -55,7 +55,7 @@ describe('BlogPostSidebar', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(/couldn't load posts/i)
   })
 
-  it('links each row to its editor route, highlighting the selected post', async () => {
+  it('links each row to its editor route', async () => {
     mockFetchOnce({
       docs: [{ id: 1, title: 'First Post', slug: 'first-post', status: 'published', publishedAt: '2026-01-01' }],
     })
@@ -64,6 +64,22 @@ describe('BlogPostSidebar', () => {
 
     const link = await screen.findByText('First Post')
     expect(link.closest('a')).toHaveAttribute('href', '/blog-editor/first-post')
+  })
+
+  it('marks only the open post as current, so the selection is not conveyed by color alone', async () => {
+    mockFetchOnce({
+      docs: [
+        { id: 1, title: 'First Post', slug: 'first-post', status: 'published', publishedAt: '2026-01-01' },
+        { id: 2, title: 'Second Post', slug: 'second-post', status: 'published', publishedAt: '2026-01-02' },
+      ],
+    })
+
+    render(<BlogPostSidebar selectedSlug="second-post" />)
+
+    const second = (await screen.findByText('Second Post')).closest('a')
+    const first = screen.getByText('First Post').closest('a')
+    expect(second).toHaveAttribute('aria-current', 'page')
+    expect(first).not.toHaveAttribute('aria-current')
   })
 
   it('debounces search input before refetching', async () => {

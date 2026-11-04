@@ -74,6 +74,40 @@ describe('POST /api/webhooks/stripe - happy path', () => {
     expect(json).toEqual({ received: true })
     expect(sendMock).toHaveBeenCalledTimes(2)
   })
+
+  it('notifies Tynnell and sends the receipt to the address the client typed at checkout', async () => {
+    // The booking form's email (metadata) wins over whatever address the
+    // client used inside Stripe's hosted page (customer_email).
+    constructEventMock.mockReturnValue(paidSessionEvent({
+      customer_email: 'typed-into-stripe@example.com',
+      metadata: {
+        clientName: 'Jane Doe',
+        clientEmail: 'from-booking-form@example.com',
+        packageName: 'Wedding Package',
+        sessionDate: '2026-08-15',
+      },
+    }))
+
+    await POST(makeRequest('{}'))
+
+    const sent = sendMock.mock.calls.map(call => ({ to: call[0].to, subject: call[0].subject as string }))
+    expect(sent).toHaveLength(2)
+    expect(sent).toEqual(expect.arrayContaining([
+      { to: 'hello@tynnellhollinsphotography.com', subject: expect.stringMatching(/^New Booking Deposit/) },
+      { to: 'from-booking-form@example.com', subject: expect.stringMatching(/^Your deposit is confirmed/) },
+    ]))
+  })
+
+  it('verifies the signature against the raw request body, not a re-serialized one', async () => {
+    // Stripe signs the exact bytes it sent. Parsing and re-stringifying
+    // changes whitespace and key order, which fails every real webhook.
+    const rawBody = '{"id":"evt_1",  "type":"checkout.session.completed"}'
+    constructEventMock.mockReturnValue(paidSessionEvent())
+
+    await POST(makeRequest(rawBody, 't=1,v1=abc'))
+
+    expect(constructEventMock).toHaveBeenCalledWith(rawBody, 't=1,v1=abc', 'whsec_fake')
+  })
 })
 
 describe('POST /api/webhooks/stripe - sad paths', () => {

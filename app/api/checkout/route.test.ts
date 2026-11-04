@@ -83,6 +83,26 @@ describe('POST /api/checkout - happy path', () => {
     expect(json.url).toBe('https://checkout.stripe.com/pay/cs_test_123')
     expect(createSessionMock).toHaveBeenCalledTimes(1)
   })
+
+  it('charges the deposit in cents and records the booking details for the webhook', async () => {
+    findMock.mockResolvedValue({ docs: [{ id: 1, title: 'Wedding Package', depositAmount: 19.99 }] })
+    const sessionDate = futureDate(10)
+
+    await POST(makeRequest(validBody({ depositAmount: 19.99, sessionDate })))
+
+    const session = createSessionMock.mock.calls[0][0]
+    expect(session.line_items).toHaveLength(1)
+    expect(session.line_items[0].price_data.unit_amount).toBe(1999)
+    expect(session.line_items[0].price_data.currency).toBe('usd')
+    expect(session.customer_email).toBe('jane@example.com')
+    // The Stripe webhook reads these to send the confirmation emails.
+    expect(session.metadata).toEqual({
+      clientName: 'Jane Doe',
+      clientEmail: 'jane@example.com',
+      packageName: 'Wedding Package',
+      sessionDate,
+    })
+  })
 })
 
 describe('POST /api/checkout - sad paths', () => {

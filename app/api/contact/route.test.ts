@@ -104,6 +104,37 @@ describe('POST /api/contact - happy paths', () => {
     const ackCall = sendMock.mock.calls.find(call => call[0].subject.startsWith('Got your inquiry'))
     expect(ackCall?.[0].html).toContain('Away until')
   })
+
+  it('sends the inquiry to Tynnell and the acknowledgment to the submitter', async () => {
+    await POST(makeRequest(validBody({ email: 'client@example.com' })))
+
+    const recipients = sendMock.mock.calls.map(call => ({ to: call[0].to, replyTo: call[0].replyTo }))
+    expect(recipients).toEqual(expect.arrayContaining([
+      { to: 'hello@tynnellhollinsphotography.com', replyTo: 'client@example.com' },
+      { to: 'client@example.com', replyTo: 'hello@tynnellhollinsphotography.com' },
+    ]))
+  })
+
+  it('escapes submitted text before it is placed in either email', async () => {
+    // emails.ts trusts its inputs ("must already be HTML-escaped by the
+    // caller"), so this route is the only thing standing between a form
+    // field and raw HTML in Tynnell's inbox.
+    await POST(makeRequest(validBody({
+      name: '<img src=x onerror=alert(1)>',
+      message: '<script>alert(1)</script>',
+      location: '<b>Taos</b>',
+    })))
+
+    const [inquiry, ack] = ['New Inquiry', 'Got your inquiry'].map(prefix =>
+      sendMock.mock.calls.find(call => call[0].subject.startsWith(prefix))![0].html as string,
+    )
+    expect(inquiry).not.toContain('<script>')
+    expect(inquiry).not.toContain('<img src=x')
+    expect(inquiry).not.toContain('<b>Taos</b>')
+    expect(inquiry).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
+    expect(ack).not.toContain('<img src=x')
+    expect(ack).toContain('&lt;img src=x onerror=alert(1)&gt;')
+  })
 })
 
 describe('POST /api/contact - sad paths', () => {
