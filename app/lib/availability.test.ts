@@ -123,11 +123,10 @@ describe('getActiveOoo', () => {
 
   it('returns the first active range among multiple overlapping ranges', () => {
     const ranges: BlockedRange[] = [
-      { startDate: isoDateOffset(-5), endDate: isoDateOffset(5), applyReturnBuffer: false, internalLabel: 'first' },
-      { startDate: isoDateOffset(-1), endDate: isoDateOffset(1), applyReturnBuffer: false, internalLabel: 'second' },
+      { startDate: isoDateOffset(-5), endDate: isoDateOffset(5), applyReturnBuffer: false, customerMessage: 'first range' },
+      { startDate: isoDateOffset(-1), endDate: isoDateOffset(1), applyReturnBuffer: false, customerMessage: 'second range' },
     ]
-    const active = getActiveOoo(ranges)
-    expect(active).not.toBeNull()
+    expect(getActiveOoo(ranges)?.message).toBe('first range')
   })
 
   it('skips ranges missing a start or end date', () => {
