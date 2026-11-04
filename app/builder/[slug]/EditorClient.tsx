@@ -28,12 +28,14 @@ export function EditorClient({
   slug,
   title,
   published,
+  hasDraft,
   initialData,
   promotedRoute,
 }: {
   slug: string
   title: string
   published: boolean
+  hasDraft: boolean
   initialData: Data
   promotedRoute: string | null
 }) {
@@ -43,8 +45,14 @@ export function EditorClient({
   // would land on the still-hardcoded original instead of their own edits.
   const publicPath = promotedRoute ? `/${promotedRoute}` : `/${slug}`
   const savedJson = useRef<string>(JSON.stringify(initialData))
+  // The canvas as of the latest onChange. A save sends a snapshot, and the
+  // user can keep typing while it is in flight, so on success dirty is
+  // recomputed against this rather than assumed clean.
+  const latestJson = useRef<string>(savedJson.current)
   const [dirty, setDirty] = useState(false)
   const [isPublished, setIsPublished] = useState(published)
+  // A draft is saved that is not live yet (`draftContent` on the page).
+  const [hasUnpublished, setHasUnpublished] = useState(hasDraft)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [showHelp, setShowHelp] = useState(false)
   // Device-preview width (TYN-355 Phase 3). Puck's own `viewports` config
@@ -69,7 +77,8 @@ export function EditorClient({
   }, [dirty])
 
   const onChange = useCallback((data: Data) => {
-    setDirty(JSON.stringify(data) !== savedJson.current)
+    latestJson.current = JSON.stringify(data)
+    setDirty(latestJson.current !== savedJson.current)
   }, [])
 
   const persist = async (data: Data, publish: boolean) => {
@@ -83,7 +92,8 @@ export function EditorClient({
       })
       if (res.ok) {
         savedJson.current = JSON.stringify(data)
-        setDirty(false)
+        setDirty(latestJson.current !== savedJson.current)
+        setHasUnpublished(!publish)
         if (publish) {
           setIsPublished(true)
           setSaveState('idle')
@@ -131,9 +141,11 @@ export function EditorClient({
           ? { label: 'Draft saved', bg: '#1f3320', fg: '#7fcf86', bd: '#2e5a33' }
           : dirty
             ? { label: 'Unsaved changes', bg: '#3a3320', fg: '#e8c468', bd: '#7a6a2e' }
-            : isPublished
-              ? { label: 'Live on site', bg: '#1f3320', fg: '#7fcf86', bd: '#2e5a33' }
-              : { label: 'Draft - not live yet', bg: '#262626', fg: '#9b9a9a', bd: '#3a3a3a' }
+            : isPublished && hasUnpublished
+              ? { label: 'Live - newer draft not published', bg: '#3a3320', fg: '#e8c468', bd: '#7a6a2e' }
+              : isPublished
+                ? { label: 'Live on site', bg: '#1f3320', fg: '#7fcf86', bd: '#2e5a33' }
+                : { label: 'Draft - not live yet', bg: '#262626', fg: '#9b9a9a', bd: '#3a3a3a' }
 
   const guardLeave = (e: React.MouseEvent) => {
     if (dirty && !window.confirm('You have unsaved changes. Leave without publishing?')) {

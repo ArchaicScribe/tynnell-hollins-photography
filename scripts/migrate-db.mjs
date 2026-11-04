@@ -974,6 +974,19 @@ async function run() {
       `UPDATE "site_design" SET "tape_shadow" = 'soft' WHERE "tape_shadow" IS NULL`
     )
     console.log('✓ site_design tape_shadow column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20261104_100000: pages.draft_content column
+    // "Save draft" in the page builder used to write `content`, the column
+    // the public site renders, so saving a draft (or previewing) published
+    // it. Drafts now live here until Publish copies them into `content`.
+    // Nullable with no default: existing pages have no pending draft.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "draft_content" jsonb
+    `)
+    console.log('✓ pages.draft_content column ready')
   } finally {
     client.release()
     await pool.end()

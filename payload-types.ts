@@ -456,6 +456,15 @@ export interface Page {
     | number
     | boolean
     | null;
+  draftContent?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   published?: boolean | null;
   displayOrder?: number | null;
   showInNav?: boolean | null;
@@ -838,6 +847,7 @@ export interface PagesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   content?: T;
+  draftContent?: T;
   published?: T;
   displayOrder?: T;
   showInNav?: T;

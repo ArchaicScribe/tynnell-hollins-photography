@@ -82,6 +82,11 @@ export const Pages: CollectionConfig = {
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true },
     { name: 'content', type: 'json' },
+    // Unpublished edits. "Save draft" and "Preview" write here; Publish copies
+    // it into `content` (what the public site renders) and clears it. Null
+    // means the page has no edits beyond what is live. Draft Mode preview
+    // renders `draftContent ?? content` (see app/lib/builderPreview.ts).
+    { name: 'draftContent', type: 'json' },
     { name: 'published', type: 'checkbox', defaultValue: false },
     { name: 'displayOrder', type: 'number' },
     { name: 'showInNav', type: 'checkbox', defaultValue: false },

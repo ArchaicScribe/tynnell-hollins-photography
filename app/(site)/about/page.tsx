@@ -6,13 +6,12 @@ import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from 'lexical'
 import { getPayload } from 'payload'
 import { Render, resolveAllData } from '@measured/puck/rsc'
-import type { Data } from '@measured/puck'
 import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { getSiteConfig, type SiteConfigData } from '@/app/lib/siteConfig'
-import { isPreviewMode } from '@/app/lib/builderPreview'
+import { isPreviewMode, pageRenderData } from '@/app/lib/builderPreview'
 import { excludePhotoIds, getPrivateOnlyPhotoIds } from '@/app/lib/galleryVisibility'
 import SpecialtyReveal from './SpecialtyReveal'
 import styles from './page.module.css'
@@ -146,7 +145,7 @@ const promotedPersonSchema = (site: SiteConfigData) => ({
 export default async function AboutPage() {
   const [promoted, site] = await Promise.all([getPromotedAboutPage(), getSiteConfig()])
   if (promoted) {
-    const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
+    const data = await pageRenderData(promoted)
     return (
       <>
         <JsonLd data={promotedPersonSchema(site)} />

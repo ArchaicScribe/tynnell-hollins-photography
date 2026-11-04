@@ -4,13 +4,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import { Render, resolveAllData } from '@measured/puck/rsc'
-import type { Data } from '@measured/puck'
 import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import CategoryPhotoGrid, { type CategoryPhoto } from '../_components/CategoryPhotoGrid'
-import { isPreviewMode } from '@/app/lib/builderPreview'
+import { isPreviewMode, pageRenderData } from '@/app/lib/builderPreview'
 import { excludePhotoIds, getPrivateOnlyPhotoIds } from '@/app/lib/galleryVisibility'
 import styles from '../_components/CategoryPage.module.css'
 
@@ -52,7 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PortraitsPage() {
   const promoted = await getPromotedPage()
   if (promoted) {
-    const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
+    const data = await pageRenderData(promoted)
     return (
       <>
         <JsonLd data={PROMOTED_SCHEMA} />

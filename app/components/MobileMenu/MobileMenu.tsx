@@ -54,7 +54,9 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks }: Mobile
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  useEffect(() => { onClose() }, [pathname, onClose])
+  // Closing on route change lives in Navbar, which owns `isOpen`. An effect
+  // here keyed on `onClose` re-fired whenever the parent passed a new
+  // callback identity, which closed the menu the moment it opened.
 
   return (
     <div

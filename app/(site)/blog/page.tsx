@@ -3,13 +3,12 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { getPayload } from 'payload'
 import { Render, resolveAllData } from '@measured/puck/rsc'
-import type { Data } from '@measured/puck'
 import config from '@payload-config'
 import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import BlogClient from './BlogClient'
-import { isPreviewMode } from '@/app/lib/builderPreview'
+import { isPreviewMode, pageRenderData } from '@/app/lib/builderPreview'
 import styles from './page.module.css'
 
 export const revalidate = 3600
@@ -87,7 +86,7 @@ export default async function BlogPage() {
   } : null
 
   if (promoted) {
-    const data = (promoted.content as Data | undefined) ?? { content: [], root: {} }
+    const data = await pageRenderData(promoted)
     return (
       <>
         {blogSchema && <JsonLd data={blogSchema} />}
