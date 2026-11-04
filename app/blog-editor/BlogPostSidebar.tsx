@@ -166,6 +166,7 @@ export function BlogPostSidebar({ selectedSlug }: { selectedSlug: string | null 
               <Link
                 key={post.id}
                 href={`/blog-editor/${post.slug}`}
+                aria-current={isSelected ? 'page' : undefined}
                 style={{
                   display: 'flex',
                   alignItems: 'center',

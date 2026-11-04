@@ -14,10 +14,6 @@ describe('inquiryEmailHtml', () => {
     message: 'We would love to book a session!',
   }
 
-  it('renders without throwing', () => {
-    expect(() => inquiryEmailHtml(fields)).not.toThrow()
-  })
-
   it('contains the expected field values', () => {
     const html = inquiryEmailHtml(fields)
     expect(html).toContain('Jane Doe')
