@@ -33,6 +33,11 @@ function futureDate(daysFromNow: number): string {
   return d.toISOString().split('T')[0]
 }
 
+/** A day as Payload returns a date field: a full ISO timestamp at UTC midnight. */
+function payloadDate(daysFromNow: number): string {
+  return `${futureDate(daysFromNow)}T00:00:00.000Z`
+}
+
 function validBody(overrides: Record<string, unknown> = {}) {
   return {
     name: 'Jane Doe',
@@ -84,8 +89,8 @@ describe('POST /api/contact - happy paths', () => {
     findGlobalMock.mockImplementation(({ slug }: { slug: string }) => {
       if (slug === 'booking-settings') return Promise.resolve({ minLeadTimeHours: 48, maxBookingMonths: 24 })
       if (slug === 'availability') {
-        const start = futureDate(-2)
-        const end = futureDate(2)
+        const start = payloadDate(-2)
+        const end = payloadDate(2)
         return Promise.resolve({
           blockedRanges: [{ startDate: start, endDate: end, applyReturnBuffer: false, customerMessage: 'Away until {returnDate}.' }],
         })
@@ -150,7 +155,7 @@ describe('POST /api/contact - sad paths', () => {
       if (slug === 'booking-settings') return Promise.resolve({ minLeadTimeHours: 48, maxBookingMonths: 24 })
       if (slug === 'availability') {
         return Promise.resolve({
-          blockedRanges: [{ startDate: futureDate(5), endDate: futureDate(15), applyReturnBuffer: false }],
+          blockedRanges: [{ startDate: payloadDate(5), endDate: payloadDate(15), applyReturnBuffer: false }],
         })
       }
       return Promise.resolve(null)

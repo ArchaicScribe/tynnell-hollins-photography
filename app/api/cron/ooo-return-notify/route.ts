@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { EMAIL_FROM, CONTACT_EMAIL } from '@/app/lib/constants'
 import { oooReturnNotificationEmailHtml } from '@/app/lib/emails'
+import { parseLocalDate } from '@/app/lib/availability'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
       if (!range.startDate || !range.endDate) continue
       if (range.notificationSent) continue
 
-      const end = new Date(range.endDate)
+      const end = parseLocalDate(range.endDate)
       const bufferDays = range.applyReturnBuffer !== false ? (range.returnBufferDays ?? 2) : 0
       const returnDate = new Date(end)
       returnDate.setDate(returnDate.getDate() + bufferDays)

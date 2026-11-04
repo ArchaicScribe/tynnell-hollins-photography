@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { isoToLocalInput, localInputToIso } from './datetimeLocal'
 
 // Slide-over for the handful of Post fields that have no in-canvas click
 // target (slug, excerpt, publish date). Saves immediately on blur/change via
@@ -24,7 +25,7 @@ export function PostSettingsPanel({
 }) {
   const [slug, setSlug] = useState(initialSlug)
   const [excerpt, setExcerpt] = useState(initialExcerpt)
-  const [publishedAt, setPublishedAt] = useState(initialPublishedAt.slice(0, 16))
+  const [publishedAt, setPublishedAt] = useState(() => isoToLocalInput(initialPublishedAt))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -101,8 +102,8 @@ export function PostSettingsPanel({
               value={publishedAt}
               onChange={e => setPublishedAt(e.target.value)}
               onBlur={() => {
-                const iso = new Date(publishedAt).toISOString()
-                if (iso !== new Date(initialPublishedAt).toISOString()) void save({ publishedAt: iso })
+                const iso = localInputToIso(publishedAt)
+                if (iso && iso !== localInputToIso(isoToLocalInput(initialPublishedAt))) void save({ publishedAt: iso })
               }}
               style={fieldInput}
             />

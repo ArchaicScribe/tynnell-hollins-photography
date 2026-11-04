@@ -19,15 +19,20 @@ export interface ActiveOoo {
 }
 
 /**
- * Parses a "YYYY-MM-DD" date string as local midnight, not UTC midnight.
+ * Parses a Payload date value as local midnight of its calendar day, not UTC.
  * `new Date(dateOnlyString)` parses date-only strings as UTC per the ISO 8601
  * spec, which silently shifts the calendar day by one in any timezone behind
- * UTC (every US timezone). Date-only strings from Payload date fields always
- * mean "this calendar day" in the studio's local timezone, so they must be
- * parsed as local, matching how submitted booking dates are constructed.
+ * UTC (every US timezone). Payload date fields always mean "this calendar day"
+ * in the studio's local timezone, so they must be parsed as local, matching
+ * how submitted booking dates are constructed.
+ *
+ * Accepts both "YYYY-MM-DD" and full ISO timestamps. Payload's drizzle adapter
+ * returns date fields as `toISOString()` output ("2026-11-10T00:00:00.000Z"),
+ * and the availability editor saves each day as UTC midnight, so only the
+ * leading date portion carries meaning.
  */
-function parseLocalDate(dateStr: string): Date {
-  const [year, month, day] = dateStr.split('-').map(Number)
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.slice(0, 10).split('-').map(Number)
   return new Date(year, (month ?? 1) - 1, day ?? 1)
 }
 
