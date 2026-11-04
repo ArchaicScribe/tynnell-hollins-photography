@@ -20,7 +20,6 @@ function thumbOf(p: PhotoDoc | undefined): string | null {
 export function GalleryPhotoArranger() {
   const { value: rawPhotos, setValue: setPhotos } = useField<PhotoRow[]>({ path: 'photos' })
   const { value: rawCover, setValue: setCoverField } = useField<number | { id?: number } | null>({ path: 'coverPhoto' })
-  const category = useField<string | null>({ path: 'category' }).value ?? null
 
   const photos: PhotoRow[] = Array.isArray(rawPhotos) ? rawPhotos : []
   const count = photos.length
@@ -92,7 +91,9 @@ export function GalleryPhotoArranger() {
     const newDocs: Record<number, PhotoDoc> = {}
     for (let i = 0; i < accepted.length; i++) {
       try {
-        const doc = await uploadPhotoToLibrary(accepted[i], { category })
+        // Untagged on purpose: a category would publish this client photo to the
+        // public portfolio grids (same rule as the gallery editor).
+        const doc = await uploadPhotoToLibrary(accepted[i])
         newRows.push({ id: crypto.randomUUID(), photo: doc.id })
         newDocs[doc.id] = doc
       } catch (e) {

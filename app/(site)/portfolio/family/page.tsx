@@ -11,6 +11,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import CategoryPhotoGrid, { type CategoryPhoto } from '../_components/CategoryPhotoGrid'
 import { isPreviewMode } from '@/app/lib/builderPreview'
+import { excludePhotoIds, getPrivateOnlyPhotoIds } from '@/app/lib/galleryVisibility'
 import styles from '../_components/CategoryPage.module.css'
 
 export const revalidate = 120
@@ -61,10 +62,11 @@ export default async function FamilyPage() {
   }
 
   const payload = await getPayload({ config })
+  const privateIds = await getPrivateOnlyPhotoIds(payload)
 
   const { docs: rawPhotos } = await payload.find({
     collection: 'photos',
-    where: { category: { equals: 'families' } },
+    where: excludePhotoIds({ category: { equals: 'families' } }, privateIds),
     sort: 'displayOrder',
     depth: 0,
     limit: 500,

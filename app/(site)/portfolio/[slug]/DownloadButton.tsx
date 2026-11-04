@@ -1,12 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { zipSync } from 'fflate'
-
-type DownloadPhoto = {
-  id: number
-  filename: string | null
-  url: string | null
-}
+import { collectDownloads, type DownloadPhoto } from './collectDownloads'
 
 type Props = {
   gallerySlug: string
@@ -17,35 +12,27 @@ type Props = {
 export function DownloadAllButton({ gallerySlug, galleryTitle, photos }: Props) {
   const [state, setState] = useState<'idle' | 'downloading' | 'zipping' | 'done'>('idle')
   const [progress, setProgress] = useState(0)
+  const [error, setError] = useState<string | null>(null)
 
   const handleDownload = async () => {
     if (state !== 'idle') return
     setState('downloading')
     setProgress(0)
+    setError(null)
 
     try {
-      const files: Record<string, Uint8Array> = {}
-      const usedFilenames = new Set<string>()
+      const { files, failed, unauthorized } = await collectDownloads(photos, gallerySlug, setProgress)
 
-      for (let i = 0; i < photos.length; i++) {
-        const photo = photos[i]
-        const proxyUrl = `/api/photos/${photo.id}/download?gallery=${gallerySlug}`
-        const res = await fetch(proxyUrl)
-        if (!res.ok) continue
-
-        const buf = await res.arrayBuffer()
-
-        // Ensure unique filename within the zip.
-        let base = photo.filename ?? `photo-${photo.id}.jpg`
-        if (usedFilenames.has(base)) {
-          const dot = base.lastIndexOf('.')
-          const name = dot >= 0 ? base.slice(0, dot) : base
-          const ext = dot >= 0 ? base.slice(dot) : ''
-          base = `${name}-${i + 1}${ext}`
-        }
-        usedFilenames.add(base)
-        files[base] = new Uint8Array(buf)
-        setProgress(i + 1)
+      // Never hand the visitor an empty zip: say what went wrong instead.
+      if (unauthorized) {
+        setError('Your access to this gallery has expired. Reload the page and enter the password again.')
+        setState('idle')
+        return
+      }
+      if (Object.keys(files).length === 0) {
+        setError('The photos could not be downloaded. Please try again, or contact us if it keeps happening.')
+        setState('idle')
+        return
       }
 
       setState('zipping')
@@ -58,12 +45,15 @@ export function DownloadAllButton({ gallerySlug, galleryTitle, photos }: Props) 
       link.download = `${galleryTitle.replace(/[^a-z0-9]+/gi, '-')}.zip`
       link.click()
       URL.revokeObjectURL(link.href)
+      if (failed > 0) {
+        setError(`${failed} of ${photos.length} photos could not be downloaded and are missing from the zip.`)
+      }
       setState('idle')
     } catch {
+      setError('Something went wrong creating the download. Please try again.')
       setState('idle')
     }
   }
-
   const total = photos.length
   const label =
     state === 'downloading' ? `Downloading (${progress}/${total})...` :
@@ -71,32 +61,39 @@ export function DownloadAllButton({ gallerySlug, galleryTitle, photos }: Props) 
     `Download All (${total})`
 
   return (
-    <button
-      onClick={handleDownload}
-      disabled={state !== 'idle'}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.6rem 1.25rem',
-        background: 'transparent',
-        border: '1px solid rgba(214,209,206,0.3)',
-        borderRadius: '4px',
-        color: 'var(--color-heading)',
-        fontSize: '0.82rem',
-        fontFamily: 'var(--font-body)',
-        letterSpacing: '0.04em',
-        cursor: state === 'idle' ? 'pointer' : 'default',
-        opacity: state === 'idle' ? 1 : 0.6,
-        transition: 'border-color 0.15s, opacity 0.15s',
-      }}
-    >
-      {state === 'idle' && (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+    <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
+      <button
+        onClick={handleDownload}
+        disabled={state !== 'idle'}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.6rem 1.25rem',
+          background: 'transparent',
+          border: '1px solid rgba(214,209,206,0.3)',
+          borderRadius: '4px',
+          color: 'var(--color-heading)',
+          fontSize: '0.82rem',
+          fontFamily: 'var(--font-body)',
+          letterSpacing: '0.04em',
+          cursor: state === 'idle' ? 'pointer' : 'default',
+          opacity: state === 'idle' ? 1 : 0.6,
+          transition: 'border-color 0.15s, opacity 0.15s',
+        }}
+      >
+        {state === 'idle' && (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+        {label}
+      </button>
+      {error && (
+        <span role="alert" style={{ maxWidth: '22rem', textAlign: 'right', fontSize: '0.78rem', fontFamily: 'var(--font-body)', color: 'var(--color-heading)' }}>
+          {error}
+        </span>
       )}
-      {label}
-    </button>
+    </span>
   )
 }

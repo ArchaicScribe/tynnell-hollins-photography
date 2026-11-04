@@ -77,11 +77,14 @@ export async function POST(req: NextRequest) {
 
   const token = makeToken(slug, storedPassword)
   const res = NextResponse.json({ ok: true })
+  // Path must be `/`, not `/portfolio/${slug}`: the same cookie is read by
+  // /api/photos/[id]/download for "Download All", and a path-scoped cookie is
+  // never sent there. The name is already per-gallery, so scope is unchanged.
   res.cookies.set(`gauth_${slug}`, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    path: `/portfolio/${slug}`,
+    path: '/',
     maxAge: 60 * 60 * 24 * 30,
   })
   return res

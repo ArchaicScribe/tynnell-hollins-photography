@@ -13,6 +13,7 @@ import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { getSiteConfig, type SiteConfigData } from '@/app/lib/siteConfig'
 import { isPreviewMode } from '@/app/lib/builderPreview'
+import { excludePhotoIds, getPrivateOnlyPhotoIds } from '@/app/lib/galleryVisibility'
 import SpecialtyReveal from './SpecialtyReveal'
 import styles from './page.module.css'
 
@@ -30,6 +31,7 @@ const getAboutData = cache(async () => {
 // interaction (TYN-345) isn't empty before Tynnell has entered her own values.
 const resolveFallbackSpecialtyPhotos = cache(async (): Promise<AboutValue[]> => {
   const payload = await getPayload({ config })
+  const privateIds = await getPrivateOnlyPhotoIds(payload)
   return Promise.all(
     DEFAULT_VALUES.map(async (value) => {
       const category = FALLBACK_CATEGORY_BY_HEADING[value.heading]
@@ -42,7 +44,7 @@ const resolveFallbackSpecialtyPhotos = cache(async (): Promise<AboutValue[]> => 
         depth: 0,
       })
       const photo = featured[0] ?? (
-        await payload.find({ collection: 'photos', where: { category: { equals: category } }, sort: 'displayOrder', limit: 1, depth: 0 })
+        await payload.find({ collection: 'photos', where: excludePhotoIds({ category: { equals: category } }, privateIds), sort: 'displayOrder', limit: 1, depth: 0 })
       ).docs[0]
       const p = photo as Photo | undefined
       return { ...value, photoUrl: p?.sizes?.card?.url ?? p?.url ?? null }

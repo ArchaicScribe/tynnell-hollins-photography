@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
+import { excludePhotoIds, getPrivateOnlyPhotoIds } from '@/app/lib/galleryVisibility'
 
 // Public, read-only, category-scoped photo listing for the builder's
 // PortfolioGrid block (app/builder/puck.config.tsx). Deliberately NOT the
@@ -30,11 +31,18 @@ export async function GET(req: NextRequest) {
   }
 
   const payload = await getPayload({ config })
+  // /api is reachable even under COMING_SOON, so photos that only live in a
+  // draft, password-protected, or expired client gallery must never be
+  // listed here just because they carry a category.
+  const privateIds = await getPrivateOnlyPhotoIds(payload)
   const { docs } = await payload.find({
     collection: 'photos',
-    where: wantsAll
-      ? { category: { in: [...VALID_CATEGORIES] } }
-      : { category: { equals: category } },
+    where: excludePhotoIds(
+      wantsAll
+        ? { category: { in: [...VALID_CATEGORIES] } }
+        : { category: { equals: category } },
+      privateIds,
+    ),
     sort: 'displayOrder',
     depth: 0,
     limit: 500,

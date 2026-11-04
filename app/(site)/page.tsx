@@ -7,6 +7,7 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { getSiteConfig } from '@/app/lib/siteConfig'
 import { isPreviewMode } from '@/app/lib/builderPreview'
+import { excludePhotoIds, getPrivateOnlyPhotoIds } from '@/app/lib/galleryVisibility'
 import Hero from '@/app/components/Hero/Hero'
 import PortfolioTeaser from '@/app/components/PortfolioTeaser/PortfolioTeaser'
 import AboutPreview from '@/app/components/AboutPreview/AboutPreview'
@@ -48,7 +49,7 @@ async function resolveSchemaImage(payload: Awaited<ReturnType<typeof getPayload>
 
   const { docs: anyReal } = await payload.find({
     collection: 'photos',
-    where: { category: { in: [...REAL_CATEGORIES] } },
+    where: excludePhotoIds({ category: { in: [...REAL_CATEGORIES] } }, await getPrivateOnlyPhotoIds(payload)),
     sort: 'displayOrder',
     depth: 0,
     limit: 1,

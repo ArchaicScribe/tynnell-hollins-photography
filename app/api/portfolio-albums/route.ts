@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
+import { isGalleryPubliclyVisible } from '@/app/lib/galleryVisibility'
 
 // Public, read-only, category-scoped album listing for the builder's
 // AlbumGrid block (app/builder/puck.config.tsx) - the sibling of
@@ -34,7 +35,9 @@ export async function GET(req: NextRequest) {
     limit: 100,
   })
 
-  const albums = docs.map((gallery) => {
+  // Password-protected and expired galleries are gated on their own page, so
+  // listing their title, cover, and preview thumbnails here would defeat it.
+  const albums = docs.filter(isGalleryPubliclyVisible).map((gallery) => {
     const cover = typeof gallery.coverPhoto === 'object' && gallery.coverPhoto !== null
       ? gallery.coverPhoto as Photo
       : null
