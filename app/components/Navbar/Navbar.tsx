@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { navLinks, type NavLink } from '@/app/constants/nav'
@@ -81,7 +81,12 @@ export default function Navbar({
     return () => document.removeEventListener('mousedown', handler)
   }, [portfolioOpen])
 
-  useEffect(() => { setPortfolioOpen(false) }, [pathname])
+  useEffect(() => {
+    setPortfolioOpen(false)
+    setMenuOpen(false)
+  }, [pathname])
+
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
 
   const brand = splitBrand(siteTitle)
   const allLinks = [...navLinks, ...builderLinks]
@@ -189,7 +194,7 @@ export default function Navbar({
         </div>
       </nav>
 
-      <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} links={allLinks} />
+      <MobileMenu isOpen={menuOpen} onClose={closeMenu} links={allLinks} />
     </>
   )
 }
