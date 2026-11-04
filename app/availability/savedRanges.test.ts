@@ -10,7 +10,7 @@ describe('extractSavedRanges', () => {
     expect(extractSavedRanges(response, sent)).toEqual(saved)
   })
 
-  it('regression: never resets to an empty list when the top level has no ranges', () => {
+  it('regression: never resets to an empty list when the response has no ranges array', () => {
     const response = { message: 'Availability updated successfully.', result: {} }
     expect(extractSavedRanges(response, sent)).toEqual(sent)
   })
