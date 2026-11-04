@@ -12,6 +12,7 @@ import JsonLd from '@/app/components/JsonLd/JsonLd'
 import CategoryPhotoGrid, { type CategoryPhoto } from '../_components/CategoryPhotoGrid'
 import AlbumGrid, { type AlbumItem } from '../_components/AlbumGrid'
 import { isPreviewMode } from '@/app/lib/builderPreview'
+import { excludePhotoIds, getPrivateOnlyPhotoIds, isGalleryPubliclyVisible } from '@/app/lib/galleryVisibility'
 import styles from '../_components/CategoryPage.module.css'
 
 export const revalidate = 120
@@ -66,11 +67,12 @@ export default async function WeddingsPage() {
   }
 
   const payload = await getPayload({ config })
+  const privateIds = await getPrivateOnlyPhotoIds(payload)
 
   const [{ docs: rawPhotos }, { docs: rawGalleries }] = await Promise.all([
     payload.find({
       collection: 'photos',
-      where: { category: { equals: 'weddings' } },
+      where: excludePhotoIds({ category: { equals: 'weddings' } }, privateIds),
       sort: 'displayOrder',
       depth: 0,
       limit: 500,
@@ -100,7 +102,7 @@ export default async function WeddingsPage() {
       fullUrl: (p as Photo).sizes?.hero?.url ?? p.url ?? null,
     }))
 
-  const albums: AlbumItem[] = rawGalleries.map(gallery => {
+  const albums: AlbumItem[] = rawGalleries.filter(isGalleryPubliclyVisible).map(gallery => {
     const cover = typeof gallery.coverPhoto === 'object' && gallery.coverPhoto !== null
       ? gallery.coverPhoto as Photo
       : null

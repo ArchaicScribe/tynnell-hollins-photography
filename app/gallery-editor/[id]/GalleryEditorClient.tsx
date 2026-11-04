@@ -340,7 +340,10 @@ export function GalleryEditorClient({
     const newPhotos: PhotoItem[] = []
     for (let i = 0; i < accepted.length; i++) {
       try {
-        const doc = await uploadPhotoToLibrary(accepted[i], { category })
+        // No category tag: a category is what publishes a photo to the public
+        // portfolio grids, and client gallery uploads must not land there by
+        // default. Tagging is left as an explicit choice in the photo library.
+        const doc = await uploadPhotoToLibrary(accepted[i])
         newPhotos.push({
           id: doc.id,
           url: doc.sizes?.card?.url ?? doc.url ?? null,
@@ -362,7 +365,7 @@ export function GalleryEditorClient({
     setUploading(false)
     setUploadProgress(null)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category])
+  }, [])
 
   const save = async (newStatus?: string) => {
     setSaving(true)

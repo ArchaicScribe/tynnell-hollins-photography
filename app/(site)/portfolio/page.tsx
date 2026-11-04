@@ -10,6 +10,7 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 import type { Photo } from '@/payload-types'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import { isPreviewMode } from '@/app/lib/builderPreview'
+import { excludePhotoIds, getPrivateOnlyPhotoIds } from '@/app/lib/galleryVisibility'
 import styles from './portfolio-landing.module.css'
 
 export const revalidate = 120
@@ -86,6 +87,9 @@ export default async function PortfolioPage() {
   }
 
   const payload = await getPayload({ config })
+  // Featured is an explicit publish choice; a bare category is not, so only
+  // the category fallback skips photos that live solely in private galleries.
+  const privateIds = await getPrivateOnlyPhotoIds(payload)
 
   const coverPhotos = await Promise.all(
     CATEGORIES.map(async cat => {
@@ -105,7 +109,7 @@ export default async function PortfolioPage() {
 
       const { docs: fallback } = await payload.find({
         collection: 'photos',
-        where: { category: { equals: cat.dbCategory } },
+        where: excludePhotoIds({ category: { equals: cat.dbCategory } }, privateIds),
         sort: 'displayOrder',
         limit: 1,
         depth: 0,

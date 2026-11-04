@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { isGalleryPubliclyVisible } from '@/app/lib/galleryVisibility'
 
 export const revalidate = 3600
 
@@ -61,7 +62,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  // Dynamic gallery pages (published only)
+  // Dynamic gallery pages: only galleries anyone can open (not draft, not
+  // password protected, not expired) and that haven't opted out of search
+  // indexing (seoIndexable, TYN-325).
   const { docs: galleries } = await payload.find({
     collection: 'galleries',
     where: { status: { not_equals: 'draft' } },
@@ -70,6 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   })
 
   const galleryPages: MetadataRoute.Sitemap = galleries
+    .filter(g => isGalleryPubliclyVisible(g) && g.seoIndexable !== false)
     .filter((g): g is typeof g & { slug: string } => typeof g.slug === 'string' && g.slug.length > 0)
     .map(g => ({
       url: `${BASE_URL}/portfolio/${g.slug}`,
