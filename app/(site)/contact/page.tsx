@@ -9,7 +9,7 @@ import ContactForm from './ContactForm'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 import { getSiteConfig } from '@/app/lib/siteConfig'
-import { getActiveOoo, parseLocalDate, type BlockedRange } from '@/app/lib/availability'
+import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 import { computeBookingDateBounds } from '@/app/lib/validation'
 import { isPreviewMode } from '@/app/lib/builderPreview'
 
@@ -59,9 +59,10 @@ function findActiveOrUpcoming(ranges: BlockedRange[]): string | null {
 
   for (const range of ranges) {
     if (!range.startDate || !range.endDate) continue
-    const start = parseLocalDate(range.startDate)
+    const start = new Date(range.startDate)
+    start.setHours(0, 0, 0, 0)
     if (start > now && start <= sevenDaysOut) {
-      const returnDate = parseLocalDate(range.endDate)
+      const returnDate = new Date(range.endDate)
       const bufferDays = range.applyReturnBuffer !== false ? (range.returnBufferDays ?? 2) : 0
       if (bufferDays > 0) returnDate.setDate(returnDate.getDate() + bufferDays)
       const returnDateStr = returnDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })

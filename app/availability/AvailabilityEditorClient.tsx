@@ -1,6 +1,5 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { extractSavedRanges } from './savedRanges'
 
 const ui = "var(--font-heading, Archivo, sans-serif)"
 
@@ -782,7 +781,9 @@ export function AvailabilityEditorClient({ initialRanges }: { initialRanges: Ran
         body: JSON.stringify({ blockedRanges: ranges }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const saved = extractSavedRanges<Range>(await res.json(), ranges)
+      const updated = await res.json()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const saved = (updated as any)?.blockedRanges ?? []
       setRanges(saved)
       setOriginalJson(JSON.stringify(saved))
       setSaveMsg('Saved')

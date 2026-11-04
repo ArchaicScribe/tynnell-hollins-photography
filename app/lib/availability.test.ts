@@ -155,6 +155,13 @@ describe('regression: Payload ISO timestamps (blocked dates never fired)', () =>
     expect(getBlockedDateResult(dayOffset(11), ranges)).toBeNull()
   })
 
+  it('blocks a date when Payload returns a noon timestamp for the range', () => {
+    const noon: BlockedRange[] = [
+      { startDate: `${dayOffset(5)}T12:00:00.000Z`, endDate: `${dayOffset(10)}T12:00:00.000Z`, applyReturnBuffer: false },
+    ]
+    expect(getBlockedDateResult(dayOffset(7), noon)?.blocked).toBe(true)
+  })
+
   it('reports an active OOO for a range read back from Payload', () => {
     const active: BlockedRange[] = [
       { startDate: isoDateOffset(0), endDate: isoDateOffset(0), applyReturnBuffer: false },
