@@ -25,9 +25,13 @@ export interface ActiveOoo {
  * UTC (every US timezone). Date-only strings from Payload date fields always
  * mean "this calendar day" in the studio's local timezone, so they must be
  * parsed as local, matching how submitted booking dates are constructed.
+ *
+ * Accepts full ISO timestamps too, which is what Payload actually returns:
+ * the drizzle adapter reads date fields back as `toISOString()` output
+ * ("2026-11-10T00:00:00.000Z"), so only the leading date portion is used.
  */
-function parseLocalDate(dateStr: string): Date {
-  const [year, month, day] = dateStr.split('-').map(Number)
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.slice(0, 10).split('-').map(Number)
   return new Date(year, (month ?? 1) - 1, day ?? 1)
 }
 

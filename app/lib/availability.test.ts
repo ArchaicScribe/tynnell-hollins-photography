@@ -1,19 +1,50 @@
 import { describe, it, expect } from 'vitest'
-import { getBlockedDateResult, getActiveOoo, type BlockedRange } from './availability'
+import { getBlockedDateResult, getActiveOoo, parseLocalDate, type BlockedRange } from './availability'
 
-function isoDateOffset(days: number): string {
+/** Local calendar day `days` from today as "YYYY-MM-DD", the shape a booking form submits. */
+function dayOffset(days: number): string {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
   d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
 }
+
+/**
+ * The same day as a Payload date field value. Payload's drizzle adapter returns
+ * date fields as full ISO timestamps, and the availability editor saves each day
+ * as UTC midnight, so range fixtures must use this shape, not "YYYY-MM-DD".
+ */
+function isoDateOffset(days: number): string {
+  return `${dayOffset(days)}T00:00:00.000Z`
+}
+
+describe('parseLocalDate', () => {
+  it('parses a Payload ISO timestamp as local midnight of its calendar day', () => {
+    const d = parseLocalDate('2026-11-10T00:00:00.000Z')
+    expect(Number.isNaN(d.getTime())).toBe(false)
+    expect([d.getFullYear(), d.getMonth(), d.getDate()]).toEqual([2026, 10, 10])
+    expect([d.getHours(), d.getMinutes()]).toEqual([0, 0])
+  })
+
+  it('ignores the time portion of a non-midnight timestamp', () => {
+    const d = parseLocalDate('2026-11-10T17:00:00.000Z')
+    expect([d.getFullYear(), d.getMonth(), d.getDate()]).toEqual([2026, 10, 10])
+  })
+
+  it('still accepts a bare YYYY-MM-DD string', () => {
+    const d = parseLocalDate('2026-11-10')
+    expect([d.getFullYear(), d.getMonth(), d.getDate()]).toEqual([2026, 10, 10])
+  })
+})
 
 describe('getBlockedDateResult', () => {
   it('flags a date inside a blocked range', () => {
     const ranges: BlockedRange[] = [
       { startDate: isoDateOffset(5), endDate: isoDateOffset(10), applyReturnBuffer: false },
     ]
-    const result = getBlockedDateResult(isoDateOffset(7), ranges)
+    const result = getBlockedDateResult(dayOffset(7), ranges)
     expect(result?.blocked).toBe(true)
   })
 
@@ -21,7 +52,7 @@ describe('getBlockedDateResult', () => {
     const ranges: BlockedRange[] = [
       { startDate: isoDateOffset(5), endDate: isoDateOffset(10), applyReturnBuffer: false },
     ]
-    const result = getBlockedDateResult(isoDateOffset(20), ranges)
+    const result = getBlockedDateResult(dayOffset(20), ranges)
     expect(result).toBeNull()
   })
 
@@ -29,7 +60,7 @@ describe('getBlockedDateResult', () => {
     const ranges: BlockedRange[] = [
       { startDate: isoDateOffset(5), endDate: isoDateOffset(10), applyReturnBuffer: false },
     ]
-    const result = getBlockedDateResult(isoDateOffset(5), ranges)
+    const result = getBlockedDateResult(dayOffset(5), ranges)
     expect(result?.blocked).toBe(true)
   })
 
@@ -37,7 +68,7 @@ describe('getBlockedDateResult', () => {
     const ranges: BlockedRange[] = [
       { startDate: isoDateOffset(5), endDate: isoDateOffset(10), applyReturnBuffer: false },
     ]
-    const result = getBlockedDateResult(isoDateOffset(10), ranges)
+    const result = getBlockedDateResult(dayOffset(10), ranges)
     expect(result?.blocked).toBe(true)
   })
 
@@ -50,7 +81,7 @@ describe('getBlockedDateResult', () => {
         customerMessage: 'Back on {returnDate}!',
       },
     ]
-    const result = getBlockedDateResult(isoDateOffset(7), ranges)
+    const result = getBlockedDateResult(dayOffset(7), ranges)
     expect(result?.message).toContain('Back on')
     expect(result?.message).not.toContain('{returnDate}')
   })
@@ -65,7 +96,7 @@ describe('getBlockedDateResult', () => {
       },
     ]
     // Day 12 is within the original end (10) + 3 day buffer
-    const result = getBlockedDateResult(isoDateOffset(12), ranges)
+    const result = getBlockedDateResult(dayOffset(12), ranges)
     expect(result?.blocked).toBe(true)
   })
 
@@ -92,15 +123,48 @@ describe('getActiveOoo', () => {
 
   it('returns the first active range among multiple overlapping ranges', () => {
     const ranges: BlockedRange[] = [
-      { startDate: isoDateOffset(-5), endDate: isoDateOffset(5), applyReturnBuffer: false, internalLabel: 'first' },
-      { startDate: isoDateOffset(-1), endDate: isoDateOffset(1), applyReturnBuffer: false, internalLabel: 'second' },
+      { startDate: isoDateOffset(-5), endDate: isoDateOffset(5), applyReturnBuffer: false, customerMessage: 'first range' },
+      { startDate: isoDateOffset(-1), endDate: isoDateOffset(1), applyReturnBuffer: false, customerMessage: 'second range' },
     ]
-    const active = getActiveOoo(ranges)
-    expect(active).not.toBeNull()
+    expect(getActiveOoo(ranges)?.message).toBe('first range')
   })
 
   it('skips ranges missing a start or end date', () => {
     const ranges: BlockedRange[] = [{ startDate: null, endDate: null }]
     expect(getActiveOoo(ranges)).toBeNull()
+  })
+})
+
+describe('regression: Payload ISO timestamps (blocked dates never fired)', () => {
+  // Before the fix, parseLocalDate split "2026-11-10T00:00:00.000Z" on "-" and
+  // got a NaN day, so every comparison was false and nothing was ever blocked.
+  const ranges: BlockedRange[] = [
+    { startDate: isoDateOffset(5), endDate: isoDateOffset(10), applyReturnBuffer: false },
+  ]
+
+  it('blocks a submitted date inside a range read back from Payload', () => {
+    expect(getBlockedDateResult(dayOffset(7), ranges)?.blocked).toBe(true)
+  })
+
+  it('does not block the day before the range starts', () => {
+    expect(getBlockedDateResult(dayOffset(4), ranges)).toBeNull()
+  })
+
+  it('does not block the day after the range ends', () => {
+    expect(getBlockedDateResult(dayOffset(11), ranges)).toBeNull()
+  })
+
+  it('blocks a date when Payload returns a noon timestamp for the range', () => {
+    const noon: BlockedRange[] = [
+      { startDate: `${dayOffset(5)}T12:00:00.000Z`, endDate: `${dayOffset(10)}T12:00:00.000Z`, applyReturnBuffer: false },
+    ]
+    expect(getBlockedDateResult(dayOffset(7), noon)?.blocked).toBe(true)
+  })
+
+  it('reports an active OOO for a range read back from Payload', () => {
+    const active: BlockedRange[] = [
+      { startDate: isoDateOffset(0), endDate: isoDateOffset(0), applyReturnBuffer: false },
+    ]
+    expect(getActiveOoo(active)).not.toBeNull()
   })
 })
