@@ -1081,6 +1081,18 @@ export interface SiteConfig {
    * Your full Pinterest profile URL.
    */
   pinterestUrl?: string | null;
+  /**
+   * Up to two cards shown in the full-screen menu, each linking to a page.
+   */
+  menuCards?:
+    | {
+        title?: string | null;
+        linkLabel?: string | null;
+        href?: string | null;
+        imageUrl?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1311,6 +1323,15 @@ export interface SiteConfigSelect<T extends boolean = true> {
   facebookUrl?: T;
   tiktokUrl?: T;
   pinterestUrl?: T;
+  menuCards?:
+    | T
+    | {
+        title?: T;
+        linkLabel?: T;
+        href?: T;
+        imageUrl?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

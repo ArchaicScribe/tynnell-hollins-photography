@@ -82,5 +82,23 @@ export const SiteConfig: GlobalConfig = {
         description: 'Your full Pinterest profile URL.',
       },
     },
+    // Rising Roots gap 4: the "Work with me" cards in the full-screen menu.
+    // Edited on /site-settings; links are checked by app/lib/menuCards.ts
+    // both when saved and when read.
+    {
+      name: 'menuCards',
+      type: 'array',
+      label: 'Menu "Work with me" cards',
+      maxRows: 2,
+      admin: {
+        description: 'Up to two cards shown in the full-screen menu, each linking to a page.',
+      },
+      fields: [
+        { name: 'title', type: 'text', label: 'Title' },
+        { name: 'linkLabel', type: 'text', label: 'Link text' },
+        { name: 'href', type: 'text', label: 'Link (a page like /services, or an https:// address)' },
+        { name: 'imageUrl', type: 'text', label: 'Photo' },
+      ],
+    },
   ],
 }

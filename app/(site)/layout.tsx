@@ -92,7 +92,7 @@ export default async function RootLayout({
       <style dangerouslySetInnerHTML={{ __html: `:root {\n  ${themeToCssVars(theme)}\n}` }} />
       <body suppressHydrationWarning>
         <a href="#main-content" className="skipLink">Skip to content</a>
-        <Navbar builderLinks={builderLinks} logoUrl={theme.logoUrl} siteTitle={site.title} />
+        <Navbar builderLinks={builderLinks} logoUrl={theme.logoUrl} siteTitle={site.title} menuCards={site.menuCards} />
         <div id="main-content" tabIndex={-1}>{children}</div>
         <Footer />
         <DesignPreviewBridge />
