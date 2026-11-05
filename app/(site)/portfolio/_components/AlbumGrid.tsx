@@ -16,13 +16,24 @@ export type AlbumItem = {
 // behavior: hides the whole section when there are no albums, same as
 // before) so the same album-card grid can be reused by the AlbumGrid Puck
 // block (app/builder/puck.config.tsx) without duplicating markup.
-export default function AlbumGrid({ albums }: { albums: AlbumItem[] }) {
+// `strip` is the Rising Roots "portfolio-scrolling" row: one line of album
+// cards that scrolls sideways. The strip is a focusable, labelled region so a
+// keyboard user can scroll it too (a scrolling box with nothing focusable in
+// view is otherwise unreachable without a mouse or touch).
+export type AlbumLayout = 'grid' | 'strip'
+
+export default function AlbumGrid({ albums, layout = 'grid' }: { albums: AlbumItem[]; layout?: AlbumLayout }) {
   if (albums.length === 0) return null
+
+  const isStrip = layout === 'strip'
 
   return (
     <section className={styles.albums}>
       <h2 className={styles.albumsHeading}>Albums</h2>
-      <div className={styles.albumGrid}>
+      <div
+        className={isStrip ? styles.albumStrip : styles.albumGrid}
+        {...(isStrip ? { role: 'region', 'aria-label': 'Albums', tabIndex: 0 } : {})}
+      >
         {albums.map(album => (
           <Link key={album.id} href={`/portfolio/${album.slug}`} className={styles.albumCard}>
             <div className={styles.albumCover}>

@@ -1450,10 +1450,21 @@ export const config: Config = {
             { label: 'Brands', value: 'brands' },
           ],
         },
+        // Rising Roots "portfolio-scrolling": the same album cards in one
+        // row that scrolls sideways. Grid stays the default so pages that
+        // already use this block do not change.
+        layout: {
+          type: 'radio' as const,
+          label: 'Layout',
+          options: [
+            { label: 'Grid', value: 'grid' },
+            { label: 'Scrolling strip', value: 'strip' },
+          ],
+        },
         ...styleFields,
         ...responsiveFields,
       },
-      defaultProps: { category: 'weddings', ...styleDefaults, ...responsiveDefaults },
+      defaultProps: { category: 'weddings', layout: 'grid', ...styleDefaults, ...responsiveDefaults },
       resolveData: async ({ props }: any) => {
         const category = props.category ?? 'weddings'
         const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
@@ -1466,9 +1477,9 @@ export const config: Config = {
           return { props: { resolvedAlbums: [] } }
         }
       },
-      render: ({ resolvedAlbums, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      render: ({ resolvedAlbums, layout, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          <AlbumGridComponent albums={resolvedAlbums ?? []} />
+          <AlbumGridComponent albums={resolvedAlbums ?? []} layout={layout === 'strip' ? 'strip' : 'grid'} />
         </Section>
       ),
     },
