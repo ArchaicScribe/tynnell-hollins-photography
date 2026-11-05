@@ -19,7 +19,7 @@ describe('cleanMenuCards', () => {
   it('accepts a page on this site or a secure https link, and nothing else', () => {
     // The href is rendered as a link on every page of the public site, so a
     // javascript: or data: value would run script for every visitor.
-    const hrefs = ['/contact', 'https://calendly.com/x', 'javascript:alert(1)', 'data:text/html,x', 'http://plain.example', '//evil.example', 'services']
+    const hrefs = ['/contact', 'https://calendly.com/x', 'javascript:alert(1)', 'data:text/html,x', 'http://plain.example', '//evil.example', '/\\evil.example', 'services']
     // One card per call: a single list would stop at the two-card cap and
     // never look at the unsafe values further down.
     const kept = hrefs.filter((href) => cleanMenuCards([{ ...wedding, href }]).length === 1)

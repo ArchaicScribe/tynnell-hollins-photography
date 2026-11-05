@@ -9,6 +9,9 @@ export const CONTACT_EMAIL = 'hello@tynnellhollinsphotography.com'
 
 export const EMAIL_FROM = `Tynnell Hollins Photography <${CONTACT_EMAIL}>`
 
+// The public site's address, for links that leave the site (emails have no
+// page to resolve a relative link against).
+export const SITE_URL = 'https://tynnellhollinsphotography.com'
 export const RATE_LIMIT_ERROR = 'Too many requests. Please try again later.'
 
 /**

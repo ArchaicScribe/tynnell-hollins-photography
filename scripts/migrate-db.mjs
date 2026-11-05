@@ -1028,6 +1028,20 @@ async function run() {
         ON "site_config_menu_cards" USING btree ("_parent_id")
     `)
     console.log('✓ site_config_menu_cards table ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20261105_200000: site_config freebie columns (Rising Roots
+    // gap 5). The title and link of the free guide /api/subscribe emails to
+    // a Freebie signup. Plain nullable text; empty until the guide exists.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "freebie_title" varchar
+    `)
+    await client.query(`
+      ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "freebie_url" varchar
+    `)
+    console.log('✓ site_config freebie columns ready')
   } finally {
     client.release()
     await pool.end()

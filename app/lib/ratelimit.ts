@@ -24,6 +24,23 @@ export const comingSoonRatelimit = new Ratelimit({
   prefix: 'rl:coming-soon',
 })
 
+// 3 signups per IP per hour - email signup / freebie form. Low on purpose:
+// the freebie sends an email to whatever address is typed in.
+export const subscribeRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(3, '1 h'),
+  prefix: 'rl:subscribe',
+})
+
+// 1 freebie email per recipient address per day, however many IPs ask.
+// Keyed on a hash of the address (never the address itself). Stops the
+// freebie being used to flood one inbox from a pool of IPs.
+export const freebieRecipientRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.fixedWindow(1, '24 h'),
+  prefix: 'rl:freebie-to',
+})
+
 /**
  * Extracts the real client IP from the request headers.
  * x-forwarded-for is set by Vercel's edge network.

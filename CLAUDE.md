@@ -287,6 +287,7 @@ TYN-338 is the reference example: the taped/polaroid photo-frame mat and tape-st
 | Route | Purpose |
 |---|---|
 | `POST /api/contact` | Contact form, Resend email, rate-limited |
+| `POST /api/subscribe` | Email Signup block: adds a Resend contact (segment via optional `RESEND_SEGMENT_ID`; needs a Resend key with contacts access, not sending-only). Freebie signups are emailed the SiteConfig `freebieUrl`, never a link from the request; 1 freebie per address per day (`freebieRecipientRatelimit`, fails closed). Turnstile via shared `app/lib/turnstile.ts` |
 | `POST /api/checkout` | Stripe Checkout session |
 | `POST /api/webhooks/stripe` | Handles `checkout.session.completed` |
 | `GET /api/robots` | robots.txt (disallows `/admin`, `/api/`) |

@@ -1082,6 +1082,14 @@ export interface SiteConfig {
    */
   pinterestUrl?: string | null;
   /**
+   * The name of your free guide, used in the email subject and heading.
+   */
+  freebieTitle?: string | null;
+  /**
+   * The full https:// address of the guide (for example where the PDF is stored). Leave empty until the guide is ready.
+   */
+  freebieUrl?: string | null;
+  /**
    * Up to two cards shown in the full-screen menu, each linking to a page.
    */
   menuCards?:
@@ -1323,6 +1331,8 @@ export interface SiteConfigSelect<T extends boolean = true> {
   facebookUrl?: T;
   tiktokUrl?: T;
   pinterestUrl?: T;
+  freebieTitle?: T;
+  freebieUrl?: T;
   menuCards?:
     | T
     | {

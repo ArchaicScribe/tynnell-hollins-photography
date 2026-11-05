@@ -30,6 +30,8 @@ export default async function SiteSettingsPage() {
         facebookUrl: siteConfig.facebookUrl ?? '',
         tiktokUrl: siteConfig.tiktokUrl ?? '',
         pinterestUrl: siteConfig.pinterestUrl ?? '',
+        freebieTitle: siteConfig.freebieTitle ?? '',
+        freebieUrl: siteConfig.freebieUrl ?? '',
         // Raw saved values (not cleaned), so Tynnell sees and can fix
         // exactly what is stored. The save route cleans them.
         menuCards: (siteConfig.menuCards ?? []).map((c) => ({

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { requireAdminUser } from '@/app/lib/builderAuth'
 import { cleanMenuCards } from '@/app/lib/menuCards'
+import { isSafeLink } from '@/app/lib/safeLink'
 
 // Persist Site Settings (TYN-313). Admin-only. Business name/tagline/contact
 // info/social links surface across the whole (site) layout (nav, footer,
@@ -18,6 +19,7 @@ const FIELDS = [
   'facebookUrl',
   'tiktokUrl',
   'pinterestUrl',
+  'freebieTitle',
 ] as const
 
 export async function POST(request: Request) {
@@ -39,6 +41,14 @@ export async function POST(request: Request) {
   // The menu cards' links appear on every public page, so they are cleaned
   // (unsafe links dropped, at most two cards) before they reach the database.
   if ('menuCards' in body) data.menuCards = cleanMenuCards(body.menuCards)
+  // The freebie link is emailed to every Freebie signup, so only a site page
+  // or an https link is stored. An unsafe link is ignored, keeping the one
+  // already saved (blanking it would quietly stop every freebie email); an
+  // empty box clears it.
+  if ('freebieUrl' in body) {
+    const link = typeof body.freebieUrl === 'string' ? body.freebieUrl.trim() : ''
+    if (!link || isSafeLink(link)) data.freebieUrl = link
+  }
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: 'No valid fields provided' }, { status: 400 })
   }

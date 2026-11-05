@@ -63,3 +63,30 @@ describe('POST /api/site-settings/save, menu cards', () => {
     expect(updateGlobalMock).not.toHaveBeenCalled()
   })
 })
+
+describe('POST /api/site-settings/save, freebie', () => {
+  it('saves the freebie title and link', async () => {
+    await POST(makeRequest({ freebieTitle: 'The Wedding Planning Guide', freebieUrl: 'https://media.example/guide.pdf' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data).toEqual({ freebieTitle: 'The Wedding Planning Guide', freebieUrl: 'https://media.example/guide.pdf' })
+  })
+
+  it('never stores a freebie link that is not a site page or https, and keeps the one already saved', async () => {
+    // Overwriting with an empty link would quietly stop every freebie email.
+    await POST(makeRequest({ freebieTitle: 'Guide', freebieUrl: 'javascript:alert(1)' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data).not.toHaveProperty('freebieUrl')
+  })
+
+  it('clears the freebie link when Tynnell empties the box', async () => {
+    await POST(makeRequest({ freebieUrl: '' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data.freebieUrl).toBe('')
+  })
+
+  it('trims spaces around the freebie link', async () => {
+    await POST(makeRequest({ freebieUrl: '  /guide.pdf ' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data.freebieUrl).toBe('/guide.pdf')
+  })
+})
