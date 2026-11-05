@@ -145,3 +145,114 @@ describe('Site Settings, freebie', () => {
     expect(section.getByRole('alert')).toHaveTextContent(/https:\/\//)
   })
 })
+
+describe('Site Settings, uploading the freebie PDF', () => {
+  const uploadUrl = 'https://acct.r2.cloudflarestorage.com/bucket/files/abc-guide.pdf?sig=1'
+  const publicUrl = 'https://media.tynnellhollinsphotography.com/files/abc-wedding-guide.pdf'
+
+  function storage({ presign = { status: 200, body: { uploadUrl, url: publicUrl } as unknown }, putOk = true } = {}) {
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url === '/api/freebie-pdf/presign') {
+        return { ok: presign.status < 400, status: presign.status, json: async () => presign.body }
+      }
+      if (url === uploadUrl) return { ok: putOk, status: putOk ? 200 : 403, json: async () => ({}) }
+      return { ok: true, status: 200, json: async () => ({}) }
+    })
+  }
+
+  function pdf(name = 'Wedding Guide.pdf', type = 'application/pdf', size?: number) {
+    const file = new File(['%PDF-1.7'], name, { type })
+    if (size !== undefined) Object.defineProperty(file, 'size', { value: size })
+    return file
+  }
+
+  const freebie = () => {
+    renderSettings()
+    return within(screen.getByRole('region', { name: 'Freebie' }))
+  }
+
+  const choose = (section: ReturnType<typeof freebie>, file: File) =>
+    fireEvent.change(section.getByLabelText('Choose the guide PDF'), { target: { files: [file] } })
+
+  const callsTo = (url: string) => fetchMock.mock.calls.filter(([u]) => u === url)
+
+  beforeEach(() => vi.stubGlobal('fetch', fetchMock))
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    fetchMock.mockReset()
+  })
+
+  it('offers an upload button next to the link', () => {
+    const section = freebie()
+
+    expect(section.getByRole('button', { name: 'Upload a PDF' })).toBeInTheDocument()
+  })
+
+  it('uploads the chosen PDF straight to storage and fills in its link, ready to save', async () => {
+    storage()
+    const section = freebie()
+    const file = pdf()
+
+    choose(section, file)
+
+    await waitFor(() => expect(section.getByLabelText('Link to the guide')).toHaveValue(publicUrl))
+    expect(JSON.parse(callsTo('/api/freebie-pdf/presign')[0][1].body)).toEqual({ filename: 'Wedding Guide.pdf', size: file.size })
+    const [, put] = callsTo(uploadUrl)[0]
+    expect(put.method).toBe('PUT')
+    expect(put.body).toBe(file)
+    expect(put.headers['Content-Type']).toBe('application/pdf')
+    expect(section.getByRole('status')).toHaveTextContent(/Save Changes/)
+
+    expect((await savedSiteSettings()).freebieUrl).toBe(publicUrl)
+  })
+
+  it('refuses a file that is not a PDF, without uploading anything', () => {
+    storage()
+    const section = freebie()
+
+    choose(section, pdf('guide.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'))
+
+    expect(section.getByRole('alert')).toHaveTextContent(/PDF/)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('refuses a PDF over 25 MB, without uploading anything', () => {
+    storage()
+    const section = freebie()
+
+    choose(section, pdf('guide.pdf', 'application/pdf', 25 * 1024 * 1024 + 1))
+
+    expect(section.getByRole('alert')).toHaveTextContent(/25 MB/)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('shows the reason the server gives, and leaves the link alone', async () => {
+    storage({ presign: { status: 403, body: { error: 'Forbidden' } } })
+    const section = freebie()
+
+    choose(section, pdf())
+
+    expect(await section.findByRole('alert')).toHaveTextContent('Forbidden')
+    expect(callsTo(uploadUrl)).toHaveLength(0)
+    expect(section.getByLabelText('Link to the guide')).toHaveValue('')
+  })
+
+  it('says the upload failed when storage turns the file away, and leaves the link alone', async () => {
+    storage({ putOk: false })
+    const section = freebie()
+
+    choose(section, pdf())
+
+    expect(await section.findByRole('alert')).toHaveTextContent(/upload failed/i)
+    expect(section.getByLabelText('Link to the guide')).toHaveValue('')
+  })
+
+  it('cannot start a second upload while one is still going', async () => {
+    fetchMock.mockReturnValue(new Promise(() => {}))
+    const section = freebie()
+
+    choose(section, pdf())
+
+    await waitFor(() => expect(section.getByRole('button', { name: /uploading/i })).toBeDisabled())
+  })
+})

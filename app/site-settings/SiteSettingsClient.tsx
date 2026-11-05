@@ -1,7 +1,8 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { ImagePickerField } from '@/app/builder/ImagePickerField'
+import { MAX_FREEBIE_PDF_BYTES, isPdfFileName } from '@/app/lib/freebiePdf'
 import { DEFAULT_MENU_CARD_LINK_LABEL, MAX_MENU_CARDS, type MenuCard } from '@/app/lib/menuCards'
 import { isSafeLink } from '@/app/lib/safeLink'
 
@@ -323,6 +324,111 @@ function MenuCardEditor({ index, card, onChange, onRemove }: {
   )
 }
 
+// Uploads the freebie guide PDF straight to R2 (sign, then PUT from the
+// browser) and hands back its public link for the "Link to the guide" field.
+// The link is only kept once Tynnell presses Save Changes, like every other
+// setting on this page, so an upload she changes her mind about costs nothing
+// but a stray file in storage.
+function FreebiePdfUpload({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [status, setStatus] = useState('')
+  const [error, setError] = useState('')
+
+  const upload = async (file: File) => {
+    setStatus('')
+    setError('')
+    if (!isPdfFileName(file.name) || (file.type !== '' && file.type !== 'application/pdf')) {
+      setError('Only PDF files can be uploaded here.')
+      return
+    }
+    if (file.size > MAX_FREEBIE_PDF_BYTES) {
+      setError('That PDF is too large. The limit is 25 MB.')
+      return
+    }
+
+    setUploading(true)
+    setStatus(`Uploading ${file.name}...`)
+    try {
+      const signRes = await fetch('/api/freebie-pdf/presign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, size: file.size }),
+      })
+      const signed = await signRes.json().catch(() => ({}))
+      if (!signRes.ok || !signed.uploadUrl || !signed.url) {
+        setStatus('')
+        setError(signed.error || 'The upload could not start. Please try again.')
+        return
+      }
+
+      const putRes = await fetch(signed.uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/pdf' },
+        body: file,
+      })
+      if (!putRes.ok) {
+        setStatus('')
+        setError('The upload failed. Please try again.')
+        return
+      }
+
+      onUploaded(signed.url)
+      setStatus(`Uploaded ${file.name}. Press Save Changes to start sending it.`)
+    } catch {
+      setStatus('')
+      setError('The upload failed. Please check your connection and try again.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div style={{ marginBottom: '1.5rem' }}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/pdf,.pdf"
+        aria-label="Choose the guide PDF"
+        tabIndex={-1}
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          e.target.value = ''
+          if (file) void upload(file)
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        aria-busy={uploading}
+        style={{
+          background: 'transparent',
+          border: '1px solid rgba(155,154,154,0.4)',
+          borderRadius: 6,
+          color: '#D6D1CE',
+          fontSize: '0.82rem',
+          padding: '0.55rem 1rem',
+          cursor: uploading ? 'wait' : 'pointer',
+          opacity: uploading ? 0.6 : 1,
+          fontFamily: ui,
+        }}
+      >
+        {uploading ? 'Uploading...' : 'Upload a PDF'}
+      </button>
+      <p role="status" style={{ margin: status ? '0.5rem 0 0' : 0, color: '#9B9A9A', fontSize: '0.78rem', lineHeight: 1.5, maxWidth: 480 }}>
+        {status}
+      </p>
+      {error && (
+        <p role="alert" style={{ margin: '0.5rem 0 0', color: '#fb923c', fontSize: '0.78rem', lineHeight: 1.5, maxWidth: 480 }}>
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function SiteSettingsClient({
   initial,
   initialPresets,
@@ -504,7 +610,7 @@ export function SiteSettingsClient({
           />
           <Field
             label="Link to the guide"
-            description="The full https:// address of the guide, for example where the PDF is stored."
+            description="Upload the PDF below and this fills in by itself, or paste the full https:// address of a guide stored elsewhere."
             value={data.freebieUrl}
             onChange={(v) => set('freebieUrl', v)}
             placeholder="https://..."
@@ -514,6 +620,7 @@ export function SiteSettingsClient({
                 : undefined
             }
           />
+          <FreebiePdfUpload onUploaded={(url) => set('freebieUrl', url)} />
         </Section>
 
         <Section title="Menu cards">
