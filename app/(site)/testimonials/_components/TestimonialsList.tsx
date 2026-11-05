@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import { useActiveOnScroll } from '@/app/hooks/useActiveOnScroll'
 import styles from './TestimonialsList.module.css'
 
 export type TestimonialItem = {
@@ -43,23 +43,8 @@ function TestimonialPhoto({ photoUrl, photoWidth, photoHeight, clientName }: {
 // Testimonials without their own photo just keep whichever photo was last
 // seen, which is what naturally produces "groups" sharing one photo.
 function StickyScrollTestimonials({ testimonials }: { testimonials: TestimonialItem[] }) {
-  const [activeIndex, setActiveIndex] = useState(0)
-  const itemRefs = useRef<(HTMLElement | null)[]>([])
+  const { activeIndex, itemRef } = useActiveOnScroll(testimonials.length)
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting)
-        if (visible.length === 0) return
-        const topMost = visible.reduce((a, b) => (a.boundingClientRect.top < b.boundingClientRect.top ? a : b))
-        const idx = itemRefs.current.findIndex((el) => el === topMost.target)
-        if (idx !== -1) setActiveIndex(idx)
-      },
-      { rootMargin: '-40% 0px -40% 0px', threshold: 0 }
-    )
-    itemRefs.current.forEach((el) => { if (el) observer.observe(el) })
-    return () => observer.disconnect()
-  }, [testimonials.length])
 
   // Carry the nearest-preceding photo forward so a testimonial without its
   // own photo doesn't blank the panel out mid-group.
@@ -90,7 +75,7 @@ function StickyScrollTestimonials({ testimonials }: { testimonials: TestimonialI
         {testimonials.map((t, i) => (
           <article
             key={t.id}
-            ref={(el) => { itemRefs.current[i] = el }}
+            ref={itemRef(i)}
             className={styles.stickyItem}
             aria-label={`Review from ${t.clientName}`}
           >
