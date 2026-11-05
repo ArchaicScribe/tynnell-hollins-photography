@@ -38,10 +38,10 @@ Every page shares: a transparent menu that turns solid on scroll, a full-screen 
 
 ## Gaps, in build order
 
-1. **Stats row.** "5★ reviews on Google / 150+ weddings / 7+ years". Home approach and Portraits social proof. New builder block. No decision needed.
-2. **Horizontal album strip.** Home and Wedding "portfolio-scrolling". A layout option on `AlbumGrid`.
-3. **Sticky panels over a pinned photo, for any content.** About "things that make my heart full" and Wedding "what's included". `LiveTestimonials` already does this for reviews only.
-4. **Numbered full-screen menu with "Work with me" cards.** A restyle of the existing menu.
+1. **Stats row.** DONE: `Stats Row` block (PR #138).
+2. **Horizontal album strip.** DONE: `Album Grid` block, Layout: Scrolling strip.
+3. **Sticky panels over a pinned photo, for any content.** DONE: `Sticky Panels` block (shares its scroll tracking with `LiveTestimonials`).
+4. **Numbered full-screen menu with "Work with me" cards.** DONE for phones and tablets; cards are edited in Site Settings > Menu cards. Open: Rising Roots also shows the menu button on desktop, where this site shows the full link row instead.
 5. **Email capture (freebie and newsletter).** Home, Blog. Needs a decision first: where subscribers are stored and how the freebie is delivered.
 6. **Fonts.** Nyght Serif Light + Light Italic for headings, "Nostalgia" script. Needs a license check before self-hosting, then a Postgres enum migration (see CLAUDE.md, "Payload selects are backed by real Postgres enums").
 7. **Palette.** Adds `#ECE9E0`, `#2E2A19`, `#D4D1C4`, `#8C8569`, `#8B6548` to the live `#E4E2D8` / `#6F6950` / `#242424`. Settable in `/design` today, no code.
