@@ -478,7 +478,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'TypewriterHeading', 'SplitImageText', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -653,6 +653,54 @@ export const config: Config = {
           </div>
         </Section>
       ),
+    },
+
+    // ------------------------------------------------------------ StatsRow
+    // "5★ reviews / 150+ weddings / 7+ years" row from the Rising Roots
+    // reference (docs/rising-roots-section-map.md). A stat with no number is
+    // left out rather than shown as an empty slot.
+    StatsRow: {
+      label: 'Stats Row',
+      fields: {
+        items: {
+          type: 'array',
+          label: 'Stats',
+          arrayFields: {
+            value: { type: 'text', label: 'Number (e.g. 150+)' },
+            label: { type: 'text', label: 'Label' },
+          },
+          defaultItemProps: { value: '', label: '' },
+          getItemSummary: (item: any) => [item.value, item.label].filter(Boolean).join(' ') || 'New stat',
+        },
+        align: alignField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        items: [
+          { value: '5★', label: 'Reviews on Google' },
+          { value: '150+', label: 'Sessions photographed' },
+          { value: '7+', label: 'Years behind the camera' },
+        ],
+        align: 'center',
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ items, align, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => {
+        const stats = (items ?? []).filter((item: any) => item?.value?.trim())
+        return (
+          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 5vw, 4.5rem)', justifyContent: align === 'center' ? 'center' : 'flex-start' }}>
+              {stats.map((item: any, i: number) => (
+                <li key={i} style={{ textAlign: align, minWidth: '8rem' }}>
+                  <p style={headingStyle('clamp(2.25rem, 5vw, 3.5rem)')}>{item.value}</p>
+                  {item.label && <p style={{ ...eyebrowStyle, margin: '0.6rem 0 0' }}>{item.label}</p>}
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )
+      },
     },
 
     // ------------------------------------------------------------ RichText
