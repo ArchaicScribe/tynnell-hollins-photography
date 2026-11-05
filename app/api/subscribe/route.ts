@@ -6,7 +6,7 @@ import { isValidEmail, escapeHtml } from '@/app/lib/validation'
 import { subscribeRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { verifyTurnstile } from '@/app/lib/turnstile'
-import { isSafeLink } from '@/app/lib/menuCards'
+import { isSafeLink } from '@/app/lib/safeLink'
 import { freebieEmailHtml } from '@/app/lib/emails'
 import { EMAIL_FROM, CONTACT_EMAIL, RATE_LIMIT_ERROR, SITE_URL } from '@/app/lib/constants'
 

@@ -23,7 +23,7 @@ const wedding = { title: 'The wedding experience', linkLabel: 'Get the details',
 const fetchMock = vi.fn()
 
 function renderSettings(menuCards = [wedding]) {
-  render(<SiteSettingsClient initial={{ ...base, menuCards }} initialPresets={presets} initialEmailTemplates={templates} />)
+  render(<SiteSettingsClient initial={{ ...base, freebieTitle: '', freebieUrl: '', menuCards }} initialPresets={presets} initialEmailTemplates={templates} />)
   return within(screen.getByRole('region', { name: 'Menu cards' }))
 }
 
@@ -108,5 +108,40 @@ describe('Site Settings, menu "Work with me" cards', () => {
     fireEvent.click(cards.getByRole('button', { name: 'Remove card 1' }))
 
     expect((await savedSiteSettings()).menuCards).toEqual([])
+  })
+})
+
+describe('Site Settings, freebie', () => {
+  beforeEach(() => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    fetchMock.mockReset()
+  })
+
+  const freebie = () => {
+    renderSettings()
+    return within(screen.getByRole('region', { name: 'Freebie' }))
+  }
+
+  it('saves the freebie title and link', async () => {
+    const section = freebie()
+
+    fireEvent.change(section.getByLabelText('Guide title'), { target: { value: 'The Wedding Planning Guide' } })
+    fireEvent.change(section.getByLabelText('Link to the guide'), { target: { value: 'https://media.example/guide.pdf' } })
+
+    const saved = await savedSiteSettings()
+    expect(saved.freebieTitle).toBe('The Wedding Planning Guide')
+    expect(saved.freebieUrl).toBe('https://media.example/guide.pdf')
+  })
+
+  it('warns about a guide link that will not be saved', () => {
+    const section = freebie()
+
+    fireEvent.change(section.getByLabelText('Link to the guide'), { target: { value: 'www.example.com/guide.pdf' } })
+
+    expect(section.getByRole('alert')).toHaveTextContent(/https:\/\//)
   })
 })

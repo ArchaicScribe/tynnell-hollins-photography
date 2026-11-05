@@ -2,7 +2,8 @@
 
 import { useId, useState } from 'react'
 import { ImagePickerField } from '@/app/builder/ImagePickerField'
-import { DEFAULT_MENU_CARD_LINK_LABEL, isSafeLink, MAX_MENU_CARDS, type MenuCard } from '@/app/lib/menuCards'
+import { DEFAULT_MENU_CARD_LINK_LABEL, MAX_MENU_CARDS, type MenuCard } from '@/app/lib/menuCards'
+import { isSafeLink } from '@/app/lib/safeLink'
 
 type SiteSettingsData = {
   title: string
@@ -13,6 +14,8 @@ type SiteSettingsData = {
   facebookUrl: string
   tiktokUrl: string
   pinterestUrl: string
+  freebieTitle: string
+  freebieUrl: string
   menuCards: MenuCard[]
 }
 
@@ -59,6 +62,7 @@ function Field({
   onChange,
   type = 'text',
   placeholder,
+  warning,
 }: {
   label: string
   description: string
@@ -66,13 +70,16 @@ function Field({
   onChange: (v: string) => void
   type?: string
   placeholder?: string
+  warning?: string
 }) {
+  const id = useId()
   return (
     <div style={{ marginBottom: '1.5rem' }}>
-      <label style={{ display: 'block', color: '#D6D1CE', fontSize: '0.85rem', fontWeight: 600, fontFamily: ui, marginBottom: '0.5rem' }}>
+      <label htmlFor={id} style={{ display: 'block', color: '#D6D1CE', fontSize: '0.85rem', fontWeight: 600, fontFamily: ui, marginBottom: '0.5rem' }}>
         {label}
       </label>
       <input
+        id={id}
         type={type}
         value={value}
         placeholder={placeholder}
@@ -91,9 +98,15 @@ function Field({
           boxSizing: 'border-box',
         }}
       />
-      <p style={{ margin: '0.5rem 0 0', color: '#6b6a6a', fontSize: '0.78rem', lineHeight: 1.5, maxWidth: 480 }}>
-        {description}
-      </p>
+      {warning ? (
+        <p role="alert" style={{ margin: '0.5rem 0 0', color: '#fb923c', fontSize: '0.78rem', lineHeight: 1.5, maxWidth: 480 }}>
+          {warning}
+        </p>
+      ) : (
+        <p style={{ margin: '0.5rem 0 0', color: '#6b6a6a', fontSize: '0.78rem', lineHeight: 1.5, maxWidth: 480 }}>
+          {description}
+        </p>
+      )}
     </div>
   )
 }
@@ -478,8 +491,32 @@ export function SiteSettingsClient({
           />
         </Section>
 
-        <Section title="Menu cards">
+        <Section title="Freebie">
           <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
+            The free guide emailed to anyone who signs up through an Email Signup block set to Freebie. Until a link is
+            added here, those signups are still collected but no email is sent.
+          </p>
+          <Field
+            label="Guide title"
+            description='Used in the email subject and heading. Example: "The Wedding Planning Guide".'
+            value={data.freebieTitle}
+            onChange={(v) => set('freebieTitle', v)}
+          />
+          <Field
+            label="Link to the guide"
+            description="A page on your site, like /guide.pdf, or a full https:// address."
+            value={data.freebieUrl}
+            onChange={(v) => set('freebieUrl', v)}
+            placeholder="https://..."
+            warning={
+              data.freebieUrl.trim() && !isSafeLink(data.freebieUrl.trim())
+                ? "This link won't be saved. Use a page like /guide.pdf or an https:// address."
+                : undefined
+            }
+          />
+        </Section>
+
+        <Section title="Menu cards">          <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
             Up to two &quot;Work with me&quot; cards in the full-screen menu, each with a photo and a link, for example to
             your wedding and portrait pages. Leave this empty and the menu shows only your pages.
           </p>

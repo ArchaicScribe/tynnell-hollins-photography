@@ -24,6 +24,7 @@ import AlbumGridComponent from '@/app/(site)/portfolio/_components/AlbumGrid'
 import ServicesGridComponent from '@/app/(site)/services/_components/ServicesGrid'
 import TestimonialsListComponent from '@/app/(site)/testimonials/_components/TestimonialsList'
 import StickyPanelsComponent from '@/app/components/StickyPanels/StickyPanels'
+import EmailSignupFormComponent from '@/app/components/EmailSignup/EmailSignupForm'
 import BlogClientComponent from '@/app/(site)/blog/BlogClient'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
@@ -64,6 +65,7 @@ const MOBILE_MAX = 640
 const RESPONSIVE_CSS = `
 @media (max-width:${MOBILE_MAX}px){.pk-hide-mobile{display:none !important}}
 @media (min-width:${MOBILE_MAX + 1}px){.pk-hide-desktop{display:none !important}}
+@media (max-width:${MOBILE_MAX}px){.pk-signup{grid-template-columns:1fr !important}}
 `
 
 // Editorial bleed/offset for Split Image + Text (issue 5). The image runs off
@@ -479,7 +481,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -651,6 +653,61 @@ export const config: Config = {
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle()}>{heading}</h2>
             {subtext && <p style={{ marginTop: '1rem', color: C.detail, lineHeight: 1.7 }}>{subtext}</p>}
+          </div>
+        </Section>
+      ),
+    },
+
+    // -------------------------------------------------------- EmailSignup
+    // Rising Roots gap 5: the freebie and newsletter signups (Home, Blog).
+    // Posts to /api/subscribe, which adds the visitor to Resend. A Freebie
+    // signup is emailed the guide link set in Site Settings; that link is
+    // deliberately NOT a block field, so it never appears in the page source
+    // and cannot be swapped for another link by a visitor.
+    EmailSignup: {
+      label: 'Email Signup',
+      fields: {
+        kind: {
+          type: 'radio' as const,
+          label: 'Type',
+          options: [
+            { label: 'Newsletter', value: 'newsletter' },
+            { label: 'Freebie (emails the guide set in Site Settings)', value: 'freebie' },
+          ],
+        },
+        imageUrl: imageField('Photo (optional)'),
+        eyebrow: { type: 'text', label: 'Eyebrow (optional)' },
+        heading: { type: 'text', label: 'Heading' },
+        body: { type: 'textarea', label: 'Text' },
+        buttonText: { type: 'text', label: 'Button text' },
+        successMessage: { type: 'text', label: 'Message after signing up' },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        kind: 'newsletter',
+        imageUrl: '',
+        eyebrow: '',
+        heading: 'Stay in the loop',
+        body: 'New sessions, favorite moments and the occasional tip, straight to your inbox.',
+        buttonText: 'Sign me up',
+        successMessage: 'Thank you for signing up!',
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ kind, imageUrl, eyebrow, heading, body, buttonText, successMessage, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <div className="pk-signup" style={{ display: 'grid', gridTemplateColumns: imageUrl ? 'minmax(0, 1fr) minmax(0, 1.2fr)' : '1fr', gap: 'clamp(2rem, 5vw, 5rem)', alignItems: 'center', maxWidth: imageUrl ? undefined : '40rem', margin: imageUrl ? undefined : '0 auto' }}>
+            {imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt="" style={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover' }} />
+            )}
+            <div>
+              {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+              {heading && <h2 style={headingStyle('clamp(1.75rem, 3.5vw, 2.6rem)')}>{heading}</h2>}
+              {body && <p style={{ color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: '1rem 0 1.75rem' }}>{body}</p>}
+              <EmailSignupFormComponent kind={kind === 'freebie' ? 'freebie' : 'newsletter'} buttonText={buttonText || 'Sign me up'} successMessage={successMessage || 'Thank you for signing up!'} />
+            </div>
           </div>
         </Section>
       ),

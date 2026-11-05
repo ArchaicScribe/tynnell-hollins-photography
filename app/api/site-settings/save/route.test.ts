@@ -63,3 +63,23 @@ describe('POST /api/site-settings/save, menu cards', () => {
     expect(updateGlobalMock).not.toHaveBeenCalled()
   })
 })
+
+describe('POST /api/site-settings/save, freebie', () => {
+  it('saves the freebie title and link', async () => {
+    await POST(makeRequest({ freebieTitle: 'The Wedding Planning Guide', freebieUrl: 'https://media.example/guide.pdf' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data).toEqual({ freebieTitle: 'The Wedding Planning Guide', freebieUrl: 'https://media.example/guide.pdf' })
+  })
+
+  it('never stores a freebie link that is not a site page or https, since it is emailed to subscribers', async () => {
+    await POST(makeRequest({ freebieUrl: 'javascript:alert(1)' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data.freebieUrl).toBe('')
+  })
+
+  it('trims spaces around the freebie link', async () => {
+    await POST(makeRequest({ freebieUrl: '  /guide.pdf ' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data.freebieUrl).toBe('/guide.pdf')
+  })
+})
