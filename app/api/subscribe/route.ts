@@ -1,9 +1,10 @@
+import { createHash } from 'node:crypto'
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { isValidEmail, escapeHtml } from '@/app/lib/validation'
-import { subscribeRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
+import { subscribeRatelimit, freebieRecipientRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
 import { isAllowedOrigin } from '@/app/lib/cors'
 import { verifyTurnstile } from '@/app/lib/turnstile'
 import { isSafeLink } from '@/app/lib/safeLink'
@@ -22,12 +23,30 @@ export const dynamic = 'force-dynamic'
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 const FIRST_NAME_MAX = 100
+// A name, not a sentence: letters in any language, accents, spaces,
+// apostrophes and hyphens. No digits, dots, slashes or @, so the name cannot
+// carry a link or a message into an email sent from Tynnell's domain.
+const NAME_PATTERN = /^[\p{L}\p{M}' -]{1,50}$/u
 const FAILED = 'Something went wrong. Please try again.'
 
 // Resend has no dedicated "already exists" code; it answers 409, or a
 // validation error saying so.
 function isAlreadySubscribed(error: { statusCode?: number | null; message?: string }): boolean {
   return error.statusCode === 409 || /already exist/i.test(error.message ?? '')
+}
+
+// One freebie per address per day, however many IPs ask, keyed on a hash of
+// the lower-cased address. If the limit cannot be checked (Redis down) nothing
+// is sent: a missed freebie beats an open door to flooding someone's inbox.
+async function freebieAllowed(email: string): Promise<boolean> {
+  const key = createHash('sha256').update(email.trim().toLowerCase()).digest('hex')
+  try {
+    const { success } = await freebieRecipientRatelimit.limit(key)
+    return success
+  } catch (e) {
+    console.error('[subscribe] freebie limit check failed, not sending:', e)
+    return false
+  }
 }
 
 async function sendFreebie(to: string, firstName: string): Promise<boolean> {
@@ -43,6 +62,7 @@ async function sendFreebie(to: string, firstName: string): Promise<boolean> {
     return false
   }
   if (!link || !isSafeLink(link)) return false
+  if (!(await freebieAllowed(to))) return false
 
   const url = link.startsWith('/') ? `${SITE_URL}${link}` : link
   const subject = title ? `Your free guide: ${title}` : 'Your free guide'
@@ -90,10 +110,12 @@ export async function POST(request: Request) {
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
   }
-  const name = typeof firstName === 'string' ? firstName.trim() : ''
-  if (name.length > FIRST_NAME_MAX) {
+  const rawName = typeof firstName === 'string' ? firstName.trim() : ''
+  if (rawName.length > FIRST_NAME_MAX) {
     return NextResponse.json({ error: 'That name is too long.' }, { status: 400 })
   }
+  // Not name-like: still sign them up, just without the name.
+  const name = NAME_PATTERN.test(rawName) ? rawName : ''
 
   if (!(await verifyTurnstile(turnstileToken, getClientIp(request)))) {
     return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
@@ -104,7 +126,8 @@ export async function POST(request: Request) {
     const { error } = await resend.contacts.create({
       email,
       ...(name ? { firstName: name } : {}),
-      unsubscribed: false,
+      // No `unsubscribed: false`: a new contact is subscribed by default, and
+      // sending it could switch someone who opted out back on.
       ...(segment ? { segments: [{ id: segment }] } : {}),
     })
     if (error && !isAlreadySubscribed(error)) {

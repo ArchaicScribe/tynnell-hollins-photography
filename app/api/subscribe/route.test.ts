@@ -5,6 +5,7 @@ const sendMock = vi.fn()
 const findGlobalMock = vi.fn()
 const safeLimitMock = vi.fn()
 const verifyTurnstileMock = vi.fn()
+const recipientLimitMock = vi.fn()
 
 vi.mock('resend', () => ({
   Resend: class {
@@ -21,6 +22,7 @@ vi.mock('@payload-config', () => ({ default: {} }))
 
 vi.mock('@/app/lib/ratelimit', () => ({
   subscribeRatelimit: {},
+  freebieRecipientRatelimit: { limit: (...args: unknown[]) => recipientLimitMock(...args) },
   getClientIp: vi.fn().mockReturnValue('127.0.0.1'),
   safeLimit: (...args: unknown[]) => safeLimitMock(...args),
 }))
@@ -46,6 +48,7 @@ beforeEach(() => {
   delete process.env.RESEND_SEGMENT_ID
   safeLimitMock.mockResolvedValue({ success: true })
   verifyTurnstileMock.mockResolvedValue(true)
+  recipientLimitMock.mockResolvedValue({ success: true })
   createContactMock.mockResolvedValue({ data: { id: 'c_1', object: 'contact' }, error: null })
   sendMock.mockResolvedValue({ data: { id: 'e_1' }, error: null })
   findGlobalMock.mockResolvedValue({ freebieTitle: 'The Wedding Planning Guide', freebieUrl: 'https://media.example/guide.pdf' })
@@ -57,11 +60,32 @@ afterEach(() => {
 })
 
 describe('POST /api/subscribe, adding the subscriber', () => {
-  it('adds the visitor to Resend contacts as subscribed', async () => {
+  it('adds the visitor to Resend contacts', async () => {
     const res = await POST(makeRequest({ email: 'jane@example.com', firstName: 'Jane', kind: 'newsletter' }))
 
     expect(res.status).toBe(200)
-    expect(createContactMock).toHaveBeenCalledWith({ email: 'jane@example.com', firstName: 'Jane', unsubscribed: false })
+    expect(createContactMock).toHaveBeenCalledWith({ email: 'jane@example.com', firstName: 'Jane' })
+  })
+
+  it('never tells Resend the contact is subscribed, so a form fill cannot undo an unsubscribe', async () => {
+    // A new contact is subscribed by default. Sending unsubscribed: false
+    // could flip an existing, opted-out contact back on.
+    await POST(makeRequest({ email: 'jane@example.com', kind: 'newsletter' }))
+
+    expect(createContactMock.mock.calls[0][0]).not.toHaveProperty('unsubscribed')
+  })
+
+  it('ignores a "first name" that is not a name, so it cannot carry a link into an email', async () => {
+    await POST(makeRequest({ email: 'jane@example.com', firstName: 'Your account is locked, visit evil.com', kind: 'freebie' }))
+
+    expect(createContactMock.mock.calls[0][0]).not.toHaveProperty('firstName')
+    expect(sendMock.mock.calls[0][0].html).not.toContain('evil.com')
+  })
+
+  it('keeps real names, including accents, apostrophes and hyphens', async () => {
+    await POST(makeRequest({ email: 'jane@example.com', firstName: "Zoë O'Neil-Ruiz", kind: 'newsletter' }))
+
+    expect(createContactMock.mock.calls[0][0].firstName).toBe("Zoë O'Neil-Ruiz")
   })
 
   it('also files them in the Resend segment when one is configured', async () => {
@@ -206,5 +230,57 @@ describe('POST /api/subscribe, the freebie', () => {
 
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ success: true, freebieSent: false })
+  })
+})
+
+describe('POST /api/subscribe, one freebie per address', () => {
+  it('sends the freebie to an address at most once in a while, however many IPs ask', async () => {
+    recipientLimitMock.mockResolvedValue({ success: false })
+
+    const res = await POST(makeRequest({ email: 'victim@example.com', kind: 'freebie' }))
+
+    expect(sendMock).not.toHaveBeenCalled()
+    // Same answer as a real signup: nothing tells the caller they were limited.
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ success: true, freebieSent: false })
+  })
+
+  it('counts an address the same whatever its capitals, and never keys on the raw address', async () => {
+    await POST(makeRequest({ email: 'Victim@Example.com', kind: 'freebie' }))
+    await POST(makeRequest({ email: 'victim@example.com', kind: 'freebie' }))
+
+    const [first, second] = recipientLimitMock.mock.calls.map(([key]) => key)
+    expect(first).toBe(second)
+    expect(first).not.toContain('victim')
+  })
+
+  it('sends nothing when the limit cannot be checked, rather than risking a flood', async () => {
+    recipientLimitMock.mockRejectedValue(new Error('redis down'))
+
+    const res = await POST(makeRequest({ email: 'jane@example.com', kind: 'freebie' }))
+
+    expect(sendMock).not.toHaveBeenCalled()
+    expect(await res.json()).toEqual({ success: true, freebieSent: false })
+  })
+
+  it('still sends the freebie to someone already on the list who asks for it', async () => {
+    createContactMock.mockResolvedValue({ data: null, error: { statusCode: 409, name: 'validation_error', message: 'Contact already exists' } })
+
+    await POST(makeRequest({ email: 'jane@example.com', kind: 'freebie' }))
+
+    expect(sendMock).toHaveBeenCalled()
+  })
+
+  it('tells a recipient who did not sign up how to get off the list', async () => {
+    await POST(makeRequest({ email: 'jane@example.com', kind: 'freebie' }))
+
+    expect(sendMock.mock.calls[0][0].html).toMatch(/didn(?:&rsquo;|')t sign up/i)
+  })
+
+  it('checks the visitor IP and Turnstile token it was given', async () => {
+    await POST(makeRequest({ email: 'jane@example.com', kind: 'newsletter', turnstileToken: 'tok' }))
+
+    expect(safeLimitMock).toHaveBeenCalledWith(expect.anything(), '127.0.0.1')
+    expect(verifyTurnstileMock).toHaveBeenCalledWith('tok', '127.0.0.1')
   })
 })

@@ -504,19 +504,20 @@ export function SiteSettingsClient({
           />
           <Field
             label="Link to the guide"
-            description="A page on your site, like /guide.pdf, or a full https:// address."
+            description="The full https:// address of the guide, for example where the PDF is stored."
             value={data.freebieUrl}
             onChange={(v) => set('freebieUrl', v)}
             placeholder="https://..."
             warning={
               data.freebieUrl.trim() && !isSafeLink(data.freebieUrl.trim())
-                ? "This link won't be saved. Use a page like /guide.pdf or an https:// address."
+                ? "This link won't be saved, and the one already saved will be kept. Use a full https:// address."
                 : undefined
             }
           />
         </Section>
 
-        <Section title="Menu cards">          <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
+        <Section title="Menu cards">
+          <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
             Up to two &quot;Work with me&quot; cards in the full-screen menu, each with a photo and a link, for example to
             your wedding and portrait pages. Leave this empty and the menu shows only your pages.
           </p>

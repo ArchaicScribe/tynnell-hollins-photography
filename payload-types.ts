@@ -1086,7 +1086,7 @@ export interface SiteConfig {
    */
   freebieTitle?: string | null;
   /**
-   * Where the guide lives: a page like /guide.pdf or an https:// address. Leave empty until the guide is ready.
+   * The full https:// address of the guide (for example where the PDF is stored). Leave empty until the guide is ready.
    */
   freebieUrl?: string | null;
   /**

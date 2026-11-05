@@ -374,7 +374,8 @@ export function freebieEmailHtml(f: FreebieEmailFields): string {
     ${heading(f.title)}
     ${body(`${greeting} for signing up. Your copy is ready whenever you are.`)}
     ${ctaButton(f.url, 'Download the guide')}
-    ${body("Every so often I&rsquo;ll send a note with new work and tips. You can unsubscribe from any of them with one click.")}
+    ${body("Every so often I&rsquo;ll send a note with new work and tips, and every one of those has a one-click unsubscribe link.")}
+    ${body("Didn&rsquo;t sign up for this? Just reply to this email and I&rsquo;ll take your address off the list.")}
     ${divider()}
     ${signature()}
   `)

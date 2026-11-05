@@ -95,7 +95,7 @@ export const SiteConfig: GlobalConfig = {
       name: 'freebieUrl',
       type: 'text',
       label: 'Freebie link',
-      admin: { description: 'Where the guide lives: a page like /guide.pdf or an https:// address. Leave empty until the guide is ready.' },
+      admin: { description: 'The full https:// address of the guide (for example where the PDF is stored). Leave empty until the guide is ready.' },
     },
     // Rising Roots gap 4: the "Work with me" cards in the full-screen menu.
     // Edited on /site-settings; links are checked by app/lib/menuCards.ts

@@ -42,10 +42,12 @@ export async function POST(request: Request) {
   // (unsafe links dropped, at most two cards) before they reach the database.
   if ('menuCards' in body) data.menuCards = cleanMenuCards(body.menuCards)
   // The freebie link is emailed to every Freebie signup, so only a site page
-  // or an https link is stored; anything else is saved as empty.
+  // or an https link is stored. An unsafe link is ignored, keeping the one
+  // already saved (blanking it would quietly stop every freebie email); an
+  // empty box clears it.
   if ('freebieUrl' in body) {
     const link = typeof body.freebieUrl === 'string' ? body.freebieUrl.trim() : ''
-    data.freebieUrl = link && isSafeLink(link) ? link : ''
+    if (!link || isSafeLink(link)) data.freebieUrl = link
   }
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: 'No valid fields provided' }, { status: 400 })

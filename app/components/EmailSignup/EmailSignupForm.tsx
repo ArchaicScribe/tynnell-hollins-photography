@@ -65,40 +65,40 @@ export default function EmailSignupForm({
     }
   }
 
-  if (status === 'done') {
-    return (
-      <p className={styles.success} role="status">
-        {doneMessage}
-      </p>
-    )
-  }
-
+  // The status region is always in the page, so screen readers announce the
+  // message when it appears (a live region inserted already filled often
+  // is not announced).
   return (
-    <form className={styles.form} onSubmit={submit} noValidate>
-      {/* Honeypot: off-screen (not display:none, which some bots skip), out
-          of the tab order and hidden from screen readers. */}
-      <div className={styles.honeypot} aria-hidden="true">
-        <label htmlFor={`${id}-website`}>Website</label>
-        <input id={`${id}-website`} name="website" type="text" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
-      </div>
+    <div>
+      <p className={styles.success} role="status" aria-live="polite">
+        {status === 'done' ? doneMessage : ''}
+      </p>
+      {status !== 'done' && (
+        <form className={styles.form} onSubmit={submit} noValidate>
+          {/* Honeypot: off-screen (not display:none, which some bots skip), out
+              of the tab order and hidden from screen readers. */}
+          <div className={styles.honeypot} aria-hidden="true">
+            <label htmlFor={`${id}-website`}>Website</label>
+            <input id={`${id}-website`} name="website" type="text" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+          </div>
 
-      <div className={styles.fields}>
-        <div className={styles.field}>
-          <label htmlFor={`${id}-name`} className={styles.label}>First name</label>
-          <input id={`${id}-name`} type="text" autoComplete="given-name" maxLength={100} value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} />
-        </div>
-        <div className={styles.field}>
-          <label htmlFor={`${id}-email`} className={styles.label}>Email</label>
-          <input id={`${id}-email`} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} />
-        </div>
-      </div>
+          <div className={styles.fields}>
+            <div className={styles.field}>
+              <label htmlFor={`${id}-name`} className={styles.label}>First name</label>
+              <input id={`${id}-name`} type="text" autoComplete="given-name" maxLength={100} value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor={`${id}-email`} className={styles.label}>Email</label>
+              <input id={`${id}-email`} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} />
+            </div>
+          </div>
 
-      {TURNSTILE_SITE_KEY && <Turnstile siteKey={TURNSTILE_SITE_KEY} onVerify={setTurnstileToken} />}
+          {TURNSTILE_SITE_KEY && <Turnstile siteKey={TURNSTILE_SITE_KEY} onVerify={setTurnstileToken} />}
 
-      {error && (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
       )}
 
       <button type="submit" className={styles.button} disabled={status === 'sending'}>
@@ -106,5 +106,7 @@ export default function EmailSignupForm({
       </button>
       <p className={styles.note}>No spam. Unsubscribe anytime with one click.</p>
     </form>
+      )}
+    </div>
   )
 }
