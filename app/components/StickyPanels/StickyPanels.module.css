@@ -25,13 +25,15 @@
 
 .photoCol {
   position: sticky;
-  top: 10vh;
+  /* Clear the fixed navbar, which turns solid on scroll (same offset the
+     sticky testimonials photo uses). */
+  top: 6rem;
 }
 
 .photoFrame {
   position: relative;
   aspect-ratio: 4 / 5;
-  max-height: 80vh;
+  max-height: calc(100vh - 8rem);
   overflow: hidden;
   background: var(--color-bg-accent);
 }
@@ -93,7 +95,7 @@
   }
 
   .photoCol {
-    top: 0;
+    top: 4.75rem;
     z-index: 1;
   }
 

@@ -4,8 +4,11 @@
   z-index: 99;
   background: var(--color-bg);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  /* safe: when the links are taller than the screen (landscape phones,
+     Portfolio expanded) plain centering pushes the top ones above the
+     scrollable area, where they cannot be reached. */
+  align-items: safe center;
+  justify-content: safe center;
   gap: clamp(2.5rem, 8vw, 8rem);
   padding: 6rem var(--padding-x) 3rem;
   overflow-y: auto;

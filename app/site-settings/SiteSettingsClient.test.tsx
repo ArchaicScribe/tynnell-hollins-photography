@@ -78,6 +78,30 @@ describe('Site Settings, menu "Work with me" cards', () => {
     expect(cards.getByRole('alert')).toHaveTextContent(/page like \/services or an https:\/\/ address/)
   })
 
+  it('warns that a card with a title but no link yet will not be saved', () => {
+    const cards = renderSettings()
+
+    fireEvent.change(cards.getByDisplayValue('/services'), { target: { value: '' } })
+
+    expect(cards.getByRole('alert')).toHaveTextContent(/needs a title and a link/)
+  })
+
+  it('warns that a card with a link but no title will not be saved', () => {
+    const cards = renderSettings()
+
+    fireEvent.change(cards.getByDisplayValue('The wedding experience'), { target: { value: '' } })
+
+    expect(cards.getByRole('alert')).toHaveTextContent(/needs a title and a link/)
+  })
+
+  it('does not nag about a brand new, still empty card', () => {
+    const cards = renderSettings([])
+
+    fireEvent.click(cards.getByRole('button', { name: 'Add a card' }))
+
+    expect(cards.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('removes a card', async () => {
     const cards = renderSettings()
 

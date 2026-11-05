@@ -991,9 +991,11 @@ async function run() {
     // ------------------------------------------------------------------
     // Migration 20261105_100000: site_config_menu_cards (Rising Roots gap 4)
     // The "Work with me" cards in the full-screen menu, an array field on
-    // the SiteConfig global (maxRows 2). Same shape Payload uses for every
-    // other array table here: varchar id, _order, _parent_id with a cascade
-    // FK to the parent. Additive only; existing data is untouched.
+    // the SiteConfig global (maxRows 2). The shape Payload's postgres adapter
+    // builds for an array field: varchar id (Payload generates the value),
+    // _order, _parent_id with a cascade FK to the parent. Do NOT "align" this
+    // to the serial ids some older array tables here use; varchar is what
+    // Payload expects. Additive only; existing data is untouched.
     // ------------------------------------------------------------------
 
     await client.query(`

@@ -259,6 +259,16 @@ function MenuCardEditor({ index, card, onChange, onRemove }: {
   const id = useId()
   const set = <K extends keyof MenuCard>(key: K, value: MenuCard[K]) => onChange({ ...card, [key]: value })
   const hrefIsBad = card.href.trim() !== '' && !isSafeLink(card.href.trim())
+  // The save route drops a card with no title or no link (app/lib/menuCards.ts),
+  // so say so here rather than let it vanish after Save. A brand new, still
+  // empty card is left alone.
+  const hasAny = [card.title, card.href, card.linkLabel, card.imageUrl].some((v) => v.trim() !== '')
+  const incomplete = hasAny && (card.title.trim() === '' || card.href.trim() === '')
+  const problem = hrefIsBad
+    ? 'This link won\'t be saved. Use a page like /services or an https:// address.'
+    : incomplete
+      ? 'This card needs a title and a link before it will be saved.'
+      : ''
 
   return (
     <div style={{ border: '1px solid rgba(155,154,154,0.18)', borderRadius: 6, padding: '1rem', marginBottom: '1rem' }}>
@@ -279,9 +289,9 @@ function MenuCardEditor({ index, card, onChange, onRemove }: {
 
       <label htmlFor={`${id}-href`} style={smallLabel}>Link</label>
       <input id={`${id}-href`} value={card.href} onChange={(e) => set('href', e.target.value)} placeholder="/services" style={inputStyle} />
-      {hrefIsBad ? (
+      {problem ? (
         <p role="alert" style={{ margin: '0.4rem 0 1rem', color: '#fb923c', fontSize: '0.78rem', lineHeight: 1.5 }}>
-          This link won&apos;t be saved. Use a page like /services or an https:// address.
+          {problem}
         </p>
       ) : (
         <p style={{ margin: '0.4rem 0 1rem', color: '#6b6a6a', fontSize: '0.78rem', lineHeight: 1.5 }}>
@@ -292,8 +302,10 @@ function MenuCardEditor({ index, card, onChange, onRemove }: {
       <label htmlFor={`${id}-label`} style={smallLabel}>Link text</label>
       <input id={`${id}-label`} value={card.linkLabel} onChange={(e) => set('linkLabel', e.target.value)} placeholder={DEFAULT_MENU_CARD_LINK_LABEL} style={{ ...inputStyle, marginBottom: '1rem' }} />
 
-      <span style={smallLabel}>Photo (optional)</span>
-      <ImagePickerField value={card.imageUrl} onChange={(v) => set('imageUrl', v)} />
+      <div role="group" aria-labelledby={`${id}-photo`}>
+        <span id={`${id}-photo`} style={smallLabel}>Photo (optional)</span>
+        <ImagePickerField value={card.imageUrl} onChange={(v) => set('imageUrl', v)} />
+      </div>
     </div>
   )
 }

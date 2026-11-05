@@ -136,8 +136,8 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks, cards = 
         <section className={styles.work} aria-labelledby="mobile-menu-work">
           <h2 id="mobile-menu-work" className={styles.workHeading}>Work with me</h2>
           <ul className={styles.cards}>
-            {workCards.map(card => (
-              <li key={card.href + card.title}>
+            {workCards.map((card, i) => (
+              <li key={i}>
                 <Link href={card.href} className={styles.card} onClick={onClose} tabIndex={isOpen ? 0 : -1}>
                   {card.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element

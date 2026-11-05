@@ -75,7 +75,7 @@ const RESPONSIVE_CSS = `
 // Below the stack point a negative outer margin would drag the image (and the
 // page) sideways, so every rule here is gated above it.
 //
-// Horizontal overflow is contained by `html, body { overflow-x: hidden }` in
+// Horizontal overflow is contained by `html, body { overflow-x: clip }` in
 // app/(site)/globals.css. Deliberately NOT clipped on the section itself:
 // that would also crop the vertical offset, which is the point of the effect.
 const BLEED_MIN = 900
@@ -205,7 +205,7 @@ function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, sc
   // opaque Background (color or photo) - with Background left "None" the
   // sticky section is still transparent, so pair the two for the full effect.
   return (
-    <section className={className} style={{ position: scrollOverlap ? 'sticky' : 'relative', top: scrollOverlap ? 0 : undefined, zIndex: scrollOverlap ? 1 : undefined, background: bg, overflow: backgroundImage ? 'hidden' : undefined }}>
+    <section className={className} style={{ position: scrollOverlap ? 'sticky' : 'relative', top: scrollOverlap ? 0 : undefined, zIndex: scrollOverlap ? 1 : undefined, background: bg, overflow: backgroundImage ? 'clip' : undefined }}>
       {backgroundImage && (
         <>
           {scrollFadeIn ? (
@@ -479,7 +479,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels','Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -688,7 +688,7 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: {
-        heading: 'Things that make my heart full',
+        heading: 'A few of my favorite things',
         photoSide: 'left',
         panels: [
           { imageUrl: '', heading: 'Something I love', text: 'A line or two about why it matters to you.' },
