@@ -354,3 +354,28 @@ export function templatedCtaEmailHtml(f: TemplatedCtaEmailFields): string {
     ${signature()}
   `)
 }
+
+// ---------------------------------------------------------------------------
+// Freebie delivery (sent to someone who signed up through an Email Signup
+// block set to Freebie). Title, name and URL must already be escaped; the URL
+// comes from Site Settings, never from the visitor's request.
+// ---------------------------------------------------------------------------
+
+export interface FreebieEmailFields {
+  firstName: string
+  title: string
+  url: string
+}
+
+export function freebieEmailHtml(f: FreebieEmailFields): string {
+  const greeting = f.firstName ? `Hi ${f.firstName}, thank you` : 'Thank you'
+  return emailWrapper(`
+    ${eyebrow('Your free guide')}
+    ${heading(f.title)}
+    ${body(`${greeting} for signing up. Your copy is ready whenever you are.`)}
+    ${ctaButton(f.url, 'Download the guide')}
+    ${body("Every so often I&rsquo;ll send a note with new work and tips. You can unsubscribe from any of them with one click.")}
+    ${divider()}
+    ${signature()}
+  `)
+}

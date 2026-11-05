@@ -8,6 +8,7 @@ import { isAllowedOrigin } from '@/app/lib/cors'
 import { inquiryEmailHtml, clientAcknowledgmentEmailHtml } from '@/app/lib/emails'
 import { CONTACT_EMAIL, EMAIL_FROM, RATE_LIMIT_ERROR } from '@/app/lib/constants'
 import { getActiveOoo, getBlockedDateResult } from '@/app/lib/availability'
+import { verifyTurnstile } from '@/app/lib/turnstile'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,34 +58,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Please enter a valid phone number (at least 7 digits).' }, { status: 400 })
   }
 
-  // Cloudflare Turnstile (TYN-357): fails open (skips verification) when no
-  // secret key is configured, so the form keeps working exactly as before
-  // until a real Turnstile widget is set up for this domain and the site/
-  // secret keys are added to env vars - see ContactForm.tsx for the matching
-  // client-side skip.
-  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
-  if (turnstileSecret) {
-    if (typeof turnstileToken !== 'string' || !turnstileToken) {
-      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
-    }
-    try {
-      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          secret: turnstileSecret,
-          response: turnstileToken,
-          remoteip: getClientIp(request),
-        }),
-      })
-      const verifyJson = (await verifyRes.json()) as { success: boolean }
-      if (!verifyJson.success) {
-        return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
-      }
-    } catch (e) {
-      console.error('[contact] Turnstile verification request failed:', e)
-      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
-    }
+  // Cloudflare Turnstile (TYN-357), shared with the email signup form. Lets
+  // everything through until a widget's keys are set; see app/lib/turnstile.ts.
+  if (!(await verifyTurnstile(turnstileToken, getClientIp(request)))) {
+    return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
   }
 
   // Fetch booking settings and availability from the admin - fall back to

@@ -82,6 +82,21 @@ export const SiteConfig: GlobalConfig = {
         description: 'Your full Pinterest profile URL.',
       },
     },
+    // Rising Roots gap 5: the freebie emailed to anyone who signs up through
+    // an Email Signup block set to Freebie. Edited on /site-settings. Only
+    // read server-side by /api/subscribe, never taken from the visitor.
+    {
+      name: 'freebieTitle',
+      type: 'text',
+      label: 'Freebie title',
+      admin: { description: 'The name of your free guide, used in the email subject and heading.' },
+    },
+    {
+      name: 'freebieUrl',
+      type: 'text',
+      label: 'Freebie link',
+      admin: { description: 'Where the guide lives: a page like /guide.pdf or an https:// address. Leave empty until the guide is ready.' },
+    },
     // Rising Roots gap 4: the "Work with me" cards in the full-screen menu.
     // Edited on /site-settings; links are checked by app/lib/menuCards.ts
     // both when saved and when read.
