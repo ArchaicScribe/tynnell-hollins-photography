@@ -3,19 +3,29 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { navLinks, type NavLink } from '@/app/constants/nav'
+import { cleanMenuCards, type MenuCard } from '@/app/lib/menuCards'
 import styles from './MobileMenu.module.css'
 
 interface MobileMenuProps {
   isOpen: boolean
   onClose: () => void
   links?: NavLink[]
+  cards?: MenuCard[]
 }
 
-export default function MobileMenu({ isOpen, onClose, links = navLinks }: MobileMenuProps) {
+// Rising Roots full-screen menu: every top-level page numbered 01 onwards,
+// and, when Site Settings has any, up to two "Work with me" cards beside it.
+// The number is decoration (aria-hidden), so a screen reader still hears "Home".
+const pageNumber = (i: number) => `${String(i + 1).padStart(2, '0')}.`
+
+export default function MobileMenu({ isOpen, onClose, links = navLinks, cards = [] }: MobileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const pathname = usePathname()
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
+  // Cleaned again here, not just on save, so a bad row already in the
+  // database can never become a link on the site.
+  const workCards = cleanMenuCards(cards)
 
   useEffect(() => {
     if (isOpen) {
@@ -70,7 +80,7 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks }: Mobile
     >
       <nav aria-label="Mobile navigation">
         <ul className={styles.links}>
-          {links.map(link => (
+          {links.map((link, i) => (
             <li key={link.href} className={styles.item}>
               {link.children ? (
                 <>
@@ -80,6 +90,7 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks }: Mobile
                     aria-expanded={expandedItem === link.href}
                     tabIndex={isOpen ? 0 : -1}
                   >
+                    <span className={styles.num} aria-hidden="true">{pageNumber(i)}</span>
                     {link.label}
                     <span
                       className={`${styles.chevron} ${expandedItem === link.href ? styles.chevronOpen : ''}`}
@@ -112,6 +123,7 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks }: Mobile
                   tabIndex={isOpen ? 0 : -1}
                   aria-current={pathname === link.href ? 'page' : undefined}
                 >
+                  <span className={styles.num} aria-hidden="true">{pageNumber(i)}</span>
                   {link.label}
                 </Link>
               )}
@@ -119,6 +131,28 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks }: Mobile
           ))}
         </ul>
       </nav>
+
+      {workCards.length > 0 && (
+        <section className={styles.work} aria-labelledby="mobile-menu-work">
+          <h2 id="mobile-menu-work" className={styles.workHeading}>Work with me</h2>
+          <ul className={styles.cards}>
+            {workCards.map((card, i) => (
+              <li key={i}>
+                <Link href={card.href} className={styles.card} onClick={onClose} tabIndex={isOpen ? 0 : -1}>
+                  {card.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={card.imageUrl} alt="" className={styles.cardImg} loading="lazy" />
+                  )}
+                  <span className={styles.cardTitle}>{card.title}</span>
+                  <span className={styles.cardLink}>
+                    {card.linkLabel} <span aria-hidden="true">&rarr;</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }

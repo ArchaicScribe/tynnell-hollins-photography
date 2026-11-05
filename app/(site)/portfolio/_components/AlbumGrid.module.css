@@ -97,3 +97,34 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Rising Roots "portfolio-scrolling": one row of album cards that scrolls
+   sideways and snaps to each card. Cards keep a fixed width so the next one
+   peeks in from the edge, which is the cue that the row scrolls. */
+.albumStrip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(16rem, 32vw, 26rem);
+  gap: 1.5rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--padding-x);
+  padding-bottom: 1rem;
+}
+
+.albumStrip > .albumCard {
+  scroll-snap-align: start;
+}
+
+.albumStrip:focus-visible {
+  outline: 1px solid var(--color-detail);
+  outline-offset: 4px;
+}
+
+@media (max-width: 480px) {
+  .albumStrip {
+    grid-auto-columns: 80vw;
+    gap: 1rem;
+  }
+}

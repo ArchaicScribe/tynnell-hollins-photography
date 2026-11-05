@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { navLinks, type NavLink } from '@/app/constants/nav'
+import type { MenuCard } from '@/app/lib/menuCards'
 import { splitBrand } from '@/app/lib/constants'
 import { useScrollLock } from '@/app/hooks/useScrollLock'
 import MobileMenu from '@/app/components/MobileMenu/MobileMenu'
@@ -21,10 +22,12 @@ export default function Navbar({
   builderLinks = [],
   logoUrl,
   siteTitle = 'Tynnell Hollins Photography',
+  menuCards = [],
 }: {
   builderLinks?: NavLink[]
   logoUrl?: string
   siteTitle?: string
+  menuCards?: MenuCard[]
 }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -194,7 +197,7 @@ export default function Navbar({
         </div>
       </nav>
 
-      <MobileMenu isOpen={menuOpen} onClose={closeMenu} links={allLinks} />
+      <MobileMenu isOpen={menuOpen} onClose={closeMenu} links={allLinks} cards={menuCards} />
     </>
   )
 }

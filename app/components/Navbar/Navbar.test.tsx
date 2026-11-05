@@ -40,6 +40,13 @@ describe('Navbar mobile menu', () => {
     expect(mobileMenu()).toHaveAttribute('aria-hidden', 'true')
   })
 
+  it('puts the "Work with me" cards from Site Settings in the menu', () => {
+    render(<Navbar menuCards={[{ title: 'The wedding experience', linkLabel: 'Get the details', href: '/services', imageUrl: '' }]} />)
+    fireEvent.click(hamburger())
+
+    expect(mobileMenu()).toContainElement(screen.getByRole('link', { name: /The wedding experience/ }))
+  })
+
   it('closes on Escape', () => {
     render(<Navbar />)
     fireEvent.click(hamburger())

@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { CONTACT_EMAIL } from './constants'
+import { cleanMenuCards, type MenuCard } from './menuCards'
 
 // Server-only: reads the SiteConfig global (TYN-326) for the public site's
 // business name, tagline, contact info, and social links - previously
@@ -26,6 +27,7 @@ export interface SiteConfigData {
   facebookUrl: string
   tiktokUrl: string
   pinterestUrl: string
+  menuCards: MenuCard[]
 }
 
 export const DEFAULT_SITE_CONFIG: SiteConfigData = {
@@ -37,6 +39,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfigData = {
   facebookUrl: '',
   tiktokUrl: 'https://tiktok.com/@tynnellhollinsphotography',
   pinterestUrl: '',
+  menuCards: [],
 }
 
 // A few pages display "@handle" text alongside the Instagram link (not just
@@ -67,6 +70,7 @@ export const getSiteConfig = cache(async (): Promise<SiteConfigData> => {
       facebookUrl: doc.facebookUrl || DEFAULT_SITE_CONFIG.facebookUrl,
       tiktokUrl: doc.tiktokUrl || DEFAULT_SITE_CONFIG.tiktokUrl,
       pinterestUrl: doc.pinterestUrl || DEFAULT_SITE_CONFIG.pinterestUrl,
+      menuCards: cleanMenuCards(doc.menuCards),
     }
   } catch {
     return DEFAULT_SITE_CONFIG

@@ -23,6 +23,7 @@ import CategoryPhotoGrid from '@/app/(site)/portfolio/_components/CategoryPhotoG
 import AlbumGridComponent from '@/app/(site)/portfolio/_components/AlbumGrid'
 import ServicesGridComponent from '@/app/(site)/services/_components/ServicesGrid'
 import TestimonialsListComponent from '@/app/(site)/testimonials/_components/TestimonialsList'
+import StickyPanelsComponent from '@/app/components/StickyPanels/StickyPanels'
 import BlogClientComponent from '@/app/(site)/blog/BlogClient'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
@@ -74,7 +75,7 @@ const RESPONSIVE_CSS = `
 // Below the stack point a negative outer margin would drag the image (and the
 // page) sideways, so every rule here is gated above it.
 //
-// Horizontal overflow is contained by `html, body { overflow-x: hidden }` in
+// Horizontal overflow is contained by `html, body { overflow-x: clip }` in
 // app/(site)/globals.css. Deliberately NOT clipped on the section itself:
 // that would also crop the vertical offset, which is the point of the effect.
 const BLEED_MIN = 900
@@ -204,7 +205,7 @@ function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, sc
   // opaque Background (color or photo) - with Background left "None" the
   // sticky section is still transparent, so pair the two for the full effect.
   return (
-    <section className={className} style={{ position: scrollOverlap ? 'sticky' : 'relative', top: scrollOverlap ? 0 : undefined, zIndex: scrollOverlap ? 1 : undefined, background: bg, overflow: backgroundImage ? 'hidden' : undefined }}>
+    <section className={className} style={{ position: scrollOverlap ? 'sticky' : 'relative', top: scrollOverlap ? 0 : undefined, zIndex: scrollOverlap ? 1 : undefined, background: bg, overflow: backgroundImage ? 'clip' : undefined }}>
       {backgroundImage && (
         <>
           {scrollFadeIn ? (
@@ -478,7 +479,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -651,6 +652,55 @@ export const config: Config = {
             <h2 style={headingStyle()}>{heading}</h2>
             {subtext && <p style={{ marginTop: '1rem', color: C.detail, lineHeight: 1.7 }}>{subtext}</p>}
           </div>
+        </Section>
+      ),
+    },
+
+    // -------------------------------------------------------- StickyPanels
+    // Rising Roots "things that make my heart full" (About) and "what's
+    // included" (Wedding): a photo pinned on one side while panels scroll
+    // past, the photo changing to the panel in view. Each panel's photo is
+    // optional; one without keeps the last photo shown.
+    StickyPanels: {
+      label: 'Sticky Panels',
+      fields: {
+        heading: { type: 'text', label: 'Section heading (optional)' },
+        photoSide: {
+          type: 'radio' as const,
+          label: 'Photo side',
+          options: [
+            { label: 'Left', value: 'left' },
+            { label: 'Right', value: 'right' },
+          ],
+        },
+        panels: {
+          type: 'array',
+          label: 'Panels',
+          arrayFields: {
+            imageUrl: imageField('Photo'),
+            heading: { type: 'text', label: 'Heading' },
+            text: { type: 'textarea', label: 'Text' },
+          },
+          defaultItemProps: { imageUrl: '', heading: '', text: '' },
+          getItemSummary: (item: any) => item.heading || 'New panel',
+        },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: 'A few of my favorite things',
+        photoSide: 'left',
+        panels: [
+          { imageUrl: '', heading: 'Something I love', text: 'A line or two about why it matters to you.' },
+          { imageUrl: '', heading: 'Where I recharge', text: 'A line or two about the place.' },
+          { imageUrl: '', heading: 'Who keeps me laughing', text: 'A line or two about them.' },
+        ],
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, photoSide, panels, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <StickyPanelsComponent heading={heading} panels={panels ?? []} photoSide={photoSide === 'right' ? 'right' : 'left'} />
         </Section>
       ),
     },
@@ -1450,10 +1500,21 @@ export const config: Config = {
             { label: 'Brands', value: 'brands' },
           ],
         },
+        // Rising Roots "portfolio-scrolling": the same album cards in one
+        // row that scrolls sideways. Grid stays the default so pages that
+        // already use this block do not change.
+        layout: {
+          type: 'radio' as const,
+          label: 'Layout',
+          options: [
+            { label: 'Grid', value: 'grid' },
+            { label: 'Scrolling strip', value: 'strip' },
+          ],
+        },
         ...styleFields,
         ...responsiveFields,
       },
-      defaultProps: { category: 'weddings', ...styleDefaults, ...responsiveDefaults },
+      defaultProps: { category: 'weddings', layout: 'grid', ...styleDefaults, ...responsiveDefaults },
       resolveData: async ({ props }: any) => {
         const category = props.category ?? 'weddings'
         const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
@@ -1466,9 +1527,9 @@ export const config: Config = {
           return { props: { resolvedAlbums: [] } }
         }
       },
-      render: ({ resolvedAlbums, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      render: ({ resolvedAlbums, layout, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          <AlbumGridComponent albums={resolvedAlbums ?? []} />
+          <AlbumGridComponent albums={resolvedAlbums ?? []} layout={layout === 'strip' ? 'strip' : 'grid'} />
         </Section>
       ),
     },

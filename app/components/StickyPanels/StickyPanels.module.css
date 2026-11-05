@@ -1,0 +1,116 @@
+/* Colors and fonts come from the /design theme (CSS vars), never hardcoded,
+   so this block follows whatever Tynnell sets there. */
+
+.heading {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  color: var(--color-heading);
+  text-align: center;
+  margin: 0 0 clamp(2rem, 5vw, 4rem);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+
+/* Photo on the right: swap the columns without changing reading order, so
+   the panels are still read after the photo by a screen reader. */
+.photoRight .photoCol {
+  order: 2;
+}
+
+.photoCol {
+  position: sticky;
+  /* Clear the fixed navbar, which turns solid on scroll (same offset the
+     sticky testimonials photo uses). */
+  top: 6rem;
+}
+
+.photoFrame {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  max-height: calc(100vh - 8rem);
+  overflow: hidden;
+  background: var(--color-bg-accent);
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: photoIn 0.6s ease;
+}
+
+@keyframes photoIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo { animation: none; }
+}
+
+/* Each panel is tall enough that the photo has time to change before the
+   next one arrives, and centres its text in that space. */
+.panel {
+  min-height: clamp(18rem, 60vh, 32rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.panelHeading {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  color: var(--color-heading);
+  margin: 0 0 1rem;
+}
+
+.panelText {
+  font-family: var(--font-body);
+  color: var(--color-body);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  max-width: 42ch;
+  margin: 0;
+}
+
+/* Phones: the photo pins along the top and the panels scroll up underneath
+   it, so each panel's text is read in the space below the photo. */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .photoRight .photoCol {
+    order: 0;
+  }
+
+  .photoCol {
+    top: 4.75rem;
+    z-index: 1;
+  }
+
+  .panels {
+    position: relative;
+    z-index: 0;
+  }
+
+  .photoFrame {
+    aspect-ratio: 4 / 3;
+    max-height: 45vh;
+  }
+
+  .panel {
+    min-height: 45vh;
+    padding: 2rem 0;
+  }
+}

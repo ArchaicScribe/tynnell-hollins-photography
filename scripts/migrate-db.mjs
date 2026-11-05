@@ -987,6 +987,47 @@ async function run() {
       ALTER TABLE "pages" ADD COLUMN IF NOT EXISTS "draft_content" jsonb
     `)
     console.log('✓ pages.draft_content column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20261105_100000: site_config_menu_cards (Rising Roots gap 4)
+    // The "Work with me" cards in the full-screen menu, an array field on
+    // the SiteConfig global (maxRows 2). The shape Payload's postgres adapter
+    // builds for an array field: varchar id (Payload generates the value),
+    // _order, _parent_id with a cascade FK to the parent. Do NOT "align" this
+    // to the serial ids some older array tables here use; varchar is what
+    // Payload expects. Additive only; existing data is untouched.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "site_config_menu_cards" (
+        "_order"      integer NOT NULL,
+        "_parent_id"  integer NOT NULL,
+        "id"          varchar PRIMARY KEY NOT NULL,
+        "title"       varchar,
+        "link_label"  varchar,
+        "href"        varchar,
+        "image_url"   varchar
+      )
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "site_config_menu_cards"
+          ADD CONSTRAINT "site_config_menu_cards_parent_id_fk"
+          FOREIGN KEY ("_parent_id")
+          REFERENCES "site_config"("id")
+          ON DELETE CASCADE ON UPDATE NO ACTION;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "site_config_menu_cards_order_idx"
+        ON "site_config_menu_cards" USING btree ("_order")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "site_config_menu_cards_parent_id_idx"
+        ON "site_config_menu_cards" USING btree ("_parent_id")
+    `)
+    console.log('✓ site_config_menu_cards table ready')
   } finally {
     client.release()
     await pool.end()

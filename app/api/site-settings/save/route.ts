@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { requireAdminUser } from '@/app/lib/builderAuth'
+import { cleanMenuCards } from '@/app/lib/menuCards'
 
 // Persist Site Settings (TYN-313). Admin-only. Business name/tagline/contact
 // info/social links surface across the whole (site) layout (nav, footer,
@@ -35,6 +36,9 @@ export async function POST(request: Request) {
   for (const key of FIELDS) {
     if (key in body) data[key] = body[key]
   }
+  // The menu cards' links appear on every public page, so they are cleaned
+  // (unsafe links dropped, at most two cards) before they reach the database.
+  if ('menuCards' in body) data.menuCards = cleanMenuCards(body.menuCards)
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: 'No valid fields provided' }, { status: 400 })
   }

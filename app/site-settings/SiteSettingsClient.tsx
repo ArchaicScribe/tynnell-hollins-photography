@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
+import { ImagePickerField } from '@/app/builder/ImagePickerField'
+import { DEFAULT_MENU_CARD_LINK_LABEL, isSafeLink, MAX_MENU_CARDS, type MenuCard } from '@/app/lib/menuCards'
 
 type SiteSettingsData = {
   title: string
@@ -11,6 +13,7 @@ type SiteSettingsData = {
   facebookUrl: string
   tiktokUrl: string
   pinterestUrl: string
+  menuCards: MenuCard[]
 }
 
 type GalleryPresetsData = {
@@ -209,8 +212,10 @@ function CheckboxField({
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const headingId = useId()
   return (
-    <div
+    <section
+      aria-labelledby={headingId}
       style={{
         background: '#161616',
         border: '1px solid rgba(155,154,154,0.18)',
@@ -219,10 +224,88 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         marginBottom: '1.5rem',
       }}
     >
-      <h2 style={{ margin: '0 0 1.25rem', color: '#D6D1CE', fontSize: '1rem', fontWeight: 600, fontFamily: ui, letterSpacing: '-0.01em' }}>
+      <h2 id={headingId} style={{ margin: '0 0 1.25rem', color: '#D6D1CE', fontSize: '1rem', fontWeight: 600, fontFamily: ui, letterSpacing: '-0.01em' }}>
         {title}
       </h2>
       {children}
+    </section>
+  )
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: 480,
+  padding: '0.65rem 0.85rem',
+  background: '#1a1a1a',
+  border: '1px solid rgba(155,154,154,0.25)',
+  borderRadius: 6,
+  color: '#E6E1DE',
+  fontSize: '0.9rem',
+  fontFamily: ui,
+  outline: 'none',
+  boxSizing: 'border-box',
+}
+
+const smallLabel: React.CSSProperties = { display: 'block', color: '#D6D1CE', fontSize: '0.8rem', fontWeight: 600, fontFamily: ui, margin: '0 0 0.4rem' }
+
+// One "Work with me" card in the full-screen menu (Rising Roots gap 4).
+// Inputs carry real <label>s, so each one is announced by name.
+function MenuCardEditor({ index, card, onChange, onRemove }: {
+  index: number
+  card: MenuCard
+  onChange: (card: MenuCard) => void
+  onRemove: () => void
+}) {
+  const id = useId()
+  const set = <K extends keyof MenuCard>(key: K, value: MenuCard[K]) => onChange({ ...card, [key]: value })
+  const hrefIsBad = card.href.trim() !== '' && !isSafeLink(card.href.trim())
+  // The save route drops a card with no title or no link (app/lib/menuCards.ts),
+  // so say so here rather than let it vanish after Save. A brand new, still
+  // empty card is left alone.
+  const hasAny = [card.title, card.href, card.linkLabel, card.imageUrl].some((v) => v.trim() !== '')
+  const incomplete = hasAny && (card.title.trim() === '' || card.href.trim() === '')
+  const problem = hrefIsBad
+    ? 'This link won\'t be saved. Use a page like /services or an https:// address.'
+    : incomplete
+      ? 'This card needs a title and a link before it will be saved.'
+      : ''
+
+  return (
+    <div style={{ border: '1px solid rgba(155,154,154,0.18)', borderRadius: 6, padding: '1rem', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <span style={{ color: '#9B9A9A', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Card {index + 1}</span>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove card ${index + 1}`}
+          style={{ background: 'transparent', border: '1px solid rgba(155,154,154,0.3)', borderRadius: 6, color: '#D6D1CE', fontSize: '0.75rem', padding: '0.3rem 0.7rem', cursor: 'pointer', fontFamily: ui }}
+        >
+          Remove
+        </button>
+      </div>
+
+      <label htmlFor={`${id}-title`} style={smallLabel}>Card title</label>
+      <input id={`${id}-title`} value={card.title} onChange={(e) => set('title', e.target.value)} placeholder="The wedding experience" style={{ ...inputStyle, marginBottom: '1rem' }} />
+
+      <label htmlFor={`${id}-href`} style={smallLabel}>Link</label>
+      <input id={`${id}-href`} value={card.href} onChange={(e) => set('href', e.target.value)} placeholder="/services" style={inputStyle} />
+      {problem ? (
+        <p role="alert" style={{ margin: '0.4rem 0 1rem', color: '#fb923c', fontSize: '0.78rem', lineHeight: 1.5 }}>
+          {problem}
+        </p>
+      ) : (
+        <p style={{ margin: '0.4rem 0 1rem', color: '#6b6a6a', fontSize: '0.78rem', lineHeight: 1.5 }}>
+          A page on your site, like /services, or a full https:// address.
+        </p>
+      )}
+
+      <label htmlFor={`${id}-label`} style={smallLabel}>Link text</label>
+      <input id={`${id}-label`} value={card.linkLabel} onChange={(e) => set('linkLabel', e.target.value)} placeholder={DEFAULT_MENU_CARD_LINK_LABEL} style={{ ...inputStyle, marginBottom: '1rem' }} />
+
+      <div role="group" aria-labelledby={`${id}-photo`}>
+        <span id={`${id}-photo`} style={smallLabel}>Photo (optional)</span>
+        <ImagePickerField value={card.imageUrl} onChange={(v) => set('imageUrl', v)} />
+      </div>
     </div>
   )
 }
@@ -309,22 +392,6 @@ export function SiteSettingsClient({
           Settings
         </h1>
 
-        <div
-          style={{
-            background: 'rgba(251,146,60,0.08)',
-            border: '1px solid rgba(251,146,60,0.25)',
-            borderRadius: 8,
-            padding: '0.85rem 1rem',
-            marginBottom: '2rem',
-            color: '#fb923c',
-            fontSize: '0.8rem',
-            lineHeight: 1.5,
-          }}
-        >
-          Not yet wired into the live site - these fields save to the database but the public site currently reads business
-          name, tagline, contact info, and social links from hardcoded values in the code instead. See TYN-326 to connect them.
-        </div>
-
         <Section title="Branding">
           <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
             Logo and favicon are managed from the Design editor, alongside your site&apos;s colors and fonts.
@@ -409,6 +476,31 @@ export function SiteSettingsClient({
             onChange={(v) => set('pinterestUrl', v)}
             placeholder="https://pinterest.com/..."
           />
+        </Section>
+
+        <Section title="Menu cards">
+          <p style={{ margin: '0 0 1rem', color: '#9B9A9A', fontSize: '0.82rem', lineHeight: 1.5 }}>
+            Up to two &quot;Work with me&quot; cards in the full-screen menu, each with a photo and a link, for example to
+            your wedding and portrait pages. Leave this empty and the menu shows only your pages.
+          </p>
+          {data.menuCards.map((card, i) => (
+            <MenuCardEditor
+              key={i}
+              index={i}
+              card={card}
+              onChange={(next) => set('menuCards', data.menuCards.map((c, j) => (j === i ? next : c)))}
+              onRemove={() => set('menuCards', data.menuCards.filter((_, j) => j !== i))}
+            />
+          ))}
+          {data.menuCards.length < MAX_MENU_CARDS && (
+            <button
+              type="button"
+              onClick={() => set('menuCards', [...data.menuCards, { title: '', linkLabel: '', href: '', imageUrl: '' }])}
+              style={{ background: 'transparent', border: '1px dashed rgba(155,154,154,0.4)', borderRadius: 6, color: '#D6D1CE', fontSize: '0.82rem', padding: '0.55rem 1rem', cursor: 'pointer', fontFamily: ui }}
+            >
+              Add a card
+            </button>
+          )}
         </Section>
 
         <Section title="Gallery Presets">
