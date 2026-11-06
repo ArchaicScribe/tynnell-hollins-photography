@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminUser } from '@/app/lib/builderAuth'
 import { cleanMenuCards } from '@/app/lib/menuCards'
 import { isSafeLink } from '@/app/lib/safeLink'
+import { deleteR2Object, uploadedFreebieKey } from '@/app/lib/r2'
 
 // Persist Site Settings (TYN-313). Admin-only. Business name/tagline/contact
 // info/social links surface across the whole (site) layout (nav, footer,
@@ -53,11 +54,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No valid fields provided' }, { status: 400 })
   }
 
+  // When the guide link changes, remember the old one so its PDF can be
+  // removed from storage once the new link is safely saved. A failed lookup
+  // only skips the cleanup; it never blocks the save.
+  let previousFreebieUrl = ''
+  if ('freebieUrl' in data) {
+    try {
+      const current = await payload.findGlobal({ slug: 'site-config', depth: 0 })
+      previousFreebieUrl = current?.freebieUrl ?? ''
+    } catch (err) {
+      console.error('[site-settings/save] could not read the saved freebie link:', err)
+    }
+  }
+
   try {
     await payload.updateGlobal({ slug: 'site-config', data })
   } catch (err) {
     console.error('[site-settings/save] failed to save site config:', err)
     return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 })
+  }
+
+  // Delete only our own Site Settings uploads (files/<uuid>-name.pdf in R2),
+  // never a guide hosted elsewhere or anything else in the bucket. The
+  // settings are already saved, so a failed delete just leaves a stray file.
+  const oldKey = previousFreebieUrl !== data.freebieUrl ? uploadedFreebieKey(previousFreebieUrl) : null
+  if (oldKey) {
+    try {
+      await deleteR2Object(oldKey)
+    } catch (err) {
+      console.error('[site-settings/save] could not delete the replaced freebie PDF:', oldKey, err)
+    }
   }
 
   try {

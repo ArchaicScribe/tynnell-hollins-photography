@@ -295,7 +295,7 @@ TYN-338 is the reference example: the taped/polaroid photo-frame mat and tape-st
 | `POST /api/builder/save` | Save (draft) or publish a builder page (`publish` flag) |
 | `POST /api/builder/{delete,rename,duplicate,reorder,settings}` | Builder page management + In-menu/Homepage flags |
 | `POST /api/upload-presign` | Presigned R2 PUT URL (step 1 of the photo upload pipeline) |
-| `POST /api/freebie-pdf/presign` | Admin only. Presigned R2 PUT for the freebie guide PDF (Site Settings > Freebie > Upload a PDF). Signs the exact content type and byte count (25 MB cap), stores under `files/`, returns the public `R2_PUBLIC_URL` link that fills `freebieUrl` |
+| `POST /api/freebie-pdf/presign` | Admin only. Presigned R2 PUT for the freebie guide PDF (Site Settings > Freebie > Upload a PDF). Signs the exact content type and byte count (25 MB cap), stores under `files/`, returns the public `R2_PUBLIC_URL` link that fills `freebieUrl`. When Site Settings later saves a different link, `/api/site-settings/save` deletes the previous PDF, but only if it matches this exact `files/<uuid>-name.pdf` shape (`uploadedFreebieKey` in `app/lib/r2.ts`). Uploads never saved are not cleaned up |
 | `POST /api/photos/ingest` | Create the Photo record after the R2 PUT (sharp resize) |
 | `GET /api/exit-preview` | Disables draft mode, redirects to `/` |
 
