@@ -444,6 +444,11 @@ export function SiteSettingsClient({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  // The guide link as last loaded or saved. The link is sent only when it
+  // differs from this, together with this value, so the server can tell a
+  // real change from an old tab that never saw a newer guide. The server
+  // deletes the replaced PDF only when its saved link still matches.
+  const [freebieUrlBase, setFreebieUrlBase] = useState(initial.freebieUrl.trim())
 
   const set = <K extends keyof SiteSettingsData>(key: K, value: SiteSettingsData[K]) => {
     setSaved(false)
@@ -463,12 +468,16 @@ export function SiteSettingsClient({
   const save = async () => {
     setSaving(true)
     setError('')
+    const { freebieUrl, ...rest } = data
+    const link = freebieUrl.trim()
+    const linkChanged = link !== freebieUrlBase
+    const siteBody = linkChanged ? { ...rest, freebieUrl, freebieUrlBase } : rest
     try {
       const [siteRes, presetsRes, templatesRes] = await Promise.all([
         fetch('/api/site-settings/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
+          body: JSON.stringify(siteBody),
         }),
         fetch('/api/gallery-presets/save', {
           method: 'POST',
@@ -484,6 +493,9 @@ export function SiteSettingsClient({
           }),
         }),
       ])
+      // The server ignores an unsafe link and keeps the saved one, so only a
+      // link it actually stored becomes the new starting point.
+      if (siteRes.ok && linkChanged && (link === '' || isSafeLink(link))) setFreebieUrlBase(link)
       if (siteRes.ok && presetsRes.ok && templatesRes.ok) {
         setSaved(true)
       } else {

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { requireAdminUser } from '@/app/lib/builderAuth'
 import { MAX_FREEBIE_PDF_BYTES, isPdfFileName } from '@/app/lib/freebiePdf'
+import { r2Bucket, r2Client, r2PublicBase } from '@/app/lib/r2'
 
 // Step 1 of uploading the freebie guide from Site Settings: sign a direct
 // browser-to-R2 PUT for one PDF and say where it will be served. The browser
@@ -14,8 +15,6 @@ import { MAX_FREEBIE_PDF_BYTES, isPdfFileName } from '@/app/lib/freebiePdf'
 // one. Files go under files/, not temp/, because nothing moves them later:
 // the link returned here is the one emailed to subscribers.
 export const dynamic = 'force-dynamic'
-
-const DEFAULT_PUBLIC_URL = 'https://pub-db2dd9a6665142e4adcd4f822fbe2683.r2.dev'
 
 function slugFromFileName(name: string): string {
   const base = name.replace(/^.*[\\/]/, '').replace(/\.pdf$/i, '')
@@ -59,26 +58,16 @@ export async function POST(request: Request) {
   }
 
   const key = `files/${crypto.randomUUID()}-${slugFromFileName(filename)}.pdf`
-  const publicBase = (process.env.R2_PUBLIC_URL || DEFAULT_PUBLIC_URL).replace(/\/+$/, '')
 
   try {
-    const s3 = new S3Client({
-      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
-      },
-      region: 'auto',
-      forcePathStyle: true,
-    })
     const command = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET ?? 'tynnell-hollins-photos',
+      Bucket: r2Bucket(),
       Key: key,
       ContentType: 'application/pdf',
       ContentLength: size,
     })
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 600 })
-    return NextResponse.json({ uploadUrl, url: `${publicBase}/${key}` })
+    const uploadUrl = await getSignedUrl(r2Client(), command, { expiresIn: 600 })
+    return NextResponse.json({ uploadUrl, url: `${r2PublicBase()}/${key}` })
   } catch (err) {
     console.error('[freebie-pdf/presign] failed to generate presigned URL:', err)
     return NextResponse.json({ error: 'Failed to generate upload URL' }, { status: 500 })

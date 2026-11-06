@@ -14,6 +14,7 @@ vi.mock('@aws-sdk/s3-request-presigner', () => ({
 
 const { POST } = await import('./route')
 const { MAX_FREEBIE_PDF_BYTES } = await import('@/app/lib/freebiePdf')
+const { uploadedFreebieKey } = await import('@/app/lib/r2')
 
 function makeRequest(body: unknown): Request {
   return new Request('https://tynnellhollinsphotography.com/api/freebie-pdf/presign', {
@@ -64,6 +65,15 @@ describe('POST /api/freebie-pdf/presign', () => {
     const command = getSignedUrlMock.mock.calls[0][1]
     expect(command.input).toMatchObject({ Bucket: 'bucket', ContentType: 'application/pdf', ContentLength: 1234 })
     expect(url).toBe(`https://media.tynnellhollinsphotography.com/${command.input.Key}`)
+  })
+
+  it('makes links that Site Settings later recognises as its own upload, so a replaced guide gets cleaned up', async () => {
+    for (const filename of ['Wedding Guide.pdf', '!!!.pdf', '../../<script>Guide!!.pdf']) {
+      getSignedUrlMock.mockClear()
+      const { url } = await (await POST(makeRequest({ filename, size: 1000 }))).json()
+
+      expect(uploadedFreebieKey(url)).toBe(getSignedUrlMock.mock.calls[0][1].input.Key)
+    }
   })
 
   it('keeps an odd file name from escaping the files folder', async () => {
