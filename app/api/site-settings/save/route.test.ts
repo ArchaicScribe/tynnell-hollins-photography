@@ -118,7 +118,7 @@ describe('POST /api/site-settings/save, cleaning up a replaced guide PDF', () =>
   })
 
   it('deletes the old uploaded guide once the new link is saved', async () => {
-    const res = await POST(makeRequest({ freebieUrl: newUrl }))
+    const res = await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
 
     expect(res.status).toBe(200)
     expect(deleteR2ObjectMock).toHaveBeenCalledWith(oldKey)
@@ -127,19 +127,19 @@ describe('POST /api/site-settings/save, cleaning up a replaced guide PDF', () =>
   })
 
   it('reads the saved link without expanding relations, as the database stores it', async () => {
-    await POST(makeRequest({ freebieUrl: newUrl }))
+    await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
 
     expect(findGlobalMock).toHaveBeenCalledWith(expect.objectContaining({ slug: 'site-config', depth: 0 }))
   })
 
   it('deletes the old uploaded guide when the link is cleared', async () => {
-    await POST(makeRequest({ freebieUrl: '' }))
+    await POST(makeRequest({ freebieUrl: '', freebieUrlBase: oldUrl }))
 
     expect(deleteR2ObjectMock).toHaveBeenCalledWith(oldKey)
   })
 
   it('keeps the guide when the same link is saved again', async () => {
-    await POST(makeRequest({ freebieTitle: 'Guide', freebieUrl: ` ${oldUrl} ` }))
+    await POST(makeRequest({ freebieTitle: 'Guide', freebieUrl: ` ${oldUrl} `, freebieUrlBase: oldUrl }))
 
     expect(deleteR2ObjectMock).not.toHaveBeenCalled()
   })
@@ -151,7 +151,7 @@ describe('POST /api/site-settings/save, cleaning up a replaced guide PDF', () =>
   ])('never deletes %s that was saved before', async (_, previous) => {
     findGlobalMock.mockResolvedValue({ freebieUrl: previous })
 
-    await POST(makeRequest({ freebieUrl: newUrl }))
+    await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
 
     expect(deleteR2ObjectMock).not.toHaveBeenCalled()
   })
@@ -159,7 +159,7 @@ describe('POST /api/site-settings/save, cleaning up a replaced guide PDF', () =>
   it('does nothing when no guide was saved before', async () => {
     findGlobalMock.mockResolvedValue({ freebieUrl: null })
 
-    const res = await POST(makeRequest({ freebieUrl: newUrl }))
+    const res = await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
 
     expect(res.status).toBe(200)
     expect(deleteR2ObjectMock).not.toHaveBeenCalled()
@@ -169,14 +169,14 @@ describe('POST /api/site-settings/save, cleaning up a replaced guide PDF', () =>
     updateGlobalMock.mockRejectedValue(new Error('db down'))
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const res = await POST(makeRequest({ freebieUrl: newUrl }))
+    const res = await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
 
     expect(res.status).toBe(500)
     expect(deleteR2ObjectMock).not.toHaveBeenCalled()
   })
 
   it('keeps the old guide when an unsafe new link is ignored', async () => {
-    await POST(makeRequest({ freebieUrl: 'javascript:alert(1)', freebieTitle: 'Guide' }))
+    await POST(makeRequest({ freebieUrl: 'javascript:alert(1)', freebieUrlBase: oldUrl, freebieTitle: 'Guide' }))
 
     expect(deleteR2ObjectMock).not.toHaveBeenCalled()
   })
@@ -192,17 +192,83 @@ describe('POST /api/site-settings/save, cleaning up a replaced guide PDF', () =>
     deleteR2ObjectMock.mockRejectedValue(new Error('denied'))
     const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const res = await POST(makeRequest({ freebieUrl: newUrl }))
+    const res = await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
 
     expect(res.status).toBe(200)
     expect(logged).toHaveBeenCalled()
+  })
+
+  it('keeps the saved guide when the page started from a different link, because another tab replaced it since', async () => {
+    // Tab loaded with an older guide; meanwhile oldUrl was uploaded and saved
+    // elsewhere. Deleting oldUrl now would leave whatever this tab saves
+    // pointing at nothing.
+    const olderUrl = `${media}/files/33333333-3333-4333-8333-333333333333-older.pdf`
+
+    await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: olderUrl }))
+
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled()
+  })
+
+  it('deletes nothing when the page does not say which link it started from', async () => {
+    await POST(makeRequest({ freebieUrl: newUrl }))
+
+    expect(updateGlobalMock).toHaveBeenCalled()
+    expect(findGlobalMock).not.toHaveBeenCalled()
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['a page jump', '#page=2'],
+    ['a download flag', '?download=1'],
+  ])('keeps the file when the new link is the same file with %s added', async (_, extra) => {
+    await POST(makeRequest({ freebieUrl: `${oldUrl}${extra}`, freebieUrlBase: oldUrl }))
+
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps the file while a menu card being saved still links to it', async () => {
+    await POST(makeRequest({
+      freebieUrl: newUrl,
+      freebieUrlBase: oldUrl,
+      menuCards: [{ title: 'Free guide', linkLabel: 'Get it', href: oldUrl, imageUrl: '' }],
+    }))
+
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps the file while an already saved menu card links to it', async () => {
+    findGlobalMock.mockResolvedValue({
+      freebieUrl: oldUrl,
+      menuCards: [{ title: 'Free guide', linkLabel: 'Get it', href: oldUrl, imageUrl: '' }],
+    })
+
+    await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
+
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled()
+  })
+
+  it('still deletes when the saved menu cards are being replaced by ones that no longer link to it', async () => {
+    findGlobalMock.mockResolvedValue({
+      freebieUrl: oldUrl,
+      menuCards: [{ title: 'Free guide', linkLabel: 'Get it', href: oldUrl, imageUrl: '' }],
+    })
+
+    await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl, menuCards: [] }))
+
+    expect(deleteR2ObjectMock).toHaveBeenCalledWith(oldKey)
+  })
+
+  it('never stores the starting link as a setting', async () => {
+    await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data).not.toHaveProperty('freebieUrlBase')
   })
 
   it('still saves when the old link cannot be read, and deletes nothing', async () => {
     findGlobalMock.mockRejectedValue(new Error('db hiccup'))
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const res = await POST(makeRequest({ freebieUrl: newUrl }))
+    const res = await POST(makeRequest({ freebieUrl: newUrl, freebieUrlBase: oldUrl }))
 
     expect(res.status).toBe(200)
     expect(updateGlobalMock).toHaveBeenCalled()

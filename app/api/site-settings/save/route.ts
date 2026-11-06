@@ -23,6 +23,29 @@ const FIELDS = [
   'freebieTitle',
 ] as const
 
+// The storage key of the guide PDF this save replaces, or null to keep it.
+// Deletes only our own Site Settings uploads (files/<uuid>-name.pdf in R2),
+// never a guide hosted elsewhere or anything else in the bucket, and only
+// when nothing will still point at the file:
+// - the page must have started from the link that is saved right now. A tab
+//   opened before another one replaced the guide would otherwise delete the
+//   current guide while saving a link to an older one.
+// - the new link must not be the same file (for example with #page=2 added).
+// - no menu card may link to it.
+// The uuid in the key makes a plain substring check safe.
+function replacedGuideKey({ saved, startedFrom, next, menuCardHrefs }: {
+  saved: string
+  startedFrom: string
+  next: string
+  menuCardHrefs: string[]
+}): string | null {
+  if (saved !== startedFrom || saved === next) return null
+  const key = uploadedFreebieKey(saved)
+  if (!key) return null
+  if ([next, ...menuCardHrefs].some((link) => link.includes(key))) return null
+  return key
+}
+
 export async function POST(request: Request) {
   const auth = await requireAdminUser()
   if (auth instanceof NextResponse) return auth
@@ -54,14 +77,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No valid fields provided' }, { status: 400 })
   }
 
-  // When the guide link changes, remember the old one so its PDF can be
-  // removed from storage once the new link is safely saved. A failed lookup
-  // only skips the cleanup; it never blocks the save.
-  let previousFreebieUrl = ''
-  if ('freebieUrl' in data) {
+  // When the guide link changes, work out which PDF it replaces so that file
+  // can be removed from storage once the new link is safely saved. A failed
+  // lookup only skips the cleanup; it never blocks the save.
+  let oldKey: string | null = null
+  const startedFrom = typeof body.freebieUrlBase === 'string' ? body.freebieUrlBase.trim() : null
+  if ('freebieUrl' in data && startedFrom !== null) {
     try {
       const current = await payload.findGlobal({ slug: 'site-config', depth: 0 })
-      previousFreebieUrl = current?.freebieUrl ?? ''
+      oldKey = replacedGuideKey({
+        saved: (current?.freebieUrl ?? '').trim(),
+        startedFrom,
+        next: String(data.freebieUrl),
+        menuCardHrefs: ((('menuCards' in data ? data.menuCards : current?.menuCards) ?? []) as { href?: string | null }[])
+          .map((card) => card.href ?? ''),
+      })
     } catch (err) {
       console.error('[site-settings/save] could not read the saved freebie link:', err)
     }
@@ -74,10 +104,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 })
   }
 
-  // Delete only our own Site Settings uploads (files/<uuid>-name.pdf in R2),
-  // never a guide hosted elsewhere or anything else in the bucket. The
-  // settings are already saved, so a failed delete just leaves a stray file.
-  const oldKey = previousFreebieUrl !== data.freebieUrl ? uploadedFreebieKey(previousFreebieUrl) : null
+  // The settings are already saved, so a failed delete just leaves a stray file.
   if (oldKey) {
     try {
       await deleteR2Object(oldKey)

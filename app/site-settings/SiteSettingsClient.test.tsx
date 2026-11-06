@@ -137,6 +137,68 @@ describe('Site Settings, freebie', () => {
     expect(saved.freebieUrl).toBe('https://media.example/guide.pdf')
   })
 
+  it('does not resend an untouched guide link, so an old tab cannot put back a guide replaced elsewhere', async () => {
+    render(<SiteSettingsClient initial={{ ...base, freebieTitle: 'Guide', freebieUrl: 'https://media.example/old.pdf', menuCards: [] }} initialPresets={presets} initialEmailTemplates={templates} />)
+
+    fireEvent.change(screen.getByLabelText('Guide title'), { target: { value: 'The Guide' } })
+
+    const saved = await savedSiteSettings()
+    expect(saved.freebieTitle).toBe('The Guide')
+    expect(saved).not.toHaveProperty('freebieUrl')
+    expect(saved).not.toHaveProperty('freebieUrlBase')
+  })
+
+  it('sends a changed guide link along with the link the page started from', async () => {
+    render(<SiteSettingsClient initial={{ ...base, freebieTitle: '', freebieUrl: 'https://media.example/old.pdf', menuCards: [] }} initialPresets={presets} initialEmailTemplates={templates} />)
+
+    fireEvent.change(screen.getByLabelText('Link to the guide'), { target: { value: 'https://media.example/new.pdf' } })
+
+    const saved = await savedSiteSettings()
+    expect(saved.freebieUrl).toBe('https://media.example/new.pdf')
+    expect(saved.freebieUrlBase).toBe('https://media.example/old.pdf')
+  })
+
+  it('treats the saved link as the new starting point after a save', async () => {
+    render(<SiteSettingsClient initial={{ ...base, freebieTitle: '', freebieUrl: 'https://media.example/old.pdf', menuCards: [] }} initialPresets={presets} initialEmailTemplates={templates} />)
+    fireEvent.change(screen.getByLabelText('Link to the guide'), { target: { value: 'https://media.example/new.pdf' } })
+    await savedSiteSettings()
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Saved' })).toBeInTheDocument())
+    fetchMock.mockClear()
+
+    fireEvent.change(screen.getByLabelText('Link to the guide'), { target: { value: 'https://media.example/newer.pdf' } })
+    const saved = await savedSiteSettings()
+
+    expect(saved.freebieUrlBase).toBe('https://media.example/new.pdf')
+  })
+
+  it('keeps the saved link as the starting point when the server ignores an unsafe one', async () => {
+    render(<SiteSettingsClient initial={{ ...base, freebieTitle: '', freebieUrl: 'https://media.example/old.pdf', menuCards: [] }} initialPresets={presets} initialEmailTemplates={templates} />)
+    fireEvent.change(screen.getByLabelText('Link to the guide'), { target: { value: 'www.example.com/guide.pdf' } })
+    await savedSiteSettings()
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Saved' })).toBeInTheDocument())
+    fetchMock.mockClear()
+
+    fireEvent.change(screen.getByLabelText('Link to the guide'), { target: { value: 'https://media.example/new.pdf' } })
+    const saved = await savedSiteSettings()
+
+    expect(saved.freebieUrlBase).toBe('https://media.example/old.pdf')
+  })
+
+  it('keeps the starting link when a save fails, so the next try still says where it started', async () => {
+    render(<SiteSettingsClient initial={{ ...base, freebieTitle: '', freebieUrl: 'https://media.example/old.pdf', menuCards: [] }} initialPresets={presets} initialEmailTemplates={templates} />)
+    fetchMock.mockResolvedValue({ ok: false, json: async () => ({}) })
+    fireEvent.change(screen.getByLabelText('Link to the guide'), { target: { value: 'https://media.example/new.pdf' } })
+    await savedSiteSettings()
+    await screen.findByText(/failed to save/i)
+    fetchMock.mockClear()
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) })
+
+    const saved = await savedSiteSettings()
+
+    expect(saved.freebieUrl).toBe('https://media.example/new.pdf')
+    expect(saved.freebieUrlBase).toBe('https://media.example/old.pdf')
+  })
+
   it('warns about a guide link that will not be saved', () => {
     const section = freebie()
 
