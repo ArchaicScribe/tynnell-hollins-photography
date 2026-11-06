@@ -5,11 +5,10 @@ import { SignJWT } from 'jose'
 
 export const runtime = 'nodejs'
 
-const ALLOWED_EMAILS = new Set([
-  'hello@tynnellhollinsphotography.com',
-  'tynnellh@gmail.com',
-  'xandermv2@gmail.com',
-])
+// Who may sign in with Google: anyone who already has a user account on the
+// site (the same people who can sign in with a password), matched on the
+// email Google has verified. Their role still decides what they can do. There
+// is deliberately no separate list of emails to keep in step.
 
 // Payload v3 default token expiration is 7200 seconds (2 hours)
 const TOKEN_EXPIRATION_SECONDS = 7200
@@ -21,14 +20,16 @@ export async function GET(request: NextRequest) {
   const storedState = request.cookies.get('google_oauth_state')?.value
   const origin = process.env.APP_URL ?? request.nextUrl.origin
 
-  const fail = (reason: string) => {
-    console.error(`[google-sso] fail: ${reason}`)
+  // `reason` goes to the login page, which shows a message per reason;
+  // `detail` only goes to the logs.
+  const fail = (reason: string, detail?: string) => {
+    console.error(`[google-sso] fail: ${reason}${detail ? `:${detail}` : ''}`)
     return NextResponse.redirect(new URL(`/admin/login?sso_error=${reason}`, origin))
   }
 
   if (!code || !state || !storedState || state !== storedState) {
-    const reason = !code ? 'no_code' : !state ? 'no_state' : !storedState ? 'no_cookie' : 'state_mismatch'
-    return fail(`invalid_state:${reason}`)
+    const detail = !code ? 'no_code' : !state ? 'no_state' : !storedState ? 'no_cookie' : 'state_mismatch'
+    return fail('invalid_state', detail)
   }
 
   try {
@@ -68,30 +69,18 @@ export async function GET(request: NextRequest) {
       return fail('invalid_token')
     }
 
-    const rawEmail = userInfo.email ?? ''
-    const email = rawEmail.toLowerCase()
-
-    if (!ALLOWED_EMAILS.has(email)) {
-      return fail('unauthorized')
-    }
+    // Payload stores auth emails lower-cased, so look up the lower-cased form.
+    const email = (userInfo.email ?? '').trim().toLowerCase()
+    if (!email) return fail('invalid_token', 'no_email')
 
     const payload = await getPayload({ config })
-    let { docs } = await payload.find({
+    const { docs } = await payload.find({
       collection: 'users',
-      where: { email: { equals: rawEmail } },
+      where: { email: { equals: email } },
       limit: 1,
     })
 
-    if (!docs.length) {
-      const result = await payload.find({
-        collection: 'users',
-        where: { email: { equals: email } },
-        limit: 1,
-      })
-      docs = result.docs
-    }
-
-    if (!docs.length) return fail('user_not_found')
+    if (!docs.length) return fail('user_not_found', email)
 
     const user = docs[0]
 
@@ -118,7 +107,7 @@ export async function GET(request: NextRequest) {
       returning: false,
     })
 
-    // payload.secret = sha256(PAYLOAD_SECRET).hex.slice(0,32) — NOT the raw env var.
+    // payload.secret = sha256(PAYLOAD_SECRET).hex.slice(0,32): NOT the raw env var.
     // Using process.env.PAYLOAD_SECRET directly would produce a mismatched signature.
     const secretKey = new TextEncoder().encode(payload.secret)
     const issuedAt = Math.floor(Date.now() / 1000)
