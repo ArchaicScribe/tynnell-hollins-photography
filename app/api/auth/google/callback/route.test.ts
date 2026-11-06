@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
+import { jwtVerify } from 'jose'
 
 const findMock = vi.fn()
 const updateOneMock = vi.fn()
@@ -61,6 +62,75 @@ describe('GET /api/auth/google/callback', () => {
     expect(res.headers.get('location')).toBe('https://www.tynnellhollinsphotography.com/admin')
     expect(res.cookies.get('payload-token')?.value).toBeTruthy()
     expect(updateOneMock).toHaveBeenCalledWith(expect.objectContaining({ id: 7, collection: 'users' }))
+  })
+
+  it('issues a token Payload accepts: signed with its secret, for that user, tied to the new session', async () => {
+    google({ email: 'someone.new@gmail.com' })
+    findMock.mockResolvedValue({ docs: [{ id: 7, email: 'someone.new@gmail.com', role: 'editor' }] })
+
+    const res = await GET(callback())
+
+    const token = res.cookies.get('payload-token')!.value
+    const { payload: claims } = await jwtVerify(token, new TextEncoder().encode('a'.repeat(32)))
+    const sessions = updateOneMock.mock.calls[0][0].data.sessions as { id: string }[]
+    expect(claims).toMatchObject({ id: 7, collection: 'users', email: 'someone.new@gmail.com' })
+    expect(sessions.map((s) => s.id)).toContain(claims.sid)
+  })
+
+  it('keeps the user\'s other live sessions and drops expired ones', async () => {
+    google({ email: 'someone.new@gmail.com' })
+    const live = { id: 'live', createdAt: new Date(), expiresAt: new Date(Date.now() + 60_000) }
+    const expired = { id: 'old', createdAt: new Date(0), expiresAt: new Date(Date.now() - 60_000) }
+    findMock.mockResolvedValue({ docs: [{ id: 7, email: 'someone.new@gmail.com', sessions: [live, expired] }] })
+
+    await GET(callback())
+
+    const ids = (updateOneMock.mock.calls[0][0].data.sessions as { id: string }[]).map((s) => s.id)
+    expect(ids).toContain('live')
+    expect(ids).not.toContain('old')
+    expect(ids).toHaveLength(2)
+  })
+
+  it('reports a failed code exchange with Google', async () => {
+    fetchMock.mockResolvedValue({ ok: false, json: async () => ({ error: 'invalid_grant' }) })
+
+    const res = await GET(callback())
+
+    expect(ssoError(res)).toBe('token_exchange_failed')
+    expect(findMock).not.toHaveBeenCalled()
+  })
+
+  it('turns away a token Google will not vouch for', async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      url.startsWith('https://oauth2.googleapis.com/tokeninfo')
+        // An error reply is refused on its status alone, even if its body looks valid.
+        ? { ok: false, json: async () => ({ email: 'someone.new@gmail.com', email_verified: 'true', aud: 'client-id' }) }
+        : { ok: true, json: async () => ({ id_token: 'id-token' }) })
+
+    const res = await GET(callback())
+
+    expect(ssoError(res)).toBe('invalid_token')
+    expect(findMock).not.toHaveBeenCalled()
+  })
+
+  it('turns away a verified token that carries no email', async () => {
+    google({ email: '' })
+
+    const res = await GET(callback())
+
+    expect(ssoError(res)).toBe('invalid_token')
+    expect(findMock).not.toHaveBeenCalled()
+  })
+
+  it('reports an unexpected failure without signing anyone in', async () => {
+    google({ email: 'someone.new@gmail.com' })
+    findMock.mockResolvedValue({ docs: [{ id: 7, email: 'someone.new@gmail.com' }] })
+    updateOneMock.mockRejectedValue(new Error('db down'))
+
+    const res = await GET(callback())
+
+    expect(ssoError(res)).toBe('server_error')
+    expect(res.cookies.get('payload-token')).toBeUndefined()
   })
 
   it('looks the user up by the lower-cased email, however Google capitalises it', async () => {

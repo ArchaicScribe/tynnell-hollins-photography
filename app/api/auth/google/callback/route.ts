@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
       returning: false,
     })
 
-    // payload.secret = sha256(PAYLOAD_SECRET).hex.slice(0,32) — NOT the raw env var.
+    // payload.secret = sha256(PAYLOAD_SECRET).hex.slice(0,32): NOT the raw env var.
     // Using process.env.PAYLOAD_SECRET directly would produce a mismatched signature.
     const secretKey = new TextEncoder().encode(payload.secret)
     const issuedAt = Math.floor(Date.now() / 1000)

@@ -9,8 +9,8 @@ export function GoogleSignInButton() {
 
   const errorMessages: Record<string, string> = {
     unauthorized: 'That Google account is not authorized to access this admin.',
-    user_not_found: 'No admin account found for that Google email.',
-    invalid_token: 'Google sign-in failed. Please try again.',
+    user_not_found: 'No account uses that Google email. Choose the Google account with the email your login was set up with, or sign in with your password below.',
+    invalid_token: 'Google could not confirm a verified email for that account. Use a Google account with a verified email, or sign in with your password below.',
     token_exchange_failed: 'Could not reach Google. Please try again.',
     invalid_state: 'Sign-in was interrupted. Please try again.',
     server_error: 'Something went wrong. Please try again.',
