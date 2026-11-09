@@ -45,4 +45,15 @@ describe('app/(site)/layout.tsx document shell', () => {
     const style = head && childElements(head).find((c) => c.type === 'style')
     expect(style?.props.dangerouslySetInnerHTML?.__html).toContain('--color-bg: #E4E2D8;')
   })
+
+  // A plain <style> is written after Next's precedence stylesheets, so the
+  // theme overrides tokens.css's fallbacks. Giving it `precedence` or `href`
+  // hands it to React's stylesheet ordering, where it can land before them.
+  it('keeps the theme <style> plain so it stays after the stylesheets it overrides', async () => {
+    const html = (await RootLayout({ children: null })) as El
+    const head = childElements(html).find((c) => c.type === 'head')
+    const style = head && (childElements(head).find((c) => c.type === 'style') as ReactElement<Record<string, unknown>>)
+    expect(style?.props.precedence).toBeUndefined()
+    expect(style?.props.href).toBeUndefined()
+  })
 })

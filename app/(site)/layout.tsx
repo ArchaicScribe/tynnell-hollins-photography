@@ -91,7 +91,9 @@ export default async function RootLayout({
           styling (getSiteDesign falls back to those same defaults).
           It must sit inside <head>: a <style> directly in <html> is invalid,
           the browser moves it, and the DOM no longer matches what React
-          rendered (hydration mismatch). */}
+          rendered (hydration mismatch). Keep it a plain <style> (no
+          `precedence`/`href`) so React writes it after Next's stylesheets
+          and it keeps overriding tokens.css. */}
       <head>
         <style dangerouslySetInnerHTML={{ __html: `:root {\n  ${themeToCssVars(theme)}\n}` }} />
       </head>
