@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { config } from '../puck.config'
 import { BuilderOverlay } from '../BuilderOverlay'
 import { DrawerItemClickToAdd } from '../DrawerItemClickToAdd'
+import { editorSnapshot } from '../editorSnapshot'
 
 // Per-page Puck editor (TYN-216). Saves the document for `slug` via the save
 // API; Publish marks the page published so it renders at /{slug}. Puck's
@@ -46,7 +47,9 @@ export function EditorClient({
   // must point there, or an editor clicking "View Page" on a promoted page
   // would land on the still-hardcoded original instead of their own edits.
   const publicPath = promotedRoute ? `/${promotedRoute}` : `/${slug}`
-  const savedJson = useRef<string>(JSON.stringify(initialData))
+  // Compared via editorSnapshot, not raw JSON: Puck adds live `resolved*` data
+  // and normalizes the root on load, which is not an edit.
+  const savedJson = useRef<string>(editorSnapshot(initialData))
   // The canvas as of the latest onChange. A save sends a snapshot, and the
   // user can keep typing while it is in flight, so on success dirty is
   // recomputed against this rather than assumed clean.
@@ -79,7 +82,7 @@ export function EditorClient({
   }, [dirty])
 
   const onChange = useCallback((data: Data) => {
-    latestJson.current = JSON.stringify(data)
+    latestJson.current = editorSnapshot(data)
     setDirty(latestJson.current !== savedJson.current)
   }, [])
 
@@ -93,7 +96,7 @@ export function EditorClient({
         body: JSON.stringify({ slug, data, publish }),
       })
       if (res.ok) {
-        savedJson.current = JSON.stringify(data)
+        savedJson.current = editorSnapshot(data)
         setDirty(latestJson.current !== savedJson.current)
         setHasUnpublished(!publish)
         if (publish) {
