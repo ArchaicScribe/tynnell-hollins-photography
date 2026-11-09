@@ -88,8 +88,13 @@ export default async function RootLayout({
       {/* Site-wide theme (TYN-314), read fresh on every request from the
           Design editor's saved settings - layers on top of tokens.css's
           hardcoded defaults so an unsaved/missing global never breaks
-          styling (getSiteDesign falls back to those same defaults). */}
-      <style dangerouslySetInnerHTML={{ __html: `:root {\n  ${themeToCssVars(theme)}\n}` }} />
+          styling (getSiteDesign falls back to those same defaults).
+          It must sit inside <head>: a <style> directly in <html> is invalid,
+          the browser moves it, and the DOM no longer matches what React
+          rendered (hydration mismatch). */}
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: `:root {\n  ${themeToCssVars(theme)}\n}` }} />
+      </head>
       <body suppressHydrationWarning>
         <a href="#main-content" className="skipLink">Skip to content</a>
         <Navbar builderLinks={builderLinks} logoUrl={theme.logoUrl} siteTitle={site.title} menuCards={site.menuCards} />
