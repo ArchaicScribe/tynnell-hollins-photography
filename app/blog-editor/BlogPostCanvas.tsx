@@ -14,7 +14,9 @@ import { BlogBodyFieldsPanel } from './BlogBodyFieldsPanel'
 // Same CSS module the public /blog/[slug] page uses, imported directly so
 // this canvas can never visually drift from what actually publishes.
 import styles from '../(site)/blog/[slug]/page.module.css'
-import '@measured/puck/puck.css'
+// no-external: puck.css @imports Inter from rsms.me, which the CSP blocks, and the
+// blocked import fails the whole stylesheet chunk (ChunkLoadError).
+import '@measured/puck/no-external.css'
 import '../builder/puck-theme.css'
 
 export type BlogPostEdits = {
