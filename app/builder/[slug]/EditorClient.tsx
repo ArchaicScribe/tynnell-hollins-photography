@@ -1,7 +1,9 @@
 'use client'
 
 import { Puck, useGetPuck, type Data } from '@measured/puck'
-import '@measured/puck/puck.css'
+// no-external: puck.css @imports Inter from rsms.me, which the CSP blocks, and the
+// blocked import fails the whole stylesheet chunk (ChunkLoadError).
+import '@measured/puck/no-external.css'
 import '../puck-theme.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
