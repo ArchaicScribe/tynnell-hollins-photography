@@ -1901,18 +1901,25 @@ export const config: Config = {
         rotatePhotos: {
           type: 'array',
           label: 'More photos to rotate through (optional)',
-          arrayFields: { url: imageField('Photo') },
+          arrayFields: {
+            url: imageField('Photo'),
+            // Blank uses the main photo's focal point.
+            focalX: { type: 'number', label: 'Focal point X (%), blank = same as main photo' },
+            focalY: { type: 'number', label: 'Focal point Y (%), blank = same as main photo' },
+          },
           defaultItemProps: { url: '' },
           getItemSummary: (item: any) => item?.url || 'Photo',
         },
+        // The first option must match the render's fallback below: an element
+        // saved without this value shows the first option in the editor.
         rotateSeconds: {
           type: 'select',
           label: 'Time on each photo',
           options: [
-            { label: '4 seconds', value: 4 },
             { label: '6 seconds', value: 6 },
             { label: '8 seconds', value: 8 },
             { label: '10 seconds', value: 10 },
+            { label: '12 seconds', value: 12 },
           ],
         },
       },
@@ -1927,7 +1934,16 @@ export const config: Config = {
           objectPosition: `${focalX ?? 50}% ${focalY ?? 50}%`,
           opacity: (imageOpacity ?? 100) / 100,
         }
-        const photos = [{ url }, ...(rotatePhotos ?? []).filter((p: any) => p?.url)]
+        const num = (v: unknown) => (typeof v === 'number' && !Number.isNaN(v) ? v : undefined)
+        const photos = [
+          { url },
+          ...(rotatePhotos ?? [])
+            .filter((p: any) => p?.url)
+            .map((p: any) => ({
+              url: p.url,
+              objectPosition: `${num(p.focalX) ?? focalX ?? 50}% ${num(p.focalY) ?? focalY ?? 50}%`,
+            })),
+        ]
         return (
           <Wrapper
             {...(anchorHref ? { href: anchorHref } : {})}
@@ -1936,7 +1952,7 @@ export const config: Config = {
             {url ? (
               <>
                 {photos.length > 1 ? (
-                  <ImageSlideshowBlock images={photos} intervalMs={(rotateSeconds ?? 6) * 1000} alt={alt ?? ''} imgStyle={imgStyle} />
+                  <ImageSlideshowBlock images={photos} intervalMs={(rotateSeconds ?? 6) * 1000} alt={alt ?? ''} imgStyle={imgStyle} pauseForReducedMotion />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
