@@ -1895,13 +1895,55 @@ export const config: Config = {
         overlayOpacity: { type: 'number', label: 'Overlay opacity (%)' },
         overlayColor: { type: 'text', label: 'Overlay color' },
         anchorHref: { type: 'text', label: 'Link (optional)' },
+        // TYN-347: extra photos crossfade behind the overlay on a timer, so a
+        // full-bleed hero image becomes an auto-rotating carousel while the
+        // text and buttons layered over it stay where they are.
+        rotatePhotos: {
+          type: 'array',
+          label: 'More photos to rotate through (optional)',
+          arrayFields: {
+            url: imageField('Photo'),
+            // Blank uses the main photo's focal point.
+            focalX: { type: 'number', label: 'Focal point X (%), blank = same as main photo' },
+            focalY: { type: 'number', label: 'Focal point Y (%), blank = same as main photo' },
+          },
+          defaultItemProps: { url: '' },
+          getItemSummary: (item: any) => item?.url || 'Photo',
+        },
+        // The first option must match the render's fallback below: an element
+        // saved without this value shows the first option in the editor.
+        rotateSeconds: {
+          type: 'select',
+          label: 'Time on each photo',
+          options: [
+            { label: '6 seconds', value: 6 },
+            { label: '8 seconds', value: 8 },
+            { label: '10 seconds', value: 10 },
+            { label: '12 seconds', value: 12 },
+          ],
+        },
       },
       defaultProps: {
         url: '', alt: '', focalX: 50, focalY: 50, imageOpacity: 100, overlayOpacity: 0, overlayColor: '#000000', anchorHref: '',
+        rotatePhotos: [], rotateSeconds: 6,
         x: 8, y: 8, width: 40, height: 40, rotate: 0,
       },
-      render: ({ url, alt, focalX, focalY, imageOpacity, overlayOpacity, overlayColor, anchorHref, x, y, width, height, rotate }: any) => {
+      render: ({ url, alt, focalX, focalY, imageOpacity, overlayOpacity, overlayColor, anchorHref, rotatePhotos, rotateSeconds, x, y, width, height, rotate }: any) => {
         const Wrapper = anchorHref ? 'a' : 'div'
+        const imgStyle = {
+          objectPosition: `${focalX ?? 50}% ${focalY ?? 50}%`,
+          opacity: (imageOpacity ?? 100) / 100,
+        }
+        const num = (v: unknown) => (typeof v === 'number' && !Number.isNaN(v) ? v : undefined)
+        const photos = [
+          { url },
+          ...(rotatePhotos ?? [])
+            .filter((p: any) => p?.url)
+            .map((p: any) => ({
+              url: p.url,
+              objectPosition: `${num(p.focalX) ?? focalX ?? 50}% ${num(p.focalY) ?? focalY ?? 50}%`,
+            })),
+        ]
         return (
           <Wrapper
             {...(anchorHref ? { href: anchorHref } : {})}
@@ -1909,16 +1951,16 @@ export const config: Config = {
           >
             {url ? (
               <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={url}
-                  alt={alt ?? ''}
-                  style={{
-                    width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                    objectPosition: `${focalX ?? 50}% ${focalY ?? 50}%`,
-                    opacity: (imageOpacity ?? 100) / 100,
-                  }}
-                />
+                {photos.length > 1 ? (
+                  <ImageSlideshowBlock images={photos} intervalMs={(rotateSeconds ?? 6) * 1000} alt={alt ?? ''} imgStyle={imgStyle} pauseForReducedMotion />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={url}
+                    alt={alt ?? ''}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', ...imgStyle }}
+                  />
+                )}
                 {(overlayOpacity ?? 0) > 0 && (
                   <div style={{ position: 'absolute', inset: 0, background: overlayColor ?? '#000000', opacity: (overlayOpacity ?? 0) / 100 }} />
                 )}
