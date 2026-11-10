@@ -1079,14 +1079,14 @@ async function run() {
       )
     `)
     await client.query(`
-      DO $ BEGIN
+      DO $$ BEGIN
         ALTER TABLE "favorite_lists"
           ADD CONSTRAINT "favorite_lists_gallery_id_fk"
           FOREIGN KEY ("gallery_id")
           REFERENCES "galleries"("id")
           ON DELETE CASCADE ON UPDATE NO ACTION;
       EXCEPTION WHEN duplicate_object THEN NULL;
-      END $
+      END $$
     `)
     await client.query(`
       CREATE INDEX IF NOT EXISTS "favorite_lists_gallery_idx" ON "favorite_lists" USING btree ("gallery_id")
@@ -1112,7 +1112,7 @@ async function run() {
         ADD COLUMN IF NOT EXISTS "favorite_lists_id" integer
     `)
     await client.query(`
-      DO $ BEGIN
+      DO $$ BEGIN
         ALTER TABLE "payload_locked_documents_rels"
           ADD CONSTRAINT "payload_locked_documents_rels_favorite_lists_fk"
           FOREIGN KEY ("favorite_lists_id")
@@ -1121,14 +1121,14 @@ async function run() {
       EXCEPTION
         WHEN duplicate_object THEN NULL;
         WHEN undefined_table THEN NULL;
-      END $
+      END $$
     `)
     await client.query(`
-      DO $ BEGIN
+      DO $$ BEGIN
         CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_favorite_lists_id_idx"
           ON "payload_locked_documents_rels" USING btree ("favorite_lists_id");
       EXCEPTION WHEN undefined_table THEN NULL;
-      END $
+      END $$
     `)
     console.log('✓ client favorites (galleries columns + favorite_lists) ready')
   } finally {
