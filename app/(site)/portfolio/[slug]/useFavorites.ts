@@ -19,7 +19,7 @@ async function call(path: string, method: 'GET' | 'POST' | 'DELETE', body?: unkn
     }),
   })
   const data = await res.json().catch(() => ({}))
-  return { ok: res.ok, data: data as ServerState & { error?: string } }
+  return { ok: res.ok, status: res.status, data: data as ServerState & { error?: string } }
 }
 
 export type Favorites = ReturnType<typeof useFavorites>
@@ -74,6 +74,12 @@ export function useFavorites(slug: string | null) {
         // Only take the server's answer once nothing newer is on its way,
         // or a quick second heart would flicker off and on.
         if (waiting.current === 0) adopt(result.data)
+      } else if (result?.status === 401) {
+        // The server no longer knows this browser's list (Tynnell deleted
+        // it, or the cookie ran out). Ask who is choosing again, and keep
+        // the heart they just pressed for when they answer.
+        setList(null)
+        if (favorited) setAskingFor(photoId)
       } else {
         apply(!favorited)
         setError(result?.data.error ?? GENERIC_ERROR)

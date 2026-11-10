@@ -20,7 +20,44 @@ function matches(row: Row, where: Where | undefined): boolean {
   return Object.entries(where).every(([key, cond]) => row[key] === (cond as { equals: unknown }).equals)
 }
 
+// Row locks, as the database would hold them: `execute` waits its turn for a
+// given lock statement, and the lock is let go when that transaction ends.
+const lockQueues = new Map<string, Promise<void>>()
+const heldLocks = new Map<string, () => void>()
+const lockStatements: string[] = []
+let nextTransaction = 1
+let failListLimit = false
+
+const fakeDb = {
+  sessions: {} as Record<string, { db: { transaction: string } }>,
+  beginTransaction: vi.fn(async () => {
+    const id = `tx-${nextTransaction++}`
+    fakeDb.sessions[id] = { db: { transaction: id } }
+    return id
+  }),
+  execute: vi.fn(async ({ db, raw }: { db: { transaction: string }; raw: string }) => {
+    lockStatements.push(raw)
+    const before = lockQueues.get(raw) ?? Promise.resolve()
+    let release!: () => void
+    const mine = new Promise<void>(resolve => { release = resolve })
+    lockQueues.set(raw, before.then(() => mine))
+    await before
+    heldLocks.set(db.transaction, release)
+  }),
+  commitTransaction: vi.fn(async (id: string) => {
+    heldLocks.get(id)?.()
+    heldLocks.delete(id)
+    delete fakeDb.sessions[id]
+  }),
+  rollbackTransaction: vi.fn(async (id: string) => {
+    heldLocks.get(id)?.()
+    heldLocks.delete(id)
+    delete fakeDb.sessions[id]
+  }),
+}
+
 const fakePayload = {
+  db: fakeDb,
   find: vi.fn(async ({ collection, where }: { collection: string; where?: Where }) => {
     const rows = collection === 'galleries' ? galleries : lists
     return { docs: rows.filter(r => matches(r, where)) }
@@ -29,7 +66,11 @@ const fakePayload = {
     const rows = collection === 'galleries' ? galleries : lists
     const row = rows.find(r => r.id === id)
     if (!row) throw new Error('Not Found')
-    return row
+    // A read is a snapshot, and takes a moment, as it does against a real
+    // database: that gap is where two requests can overlap.
+    const snapshot = { ...row }
+    await new Promise(resolve => setTimeout(resolve, 2))
+    return snapshot
   }),
   create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
     const row = { id: nextListId++, ...data }
@@ -48,6 +89,9 @@ const fakePayload = {
 let jar: Record<string, string> = {}
 
 const sendMock = vi.fn()
+// The per-list send limiter: keys it was asked about, and keys it refuses.
+const listLimitKeys: string[] = []
+const blockedListKeys = new Set<string>()
 const safeLimitMock = vi.fn()
 
 vi.mock('payload', () => ({ getPayload: vi.fn(async () => fakePayload) }))
@@ -65,6 +109,13 @@ vi.mock('resend', () => ({
 vi.mock('@/app/lib/ratelimit', () => ({
   favoritesStartRatelimit: { name: 'start' },
   favoritesSendRatelimit: { name: 'send' },
+  favoritesListSendRatelimit: {
+    limit: async (key: string) => {
+      listLimitKeys.push(key)
+      if (failListLimit) throw new Error('redis unreachable')
+      return { success: !blockedListKeys.has(key) }
+    },
+  },
   getClientIp: vi.fn().mockReturnValue('127.0.0.1'),
   safeLimit: (...args: unknown[]) => safeLimitMock(...args),
 }))
@@ -135,6 +186,12 @@ beforeEach(() => {
   lists = []
   nextListId = 1
   jar = {}
+  lockQueues.clear()
+  heldLocks.clear()
+  lockStatements.length = 0
+  listLimitKeys.length = 0
+  blockedListKeys.clear()
+  failListLimit = false
   vi.clearAllMocks()
   safeLimitMock.mockResolvedValue({ success: true })
   sendMock.mockResolvedValue({ data: { id: 'email_1' }, error: null })
@@ -179,6 +236,13 @@ describe('POST /api/favorites/start', () => {
     const res = await startAs('Jane', 'not-an-email')
     expect(res.status).toBe(400)
     expect(lists).toHaveLength(0)
+  })
+
+  it('reports an email the database rejects as an invalid email, not a server error', async () => {
+    fakePayload.create.mockRejectedValueOnce(Object.assign(new Error('The following field is invalid: clientEmail'), { name: 'ValidationError' }))
+    const res = await startAs('Jane', 'jane@gmail..com')
+    expect(res.status).toBe(400)
+    expect((await res.json()).error).toMatch(/valid email/i)
   })
 
   it('rejects a missing or overlong name', async () => {
@@ -228,6 +292,47 @@ describe('POST /api/favorites/toggle', () => {
     expect(await (await heart(3)).json()).toMatchObject({ list: { photoIds: [1, 3] } })
     expect(await (await heart(1, false)).json()).toMatchObject({ list: { photoIds: [3] } })
     expect(lists[0].photoIds).toEqual([3])
+  })
+
+  it('keeps both hearts when two devices on the same list press at the same moment', async () => {
+    await startAs()
+    const [a, b] = await Promise.all([heart(2), heart(3)])
+    expect(a.status).toBe(200)
+    expect(b.status).toBe(200)
+    expect([...(lists[0].photoIds as number[])].sort()).toEqual([2, 3])
+  })
+
+  it('never lets two simultaneous hearts slip past the limit', async () => {
+    galleries = [gallery({ favoritesLimit: 1 })]
+    await startAs()
+    const statuses = (await Promise.all([heart(2), heart(3)])).map(r => r.status).sort()
+    expect(statuses).toEqual([200, 409])
+    expect(lists[0].photoIds as number[]).toHaveLength(1)
+  })
+
+  it('locks only the list being changed, and lets go of the lock afterwards', async () => {
+    await startAs()
+    await heart(1)
+    await heart(99)
+    expect(new Set(lockStatements).size).toBe(1)
+    expect(lockStatements[0]).toMatch(/^SELECT pg_advisory_xact_lock\(\d+, 1\)$/)
+    expect(heldLocks.size).toBe(0)
+    expect(Object.keys(fakeDb.sessions)).toEqual([])
+  })
+
+  it('still saves the heart when the lock cannot be taken', async () => {
+    await startAs()
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    fakeDb.execute.mockRejectedValueOnce(new Error('function pg_advisory_xact_lock does not exist'))
+
+    const res = await heart(2)
+    expect(res.status).toBe(200)
+    expect(lists[0].photoIds).toEqual([2])
+    // The failed transaction is closed, and the failure is not silent.
+    expect(fakeDb.rollbackTransaction).toHaveBeenCalledTimes(1)
+    expect(Object.keys(fakeDb.sessions)).toEqual([])
+    expect(logged).toHaveBeenCalled()
+    logged.mockRestore()
   })
 
   it('refuses a photo that is not in the gallery', async () => {
@@ -379,6 +484,37 @@ describe('POST /api/favorites/send', () => {
     expect(sendMock.mock.calls[1][0].subject).toContain('updated')
   })
 
+  it('does not email Tynnell again when nothing has changed since the last send', async () => {
+    await startAs()
+    await heart(2)
+    await sendToTynnell()
+    const first = lists[0].sentAt
+
+    const res = await sendToTynnell()
+    expect(res.status).toBe(200)
+    expect((await res.json()).list.unsentChanges).toBe(false)
+    expect(sendMock).toHaveBeenCalledTimes(1)
+    expect(lists[0].sentAt).toBe(first)
+  })
+
+  it('limits how often one list can be sent, whatever address the requests come from', async () => {
+    await startAs()
+    await heart(2)
+    blockedListKeys.add('1')
+    expect((await sendToTynnell()).status).toBe(429)
+    expect(sendMock).not.toHaveBeenCalled()
+    expect(listLimitKeys).toEqual(['1'])
+  })
+
+  it('sends nothing when the per-list limit cannot be checked', async () => {
+    await startAs()
+    await heart(2)
+    failListLimit = true
+    expect((await sendToTynnell()).status).toBe(429)
+    expect(sendMock).not.toHaveBeenCalled()
+    expect(lists[0].sentAt ?? null).toBeNull()
+  })
+
   it('does not mark the list as sent when the email fails', async () => {
     await startAs()
     await heart(2)
@@ -394,6 +530,17 @@ describe('POST /api/favorites/send', () => {
     const email = sendMock.mock.calls[0][0]
     expect(email.html).not.toContain('<img src=x')
     expect(email.html).toContain('&lt;img src=x')
+  })
+
+  it('escapes the thumbnail address like every other value in the email', async () => {
+    const odd = { id: 2, filename: 'smith-2.jpg', sizes: { thumbnail: { url: 'https://media.example/a"b<c>.jpg' } } }
+    galleries = [gallery({ photos: [{ photo: odd }] })]
+    await startAs()
+    await heart(2)
+    await sendToTynnell()
+    const html: string = sendMock.mock.calls[0][0].html
+    expect(html).not.toContain('a"b<c>.jpg')
+    expect(html).toContain('a&quot;b&lt;c&gt;.jpg')
   })
 
   it('is rate limited', async () => {

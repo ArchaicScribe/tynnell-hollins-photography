@@ -4,11 +4,24 @@ import type { Photo } from '@/payload-types'
 import { changesSinceSent, visibleFavorites } from '@/app/lib/favorites'
 import { currentList, favoritesBody, noList, openFavoritesGallery } from '@/app/lib/favoritesRequest'
 import { favoritesEmailHtml } from '@/app/lib/emails'
-import { favoritesSendRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
+import { favoritesListSendRatelimit, favoritesSendRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
 import { escapeHtml } from '@/app/lib/validation'
 import { EMAIL_FROM, RATE_LIMIT_ERROR, SITE_URL } from '@/app/lib/constants'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
+
+// The per-IP limit fails open (safeLimit), and one person can come from many
+// addresses. This one is keyed on the list and fails closed, so a list can
+// never be used to flood Tynnell's inbox, even with Redis down.
+async function listMaySend(listId: number): Promise<boolean> {
+  try {
+    const { success } = await favoritesListSendRatelimit.limit(String(listId))
+    return success
+  } catch (err) {
+    console.error('[favorites/send] list limit check failed, not sending:', err)
+    return false
+  }
+}
 
 // POST /api/favorites/send { gallery }: "Send to Tynnell" (TYN-13). Emails
 // her the client's current favorites and records what was sent. The list
@@ -35,6 +48,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Choose at least one favorite first' }, { status: 400 })
   }
 
+  const isUpdate = Boolean(list.sentAt)
+  const changes = changesSinceSent(photoIds, list.sentPhotoIds)
+  // The button is hidden when there is nothing new, but the route is public:
+  // a replayed request must not email the same list again.
+  if (isUpdate && changes.added.length === 0 && changes.removed.length === 0) {
+    return NextResponse.json(favoritesBody(ctx, list))
+  }
+  if (!(await listMaySend(list.id))) {
+    return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 })
+  }
+
   const contactTo = process.env.CONTACT_TO_EMAIL
   if (!contactTo) {
     console.error('[favorites/send] CONTACT_TO_EMAIL env var is not set')
@@ -45,11 +69,10 @@ export async function POST(req: NextRequest) {
   const fileName = (id: number) => escapeHtml(byId.get(id)?.filename ?? `Photo ${id}`)
   const thumbUrl = (id: number) => {
     const p = byId.get(id)
-    return p?.sizes?.thumbnail?.url ?? p?.sizes?.card?.url ?? p?.url ?? null
+    const url = p?.sizes?.thumbnail?.url ?? p?.sizes?.card?.url ?? p?.url
+    return url ? escapeHtml(url) : null
   }
 
-  const isUpdate = Boolean(list.sentAt)
-  const changes = changesSinceSent(photoIds, list.sentPhotoIds)
   const clientName = list.clientName || list.clientEmail
 
   const result = await resend.emails.send({

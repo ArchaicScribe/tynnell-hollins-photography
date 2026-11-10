@@ -58,6 +58,11 @@ export async function POST(req: NextRequest) {
       // Two tabs starting at once: the database allows one list per gallery
       // and email, so the loser of that race uses the winner's list.
       list = await findList(ctx, email)
+      // Payload's email check is stricter than isValidEmail (it refuses
+      // "jane@gmail..com", for one).
+      if (!list && (err as { name?: string } | null)?.name === 'ValidationError') {
+        return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 })
+      }
       if (!list) {
         console.error('[favorites/start] could not create list:', err)
         return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })

@@ -46,6 +46,10 @@ const NAV_BTN: React.CSSProperties = {
 export function GalleryViewer({ photos: allPhotos, taped, favorites }: Props) {
   const fav = useFavorites(favorites?.slug ?? null)
   const [onlyFavorites, setOnlyFavorites] = useState(false)
+  // With no list there are no favorites to narrow to ("Not you?", or the list
+  // was deleted), and the bar has no button to widen the view again, so the
+  // filter is switched off rather than left showing an empty gallery.
+  if (onlyFavorites && fav.list === null) setOnlyFavorites(false)
   // Everything below (grid, lightbox, arrow keys) works on the photos
   // currently shown, so "Show favorites" also narrows the lightbox.
   const photos = fav.enabled && onlyFavorites
@@ -69,8 +73,10 @@ export function GalleryViewer({ photos: allPhotos, taped, favorites }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null)
 
   const close = useCallback(() => setLightboxIdx(null), [])
-  const prev = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null) }, [photos.length])
-  const next = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % photos.length : null) }, [photos.length])
+  // With one photo showing there is nowhere to move to. Marking the image as
+  // loading anyway would blank it for good: the same image never loads twice.
+  const prev = useCallback(() => { if (photos.length < 2) return; setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null) }, [photos.length])
+  const next = useCallback(() => { if (photos.length < 2) return; setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % photos.length : null) }, [photos.length])
 
   const open = useCallback((i: number) => {
     previousFocusRef.current = document.activeElement as HTMLElement

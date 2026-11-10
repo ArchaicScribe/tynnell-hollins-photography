@@ -24,7 +24,7 @@
   transition: opacity 0.2s ease, background 0.2s ease, transform 0.15s ease;
 }
 
-.heart:hover:not(:disabled),
+.heart:hover:not([aria-disabled='true']),
 .heart:focus-visible {
   opacity: 1;
   background: rgba(12, 12, 12, 0.72);
@@ -35,11 +35,11 @@
   outline-offset: 2px;
 }
 
-.heart:active:not(:disabled) {
+.heart:active:not([aria-disabled='true']) {
   transform: scale(0.94);
 }
 
-.heart:disabled {
+.heart[aria-disabled='true'] {
   cursor: not-allowed;
   opacity: 0.35;
 }
@@ -217,7 +217,8 @@
   border-radius: var(--btn-radius);
   background: transparent;
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  /* 16px: anything smaller makes iOS Safari zoom the page on focus. */
+  font-size: 1rem;
   color: var(--color-body);
 }
 
@@ -233,7 +234,7 @@
     transition: none;
   }
 
-  .heart:active:not(:disabled) {
+  .heart:active:not([aria-disabled='true']) {
     transform: none;
   }
 }

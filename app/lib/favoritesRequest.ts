@@ -134,3 +134,66 @@ export function forgetList(res: NextResponse, slug: string): NextResponse {
   })
   return res
 }
+
+// ---------------------------------------------------------------------------
+// One writer at a time per list.
+//
+// A heart is a read-modify-write of the list's photo ids, and the same list
+// can be open on two devices (a couple sharing one email), so two hearts
+// pressed together would otherwise each save their own copy and one would be
+// lost. `fn` runs inside a transaction that first takes a Postgres advisory
+// lock keyed on the list; a second request for the same list waits there
+// until the first commits. Pass `fn`'s `req` to every Payload call in it, so
+// they all run in that transaction.
+//
+// The lock is transaction-scoped (pg_advisory_xact_lock), which is the only
+// kind that works through Neon's pooled connections.
+// ---------------------------------------------------------------------------
+
+// Arbitrary, but fixed: the first key of the two-key advisory lock, so list
+// ids cannot collide with any other advisory lock taken on this database.
+const FAVORITES_LOCK_NAMESPACE = 7713
+
+type LockReq = { transactionID?: string | number }
+
+type TransactionalDb = {
+  beginTransaction: () => Promise<string | number | null>
+  commitTransaction: (id: string | number) => Promise<void>
+  rollbackTransaction: (id: string | number) => Promise<void>
+  execute?: (args: { db: unknown; raw: string }) => Promise<unknown>
+  sessions?: Record<string, { db: unknown } | undefined>
+}
+
+// Opens a transaction holding the list's lock and returns its id, or null if
+// the lock could not be taken.
+async function takeListLock(db: TransactionalDb, listId: number): Promise<string | number | null> {
+  let transactionID: string | number | null = null
+  try {
+    transactionID = await db.beginTransaction()
+    const session = transactionID === null ? undefined : db.sessions?.[transactionID]
+    if (!session || !db.execute) throw new Error('database adapter has no transaction session to lock in')
+    await db.execute({ db: session.db, raw: `SELECT pg_advisory_xact_lock(${FAVORITES_LOCK_NAMESPACE}, ${Math.trunc(listId)})` })
+    return transactionID
+  } catch (err) {
+    console.error(`[favorites] could not lock list ${listId}, saving without the lock:`, err)
+    if (transactionID !== null) await db.rollbackTransaction(transactionID).catch(() => {})
+    return null
+  }
+}
+
+export async function withListLock<T>(payload: Payload, listId: number, fn: (req: LockReq) => Promise<T>): Promise<T> {
+  const db = payload.db as unknown as TransactionalDb
+  const transactionID = await takeListLock(db, listId)
+  // Saving the heart matters more than the lock: without it the only risk is
+  // the rare two-devices-at-once overlap. takeListLock has logged why.
+  if (transactionID === null) return fn({})
+
+  try {
+    const result = await fn({ transactionID })
+    await db.commitTransaction(transactionID)
+    return result
+  } catch (err) {
+    await db.rollbackTransaction(transactionID).catch(() => {})
+    throw err
+  }
+}

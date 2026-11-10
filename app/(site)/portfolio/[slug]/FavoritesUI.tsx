@@ -22,10 +22,14 @@ export function FavoriteHeart({ favorites, photoId, position, variant = 'tile' }
       type="button"
       className={`${styles.heart} ${variant === 'lightbox' ? styles.heartLightbox : styles.heartTile}${on ? ` ${styles.heartOn}` : ''}`}
       aria-pressed={on}
-      aria-label={on ? `Remove photo ${position} from favorites` : `Add photo ${position} to favorites`}
+      aria-label={on
+        ? `Remove photo ${position} from favorites`
+        : `Add photo ${position} to favorites${blocked ? ` (limit of ${favorites.limit} reached)` : ''}`}
       title={blocked ? `You've chosen your ${favorites.limit} favorites. Remove one to add another.` : undefined}
-      disabled={blocked}
-      onClick={e => { e.stopPropagation(); favorites.toggle(photoId) }}
+      // aria-disabled, not disabled: a disabled button cannot be focused, so
+      // keyboard and screen reader users would never learn why it is off.
+      aria-disabled={blocked || undefined}
+      onClick={e => { e.stopPropagation(); if (!blocked) favorites.toggle(photoId) }}
     >
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" />

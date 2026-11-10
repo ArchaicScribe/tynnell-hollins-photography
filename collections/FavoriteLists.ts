@@ -24,6 +24,10 @@ export const FavoriteLists: CollectionConfig = {
     update: signedIn,
     delete: signedIn,
   },
+  // One list per client per gallery. Declared here as well as in
+  // migrate-db.mjs so that `next dev`, which syncs the database to this
+  // config, keeps the index instead of dropping it.
+  indexes: [{ fields: ['gallery', 'clientEmail'], unique: true }],
   fields: [
     { name: 'gallery', type: 'relationship', relationTo: 'galleries', required: true, index: true },
     { name: 'clientName', type: 'text' },

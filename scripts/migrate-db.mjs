@@ -1049,9 +1049,15 @@ async function run() {
     // the favorite_lists table: one row per client per gallery, holding the
     // photo ids they hearted and what was last sent to Tynnell.
     //
-    // gallery_id cascades on delete: Payload's own default for a required
-    // relationship is SET NULL, which would make deleting a gallery fail on
-    // the NOT NULL column instead of taking its lists with it.
+    // Every name and rule below is the one Payload's own schema generates
+    // for collections/FavoriteLists.ts, because `next dev` syncs the database
+    // to that schema: anything named differently here would be dropped or
+    // duplicated the next time dev runs (scripts/migrate-db.test.ts checks
+    // the two that matter).
+    //
+    // That includes the gallery foreign key's ON DELETE SET NULL, which on a
+    // NOT NULL column means "refuse". A gallery's lists are deleted by the
+    // beforeDelete hook in collections/Galleries.ts instead.
     //
     // The unique index is what makes "one list per email per gallery" hold
     // when two tabs start a list at the same moment (see
@@ -1078,13 +1084,21 @@ async function run() {
         "created_at"     timestamp(3) with time zone DEFAULT now() NOT NULL
       )
     `)
+    // The first build of this migration created the key and the unique index
+    // under other names; remove those so each exists once.
+    await client.query(`
+      ALTER TABLE "favorite_lists" DROP CONSTRAINT IF EXISTS "favorite_lists_gallery_id_fk"
+    `)
+    await client.query(`
+      DROP INDEX IF EXISTS "favorite_lists_gallery_client_email_idx"
+    `)
     await client.query(`
       DO $$ BEGIN
         ALTER TABLE "favorite_lists"
-          ADD CONSTRAINT "favorite_lists_gallery_id_fk"
+          ADD CONSTRAINT "favorite_lists_gallery_id_galleries_id_fk"
           FOREIGN KEY ("gallery_id")
           REFERENCES "galleries"("id")
-          ON DELETE CASCADE ON UPDATE NO ACTION;
+          ON DELETE SET NULL ON UPDATE NO ACTION;
       EXCEPTION WHEN duplicate_object THEN NULL;
       END $$
     `)
@@ -1095,7 +1109,7 @@ async function run() {
       CREATE INDEX IF NOT EXISTS "favorite_lists_client_email_idx" ON "favorite_lists" USING btree ("client_email")
     `)
     await client.query(`
-      CREATE UNIQUE INDEX IF NOT EXISTS "favorite_lists_gallery_client_email_idx"
+      CREATE UNIQUE INDEX IF NOT EXISTS "gallery_clientEmail_idx"
         ON "favorite_lists" USING btree ("gallery_id", "client_email")
     `)
     await client.query(`

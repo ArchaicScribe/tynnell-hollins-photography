@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GalleryViewer, type LightboxPhoto } from './GalleryViewer'
 
@@ -19,7 +19,7 @@ const photos: LightboxPhoto[] = [1, 2, 3].map(id => ({
 // ---------------------------------------------------------------------------
 
 type ServerList = { name: string; email: string; photoIds: number[]; sentAt: string | null; unsentChanges: boolean }
-let server: { list: ServerList | null; limit: number | null; failToggle: boolean }
+let server: { list: ServerList | null; limit: number | null; failToggle: boolean; gone: boolean }
 let calls: { method: string; path: string; body?: Record<string, unknown> }[]
 
 function json(body: unknown, status = 200) {
@@ -43,6 +43,7 @@ const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     return json(state())
   }
   if (url.pathname === '/api/favorites/toggle') {
+    if (server.gone) return json({ error: 'Enter your name and email to start choosing favorites' }, 401)
     if (server.failToggle) return json({ error: 'Something went wrong. Please try again.' }, 500)
     const list = server.list!
     list.photoIds = body.favorited
@@ -62,7 +63,7 @@ const jane = (photoIds: number[] = []): ServerList =>
   ({ name: 'Jane Smith', email: 'jane@example.com', photoIds, sentAt: null, unsentChanges: photoIds.length > 0 })
 
 beforeEach(() => {
-  server = { list: null, limit: null, failToggle: false }
+  server = { list: null, limit: null, failToggle: false, gone: false }
   calls = []
   fetchMock.mockClear()
   vi.stubGlobal('fetch', fetchMock)
@@ -187,12 +188,68 @@ describe('gallery with favorites', () => {
     await waitFor(() => expect(heart(1)).toHaveAttribute('aria-pressed', 'true'))
 
     expect(screen.getByText(/2 of 2 favorites/i)).toBeInTheDocument()
-    expect(heart(3)).toBeDisabled()
+    // Marked unavailable, but still focusable and with the reason in its
+    // name, so keyboard and screen reader users are told why too.
+    expect(heart(3)).toHaveAttribute('aria-disabled', 'true')
+    expect(heart(3)).not.toBeDisabled()
+    expect(heart(3)).toHaveAccessibleName(/limit of 2 reached/i)
     expect(heart(3)).toHaveAttribute('title', expect.stringMatching(/2 favorites/))
+    await user.click(heart(3))
+    expect(calls.some(c => c.path === '/api/favorites/toggle')).toBe(false)
+    expect(heart(3)).toHaveAttribute('aria-pressed', 'false')
+
     // Hearts already chosen stay usable, so the client can swap one out.
-    expect(heart(1)).toBeEnabled()
+    expect(heart(1)).not.toHaveAttribute('aria-disabled')
     await user.click(heart(1))
-    await waitFor(() => expect(heart(3)).toBeEnabled())
+    await waitFor(() => expect(heart(3)).not.toHaveAttribute('aria-disabled'))
+  })
+
+  it('asks who is choosing again when the list is gone, instead of failing every heart', async () => {
+    const user = userEvent.setup()
+    server.list = jane([1])
+    renderGallery()
+    await waitFor(() => expect(heart(1)).toHaveAttribute('aria-pressed', 'true'))
+
+    // Tynnell deleted the list while this page was open.
+    server.gone = true
+    await user.click(heart(2))
+
+    expect(await screen.findByRole('dialog', { name: /choose your favorites/i })).toBeInTheDocument()
+    expect(heart(1)).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByText(/choosing as/i)).toBeNull()
+  })
+
+  it('goes back to all photos when the person leaves while only favorites are shown', async () => {
+    const user = userEvent.setup()
+    server.list = jane([1, 3])
+    renderGallery()
+    await waitFor(() => expect(heart(1)).toHaveAttribute('aria-pressed', 'true'))
+
+    await user.click(screen.getByRole('button', { name: /show favorites/i }))
+    await user.click(screen.getByRole('button', { name: /not you/i }))
+
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /^open photo/i })).toHaveLength(3))
+    expect(screen.queryByText(/no favorites yet/i)).toBeNull()
+  })
+
+  it('keeps the photo on screen when there is no other photo to move to', async () => {
+    const user = userEvent.setup()
+    server.list = jane([2])
+    renderGallery()
+    await waitFor(() => expect(heart(2)).toHaveAttribute('aria-pressed', 'true'))
+
+    await user.click(screen.getByRole('button', { name: /show favorites/i }))
+    await user.click(screen.getByRole('button', { name: /open photo 2/i }))
+    const image = within(screen.getByRole('dialog', { name: /photo 1 of 1/i })).getByRole('img')
+    fireEvent.load(image)
+    // next/image reports the load a moment later, once the image has decoded.
+    await waitFor(() => expect(image).toHaveStyle({ opacity: '1' }))
+
+    // With one photo showing, the arrow keys have nowhere to go. The image
+    // must not go back to "loading": it would never load again.
+    await user.keyboard('{ArrowRight}')
+    await user.keyboard('{ArrowLeft}')
+    expect(image).toHaveStyle({ opacity: '1' })
   })
 
   it('can show only the favorites, and all photos again', async () => {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { setFavorite } from '@/app/lib/favorites'
-import { currentList, favoritesBody, noList, openFavoritesGallery } from '@/app/lib/favoritesRequest'
+import { currentList, favoritesBody, noList, openFavoritesGallery, withListLock } from '@/app/lib/favoritesRequest'
 
 // POST /api/favorites/toggle { gallery, photoId, favorited }: heart or
 // un-heart one photo (TYN-13). `favorited` is the wanted end state, so a
@@ -19,22 +19,28 @@ export async function POST(req: NextRequest) {
 
   const ctx = await openFavoritesGallery(body.gallery)
   if (ctx instanceof NextResponse) return ctx
-  const list = await currentList(ctx)
-  if (!list) return noList()
+  const cookieList = await currentList(ctx)
+  if (!cookieList) return noList()
 
   const limit = ctx.gallery.favoritesLimit || null
-  const result = setFavorite(list.photoIds, photoId, favorited, { galleryPhotoIds: ctx.galleryPhotoIds, limit })
-  if (!result.ok) {
-    return result.reason === 'limit_reached'
-      ? NextResponse.json({ error: `You can choose up to ${limit} favorites. Remove one to add another.` }, { status: 409 })
-      : NextResponse.json({ error: 'That photo is not in this gallery' }, { status: 400 })
-  }
+  // The list is read again inside the lock: the copy above may already be
+  // out of date if another device on the same list is hearting right now.
+  return withListLock(ctx.payload, cookieList.id, async req => {
+    const list = await ctx.payload.findByID({ collection: 'favorite-lists', id: cookieList.id, depth: 0, req })
+    const result = setFavorite(list.photoIds, photoId, favorited, { galleryPhotoIds: ctx.galleryPhotoIds, limit })
+    if (!result.ok) {
+      return result.reason === 'limit_reached'
+        ? NextResponse.json({ error: `You can choose up to ${limit} favorites. Remove one to add another.` }, { status: 409 })
+        : NextResponse.json({ error: 'That photo is not in this gallery' }, { status: 400 })
+    }
 
-  const updated = await ctx.payload.update({
-    collection: 'favorite-lists',
-    id: list.id,
-    data: { photoIds: result.photoIds },
-    depth: 0,
+    const updated = await ctx.payload.update({
+      collection: 'favorite-lists',
+      id: list.id,
+      data: { photoIds: result.photoIds },
+      depth: 0,
+      req,
+    })
+    return NextResponse.json(favoritesBody(ctx, updated))
   })
-  return NextResponse.json(favoritesBody(ctx, updated))
 }
