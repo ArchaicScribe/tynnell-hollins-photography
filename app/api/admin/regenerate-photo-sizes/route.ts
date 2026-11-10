@@ -6,6 +6,8 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { applyWatermarkIfEnabled } from '@/app/lib/watermark'
 import { applySharpeningIfEnabled } from '@/app/lib/sharpening'
 import type { Photo } from '@/payload-types'
+import { r2OriginalsStore } from '@/app/lib/privateOriginals'
+import { streamToBuffer } from '@/app/lib/r2Stream'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -62,7 +64,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Photo not found or has no url' }, { status: 404 })
     }
 
-    const buffer = await fetchBuffer(photo.url)
+    // TYN-11: saving with a file runs it through the private-original hooks
+    // as a new upload, which replaces the private original. So the source
+    // must be that private original whenever one exists: rebuilding from the
+    // public display copy would discard the full-resolution file. A photo
+    // not moved yet still has its full-resolution file public, so rebuilding
+    // it is also what moves it into the private bucket.
+    const buffer = photo.originalKey
+      ? await streamToBuffer((await r2OriginalsStore().get(photo.originalKey)).body as unknown as AsyncIterable<Uint8Array>)
+      : await fetchBuffer(photo.url)
     const updated = (await payload.update({
       collection: 'photos',
       id,
@@ -86,7 +96,7 @@ export async function POST(request: Request) {
       console.warn(`[regenerate-photo-sizes] sharpening failed for ${id} (non-fatal):`, err)
     }
     try {
-      await applyWatermarkIfEnabled({ s3, bucket, sizes: updated.sizes })
+      await applyWatermarkIfEnabled({ s3, bucket, sizes: updated.sizes, main: { filename: updated.filename, mimeType: updated.mimeType } })
     } catch (err) {
       console.warn(`[regenerate-photo-sizes] watermark failed for ${id} (non-fatal):`, err)
     }

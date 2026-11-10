@@ -156,11 +156,13 @@ export async function POST(request: Request) {
         console.warn(`[photos/ingest] sharpening step failed for ${filename} (non-fatal):`, err)
       }
 
-      // Watermark the preview sizes if enabled (TYN-322) - best-effort,
-      // never fails the upload. The full original stays untouched.
+      // Watermark the preview sizes and the public display copy if enabled
+      // (TYN-322, TYN-11) - best-effort, never fails the upload. The
+      // full-resolution original is in the private bucket and stays untouched.
       try {
         const watermarkStart = Date.now()
-        await applyWatermarkIfEnabled({ s3, bucket, sizes: (doc as Photo).sizes })
+        const photo = doc as Photo
+        await applyWatermarkIfEnabled({ s3, bucket, sizes: photo.sizes, main: { filename: photo.filename, mimeType: photo.mimeType } })
         console.log(`[photos/ingest] watermark step for ${filename} took ${Date.now() - watermarkStart}ms`)
       } catch (err) {
         console.warn(`[photos/ingest] watermark step failed for ${filename} (non-fatal):`, err)

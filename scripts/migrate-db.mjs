@@ -1042,6 +1042,18 @@ async function run() {
       ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "freebie_url" varchar
     `)
     console.log('✓ site_config freebie columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20261110_120000: photos.original_key (TYN-11). Where each
+    // photo's full-resolution original sits in the private
+    // R2_ORIGINALS_BUCKET. Null for photos uploaded before it existed, until
+    // the backfill route moves them.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "original_key" varchar
+    `)
+    console.log('✓ photos.original_key column ready')
   } finally {
     client.release()
     await pool.end()
