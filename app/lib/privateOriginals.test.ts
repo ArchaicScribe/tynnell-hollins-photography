@@ -76,14 +76,42 @@ describe('keepPrivateOriginal', () => {
     expect(file.mimetype).toBe('image/jpeg')
   })
 
-  it('leaves a photo that already fits within 2560px exactly as uploaded', async () => {
+  // A small photo keeps its size, but its camera metadata (location
+  // included) belongs only to the private original.
+  it('publishes a photo that already fits within 2560px upright and without its metadata', async () => {
     const { store, objects } = memoryStore()
-    const upload = await jpeg(2000, 1500)
+    const data = await sharp({ create: { width: 2000, height: 1500, channels: 3, background: { r: 1, g: 2, b: 3 } } })
+      .withMetadata({ orientation: 6 })
+      .jpeg()
+      .toBuffer()
+    expect((await sharp(data).metadata()).exif).toBeDefined()
 
-    const { file, originalKey } = await keepPrivateOriginal(upload, store)
+    const { file, originalKey } = await keepPrivateOriginal({ data, mimetype: 'image/jpeg', name: 'small.jpg', size: data.length }, store)
 
-    expect(file.data.equals(upload.data)).toBe(true)
-    expect(objects.has(originalKey)).toBe(true)
+    expect(await dims(file)).toEqual([1500, 2000])
+    expect((await sharp(file.data).metadata()).exif).toBeUndefined()
+    expect(objects.get(originalKey)?.body.equals(data)).toBe(true)
+  })
+
+  // Re-encoding would flatten an animated GIF to its first frame.
+  it('publishes a GIF as uploaded', async () => {
+    const { store } = memoryStore()
+    const data = await sharp({ create: { width: 3000, height: 3000, channels: 3, background: { r: 1, g: 2, b: 3 } } }).gif().toBuffer()
+
+    const { file } = await keepPrivateOriginal({ data, mimetype: 'image/gif', name: 'loop.gif', size: data.length }, store)
+
+    expect(file.data.equals(data)).toBe(true)
+  })
+
+  // The name comes from the uploader's computer; the key should not carry
+  // folders or characters that need escaping.
+  it('files an original under a key with a cleaned-up filename', async () => {
+    const { store } = memoryStore()
+    const upload = { ...(await jpeg(100, 100)), name: 'wedding/first dance #1.jpg' }
+
+    const { originalKey } = await keepPrivateOriginal(upload, store)
+
+    expect(originalKey).toMatch(/^[0-9a-f-]{36}\/first-dance-1\.jpg$/)
   })
 
   it('files each original under its own unguessable key that keeps the filename', async () => {

@@ -24,9 +24,15 @@ export const DISPLAY_MAX_EDGE = 2560
 // Anything else (an animated GIF, say) is published as uploaded.
 const SHRINKABLE = new Set(['jpeg', 'png', 'webp'])
 
-async function displayCopy(file: UploadedFile): Promise<UploadedFile> {
-  const { width = 0, height = 0, format } = await sharp(file.data).metadata()
-  if (!format || !SHRINKABLE.has(format) || Math.max(width, height) <= DISPLAY_MAX_EDGE) return file
+/**
+ * The copy Payload publishes: at most 2560px on the long edge, and always
+ * re-encoded, which drops the camera metadata (location included) that only
+ * the private original should carry. withoutEnlargement leaves a smaller
+ * photo at its own size.
+ */
+export async function displayCopy(file: UploadedFile): Promise<UploadedFile> {
+  const { format } = await sharp(file.data).metadata()
+  if (!format || !SHRINKABLE.has(format)) return file
 
   // rotate() applies the EXIF orientation first, so a phone photo is not
   // turned sideways once its metadata is dropped.
@@ -38,11 +44,18 @@ async function displayCopy(file: UploadedFile): Promise<UploadedFile> {
   return { ...file, data, size: data.length }
 }
 
+// The name comes from the uploader's computer: keep the last path segment
+// and only characters that need no escaping in a key.
+function safeName(name: string): string {
+  const base = name.split(/[\\/]/).pop() ?? ''
+  return base.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/-+/g, '-').replace(/^-|-(?=\.[^.]*$)/g, '') || 'photo'
+}
+
 export async function keepPrivateOriginal(
   file: UploadedFile,
   store: OriginalsStore,
 ): Promise<{ file: UploadedFile; originalKey: string }> {
-  const originalKey = `${randomUUID()}/${file.name}`
+  const originalKey = `${randomUUID()}/${safeName(file.name)}`
   try {
     await store.put(originalKey, file.data, file.mimetype)
   } catch (err) {

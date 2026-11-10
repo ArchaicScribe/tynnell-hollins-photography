@@ -41,11 +41,15 @@ export const Photos: CollectionConfig = {
     singular: 'Photo',
     plural: 'Photos',
   },
+  // TYN-11: a duplicate would copy originalKey and share the private
+  // original with the photo it came from.
+  disableDuplicate: true,
   hooks: {
     beforeOperation: [photoOriginals.beforeOperation],
     beforeValidate: [autoPopulateFromFilename],
     beforeChange: [photoOriginals.beforeChange],
-    afterChange: [photoOriginals.afterChange, revalidatePhoto],
+    afterChange: [revalidatePhoto],
+    afterOperation: [photoOriginals.afterOperation],
     afterDelete: [photoOriginals.afterDelete],
   },
   upload: {
@@ -83,7 +87,9 @@ export const Photos: CollectionConfig = {
         formatOptions: { format: 'jpeg', options: { quality: 88 } },
       },
     ],
-    mimeTypes: ['image/*'],
+    // TYN-11: the formats the upload route accepts. Anything else (TIFF, say)
+    // gets no display copy and would be published at full resolution.
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
   },
   admin: {
     group: 'My Portfolio',

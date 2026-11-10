@@ -94,100 +94,104 @@ export async function POST(request: Request) {
     const s3 = buildS3Client()
     const bucket = process.env.R2_BUCKET ?? 'tynnell-hollins-photos'
 
-    // Download the temp file from R2 into memory.
-    // This is internal function memory - NOT subject to Vercel's 4.5 MB request body limit.
-    let fileBuffer: Buffer
+    // The temp object is the full-resolution file sitting in the public
+    // bucket, so it goes whether or not the photo was saved (TYN-11).
     try {
-      const downloadStart = Date.now()
-      const { Body } = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }))
-      if (!Body) {
-        console.error(`[photos/ingest] R2 returned empty body for key: ${key}`)
-        return NextResponse.json({ error: 'Temp file not found in R2' }, { status: 404 })
-      }
-      fileBuffer = await streamToBuffer(Body as AsyncIterable<Uint8Array>)
-      console.log(`[photos/ingest] downloaded ${filename}: ${fileBuffer.length} bytes in ${Date.now() - downloadStart}ms`)
-    } catch (err) {
-      console.error('[photos/ingest] failed to download temp file from R2:', err)
-      return NextResponse.json({ error: 'Failed to retrieve uploaded file' }, { status: 500 })
-    }
-
-    // Sanity check: reject files over 200 MB (protects against memory exhaustion)
-    const MAX_BYTES = 200 * 1024 * 1024
-    if (fileBuffer.length > MAX_BYTES) {
-      console.warn(`[photos/ingest] file too large: ${fileBuffer.length} bytes (${filename})`)
-      return NextResponse.json(
-        { error: `File is too large (${Math.round(fileBuffer.length / 1024 / 1024)} MB). Maximum size is 200 MB.` },
-        { status: 413 }
-      )
-    }
-
-    // Hand the buffer to Payload, which handles sharp resizing and R2 storage
-    let doc: unknown
-    try {
-      const data: Record<string, unknown> = {}
-      if (category) data.category = category
-
-      console.log(`[photos/ingest] calling payload.create for ${filename}...`)
-      const createStart = Date.now()
-
-      doc = await payload.create({
-        collection: 'photos',
-        data,
-        file: {
-          data: fileBuffer,
-          mimetype,
-          name: filename,
-          size: fileBuffer.length,
-        },
-        overrideAccess: false,
-        user,
-      })
-
-      console.log(`[photos/ingest] payload.create done for ${filename} in ${Date.now() - createStart}ms (total: ${Date.now() - requestStart}ms)`)
-
-      // Sharpen the preview sizes if enabled (TYN-325), before watermarking so
-      // the watermark itself is never re-sharpened. Both are best-effort and
-      // never fail the upload. The full original stays untouched.
+      // Download the temp file from R2 into memory.
+      // This is internal function memory - NOT subject to Vercel's 4.5 MB request body limit.
+      let fileBuffer: Buffer
       try {
-        const sharpenStart = Date.now()
-        await applySharpeningIfEnabled({ s3, bucket, sizes: (doc as Photo).sizes })
-        console.log(`[photos/ingest] sharpening step for ${filename} took ${Date.now() - sharpenStart}ms`)
+        const downloadStart = Date.now()
+        const { Body } = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }))
+        if (!Body) {
+          console.error(`[photos/ingest] R2 returned empty body for key: ${key}`)
+          return NextResponse.json({ error: 'Temp file not found in R2' }, { status: 404 })
+        }
+        fileBuffer = await streamToBuffer(Body as AsyncIterable<Uint8Array>)
+        console.log(`[photos/ingest] downloaded ${filename}: ${fileBuffer.length} bytes in ${Date.now() - downloadStart}ms`)
       } catch (err) {
-        console.warn(`[photos/ingest] sharpening step failed for ${filename} (non-fatal):`, err)
+        console.error('[photos/ingest] failed to download temp file from R2:', err)
+        return NextResponse.json({ error: 'Failed to retrieve uploaded file' }, { status: 500 })
       }
 
-      // Watermark the preview sizes and the public display copy if enabled
-      // (TYN-322, TYN-11) - best-effort, never fails the upload. The
-      // full-resolution original is in the private bucket and stays untouched.
-      try {
-        const watermarkStart = Date.now()
-        const photo = doc as Photo
-        await applyWatermarkIfEnabled({ s3, bucket, sizes: photo.sizes, main: { filename: photo.filename, mimeType: photo.mimeType } })
-        console.log(`[photos/ingest] watermark step for ${filename} took ${Date.now() - watermarkStart}ms`)
-      } catch (err) {
-        console.warn(`[photos/ingest] watermark step failed for ${filename} (non-fatal):`, err)
-      }
-    } catch (err) {
-      console.error(`[photos/ingest] payload.create failed for ${filename}:`, err)
-      // Distinguish sharp format errors from other failures so we can surface them clearly
-      const message = err instanceof Error ? err.message : String(err)
-      if (message.includes('unsupported image format') || message.includes('Input file is missing') || message.includes('heic') || message.includes('heif')) {
+      // Sanity check: reject files over 200 MB (protects against memory exhaustion)
+      const MAX_BYTES = 200 * 1024 * 1024
+      if (fileBuffer.length > MAX_BYTES) {
+        console.warn(`[photos/ingest] file too large: ${fileBuffer.length} bytes (${filename})`)
         return NextResponse.json(
-          { error: `${filename} could not be processed. Please convert to JPEG or PNG and try again.` },
-          { status: 415 }
+          { error: `File is too large (${Math.round(fileBuffer.length / 1024 / 1024)} MB). Maximum size is 200 MB.` },
+          { status: 413 }
         )
       }
-      return NextResponse.json({ error: 'Failed to create photo record' }, { status: 500 })
-    }
 
-    // Clean up the temp R2 object - non-fatal; orphans are just wasted storage
-    try {
-      await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
-    } catch (err) {
-      console.warn('[photos/ingest] temp file cleanup failed (non-fatal):', err)
-    }
+      // Hand the buffer to Payload, which handles sharp resizing and R2 storage
+      let doc: unknown
+      try {
+        const data: Record<string, unknown> = {}
+        if (category) data.category = category
 
-    return NextResponse.json(doc)
+        console.log(`[photos/ingest] calling payload.create for ${filename}...`)
+        const createStart = Date.now()
+
+        doc = await payload.create({
+          collection: 'photos',
+          data,
+          file: {
+            data: fileBuffer,
+            mimetype,
+            name: filename,
+            size: fileBuffer.length,
+          },
+          overrideAccess: false,
+          user,
+        })
+
+        console.log(`[photos/ingest] payload.create done for ${filename} in ${Date.now() - createStart}ms (total: ${Date.now() - requestStart}ms)`)
+
+        // Sharpen the preview sizes if enabled (TYN-325), before watermarking so
+        // the watermark itself is never re-sharpened. Both are best-effort and
+        // never fail the upload. The full original stays untouched.
+        try {
+          const sharpenStart = Date.now()
+          await applySharpeningIfEnabled({ s3, bucket, sizes: (doc as Photo).sizes })
+          console.log(`[photos/ingest] sharpening step for ${filename} took ${Date.now() - sharpenStart}ms`)
+        } catch (err) {
+          console.warn(`[photos/ingest] sharpening step failed for ${filename} (non-fatal):`, err)
+        }
+
+        // Watermark the preview sizes and the public display copy if enabled
+        // (TYN-322, TYN-11) - best-effort, never fails the upload. The
+        // full-resolution original is in the private bucket and stays untouched.
+        try {
+          const watermarkStart = Date.now()
+          const photo = doc as Photo
+          await applyWatermarkIfEnabled({ s3, bucket, sizes: photo.sizes, main: { filename: photo.filename, mimeType: photo.mimeType } })
+          console.log(`[photos/ingest] watermark step for ${filename} took ${Date.now() - watermarkStart}ms`)
+        } catch (err) {
+          console.warn(`[photos/ingest] watermark step failed for ${filename} (non-fatal):`, err)
+        }
+      } catch (err) {
+        console.error(`[photos/ingest] payload.create failed for ${filename}:`, err)
+        // Distinguish sharp format errors from other failures so we can surface them clearly
+        const message = err instanceof Error ? err.message : String(err)
+        if (message.includes('unsupported image format') || message.includes('Input file is missing') || message.includes('heic') || message.includes('heif')) {
+          return NextResponse.json(
+            { error: `${filename} could not be processed. Please convert to JPEG or PNG and try again.` },
+            { status: 415 }
+          )
+        }
+        return NextResponse.json({ error: 'Failed to create photo record' }, { status: 500 })
+      }
+
+      return NextResponse.json(doc)
+    } finally {
+      // Non-fatal: a leftover is reachable only by its unguessable key.
+      try {
+        await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+      } catch (err) {
+        console.warn('[photos/ingest] temp file cleanup failed (non-fatal):', err)
+      }
+    }
   } catch (err) {
     // Catch-all: log the full error so it appears in Vercel runtime logs
     console.error('[photos/ingest] unhandled error:', err)

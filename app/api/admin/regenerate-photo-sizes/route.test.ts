@@ -33,7 +33,7 @@ const PHOTO = { id: 5, filename: 'first-dance.jpg', mimeType: 'image/jpeg', url:
 beforeEach(() => {
   authMock.mockReset().mockResolvedValue({ user: { id: 1 } })
   findByIDMock.mockReset()
-  updateMock.mockReset().mockResolvedValue({ ...PHOTO, filename: 'first-dance-1.jpg', mimeType: 'image/jpeg', sizes: {} })
+  updateMock.mockReset().mockResolvedValue({ ...PHOTO, sizes: {} })
   privateGetMock.mockReset()
   watermarkMock.mockReset()
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('public-display-copy')))
@@ -87,6 +87,35 @@ describe('regenerate photo sizes', () => {
 
     await regenerate()
 
-    expect(watermarkMock.mock.calls[0][0].main).toEqual({ filename: 'first-dance-1.jpg', mimeType: 'image/jpeg' })
+    expect(watermarkMock.mock.calls[0][0].main).toEqual({ filename: 'first-dance.jpg', mimeType: 'image/jpeg' })
+  })
+
+  // Builder pages and blog posts store photo URLs as plain strings. Renaming
+  // the files (first-dance.jpg to first-dance-1.jpg) would break every one.
+  it('keeps the same public filenames', async () => {
+    findByIDMock.mockResolvedValue(PHOTO)
+
+    await regenerate()
+
+    expect(updateMock.mock.calls[0][0].overwriteExistingFiles).toBe(true)
+  })
+
+  // The private original is already where it belongs; storing it again
+  // would only re-upload it under a new key.
+  it('keeps the existing private original rather than storing it again', async () => {
+    findByIDMock.mockResolvedValue({ ...PHOTO, originalKey: 'abc/first-dance.jpg' })
+    privateGetMock.mockResolvedValue({ body: new Response('full-res-master').body, contentType: 'image/jpeg' })
+
+    await regenerate()
+
+    expect(updateMock.mock.calls[0][0].context).toEqual({ reuseOriginalKey: 'abc/first-dance.jpg' })
+  })
+
+  it('stores a not-yet-moved photo as a new private original', async () => {
+    findByIDMock.mockResolvedValue(PHOTO)
+
+    await regenerate()
+
+    expect(updateMock.mock.calls[0][0].context?.reuseOriginalKey).toBeUndefined()
   })
 })

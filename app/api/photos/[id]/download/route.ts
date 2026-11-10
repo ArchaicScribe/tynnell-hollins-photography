@@ -86,6 +86,11 @@ export async function GET(req: NextRequest, { params }: Props) {
   // full-resolution original, kept in the private bucket. Photos uploaded
   // before that existed have no originalKey until the backfill moves them,
   // and are still served from their public file.
+  //
+  // originalKey is only readable by signed-in users, and this route serves
+  // gallery clients. It sees the key because the local API skips field
+  // access by default: pass overrideAccess: false to that lookup and every
+  // photo would quietly fall through to its public display copy below.
   let body: ReadableStream<Uint8Array> | null
   let contentType: string
   if (photo.originalKey) {

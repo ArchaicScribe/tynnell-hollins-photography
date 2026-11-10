@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 // TYN-11: a new upload's public file is a display-size copy (the
 // full-resolution original goes to the private bucket in the Photos hooks),
@@ -44,5 +44,23 @@ describe('photo ingest', () => {
       sizes: { card: { filename: 'first-dance-1200x900.jpg' } },
       main: { filename: 'first-dance.jpg', mimeType: 'image/jpeg' },
     })
+  })
+
+  // The temporary upload is the full-resolution file sitting in the public
+  // bucket. A failed save (say, the private bucket is unreachable) must not
+  // leave it there.
+  it('removes the temporary full-resolution upload when the save fails', async () => {
+    createMock.mockRejectedValue(new Error('Could not store the full-resolution original'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const send = vi.mocked(S3Client.prototype.send)
+
+    const res = await POST(new Request('https://tynnellhollinsphotography.com/api/photos/ingest', {
+      method: 'POST',
+      body: JSON.stringify({ key: 'temp/abc.jpg', filename: 'first-dance.jpg' }),
+    }))
+
+    expect(res.status).toBe(500)
+    const deleted = send.mock.calls.map(([c]) => c).find((c) => c instanceof DeleteObjectCommand)
+    expect(deleted?.input).toMatchObject({ Key: 'temp/abc.jpg' })
   })
 })
