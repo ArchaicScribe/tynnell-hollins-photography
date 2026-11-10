@@ -299,6 +299,23 @@ export const Galleries: CollectionConfig = {
       admin: { hidden: true },
     },
     {
+      // Client favorites (TYN-13). Off by default so portfolio albums never
+      // show hearts; turned on per client gallery in the gallery editor.
+      name: 'favoritesEnabled',
+      type: 'checkbox',
+      label: 'Client Favorites',
+      defaultValue: false,
+      admin: { hidden: true },
+    },
+    {
+      // Empty or 0 means no limit.
+      name: 'favoritesLimit',
+      type: 'number',
+      label: 'Favorites Limit',
+      min: 0,
+      admin: { hidden: true },
+    },
+    {
       // Search engine visibility (TYN-325) - independent of `status`. A
       // published gallery can still be excluded from search-engine indexing;
       // it stays reachable via direct link, it just won't appear in results.
