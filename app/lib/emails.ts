@@ -380,3 +380,52 @@ export function freebieEmailHtml(f: FreebieEmailFields): string {
     ${signature()}
   `)
 }
+
+// ---------------------------------------------------------------------------
+// Client favorites (TYN-13): sent to Tynnell when a client presses "Send to
+// Tynnell" in their gallery. Every string must already be escaped. `added`
+// and `removed` are only passed on a repeat send, and say what changed since
+// the last one.
+// ---------------------------------------------------------------------------
+
+export interface FavoritesEmailPhoto {
+  filename: string
+  thumbUrl: string | null
+}
+
+export interface FavoritesEmailFields {
+  galleryTitle: string
+  clientName: string
+  clientEmail: string
+  photos: FavoritesEmailPhoto[]
+  added?: string[]
+  removed?: string[]
+  editorUrl: string
+}
+
+export function favoritesEmailHtml(f: FavoritesEmailFields): string {
+  const isUpdate = f.added !== undefined || f.removed !== undefined
+  const count = `${f.photos.length} ${f.photos.length === 1 ? 'photo' : 'photos'}`
+  const thumbs = f.photos
+    .map(p => `
+      <div style="display:inline-block;vertical-align:top;width:132px;margin:0 8px 12px 0;">
+        ${p.thumbUrl ? `<img src="${p.thumbUrl}" alt="" width="132" style="display:block;width:132px;height:auto;border:1px solid #ddd;" />` : ''}
+        <p style="margin:4px 0 0;font-size:11px;color:#666;word-break:break-all;">${p.filename}</p>
+      </div>`)
+    .join('')
+  const changeList = (label: string, names: string[] | undefined) =>
+    names?.length
+      ? `<p style="margin:0 0 8px;font-size:13px;color:#444;"><strong>${label}:</strong> ${names.join(', ')}</p>`
+      : ''
+  return internalWrapper(`
+    <h2 style="margin:0 0 16px;font-size:20px;">${isUpdate ? 'Updated favorites' : 'New favorites'}: ${f.galleryTitle}</h2>
+    <p style="margin:0 0 16px;font-size:14px;color:#444;">${f.clientName} (<a href="mailto:${f.clientEmail}" style="color:#333;">${f.clientEmail}</a>) chose ${count}.</p>
+    ${changeList('Added since last time', f.added)}
+    ${changeList('Removed since last time', f.removed)}
+    <div style="margin:16px 0;">${thumbs}</div>
+    <h3 style="margin:20px 0 8px;font-size:15px;">File names</h3>
+    <p style="margin:0;background:#f9f9f9;padding:16px;border-left:3px solid #ddd;font-size:13px;line-height:1.7;color:#444;">${f.photos.map(p => p.filename).join(', ')}</p>
+    <p style="margin:20px 0 0;font-size:14px;"><a href="${f.editorUrl}" style="color:#333;">Open this list in the gallery editor</a></p>
+    <p style="margin:12px 0 0;font-size:13px;color:#888;">Reply directly to this email to respond to ${f.clientName}.</p>
+  `)
+}

@@ -24,10 +24,13 @@ export type GalleryListItem = {
   photoCount: number
 }
 
-type Props = { params: Promise<{ id: string }> }
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ favorites?: string }> }
 
-export default async function GalleryEditorPage({ params }: Props) {
+export default async function GalleryEditorPage({ params, searchParams }: Props) {
   const { id } = await params
+  // ?favorites=<list id> is the link in the email Tynnell gets when a client
+  // sends their favorites (TYN-13): open that list straight away.
+  const favoritesListId = Number((await searchParams).favorites)
   const payload = await getPayload({ config: payloadConfig })
   const { user } = await payload.auth({ headers: await headers() })
   if (!user) redirect('/admin/login')
@@ -99,6 +102,9 @@ export default async function GalleryEditorPage({ params }: Props) {
       initialIsPasswordProtected={gallery.isPasswordProtected ?? false}
       initialPasswordSet={typeof gallery.password === 'string' && gallery.password.length > 0}
       initialAllowDownload={gallery.allowDownload ?? false}
+      initialFavoritesEnabled={gallery.favoritesEnabled ?? false}
+      initialFavoritesLimit={gallery.favoritesLimit ?? null}
+      initialFavoritesListId={Number.isInteger(favoritesListId) && favoritesListId > 0 ? favoritesListId : null}
       initialSeoIndexable={gallery.seoIndexable ?? true}
       initialClientName={gallery.clientName ?? ''}
       initialClientEmail={gallery.clientEmail ?? ''}

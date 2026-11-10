@@ -23,6 +23,7 @@ import { GalleryPresets } from './globals/GalleryPresets'
 import { EmailTemplates } from './globals/EmailTemplates'
 import { Pages } from './collections/Pages'
 import { Projects } from './collections/Projects'
+import { FavoriteLists } from './collections/FavoriteLists'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -119,7 +120,7 @@ export default buildConfig({
     },
   },
   sharp,
-  collections: [Users, Photos, Galleries, Testimonials, Services, Posts, Pages, Projects],
+  collections: [Users, Photos, Galleries, Testimonials, Services, Posts, Pages, Projects, FavoriteLists],
   globals: [HeroSlides, AboutPage, SiteConfig, SiteDesign, BookingSettings, Availability, GalleryPresets, EmailTemplates],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

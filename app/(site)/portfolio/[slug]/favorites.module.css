@@ -1,0 +1,240 @@
+/* Client favorites (TYN-13). Colors and fonts come from the site theme
+   tokens, so the bar and prompt follow whatever is set in /design. The heart
+   sits on top of a photo, so like the lightbox controls it uses a fixed dark
+   chip with a light icon to stay readable on any image. */
+
+/* ── Heart ────────────────────────────────────────────────── */
+
+.heartSlot {
+  position: relative;
+}
+
+.heart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(12, 12, 12, 0.5);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: opacity 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+.heart:hover:not([aria-disabled='true']),
+.heart:focus-visible {
+  opacity: 1;
+  background: rgba(12, 12, 12, 0.72);
+}
+
+.heart:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.heart:active:not([aria-disabled='true']) {
+  transform: scale(0.94);
+}
+
+.heart[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.heartTile {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 1;
+  opacity: 0.8;
+}
+
+.heartLightbox {
+  position: absolute;
+  top: 1rem;
+  right: 4.25rem;
+}
+
+.heartOn {
+  opacity: 1;
+  background: rgba(12, 12, 12, 0.72);
+}
+
+/* ── Bar above the grid ───────────────────────────────────── */
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-accent);
+  font-family: var(--font-body);
+  color: var(--color-body);
+}
+
+.hint,
+.who,
+.sent {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-detail);
+}
+
+.barInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.count {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-heading);
+}
+
+.barActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid var(--color-detail);
+  border-radius: var(--btn-radius);
+  background: transparent;
+  color: var(--color-heading);
+  cursor: pointer;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.btn[aria-pressed='true'] {
+  background: var(--color-bg-hover);
+}
+
+.btnPrimary {
+  border-color: var(--color-btn-bg);
+  background: var(--color-btn-bg);
+  color: var(--color-btn-text);
+}
+
+.linkBtn {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--color-heading);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.error {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-error);
+}
+
+.noFavorites {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--color-detail);
+  text-align: center;
+  padding: 3rem 0;
+}
+
+/* ── Name and email prompt ────────────────────────────────── */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: var(--color-bg-overlay);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 26rem;
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  font-family: var(--font-body);
+  color: var(--color-body);
+}
+
+.dialogTitle {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--color-heading);
+}
+
+.dialogText {
+  margin: 0 0 1.25rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--color-detail);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  font-size: 0.75rem;
+  color: var(--color-detail);
+}
+
+.field input {
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--color-detail);
+  border-radius: var(--btn-radius);
+  background: transparent;
+  font-family: var(--font-body);
+  /* 16px: anything smaller makes iOS Safari zoom the page on focus. */
+  font-size: 1rem;
+  color: var(--color-body);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heart {
+    transition: none;
+  }
+
+  .heart:active:not([aria-disabled='true']) {
+    transform: none;
+  }
+}

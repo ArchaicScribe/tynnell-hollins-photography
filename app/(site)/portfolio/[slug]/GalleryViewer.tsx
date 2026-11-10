@@ -1,7 +1,10 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { ProtectedImage } from '@/app/components/ProtectedImage/ProtectedImage'
 import styles from './page.module.css'
+import favStyles from './favorites.module.css'
+import { useFavorites } from './useFavorites'
+import { FavoriteHeart, FavoritesBar, FavoritesSignIn } from './FavoritesUI'
 
 const FOCUSABLE_SELECTORS = 'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
@@ -16,6 +19,8 @@ export type LightboxPhoto = {
 type Props = {
   photos: LightboxPhoto[]
   taped: boolean
+  // Present only when the gallery has client favorites turned on (TYN-13).
+  favorites?: { slug: string }
 }
 
 const NAV_BTN: React.CSSProperties = {
@@ -38,7 +43,28 @@ const NAV_BTN: React.CSSProperties = {
   transition: 'background 0.15s',
 }
 
-export function GalleryViewer({ photos, taped }: Props) {
+export function GalleryViewer({ photos: allPhotos, taped, favorites }: Props) {
+  const fav = useFavorites(favorites?.slug ?? null)
+  const [onlyFavorites, setOnlyFavorites] = useState(false)
+  // With no list there are no favorites to narrow to ("Not you?", or the list
+  // was deleted), and the bar has no button to widen the view again, so the
+  // filter is switched off rather than left showing an empty gallery.
+  if (onlyFavorites && fav.list === null) setOnlyFavorites(false)
+  // Everything below (grid, lightbox, arrow keys) works on the photos
+  // currently shown, so "Show favorites" also narrows the lightbox.
+  const photos = fav.enabled && onlyFavorites
+    ? allPhotos.filter(p => fav.isFavorite(Number(p.id)))
+    : allPhotos
+  // A photo's place in the full gallery, so its name stays the same when the
+  // grid is narrowed to favorites.
+  const positions = useMemo(() => new Map(allPhotos.map((p, i) => [p, i + 1])), [allPhotos])
+  const positionOf = (photo: LightboxPhoto) => positions.get(photo) ?? 0
+  const askingForName = fav.askingFor !== null
+  // Read by the lightbox key handler. A ref, so opening the prompt does not
+  // tear the handler down (which would also unlock page scrolling).
+  const askingForNameRef = useRef(false)
+  askingForNameRef.current = askingForName
+
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [imgLoading, setImgLoading] = useState(false)
   const touchStartX = useRef<number | null>(null)
@@ -47,8 +73,10 @@ export function GalleryViewer({ photos, taped }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null)
 
   const close = useCallback(() => setLightboxIdx(null), [])
-  const prev = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null) }, [photos.length])
-  const next = useCallback(() => { setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % photos.length : null) }, [photos.length])
+  // With one photo showing there is nowhere to move to. Marking the image as
+  // loading anyway would blank it for good: the same image never loads twice.
+  const prev = useCallback(() => { if (photos.length < 2) return; setImgLoading(true); setLightboxIdx(i => i !== null ? (i - 1 + photos.length) % photos.length : null) }, [photos.length])
+  const next = useCallback(() => { if (photos.length < 2) return; setImgLoading(true); setLightboxIdx(i => i !== null ? (i + 1) % photos.length : null) }, [photos.length])
 
   const open = useCallback((i: number) => {
     previousFocusRef.current = document.activeElement as HTMLElement
@@ -64,9 +92,19 @@ export function GalleryViewer({ photos, taped }: Props) {
     }
   }, [lightboxIdx])
 
+  // Un-hearting the open photo while only favorites are shown takes it out
+  // from under the lightbox: step back to the last photo, or close.
+  useEffect(() => {
+    if (lightboxIdx === null || lightboxIdx < photos.length) return
+    setLightboxIdx(photos.length > 0 ? photos.length - 1 : null)
+  }, [lightboxIdx, photos.length])
+
   useEffect(() => {
     if (lightboxIdx === null) return
     const handler = (e: KeyboardEvent) => {
+      // The name and email prompt sits on top of the lightbox and handles
+      // its own keys while it is open.
+      if (askingForNameRef.current) return
       if (e.key === 'Escape') { close(); return }
       if (e.key === 'ArrowLeft') { prev(); return }
       if (e.key === 'ArrowRight') { next(); return }
@@ -102,24 +140,35 @@ export function GalleryViewer({ photos, taped }: Props) {
     })
   }, [lightboxIdx, photos])
 
-  if (photos.length === 0) {
+  if (allPhotos.length === 0) {
     return <p className={styles.empty}>Photos coming soon.</p>
   }
 
-  const current = lightboxIdx !== null ? photos[lightboxIdx] : null
+  const current = lightboxIdx !== null ? photos[lightboxIdx] ?? null : null
 
   return (
     <>
+      {fav.enabled && (
+        <FavoritesBar
+          favorites={fav}
+          onlyFavorites={onlyFavorites}
+          onToggleOnlyFavorites={() => setOnlyFavorites(v => !v)}
+        />
+      )}
+      {fav.enabled && onlyFavorites && photos.length === 0 && (
+        <p className={favStyles.noFavorites}>No favorites yet. Show all photos to choose some.</p>
+      )}
       <div className={`${styles.grid}${taped ? ` ${styles.gridTaped}` : ''}`}>
         {photos.map((photo, i) => {
           if (!photo.thumbUrl) return null
-          const image = (
+          const position = positionOf(photo)
+          const slot = (
             <div
               className={styles.imageSlot}
               style={{ cursor: 'zoom-in' }}
               role="button"
               tabIndex={0}
-              aria-label={`Open photo ${i + 1}${photo.alt ? `: ${photo.alt}` : ''}`}
+              aria-label={`Open photo ${position}${photo.alt ? `: ${photo.alt}` : ''}`}
               onClick={() => open(i)}
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(i) } }}
             >
@@ -132,6 +181,14 @@ export function GalleryViewer({ photos, taped }: Props) {
               />
             </div>
           )
+          // The heart is a sibling of the photo, not a child: the photo is
+          // itself a button, and buttons cannot be nested.
+          const image = fav.enabled ? (
+            <div className={favStyles.heartSlot}>
+              {slot}
+              <FavoriteHeart favorites={fav} photoId={Number(photo.id)} position={position} />
+            </div>
+          ) : slot
           return (
             <div
               key={String(photo.id)}
@@ -215,6 +272,10 @@ export function GalleryViewer({ photos, taped }: Props) {
             </button>
           )}
 
+          {fav.enabled && (
+            <FavoriteHeart favorites={fav} photoId={Number(current.id)} position={positionOf(current)} variant="lightbox" />
+          )}
+
           <button
             ref={closeBtnRef}
             type="button"
@@ -264,6 +325,8 @@ export function GalleryViewer({ photos, taped }: Props) {
           </div>
         </div>
       )}
+
+      {askingForName && <FavoritesSignIn favorites={fav} />}
     </>
   )
 }

@@ -75,6 +75,7 @@ export interface Config {
     posts: Post;
     pages: Page;
     projects: Project;
+    'favorite-lists': FavoriteList;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    'favorite-lists': FavoriteListsSelect<false> | FavoriteListsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -307,6 +309,8 @@ export interface Gallery {
   isPasswordProtected?: boolean | null;
   password?: string | null;
   allowDownload?: boolean | null;
+  favoritesEnabled?: boolean | null;
+  favoritesLimit?: number | null;
   seoIndexable?: boolean | null;
   clientName?: string | null;
   clientEmail?: string | null;
@@ -581,6 +585,37 @@ export interface Project {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "favorite-lists".
+ */
+export interface FavoriteList {
+  id: number;
+  gallery: number | Gallery;
+  clientName?: string | null;
+  clientEmail: string;
+  photoIds?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  sentAt?: string | null;
+  sentPhotoIds?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -634,6 +669,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'projects';
         value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'favorite-lists';
+        value: number | FavoriteList;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -783,6 +822,8 @@ export interface GalleriesSelect<T extends boolean = true> {
   isPasswordProtected?: T;
   password?: T;
   allowDownload?: T;
+  favoritesEnabled?: T;
+  favoritesLimit?: T;
   seoIndexable?: T;
   clientName?: T;
   clientEmail?: T;
@@ -904,6 +945,20 @@ export interface ProjectsSelect<T extends boolean = true> {
         notes?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "favorite-lists_select".
+ */
+export interface FavoriteListsSelect<T extends boolean = true> {
+  gallery?: T;
+  clientName?: T;
+  clientEmail?: T;
+  photoIds?: T;
+  sentAt?: T;
+  sentPhotoIds?: T;
   updatedAt?: T;
   createdAt?: T;
 }

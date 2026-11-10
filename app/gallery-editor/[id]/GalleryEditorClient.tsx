@@ -5,6 +5,7 @@ import { isUnsupportedImage, uploadPhotoToLibrary } from '@/app/lib/uploadPhoto'
 import { isValidEmail } from '@/app/lib/validation'
 import { extractPayloadErrorMessage } from '@/app/lib/payloadError'
 import type { PhotoItem, GalleryListItem } from './page'
+import { FavoritesPanel } from './FavoritesPanel'
 
 const CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
 
@@ -19,6 +20,11 @@ type Props = {
   initialIsPasswordProtected: boolean
   initialPasswordSet: boolean
   initialAllowDownload: boolean
+  // Client favorites (TYN-13): the per-gallery switch, the optional cap, and
+  // the list to open first when arriving from the link in a favorites email.
+  initialFavoritesEnabled: boolean
+  initialFavoritesLimit: number | null
+  initialFavoritesListId: number | null
   initialSeoIndexable: boolean
   initialClientName: string
   initialClientEmail: string
@@ -41,6 +47,9 @@ export function GalleryEditorClient({
   initialIsPasswordProtected,
   initialPasswordSet,
   initialAllowDownload,
+  initialFavoritesEnabled,
+  initialFavoritesLimit,
+  initialFavoritesListId,
   initialSeoIndexable,
   initialClientName,
   initialClientEmail,
@@ -60,6 +69,9 @@ export function GalleryEditorClient({
   const [featured, setFeatured] = useState(initialFeatured)
   const [isPasswordProtected, setIsPasswordProtected] = useState(initialIsPasswordProtected)
   const [allowDownload, setAllowDownload] = useState(initialAllowDownload)
+  const [favoritesEnabled, setFavoritesEnabled] = useState(initialFavoritesEnabled)
+  // Kept as typed text; empty means no limit.
+  const [favoritesLimit, setFavoritesLimit] = useState(initialFavoritesLimit ? String(initialFavoritesLimit) : '')
   const [seoIndexable, setSeoIndexable] = useState(initialSeoIndexable)
   const [clientName, setClientName] = useState(initialClientName)
   const [clientEmail, setClientEmail] = useState(initialClientEmail)
@@ -86,7 +98,7 @@ export function GalleryEditorClient({
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null)
   const [uploadError, setUploadError] = useState('')
-  const [sidebarSection, setSidebarSection] = useState<'galleries' | 'settings'>('galleries')
+  const [sidebarSection, setSidebarSection] = useState<'galleries' | 'settings' | 'favorites'>(initialFavoritesListId ? 'favorites' : 'galleries')
   const [gallerySearch, setGallerySearch] = useState('')
   const [showNewModal, setShowNewModal] = useState(false)
   const [newTitle, setNewTitle] = useState('')
@@ -385,6 +397,8 @@ export function GalleryEditorClient({
           tapedStyle,
           isPasswordProtected,
           allowDownload,
+          favoritesEnabled,
+          favoritesLimit: Number(favoritesLimit) > 0 ? Math.floor(Number(favoritesLimit)) : null,
           seoIndexable,
           // Only send a password value when the admin typed a new one.
           // When isPasswordProtected is true and the field is blank, we omit `password`
@@ -437,7 +451,7 @@ export function GalleryEditorClient({
     autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, seoIndexable, galleryPassword, coverId, photos, clientName, clientEmail, expiresAt])
+  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos, clientName, clientEmail, expiresAt])
 
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
@@ -468,7 +482,7 @@ export function GalleryEditorClient({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, seoIndexable, galleryPassword, coverId, photos])
+  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
@@ -825,7 +839,7 @@ export function GalleryEditorClient({
 
           {/* Tab switcher */}
           <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, padding: '0 0.5rem' }}>
-            {(['galleries', 'settings'] as const).map(tab => (
+            {(['galleries', 'settings', 'favorites'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setSidebarSection(tab)}
@@ -894,6 +908,16 @@ export function GalleryEditorClient({
               })}
               </div>
             </div>
+          )}
+
+          {/* Favorites panel (TYN-13) */}
+          {sidebarSection === 'favorites' && (
+            <FavoritesPanel
+              galleryId={galleryId}
+              enabled={favoritesEnabled}
+              photos={photos}
+              openListId={initialFavoritesListId}
+            />
           )}
 
           {/* Settings panel */}
@@ -1047,6 +1071,37 @@ export function GalleryEditorClient({
                       <div style={{ fontSize: '0.7rem', color: '#4b4b4b', fontFamily: ui, marginTop: '0.1rem' }}>Clients can download photos</div>
                     </div>
                   </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={favoritesEnabled}
+                      onChange={e => setField(setFavoritesEnabled)(e.target.checked)}
+                      style={{ width: 15, height: 15, accentColor: '#1db954', cursor: 'pointer', flexShrink: 0, marginTop: '0.15rem' }}
+                      aria-label="Client favorites"
+                    />
+                    <div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#d6d1ce', fontFamily: ui }}>Client favorites</div>
+                      <div style={{ fontSize: '0.7rem', color: '#4b4b4b', fontFamily: ui, marginTop: '0.1rem' }}>Clients can heart photos and send you their picks</div>
+                    </div>
+                  </label>
+
+                  {favoritesEnabled && (
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Favorites limit</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step={1}
+                        inputMode="numeric"
+                        value={favoritesLimit}
+                        onChange={e => setField(setFavoritesLimit)(e.target.value)}
+                        placeholder="No limit"
+                        style={{ background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui }}
+                      />
+                      <span style={{ fontSize: '0.67rem', color: '#3a3a3a', fontFamily: ui }}>The most photos one client can choose. Leave blank for no limit.</span>
+                    </label>
+                  )}
 
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
                     <input
