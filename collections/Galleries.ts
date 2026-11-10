@@ -1,4 +1,4 @@
-import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionBeforeDeleteHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { revalidatePath } from 'next/cache'
 import bcrypt from 'bcryptjs'
 
@@ -79,6 +79,18 @@ const revalidateGallery: CollectionAfterChangeHook = ({ doc }) => {
   return doc
 }
 
+// Client favorites (TYN-13): a favorites list cannot outlive its gallery. Its
+// gallery column is required, and the database refuses to null it out, so
+// without this a gallery that has any lists could not be deleted at all.
+// Passing `req` keeps it in the same transaction as the gallery delete.
+const deleteFavoriteLists: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  await req.payload.delete({
+    collection: 'favorite-lists',
+    where: { gallery: { equals: id } },
+    req,
+  })
+}
+
 export const Galleries: CollectionConfig = {
   slug: 'galleries',
   labels: {
@@ -89,6 +101,7 @@ export const Galleries: CollectionConfig = {
     beforeChange: [hashGalleryPassword, resetExpiryReminderOnChange],
     beforeValidate: [applyGalleryPresets, autoSlugFromTitle],
     afterChange: [revalidateGallery],
+    beforeDelete: [deleteFavoriteLists],
   },
   admin: {
     group: 'My Portfolio',
@@ -296,6 +309,23 @@ export const Galleries: CollectionConfig = {
       name: 'allowDownload',
       type: 'checkbox',
       label: 'Allow Photo Downloads',
+      admin: { hidden: true },
+    },
+    {
+      // Client favorites (TYN-13). Off by default so portfolio albums never
+      // show hearts; turned on per client gallery in the gallery editor.
+      name: 'favoritesEnabled',
+      type: 'checkbox',
+      label: 'Client Favorites',
+      defaultValue: false,
+      admin: { hidden: true },
+    },
+    {
+      // Empty or 0 means no limit.
+      name: 'favoritesLimit',
+      type: 'number',
+      label: 'Favorites Limit',
+      min: 0,
       admin: { hidden: true },
     },
     {

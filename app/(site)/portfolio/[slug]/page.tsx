@@ -216,7 +216,11 @@ export default async function GalleryPage({ params, searchParams }: Props) {
             />
           )}
         </div>
-        <GalleryViewer photos={photos} taped={taped} />
+        <GalleryViewer
+          photos={photos}
+          taped={taped}
+          favorites={gallery.favoritesEnabled === true && typeof gallery.slug === 'string' ? { slug: gallery.slug } : undefined}
+        />
       </div>
 
       {/* CTA */}

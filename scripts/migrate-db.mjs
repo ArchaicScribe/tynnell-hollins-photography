@@ -1042,6 +1042,109 @@ async function run() {
       ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "freebie_url" varchar
     `)
     console.log('✓ site_config freebie columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20261110_100000: client favorites (TYN-13).
+    // Two gallery settings (the per-gallery switch and an optional cap), and
+    // the favorite_lists table: one row per client per gallery, holding the
+    // photo ids they hearted and what was last sent to Tynnell.
+    //
+    // Every name and rule below is the one Payload's own schema generates
+    // for collections/FavoriteLists.ts, because `next dev` syncs the database
+    // to that schema: anything named differently here would be dropped or
+    // duplicated the next time dev runs (scripts/migrate-db.test.ts checks
+    // the two that matter).
+    //
+    // That includes the gallery foreign key's ON DELETE SET NULL, which on a
+    // NOT NULL column means "refuse". A gallery's lists are deleted by the
+    // beforeDelete hook in collections/Galleries.ts instead.
+    //
+    // The unique index is what makes "one list per email per gallery" hold
+    // when two tabs start a list at the same moment (see
+    // app/api/favorites/start/route.ts).
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "favorites_enabled" boolean DEFAULT false
+    `)
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "favorites_limit" numeric
+    `)
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "favorite_lists" (
+        "id"             serial  PRIMARY KEY NOT NULL,
+        "gallery_id"     integer NOT NULL,
+        "client_name"    varchar,
+        "client_email"   varchar NOT NULL,
+        "photo_ids"      jsonb,
+        "sent_at"        timestamp(3) with time zone,
+        "sent_photo_ids" jsonb,
+        "updated_at"     timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at"     timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    // The first build of this migration created the key and the unique index
+    // under other names; remove those so each exists once.
+    await client.query(`
+      ALTER TABLE "favorite_lists" DROP CONSTRAINT IF EXISTS "favorite_lists_gallery_id_fk"
+    `)
+    await client.query(`
+      DROP INDEX IF EXISTS "favorite_lists_gallery_client_email_idx"
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "favorite_lists"
+          ADD CONSTRAINT "favorite_lists_gallery_id_galleries_id_fk"
+          FOREIGN KEY ("gallery_id")
+          REFERENCES "galleries"("id")
+          ON DELETE SET NULL ON UPDATE NO ACTION;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "favorite_lists_gallery_idx" ON "favorite_lists" USING btree ("gallery_id")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "favorite_lists_client_email_idx" ON "favorite_lists" USING btree ("client_email")
+    `)
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS "gallery_clientEmail_idx"
+        ON "favorite_lists" USING btree ("gallery_id", "client_email")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "favorite_lists_updated_at_idx" ON "favorite_lists" USING btree ("updated_at")
+    `)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS "favorite_lists_created_at_idx" ON "favorite_lists" USING btree ("created_at")
+    `)
+
+    // Payload checks its document-lock table on every update and delete, and
+    // that table has one column per collection.
+    await client.query(`
+      ALTER TABLE IF EXISTS "payload_locked_documents_rels"
+        ADD COLUMN IF NOT EXISTS "favorite_lists_id" integer
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE "payload_locked_documents_rels"
+          ADD CONSTRAINT "payload_locked_documents_rels_favorite_lists_fk"
+          FOREIGN KEY ("favorite_lists_id")
+          REFERENCES "favorite_lists"("id")
+          ON DELETE CASCADE ON UPDATE NO ACTION;
+      EXCEPTION
+        WHEN duplicate_object THEN NULL;
+        WHEN undefined_table THEN NULL;
+      END $$
+    `)
+    await client.query(`
+      DO $$ BEGIN
+        CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_favorite_lists_id_idx"
+          ON "payload_locked_documents_rels" USING btree ("favorite_lists_id");
+      EXCEPTION WHEN undefined_table THEN NULL;
+      END $$
+    `)
+    console.log('✓ client favorites (galleries columns + favorite_lists) ready')
   } finally {
     client.release()
     await pool.end()
