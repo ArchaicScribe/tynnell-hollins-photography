@@ -107,6 +107,18 @@ export const TAPE_SHADOW_OPTIONS: { label: string; value: SiteTheme['tapeShadow'
   { label: 'Strong', value: 'strong' },
 ]
 
+// TYN-352: the navbar's solid colors (after the page is scrolled). Unlike the
+// palette above these start empty and mean "follow the button colors", so each
+// has a reset back to that.
+export const NAV_FIELDS: {
+  key: keyof Pick<SiteTheme, 'colorNavBg' | 'colorNavText'>
+  label: string
+  resetLabel: string
+}[] = [
+  { key: 'colorNavBg', label: 'Navbar color', resetLabel: 'Use button color' },
+  { key: 'colorNavText', label: 'Navbar text color', resetLabel: 'Use button text color' },
+]
+
 export function AccordionRow({ label, isOpen, onToggle, children }: { label: string; isOpen: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
     <div style={{ borderBottom: '1px solid #1a1a1a' }}>
@@ -142,7 +154,9 @@ export function Select<T extends string>({ value, onChange, options }: { value: 
   )
 }
 
-export function ColorInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+export function ColorInput({
+  value, onChange, ariaLabel, placeholder,
+}: { value: string; onChange: (v: string) => void; ariaLabel?: string; placeholder?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <input
@@ -154,6 +168,8 @@ export function ColorInput({ value, onChange }: { value: string; onChange: (v: s
       <input
         type="text"
         value={value}
+        aria-label={ariaLabel}
+        placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         style={{ flex: 1, background: '#1a1a1a', color: '#e6e1de', border: '1px solid #2a2a2a', borderRadius: 5, padding: '7px 10px', fontSize: 13, fontFamily: 'monospace' }}
       />
@@ -215,6 +231,33 @@ export function DesignSections({
             <ColorInput value={theme[f.key]} onChange={(v) => set(f.key, v)} />
           </div>
         ))}
+      </AccordionRow>
+
+      <AccordionRow label="Navbar" isOpen={open === 'navbar'} onToggle={() => setOpen(open === 'navbar' ? null : 'navbar')}>
+        {NAV_FIELDS.map((f, i) => (
+          <div key={f.key} style={{ marginTop: i === 0 ? 0 : 12 }}>
+            <FieldLabel>{f.label}</FieldLabel>
+            <ColorInput
+              value={theme[f.key]}
+              onChange={(v) => set(f.key, v)}
+              ariaLabel={f.label}
+              placeholder="Same as button"
+            />
+            {theme[f.key] && (
+              <button
+                type="button"
+                onClick={() => set(f.key, '')}
+                style={{ marginTop: 6, background: 'none', border: 'none', padding: 0, color: '#9b9a9a', fontSize: 11.5, textDecoration: 'underline', cursor: 'pointer' }}
+              >
+                {f.resetLabel}
+              </button>
+            )}
+          </div>
+        ))}
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          The menu bar is see-through over the top of a page and turns solid once visitors scroll. These set its colors
+          from then on. Left empty, it follows your button colors.
+        </p>
       </AccordionRow>
 
       <AccordionRow label="Photo Frame" isOpen={open === 'photoFrame'} onToggle={() => setOpen(open === 'photoFrame' ? null : 'photoFrame')}>

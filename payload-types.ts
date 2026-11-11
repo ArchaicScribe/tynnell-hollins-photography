@@ -1184,6 +1184,8 @@ export interface SiteDesign {
   colorBgOverlay?: string | null;
   colorBtnText?: string | null;
   colorBtnHover?: string | null;
+  colorNavBg?: string | null;
+  colorNavText?: string | null;
   colorBorder?: string | null;
   colorBorderSubtle?: string | null;
   colorBorderSolid?: string | null;
@@ -1425,6 +1427,8 @@ export interface SiteDesignSelect<T extends boolean = true> {
   colorBgOverlay?: T;
   colorBtnText?: T;
   colorBtnHover?: T;
+  colorNavBg?: T;
+  colorNavText?: T;
   colorBorder?: T;
   colorBorderSubtle?: T;
   colorBorderSolid?: T;

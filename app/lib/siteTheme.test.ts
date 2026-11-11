@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DEFAULT_THEME, themeToCssVarMap, themeToCssVars, type SiteTheme } from './siteTheme'
+import { DEFAULT_THEME, OPTIONAL_THEME_VARS, themeToCssVarMap, themeToCssVars, type SiteTheme } from './siteTheme'
 import { SITE_DESIGN_FIELDS } from '@/test/siteDesignFields'
 
 function isRealCssValue(value: unknown): boolean {
@@ -67,6 +67,46 @@ describe('themeToCssVarMap', () => {
       '--color-border-solid': '#00000e',
       '--tape-mat': '#00000f',
       '--tape-color': '#000010',
+    })
+  })
+
+  // TYN-352. The navbar's solid colours follow the button colours until
+  // Tynnell picks her own, so the live site does not change on deploy. A
+  // default colour here would replace the olive she already has, so the
+  // variables are only written once a value is saved.
+  describe('navbar colors', () => {
+    it('writes no navbar variables until a color is saved', () => {
+      const map = themeToCssVarMap(DEFAULT_THEME)
+
+      expect(map).not.toHaveProperty('--color-nav-bg')
+      expect(map).not.toHaveProperty('--color-nav-text')
+    })
+
+    it('writes the navbar background and text colors once saved', () => {
+      const map = themeToCssVarMap({ ...DEFAULT_THEME, colorNavBg: '#102030', colorNavText: '#f0e0d0' })
+
+      expect(map['--color-nav-bg']).toBe('#102030')
+      expect(map['--color-nav-text']).toBe('#f0e0d0')
+    })
+
+    // The live preview removes exactly the variables listed in
+    // OPTIONAL_THEME_VARS when a draft drops them. One the map writes but the
+    // list omits would stick in the preview after being cleared.
+    it('lists every variable that only exists while set, so the preview can clear it', () => {
+      const all = themeToCssVarMap({ ...DEFAULT_THEME, colorNavBg: '#102030', colorNavText: '#f0e0d0' })
+      const optional = Object.keys(all).filter((k) => !(k in themeToCssVarMap(DEFAULT_THEME)))
+
+      expect([...OPTIONAL_THEME_VARS].sort()).toEqual(optional.sort())
+    })
+
+    it('lets the background be set without the text, and the reverse', () => {
+      const bgOnly = themeToCssVarMap({ ...DEFAULT_THEME, colorNavBg: '#102030' })
+      const textOnly = themeToCssVarMap({ ...DEFAULT_THEME, colorNavText: '#f0e0d0' })
+
+      expect(bgOnly).toHaveProperty('--color-nav-bg')
+      expect(bgOnly).not.toHaveProperty('--color-nav-text')
+      expect(textOnly).toHaveProperty('--color-nav-text')
+      expect(textOnly).not.toHaveProperty('--color-nav-bg')
     })
   })
 
