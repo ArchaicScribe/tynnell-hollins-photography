@@ -42,6 +42,8 @@ export const getSiteDesign = cache(async (): Promise<SiteTheme> => {
       colorBgOverlay: doc.colorBgOverlay || DEFAULT_THEME.colorBgOverlay,
       colorBtnText: doc.colorBtnText || DEFAULT_THEME.colorBtnText,
       colorBtnHover: doc.colorBtnHover || DEFAULT_THEME.colorBtnHover,
+      colorNavBg: doc.colorNavBg || DEFAULT_THEME.colorNavBg,
+      colorNavText: doc.colorNavText || DEFAULT_THEME.colorNavText,
       colorBorder: doc.colorBorder || DEFAULT_THEME.colorBorder,
       colorBorderSubtle: doc.colorBorderSubtle || DEFAULT_THEME.colorBorderSubtle,
       colorBorderSolid: doc.colorBorderSolid || DEFAULT_THEME.colorBorderSolid,

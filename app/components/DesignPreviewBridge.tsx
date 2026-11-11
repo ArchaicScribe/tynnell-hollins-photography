@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { OPTIONAL_THEME_VARS } from '@/app/lib/siteTheme'
 
 // Real-time live-preview listener for the /design editor (TYN-314). Mounted
 // unconditionally in the (site) root layout, but self-gates so it is a
@@ -29,6 +30,14 @@ export function DesignPreviewBridge() {
       if (data.vars) {
         for (const [key, value] of Object.entries(data.vars)) {
           document.documentElement.style.setProperty(key, value)
+        }
+        // A cleared optional color is absent from the draft rather than
+        // empty. removeProperty would only uncover the saved value from the
+        // server-rendered :root stylesheet, so set `initial` (the
+        // guaranteed-invalid value for a custom property): it wins over the
+        // stylesheet and lets the consumer's var() fallback apply.
+        for (const key of OPTIONAL_THEME_VARS) {
+          if (!(key in data.vars)) document.documentElement.style.setProperty(key, 'initial')
         }
       }
       if (typeof data.animationsEnabled === 'boolean') {

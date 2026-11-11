@@ -38,6 +38,10 @@ export interface SiteTheme {
   colorBgOverlay: string
   colorBtnText: string
   colorBtnHover: string
+  // Navbar colours once the bar turns solid (TYN-352). Empty means "follow the
+  // button colours", which is what the navbar did before it had its own.
+  colorNavBg: string
+  colorNavText: string
   colorBorder: string
   colorBorderSubtle: string
   colorBorderSolid: string
@@ -72,6 +76,8 @@ export const DEFAULT_THEME: SiteTheme = {
   colorBgOverlay: 'rgba(12, 12, 12, 0.76)',
   colorBtnText: '#E6E1DE',
   colorBtnHover: '#807F7F',
+  colorNavBg: '',
+  colorNavText: '',
   colorBorder: 'rgba(214, 209, 206, 0.08)',
   colorBorderSubtle: 'rgba(214, 209, 206, 0.06)',
   colorBorderSolid: '#1e1e1e',
@@ -146,6 +152,11 @@ const BTN_RADIUS: Record<SiteTheme['buttonStyle'], string> = {
   pill: '999px',
 }
 
+// Variables themeToCssVarMap only writes while they have a value. The live
+// preview has to remove these when they disappear from a draft, because it
+// otherwise only ever sets what it receives.
+export const OPTIONAL_THEME_VARS = ['--color-nav-bg', '--color-nav-text'] as const
+
 // Maps theme values to concrete CSS custom-property values. Shared by the
 // server-rendered <style> override (themeToCssVars) and the client-side live
 // preview bridge (DesignClient/DesignPreviewBridge), so both stay in sync.
@@ -173,6 +184,14 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--space-scale': String(SPACE_SCALE[theme.spacingScale]),
     '--btn-radius': BTN_RADIUS[theme.buttonStyle],
   }
+  // Only written once chosen: a default colour here would replace the button
+  // colour the navbar follows today. Navbar.module.css falls back to it.
+  // Trimmed: a stray space would define the variable as blank, and a defined
+  // variable never takes the var() fallback.
+  const navBg = theme.colorNavBg?.trim()
+  const navText = theme.colorNavText?.trim()
+  if (navBg) map['--color-nav-bg'] = navBg
+  if (navText) map['--color-nav-text'] = navText
   if (theme.headingFont !== 'poppins') map['--font-heading'] = FONT_ROLE_VAR[theme.headingFont]
   if (theme.bodyFont !== 'poppins') map['--font-body'] = FONT_ROLE_VAR[theme.bodyFont]
   map['--font-accent'] = fontVar(theme.accentFont)

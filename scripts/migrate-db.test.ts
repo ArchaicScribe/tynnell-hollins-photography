@@ -21,6 +21,25 @@ describe('scripts/migrate-db.mjs', () => {
     expect(ends.length).toBe(blocks.length)
   })
 
+  // TYN-352: the navbar colours are deliberately empty until chosen (empty
+  // means "follow the button colours"), so unlike the other palette columns
+  // they get no default and no backfill. A backfill would overwrite the
+  // olive the navbar shows today.
+  describe('site_design navbar colors (TYN-352)', () => {
+    for (const column of ['color_nav_bg', 'color_nav_text']) {
+      it(`adds ${column} as a plain varchar with no default`, () => {
+        expect(source).toMatch(
+          new RegExp(`ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "${column}" varchar\\s*\`\\)`),
+        )
+      })
+
+      it(`does not backfill ${column}`, () => {
+        expect(source).not.toMatch(new RegExp(`UPDATE "site_design" SET "${column}"`))
+        expect(source).not.toMatch(new RegExp(`\\['${column}'`))
+      })
+    }
+  })
+
   // `next dev` syncs the database to the Payload config. Anything this
   // script creates under a different name, or with a different rule, than
   // Payload would generate is dropped or duplicated the next time dev runs.

@@ -864,6 +864,21 @@ async function run() {
     console.log('✓ site_design palette columns ready')
 
     // ------------------------------------------------------------------
+    // Migration 20261111_100000: navbar colours on site_design (TYN-352)
+    // The solid navbar used the button colours. These two let it have its own.
+    // No default and no backfill on purpose: NULL means "follow the button
+    // colours", so the live navbar does not change until someone picks one.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "color_nav_bg" varchar
+    `)
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "color_nav_text" varchar
+    `)
+    console.log('✓ site_design navbar color columns ready')
+
+    // ------------------------------------------------------------------
     // Migration 20260806_110000: Rising Roots type system (four font roles)
     // heading_font and body_font are REAL Postgres enums, so new faces need
     // ALTER TYPE ... ADD VALUE rather than a plain column change - same trap
