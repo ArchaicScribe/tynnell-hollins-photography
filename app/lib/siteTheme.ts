@@ -186,8 +186,12 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
   }
   // Only written once chosen: a default colour here would replace the button
   // colour the navbar follows today. Navbar.module.css falls back to it.
-  if (theme.colorNavBg) map['--color-nav-bg'] = theme.colorNavBg
-  if (theme.colorNavText) map['--color-nav-text'] = theme.colorNavText
+  // Trimmed: a stray space would define the variable as blank, and a defined
+  // variable never takes the var() fallback.
+  const navBg = theme.colorNavBg?.trim()
+  const navText = theme.colorNavText?.trim()
+  if (navBg) map['--color-nav-bg'] = navBg
+  if (navText) map['--color-nav-text'] = navText
   if (theme.headingFont !== 'poppins') map['--font-heading'] = FONT_ROLE_VAR[theme.headingFont]
   if (theme.bodyFont !== 'poppins') map['--font-body'] = FONT_ROLE_VAR[theme.bodyFont]
   map['--font-accent'] = fontVar(theme.accentFont)

@@ -42,15 +42,35 @@ describe('DesignPreviewBridge', () => {
   // Tynnell clears one the variable is simply absent from the next message,
   // so setting what arrived is not enough: the old value would stay on the
   // preview and the navbar would not go back to following the button colors.
-  it('removes a navbar color from the page when a later draft no longer has it', () => {
+  //
+  // Removing the inline value is not enough either: the editor's preview loads
+  // with the SAVED color already in the server-rendered :root stylesheet, and
+  // dropping the inline override just exposes that. Setting `initial` (the
+  // guaranteed-invalid value for a custom property) beats the stylesheet and
+  // makes the navbar's var() fallback apply, so the preview really reverts.
+  it('resets a navbar color to its fallback when a later draft no longer has it', () => {
     render(<DesignPreviewBridge />)
     sendTheme({ '--color-nav-bg': '#102030', '--color-nav-text': '#f0e0d0' })
     expect(root().getPropertyValue('--color-nav-bg')).toBe('#102030')
 
     sendTheme({ '--color-bg': '#112233' })
 
-    expect(root().getPropertyValue('--color-nav-bg')).toBe('')
-    expect(root().getPropertyValue('--color-nav-text')).toBe('')
+    expect(root().getPropertyValue('--color-nav-bg')).toBe('initial')
+    expect(root().getPropertyValue('--color-nav-text')).toBe('initial')
+  })
+
+  it('resets a navbar color that only the saved stylesheet defined', () => {
+    const style = document.createElement('style')
+    style.textContent = ':root { --color-nav-bg: #abcdef; }'
+    document.head.appendChild(style)
+    render(<DesignPreviewBridge />)
+
+    // The first draft after the editor loads has no navbar color: the user
+    // cleared it, or never had one.
+    sendTheme({ '--color-bg': '#112233' })
+
+    expect(root().getPropertyValue('--color-nav-bg')).toBe('initial')
+    style.remove()
   })
 
   it('keeps the other variables when it removes a cleared navbar color', () => {

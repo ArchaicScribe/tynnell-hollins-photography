@@ -99,6 +99,22 @@ describe('themeToCssVarMap', () => {
       expect([...OPTIONAL_THEME_VARS].sort()).toEqual(optional.sort())
     })
 
+    // A stray space typed into the box is truthy, would define the variable
+    // as blank, and a defined variable never takes the var() fallback, so the
+    // bar would vanish instead of following the button colors.
+    it('treats a blank navbar color as not set', () => {
+      const map = themeToCssVarMap({ ...DEFAULT_THEME, colorNavBg: '   ', colorNavText: ' ' })
+
+      expect(map).not.toHaveProperty('--color-nav-bg')
+      expect(map).not.toHaveProperty('--color-nav-text')
+    })
+
+    it('trims the navbar color it writes', () => {
+      const map = themeToCssVarMap({ ...DEFAULT_THEME, colorNavBg: '  #102030 ' })
+
+      expect(map['--color-nav-bg']).toBe('#102030')
+    })
+
     it('lets the background be set without the text, and the reverse', () => {
       const bgOnly = themeToCssVarMap({ ...DEFAULT_THEME, colorNavBg: '#102030' })
       const textOnly = themeToCssVarMap({ ...DEFAULT_THEME, colorNavText: '#f0e0d0' })

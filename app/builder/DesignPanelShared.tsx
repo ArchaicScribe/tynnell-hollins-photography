@@ -162,8 +162,12 @@ export function ColorInput({
       <input
         type="color"
         value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : '#000000'}
+        aria-label={ariaLabel ? `${ariaLabel} picker` : undefined}
         onChange={(e) => onChange(e.target.value)}
-        style={{ width: 36, height: 32, padding: 0, border: '1px solid #2a2a2a', borderRadius: 4, background: 'none', cursor: 'pointer' }}
+        // An empty value shows the picker's black, which was never chosen, so
+        // dim it. Only for fields that can be empty (those that pass a
+        // placeholder): every other color always has a value.
+        style={{ width: 36, height: 32, padding: 0, border: '1px solid #2a2a2a', borderRadius: 4, background: 'none', cursor: 'pointer', ...(placeholder && !value ? { opacity: 0.35 } : {}) }}
       />
       <input
         type="text"
@@ -257,6 +261,9 @@ export function DesignSections({
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
           The menu bar is see-through over the top of a page and turns solid once visitors scroll. These set its colors
           from then on. Left empty, it follows your button colors.
+        </p>
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          If you change the bar color, check that the text color still reads on it.
         </p>
       </AccordionRow>
 

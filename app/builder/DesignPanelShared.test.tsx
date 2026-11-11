@@ -46,6 +46,25 @@ describe('Design panel: Navbar section', () => {
     expect(set).toHaveBeenCalledWith('colorNavText', '#f0e0d0')
   })
 
+  // An empty navbar color is not black. The swatch has no value to show, so
+  // it is dimmed rather than presenting a black that was never chosen.
+  it('dims the swatch while the navbar color is empty, and not once it is set', () => {
+    renderPanel({ colorNavBg: '' })
+    const empty = screen.getByLabelText('Navbar color picker') as HTMLElement
+    expect(empty.style.opacity).toBe('0.35')
+    cleanup()
+
+    renderPanel({ colorNavBg: '#102030' })
+    const set = screen.getByLabelText('Navbar color picker') as HTMLElement
+    expect(set.style.opacity).toBe('')
+  })
+
+  it('tells the user to check text contrast when changing the bar color', () => {
+    renderPanel()
+
+    expect(screen.getByText(/check that the text color still reads/i)).toBeTruthy()
+  })
+
   it('shows no reset while a color is following the button colors', () => {
     renderPanel({ colorNavBg: '', colorNavText: '' })
 

@@ -32,9 +32,12 @@ export function DesignPreviewBridge() {
           document.documentElement.style.setProperty(key, value)
         }
         // A cleared optional color is absent from the draft rather than
-        // empty, so drop whatever an earlier draft left behind.
+        // empty. removeProperty would only uncover the saved value from the
+        // server-rendered :root stylesheet, so set `initial` (the
+        // guaranteed-invalid value for a custom property): it wins over the
+        // stylesheet and lets the consumer's var() fallback apply.
         for (const key of OPTIONAL_THEME_VARS) {
-          if (!(key in data.vars)) document.documentElement.style.removeProperty(key)
+          if (!(key in data.vars)) document.documentElement.style.setProperty(key, 'initial')
         }
       }
       if (typeof data.animationsEnabled === 'boolean') {
