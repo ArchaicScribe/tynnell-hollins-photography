@@ -194,6 +194,7 @@ export interface User {
 export interface Photo {
   id: number;
   originalKey?: string | null;
+  originalFilename?: string | null;
   /**
    * Your private label for this photo - never shown to visitors. Auto-filled from the filename. Rename it to something meaningful for you: "Smith Wedding - First Dance", "Outdoor Portraits - Golden Hour". To add text that appears on your live site beneath this photo, use the Caption field below.
    */
@@ -314,6 +315,7 @@ export interface Gallery {
   seoIndexable?: boolean | null;
   clientName?: string | null;
   clientEmail?: string | null;
+  eventDate?: string | null;
   expiresAt?: string | null;
   expiryReminderSent?: boolean | null;
   updatedAt: string;
@@ -747,6 +749,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface PhotosSelect<T extends boolean = true> {
   originalKey?: T;
+  originalFilename?: T;
   title?: T;
   alt?: T;
   category?: T;
@@ -827,6 +830,7 @@ export interface GalleriesSelect<T extends boolean = true> {
   seoIndexable?: T;
   clientName?: T;
   clientEmail?: T;
+  eventDate?: T;
   expiresAt?: T;
   expiryReminderSent?: T;
   updatedAt?: T;
@@ -1186,6 +1190,8 @@ export interface SiteDesign {
   colorBgOverlay?: string | null;
   colorBtnText?: string | null;
   colorBtnHover?: string | null;
+  colorNavBg?: string | null;
+  colorNavText?: string | null;
   colorBorder?: string | null;
   colorBorderSubtle?: string | null;
   colorBorderSolid?: string | null;
@@ -1427,6 +1433,8 @@ export interface SiteDesignSelect<T extends boolean = true> {
   colorBgOverlay?: T;
   colorBtnText?: T;
   colorBtnHover?: T;
+  colorNavBg?: T;
+  colorNavText?: T;
   colorBorder?: T;
   colorBorderSubtle?: T;
   colorBorderSolid?: T;

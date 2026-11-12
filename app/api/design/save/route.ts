@@ -28,6 +28,8 @@ const FIELDS = [
   'colorBgOverlay',
   'colorBtnText',
   'colorBtnHover',
+  'colorNavBg',
+  'colorNavText',
   'colorBorder',
   'colorBorderSubtle',
   'colorBorderSolid',

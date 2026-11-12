@@ -4,6 +4,7 @@ import { redirect, notFound } from 'next/navigation'
 import payloadConfig from '@payload-config'
 import type { Gallery, Photo } from '@/payload-types'
 import { GalleryEditorClient } from './GalleryEditorClient'
+import { photoItemFromDoc } from './photoItem'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,9 @@ export type PhotoItem = {
   thumbUrl: string | null
   alt: string | null
   filename: string | null
+  // The name as uploaded, without Payload's de-dup suffix. Null for photos
+  // uploaded before it was kept.
+  originalFilename: string | null
   category: string | null
 }
 
@@ -58,16 +62,7 @@ export default async function GalleryEditorPage({ params, searchParams }: Props)
         .flatMap(item => {
           const p = item.photo
           if (typeof p !== 'object' || !p) return []
-          const photo = p as Photo
-          const result: PhotoItem = {
-            id: photo.id,
-            url: photo.sizes?.card?.url ?? photo.url ?? null,
-            thumbUrl: photo.sizes?.thumbnail?.url ?? photo.sizes?.card?.url ?? photo.url ?? null,
-            alt: photo.alt ?? null,
-            filename: photo.filename ?? null,
-            category: (photo.category as string | null) ?? null,
-          }
-          return [result]
+          return [photoItemFromDoc(p as Photo)]
         })
     : []
 
@@ -108,6 +103,7 @@ export default async function GalleryEditorPage({ params, searchParams }: Props)
       initialSeoIndexable={gallery.seoIndexable ?? true}
       initialClientName={gallery.clientName ?? ''}
       initialClientEmail={gallery.clientEmail ?? ''}
+      initialEventDate={typeof gallery.eventDate === 'string' ? gallery.eventDate.slice(0, 10) : ''}
       initialExpiresAt={typeof gallery.expiresAt === 'string' ? gallery.expiresAt.slice(0, 10) : ''}
       initialCoverId={coverPhoto?.id ?? null}
       initialCoverThumb={coverPhoto?.sizes?.card?.url ?? coverPhoto?.url ?? null}

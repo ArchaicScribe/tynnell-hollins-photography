@@ -6,6 +6,7 @@ import { isValidEmail } from '@/app/lib/validation'
 import { extractPayloadErrorMessage } from '@/app/lib/payloadError'
 import type { PhotoItem, GalleryListItem } from './page'
 import { FavoritesPanel } from './FavoritesPanel'
+import { photoItemFromDoc } from './photoItem'
 
 const CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
 
@@ -28,6 +29,7 @@ type Props = {
   initialSeoIndexable: boolean
   initialClientName: string
   initialClientEmail: string
+  initialEventDate: string
   initialExpiresAt: string
   initialCoverId: number | null
   initialCoverThumb: string | null
@@ -53,6 +55,7 @@ export function GalleryEditorClient({
   initialSeoIndexable,
   initialClientName,
   initialClientEmail,
+  initialEventDate,
   initialExpiresAt,
   initialCoverId,
   initialCoverThumb,
@@ -75,6 +78,7 @@ export function GalleryEditorClient({
   const [seoIndexable, setSeoIndexable] = useState(initialSeoIndexable)
   const [clientName, setClientName] = useState(initialClientName)
   const [clientEmail, setClientEmail] = useState(initialClientEmail)
+  const [eventDate, setEventDate] = useState(initialEventDate)
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt)
   const [showShareModal, setShowShareModal] = useState(false)
   const [sharing, setSharing] = useState(false)
@@ -100,11 +104,6 @@ export function GalleryEditorClient({
   const [uploadError, setUploadError] = useState('')
   const [sidebarSection, setSidebarSection] = useState<'galleries' | 'settings' | 'favorites'>(initialFavoritesListId ? 'favorites' : 'galleries')
   const [gallerySearch, setGallerySearch] = useState('')
-  const [showNewModal, setShowNewModal] = useState(false)
-  const [newTitle, setNewTitle] = useState('')
-  const [newCategory, setNewCategory] = useState<string>('portraits')
-  const [creating, setCreating] = useState(false)
-  const [createError, setCreateError] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [duplicating, setDuplicating] = useState(false)
@@ -205,47 +204,6 @@ export function GalleryEditorClient({
     setSharing(false)
   }
 
-  // Pre-select the Gallery Presets default category (TYN-323), if one is set.
-  // Status/tapedStyle/featured/allowDownload are applied server-side by the
-  // Galleries collection's create hook, so they don't need a value here.
-  const openNewGalleryModal = () => {
-    setNewTitle('')
-    setNewCategory('portraits')
-    setCreateError('')
-    setShowNewModal(true)
-    fetch('/api/globals/gallery-presets', { credentials: 'include' })
-      .then(r => r.json())
-      .then((d: { defaultCategory?: string | null }) => {
-        if (d.defaultCategory) setNewCategory(d.defaultCategory)
-      })
-      .catch(() => {})
-  }
-
-  const createGallery = async () => {
-    if (!newTitle.trim()) return
-    setCreating(true)
-    setCreateError('')
-    try {
-      const res = await fetch('/api/galleries', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle.trim(), category: newCategory }),
-      })
-      if (res.ok) {
-        const data = await res.json() as { doc?: { id: number } }
-        const id = data.doc?.id
-        if (id) window.location.href = `/gallery-editor/${id}`
-      } else {
-        const body = await res.json().catch(() => null)
-        setCreateError(extractPayloadErrorMessage(body, 'Could not create gallery. Please try again.'))
-      }
-    } catch {
-      setCreateError('Could not create gallery. Check your connection.')
-    }
-    setCreating(false)
-  }
-
   const setField = <T,>(setter: (v: T) => void) => (v: T) => {
     setter(v)
     markChanged()
@@ -287,14 +245,7 @@ export function GalleryEditorClient({
       if (res.ok) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = await res.json() as { docs: any[] }
-        setLibraryPhotos(data.docs.map((p: { id: number; url?: string; sizes?: { card?: { url?: string }; thumbnail?: { url?: string } }; alt?: string; filename?: string; category?: string }) => ({
-          id: p.id,
-          url: p.sizes?.card?.url ?? p.url ?? null,
-          thumbUrl: p.sizes?.thumbnail?.url ?? p.sizes?.card?.url ?? p.url ?? null,
-          alt: p.alt ?? null,
-          filename: p.filename ?? null,
-          category: p.category ?? null,
-        })))
+        setLibraryPhotos(data.docs.map(photoItemFromDoc))
         setLibraryLoaded(true)
       }
     } catch {
@@ -356,14 +307,7 @@ export function GalleryEditorClient({
         // portfolio grids, and client gallery uploads must not land there by
         // default. Tagging is left as an explicit choice in the photo library.
         const doc = await uploadPhotoToLibrary(accepted[i])
-        newPhotos.push({
-          id: doc.id,
-          url: doc.sizes?.card?.url ?? doc.url ?? null,
-          thumbUrl: doc.sizes?.thumbnail?.url ?? doc.sizes?.card?.url ?? doc.url ?? null,
-          alt: doc.alt ?? null,
-          filename: doc.filename ?? null,
-          category: doc.category ?? null,
-        })
+        newPhotos.push(photoItemFromDoc(doc))
       } catch (e) {
         setUploadError(e instanceof Error ? e.message : 'Upload failed.')
       }
@@ -412,6 +356,7 @@ export function GalleryEditorClient({
           photos: photos.map(p => ({ photo: p.id })),
           clientName: clientName.trim() || null,
           clientEmail: clientEmail.trim() || null,
+          eventDate: eventDate || null,
           expiresAt: expiresAt || null,
         }),
       })
@@ -451,7 +396,7 @@ export function GalleryEditorClient({
     autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos, clientName, clientEmail, expiresAt])
+  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos, clientName, clientEmail, eventDate, expiresAt])
 
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
@@ -482,55 +427,10 @@ export function GalleryEditorClient({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos])
+  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos, eventDate])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
-
-      {/* New gallery modal */}
-      {showNewModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="new-gallery-title"
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onClick={e => { if (e.target === e.currentTarget) setShowNewModal(false) }}
-          onKeyDown={e => { if (e.key === 'Escape') setShowNewModal(false) }}
-        >
-          <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '2rem', width: 380, display: 'flex', flexDirection: 'column', gap: '1.25rem', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
-            <h2 id="new-gallery-title" style={{ margin: 0, fontFamily: ui, fontSize: '1.1rem', fontWeight: 600, color: '#e6e1de', letterSpacing: '-0.01em' }}>Create new gallery</h2>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Gallery name</span>
-              <input
-                type="text"
-                value={newTitle}
-                onChange={e => setNewTitle(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') void createGallery() }}
-                placeholder="e.g. Smith Wedding"
-                autoFocus
-                style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.9rem', outline: 'none', fontFamily: ui }}
-              />
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a', fontFamily: ui }}>Category</span>
-              <select
-                value={newCategory}
-                onChange={e => setNewCategory(e.target.value)}
-                style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.9rem', outline: 'none', fontFamily: ui, cursor: 'pointer' }}
-              >
-                {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-              </select>
-            </label>
-            {createError && <p role="alert" style={{ margin: 0, fontSize: '0.78rem', color: '#f0a3a3', fontFamily: ui }}>{createError}</p>}
-            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
-              <button type="button" onClick={() => setShowNewModal(false)} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 6, padding: '0.5rem 1.1rem', fontSize: '0.85rem', cursor: 'pointer', fontFamily: ui, fontWeight: 500 }}>Cancel</button>
-              <button type="button" onClick={() => void createGallery()} disabled={!newTitle.trim() || creating} aria-busy={creating} style={{ background: '#1db954', border: 'none', color: '#fff', borderRadius: 6, padding: '0.5rem 1.3rem', fontSize: '0.85rem', fontWeight: 600, cursor: (!newTitle.trim() || creating) ? 'not-allowed' : 'pointer', fontFamily: ui, opacity: (!newTitle.trim() || creating) ? 0.5 : 1 }}>
-                {creating ? 'Creating...' : 'Create gallery'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete confirm modal */}
       {showDeleteConfirm && (
@@ -856,14 +756,13 @@ export function GalleryEditorClient({
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
               <div style={{ padding: '0.55rem 0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
                 <span style={{ fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3a3a3a', fontFamily: ui }}>{allGalleries.length} Galleries</span>
-                <button
-                  type="button"
-                  onClick={openNewGalleryModal}
-                  style={{ background: 'none', border: 'none', color: '#1db954', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui, display: 'flex', alignItems: 'center', gap: '0.2rem', padding: '0.1rem 0.25rem' }}
+                <Link
+                  href="/gallery-editor/new"
+                  style={{ color: '#1db954', fontSize: '0.78rem', fontWeight: 600, fontFamily: ui, display: 'flex', alignItems: 'center', gap: '0.2rem', padding: '0.1rem 0.25rem', textDecoration: 'none' }}
                   aria-label="New gallery"
                 >
                   + Add
-                </button>
+                </Link>
               </div>
               {allGalleries.length > 5 && (
                 <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
@@ -963,6 +862,17 @@ export function GalleryEditorClient({
                       <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                     ))}
                   </select>
+                </label>
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Event date</span>
+                  <input
+                    type="date"
+                    value={eventDate}
+                    onChange={e => setField(setEventDate)(e.target.value)}
+                    style={{ background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui, colorScheme: 'dark' }}
+                    aria-label="Event date"
+                  />
                 </label>
 
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>

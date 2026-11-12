@@ -6,6 +6,7 @@ export type IngestedPhoto = {
   id: number
   url?: string | null
   filename?: string | null
+  originalFilename?: string | null
   alt?: string | null
   category?: string | null
   sizes?: {

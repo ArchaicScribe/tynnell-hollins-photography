@@ -532,6 +532,24 @@ describe('POST /api/favorites/send', () => {
     expect(email.html).toContain('&lt;img src=x')
   })
 
+  // TYN-13 follow-up: Tynnell searches these names in Lightroom, so the email
+  // lists the name as uploaded, not Payload's "smith-2-1.jpg" de-dup name.
+  it('lists the file name as uploaded, not the de-duplicated stored name', async () => {
+    const dup = {
+      id: 2,
+      filename: 'smith-2-1.jpg',
+      originalFilename: 'smith-2.jpg',
+      sizes: { thumbnail: { url: 'https://media.example/smith-2-thumb.jpg' } },
+    }
+    galleries = [gallery({ photos: [{ photo: dup }] })]
+    await startAs()
+    await heart(2)
+    await sendToTynnell()
+    const html: string = sendMock.mock.calls[0][0].html
+    expect(html).toContain('smith-2.jpg')
+    expect(html).not.toContain('smith-2-1.jpg')
+  })
+
   it('escapes the thumbnail address like every other value in the email', async () => {
     const odd = { id: 2, filename: 'smith-2.jpg', sizes: { thumbnail: { url: 'https://media.example/a"b<c>.jpg' } } }
     galleries = [gallery({ photos: [{ photo: odd }] })]

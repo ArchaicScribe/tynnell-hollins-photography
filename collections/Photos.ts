@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import { recordOriginalFilename } from './photoOriginalFilename'
 import { r2OriginalsStore } from '@/app/lib/privateOriginals'
 import { photoOriginalHooks } from './photoOriginals'
 
@@ -46,7 +47,7 @@ export const Photos: CollectionConfig = {
   disableDuplicate: true,
   hooks: {
     beforeOperation: [photoOriginals.beforeOperation],
-    beforeValidate: [autoPopulateFromFilename],
+    beforeValidate: [autoPopulateFromFilename, recordOriginalFilename],
     beforeChange: [photoOriginals.beforeChange],
     afterChange: [revalidatePhoto],
     afterOperation: [photoOriginals.afterOperation],
@@ -124,6 +125,14 @@ export const Photos: CollectionConfig = {
       type: 'text',
       admin: { hidden: true },
       access: { read: ({ req }) => Boolean(req.user) },
+    },
+    {
+      // The name of the file as uploaded, before Payload's de-dup suffix
+      // ("name-1.jpg"). Filled by recordOriginalFilename; used by the gallery
+      // editor's "Copy file names" so a Lightroom search matches.
+      name: 'originalFilename',
+      type: 'text',
+      admin: { hidden: true },
     },
     {
       name: 'title',

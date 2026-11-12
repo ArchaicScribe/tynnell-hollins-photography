@@ -21,6 +21,44 @@ describe('scripts/migrate-db.mjs', () => {
     expect(ends.length).toBe(blocks.length)
   })
 
+  // TYN-352: the navbar colours are deliberately empty until chosen (empty
+  // means "follow the button colours"), so unlike the other palette columns
+  // they get no default and no backfill. A backfill would overwrite the
+  // olive the navbar shows today.
+  describe('site_design navbar colors (TYN-352)', () => {
+    for (const column of ['color_nav_bg', 'color_nav_text']) {
+      it(`adds ${column} as a plain varchar with no default`, () => {
+        expect(source).toMatch(
+          new RegExp(`ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "${column}" varchar\\s*\`\\)`),
+        )
+      })
+
+      it(`does not backfill ${column}`, () => {
+        expect(source).not.toMatch(new RegExp(`UPDATE "site_design" SET "${column}"`))
+        expect(source).not.toMatch(new RegExp(`\\['${column}'`))
+      })
+    }
+  })
+
+  // TYN-311: galleries.event_date is a Payload `date` field, which Payload
+  // stores as timestamp(3) with time zone. Anything else here and the schema
+  // push in `next dev` would try to alter the column.
+  describe('galleries event date (TYN-311)', () => {
+    it('adds event_date as a nullable timestamp with time zone', () => {
+      expect(source).toMatch(
+        /ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "event_date" timestamp\(3\) with time zone\s*`\)/,
+      )
+    })
+  })
+
+  // TYN-13 follow-up: photos.original_filename is a Payload `text` field, so
+  // varchar, nullable, matching what the schema push would create.
+  describe('photos original filename (TYN-13)', () => {
+    it('adds original_filename as a nullable varchar', () => {
+      expect(source).toMatch(/ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "original_filename" varchar\s*`\)/)
+    })
+  })
+
   // `next dev` syncs the database to the Payload config. Anything this
   // script creates under a different name, or with a different rule, than
   // Payload would generate is dropped or duplicated the next time dev runs.

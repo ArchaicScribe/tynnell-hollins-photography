@@ -166,6 +166,18 @@ export const SiteDesign: GlobalConfig = {
       label: 'Button hover color',
       defaultValue: '#807F7F',
     },
+    // No defaultValue on purpose (TYN-352): empty means the navbar follows the
+    // button colours, as it did before it had its own.
+    {
+      name: 'colorNavBg',
+      type: 'text',
+      label: 'Navbar color (after scrolling)',
+    },
+    {
+      name: 'colorNavText',
+      type: 'text',
+      label: 'Navbar text color (after scrolling)',
+    },
     {
       name: 'colorBorder',
       type: 'text',

@@ -39,11 +39,12 @@ function renderEditor(overrides: Partial<Props> = {}) {
     initialSeoIndexable: true,
     initialClientName: '',
     initialClientEmail: '',
+    initialEventDate: '',
     initialExpiresAt: '',
     initialCoverId: null,
     initialCoverThumb: null,
     initialHeroUrl: null,
-    initialPhotos: [{ id: 1, url: 'https://media.example/1-card.jpg', thumbUrl: 'https://media.example/1-thumb.jpg', alt: null, filename: 'smith-1.jpg', category: 'weddings' }],
+    initialPhotos: [{ id: 1, url: 'https://media.example/1-card.jpg', thumbUrl: 'https://media.example/1-thumb.jpg', alt: null, filename: 'smith-1.jpg', originalFilename: null, category: 'weddings' }],
     allGalleries: [{ id: 5, title: 'Smith Wedding', status: 'published', coverThumb: null, photoCount: 1 }],
     ...overrides,
   }

@@ -17,14 +17,14 @@
   transition: background 0.35s ease, padding 0.3s ease;
 }
 
-/* Solid brand-olive bar on scroll, matching the reference. This reuses the
-   button tokens rather than inventing a hardcoded olive, so it stays
-   adjustable from /design (Colors > Button color / Button text color). If the
-   nav ever needs a colour independent of the buttons, that wants its own
-   SiteDesign field rather than a literal here. */
+/* Solid bar on scroll (the olive, matching the reference). Its colours are
+   adjustable from /design > Navbar (TYN-352). Until those are set the two
+   variables are not written at all, so each falls back to the button colour
+   the navbar used before it had its own. Keep that fallback: a literal here
+   would hide the olive the day someone clears the setting. */
 .scrolled,
 .menuOpen {
-  background: var(--color-btn-bg);
+  background: var(--color-nav-bg, var(--color-btn-bg));
   padding: 0.85rem var(--padding-x);
 }
 
@@ -75,12 +75,12 @@
 
 .scrolled .brandMark,
 .menuOpen .brandMark {
-  color: var(--color-btn-text);
+  color: var(--color-nav-text, var(--color-btn-text));
 }
 
 .scrolled .brandSub,
 .menuOpen .brandSub {
-  color: color-mix(in srgb, var(--color-btn-text) 70%, transparent);
+  color: color-mix(in srgb, var(--color-nav-text, var(--color-btn-text)) 70%, transparent);
 }
 
 /* ── Desktop link rows ───────────────────────────────────── */
@@ -124,7 +124,7 @@
 
 .scrolled .cta,
 .menuOpen .cta {
-  color: var(--color-btn-text);
+  color: var(--color-nav-text, var(--color-btn-text));
 }
 
 /* ── Nav links ───────────────────────────────────────────── */
@@ -154,12 +154,12 @@
 
 .scrolled .link,
 .menuOpen .link {
-  color: color-mix(in srgb, var(--color-btn-text) 82%, transparent);
+  color: color-mix(in srgb, var(--color-nav-text, var(--color-btn-text)) 82%, transparent);
 }
 
 .scrolled .link:hover,
 .menuOpen .link:hover {
-  color: var(--color-btn-text);
+  color: var(--color-nav-text, var(--color-btn-text));
 }
 
 /* ── Portfolio dropdown ──────────────────────────────────── */
@@ -251,7 +251,7 @@
 
 .scrolled .bar,
 .menuOpen .bar {
-  background: var(--color-btn-text);
+  background: var(--color-nav-text, var(--color-btn-text));
 }
 
 .hamburgerOpen .bar:nth-child(1) {

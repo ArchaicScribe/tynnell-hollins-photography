@@ -864,6 +864,45 @@ async function run() {
     console.log('✓ site_design palette columns ready')
 
     // ------------------------------------------------------------------
+    // Migration 20261111_100000: navbar colours on site_design (TYN-352)
+    // The solid navbar used the button colours. These two let it have its own.
+    // No default and no backfill on purpose: NULL means "follow the button
+    // colours", so the live navbar does not change until someone picks one.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "color_nav_bg" varchar
+    `)
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "color_nav_text" varchar
+    `)
+    console.log('✓ site_design navbar color columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20261112_100000: galleries.event_date (TYN-311)
+    // Optional date of the session or event, set on the Create New
+    // Collection page. A Payload `date` field is timestamp(3) with time
+    // zone, so it is created as exactly that to match the schema push.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "event_date" timestamp(3) with time zone
+    `)
+    console.log('✓ galleries.event_date column ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20261112_110000: photos.original_filename (TYN-13 follow-up)
+    // The name of the file as uploaded, before Payload's de-dup suffix. A
+    // Payload `text` field is varchar, so it is created as exactly that.
+    // Photos uploaded earlier stay NULL; readers fall back to filename.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "original_filename" varchar
+    `)
+    console.log('✓ photos.original_filename column ready')
+
+    // ------------------------------------------------------------------
     // Migration 20260806_110000: Rising Roots type system (four font roles)
     // heading_font and body_font are REAL Postgres enums, so new faces need
     // ALTER TYPE ... ADD VALUE rather than a plain column change - same trap
