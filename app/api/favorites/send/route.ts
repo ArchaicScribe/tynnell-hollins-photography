@@ -6,6 +6,7 @@ import { currentList, favoritesBody, noList, openFavoritesGallery } from '@/app/
 import { favoritesEmailHtml } from '@/app/lib/emails'
 import { favoritesListSendRatelimit, favoritesSendRatelimit, getClientIp, safeLimit } from '@/app/lib/ratelimit'
 import { escapeHtml } from '@/app/lib/validation'
+import { fileNameForSearch } from '@/app/lib/photoFileName'
 import { EMAIL_FROM, RATE_LIMIT_ERROR, SITE_URL } from '@/app/lib/constants'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -66,7 +67,10 @@ export async function POST(req: NextRequest) {
   }
 
   const byId = new Map(ctx.photos.filter((p): p is Photo => typeof p === 'object').map(p => [p.id, p]))
-  const fileName = (id: number) => escapeHtml(byId.get(id)?.filename ?? `Photo ${id}`)
+  const fileName = (id: number) => {
+    const photo = byId.get(id)
+    return escapeHtml((photo && fileNameForSearch(photo)) ?? `Photo ${id}`)
+  }
   const thumbUrl = (id: number) => {
     const p = byId.get(id)
     const url = p?.sizes?.thumbnail?.url ?? p?.sizes?.card?.url ?? p?.url
