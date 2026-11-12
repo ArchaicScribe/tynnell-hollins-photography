@@ -39,6 +39,7 @@ function renderEditor(overrides: Partial<Props> = {}) {
     initialSeoIndexable: true,
     initialClientName: '',
     initialClientEmail: '',
+    initialEventDate: '',
     initialExpiresAt: '',
     initialCoverId: null,
     initialCoverThumb: null,

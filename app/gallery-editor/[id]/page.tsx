@@ -108,6 +108,7 @@ export default async function GalleryEditorPage({ params, searchParams }: Props)
       initialSeoIndexable={gallery.seoIndexable ?? true}
       initialClientName={gallery.clientName ?? ''}
       initialClientEmail={gallery.clientEmail ?? ''}
+      initialEventDate={typeof gallery.eventDate === 'string' ? gallery.eventDate.slice(0, 10) : ''}
       initialExpiresAt={typeof gallery.expiresAt === 'string' ? gallery.expiresAt.slice(0, 10) : ''}
       initialCoverId={coverPhoto?.id ?? null}
       initialCoverThumb={coverPhoto?.sizes?.card?.url ?? coverPhoto?.url ?? null}

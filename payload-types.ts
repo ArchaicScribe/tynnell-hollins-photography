@@ -313,6 +313,7 @@ export interface Gallery {
   seoIndexable?: boolean | null;
   clientName?: string | null;
   clientEmail?: string | null;
+  eventDate?: string | null;
   expiresAt?: string | null;
   expiryReminderSent?: boolean | null;
   updatedAt: string;
@@ -825,6 +826,7 @@ export interface GalleriesSelect<T extends boolean = true> {
   seoIndexable?: T;
   clientName?: T;
   clientEmail?: T;
+  eventDate?: T;
   expiresAt?: T;
   expiryReminderSent?: T;
   updatedAt?: T;

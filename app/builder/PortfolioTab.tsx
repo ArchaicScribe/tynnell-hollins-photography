@@ -1,6 +1,5 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { extractPayloadErrorMessage } from '@/app/lib/payloadError'
 
 const ui = "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 const teal = '#0d9488'
@@ -123,97 +122,6 @@ function FilterDropdown({ label, value, options, onChange }: {
 }
 
 // ---------------------------------------------------------------------------
-// New collection modal
-// ---------------------------------------------------------------------------
-
-function NewCollectionModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState<string>('portraits')
-  const [creating, setCreating] = useState(false)
-  const [error, setError] = useState('')
-
-  // Pre-select the Gallery Presets default category (TYN-323), if one is set.
-  // Status/tapedStyle/featured/allowDownload are applied server-side by the
-  // Galleries collection's create hook, so they don't need a value here.
-  useEffect(() => {
-    fetch('/api/globals/gallery-presets', { credentials: 'include' })
-      .then(r => r.json())
-      .then((d: { defaultCategory?: string | null }) => {
-        if (d.defaultCategory) setCategory(d.defaultCategory)
-      })
-      .catch(() => {})
-  }, [])
-
-  const create = async () => {
-    if (!title.trim()) return
-    setCreating(true); setError('')
-    try {
-      const res = await fetch('/api/galleries', {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), category }),
-      })
-      if (res.ok) {
-        const data = await res.json() as { doc?: { id: number } }
-        const id = data.doc?.id
-        if (id) {
-          onCreated()
-          window.location.href = `/gallery-editor/${id}`
-        } else {
-          onClose()
-        }
-      } else {
-        const body = await res.json().catch(() => null)
-        setError(extractPayloadErrorMessage(body, 'Could not create collection. Please try again.'))
-        setCreating(false)
-      }
-    } catch { setError('Connection error.'); setCreating(false) }
-  }
-
-  return (
-    <div
-      role="dialog" aria-modal="true" aria-labelledby="new-col-label"
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-      onKeyDown={e => { if (e.key === 'Escape') onClose() }}
-    >
-      <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '1.75rem', width: 380, display: 'flex', flexDirection: 'column', gap: '1.1rem', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}>
-        <h2 id="new-col-label" style={{ margin: 0, fontFamily: ui, fontSize: '1rem', fontWeight: 600, color: '#e6e1de' }}>New collection</h2>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-          <span style={{ fontFamily: ui, fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a' }}>Collection name</span>
-          <input
-            autoFocus type="text" value={title}
-            onChange={e => setTitle(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') void create() }}
-            placeholder="e.g. Smith Wedding"
-            style={{ background: '#111', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 7, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.88rem', outline: 'none', fontFamily: ui }}
-          />
-        </label>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-          <span style={{ fontFamily: ui, fontSize: '0.72rem', fontWeight: 500, color: '#9b9a9a' }}>Category</span>
-          <select
-            value={category} onChange={e => setCategory(e.target.value)}
-            style={{ background: '#111', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 7, padding: '0.6rem 0.75rem', color: '#e6e1de', fontSize: '0.85rem', outline: 'none', fontFamily: ui, cursor: 'pointer' }}
-          >
-            {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-          </select>
-        </label>
-        {error && <p role="alert" style={{ margin: 0, fontFamily: ui, fontSize: '0.75rem', color: '#f87171' }}>{error}</p>}
-        <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
-          <button type="button" onClick={onClose} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#9b9a9a', borderRadius: 7, padding: '0.5rem 1rem', fontSize: '0.82rem', fontFamily: ui, cursor: 'pointer' }}>Cancel</button>
-          <button
-            type="button" onClick={() => void create()} disabled={!title.trim() || creating} aria-busy={creating}
-            style={{ background: teal, border: 'none', color: '#fff', borderRadius: 7, padding: '0.5rem 1.2rem', fontSize: '0.82rem', fontWeight: 600, fontFamily: ui, cursor: !title.trim() || creating ? 'not-allowed' : 'pointer', opacity: !title.trim() || creating ? 0.5 : 1 }}
-          >
-            {creating ? 'Creating...' : 'Create collection'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // Main tab component
 // ---------------------------------------------------------------------------
 
@@ -234,7 +142,6 @@ function shapeGallery(g: any): GalleryCard {
 export function PortfolioTab({ initialGalleries = [] }: { initialGalleries?: GalleryCard[] }) {
   const [galleries, setGalleries] = useState<GalleryCard[]>(initialGalleries)
   const [loading, setLoading] = useState(initialGalleries.length === 0)
-  const [showModal, setShowModal] = useState(false)
   const [filterCat, setFilterCat] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string | null>(null)
   const [search, setSearch] = useState('')
@@ -258,8 +165,6 @@ export function PortfolioTab({ initialGalleries = [] }: { initialGalleries?: Gal
     if (initialGalleries.length === 0) fetchGalleries()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const openModal = useCallback(() => setShowModal(true), [])
 
   const moveGallery = (from: number, to: number) => {
     if (from === to) return
@@ -290,8 +195,6 @@ export function PortfolioTab({ initialGalleries = [] }: { initialGalleries?: Gal
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      {showModal && <NewCollectionModal onClose={() => setShowModal(false)} onCreated={fetchGalleries} />}
-
       {/* Header bar */}
       <div style={{ height: 60, borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', padding: '0 1.75rem', flexShrink: 0, gap: '1rem' }}>
         <h1 style={{ margin: 0, fontFamily: ui, fontSize: '1.25rem', fontWeight: 700, color: '#d6d1ce', letterSpacing: '-0.02em', flexShrink: 0 }}>Collections</h1>
@@ -322,22 +225,25 @@ export function PortfolioTab({ initialGalleries = [] }: { initialGalleries?: Gal
             Photo Library
           </a>
           <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
-            <button
-              type="button" onClick={openModal}
-              style={{ padding: '0.42rem 1rem', background: teal, border: 'none', color: '#fff', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui, whiteSpace: 'nowrap' }}
+            {/* /gallery-editor has its own root layout, so a plain <a> (TYN-311). */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
+              href="/gallery-editor/new"
+              style={{ padding: '0.42rem 1rem', background: teal, border: 'none', color: '#fff', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui, whiteSpace: 'nowrap', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none' }}
             >
               New Collection
-            </button>
-            <button
-              type="button" aria-label="More collection options" onClick={openModal}
+            </a>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
+              href="/gallery-editor/new" aria-label="More collection options"
               style={{ padding: '0.42rem 0.5rem', background: '#0b8078', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.15)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none' }}
             >
               <ChevronDown size={13} />
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -396,9 +302,10 @@ export function PortfolioTab({ initialGalleries = [] }: { initialGalleries?: Gal
               <div style={{ textAlign: 'center', paddingTop: '5rem' }}>
                 <div style={{ fontSize: '3rem', opacity: 0.05, marginBottom: '1.25rem' }} aria-hidden="true">&#128444;</div>
                 <p style={{ fontFamily: ui, fontSize: '1rem', fontWeight: 500, color: '#4b4b4b', margin: '0 0 1.5rem' }}>No collections yet</p>
-                <button type="button" onClick={openModal} style={{ background: teal, border: 'none', color: '#fff', borderRadius: 7, padding: '0.6rem 1.4rem', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui }}>
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                <a href="/gallery-editor/new" style={{ display: 'inline-block', background: teal, border: 'none', color: '#fff', borderRadius: 7, padding: '0.6rem 1.4rem', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: ui, textDecoration: 'none' }}>
                   Create your first collection
-                </button>
+                </a>
               </div>
             ) : filtered.length === 0 ? (
               <div style={{ textAlign: 'center', paddingTop: '4rem', color: '#4b4b4b', fontFamily: ui, fontSize: '0.9rem' }}>

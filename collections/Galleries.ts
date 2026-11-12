@@ -353,6 +353,17 @@ export const Galleries: CollectionConfig = {
       admin: { hidden: true },
     },
     {
+      // When the session or event took place (TYN-311). Optional; set on the
+      // Create New Collection page or in the gallery editor's Settings tab.
+      name: 'eventDate',
+      type: 'date',
+      label: 'Event Date',
+      admin: {
+        hidden: true,
+        date: { pickerAppearance: 'dayOnly' },
+      },
+    },
+    {
       name: 'expiresAt',
       type: 'date',
       label: 'Expires On',

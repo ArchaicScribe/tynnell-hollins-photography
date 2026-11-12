@@ -28,6 +28,7 @@ type Props = {
   initialSeoIndexable: boolean
   initialClientName: string
   initialClientEmail: string
+  initialEventDate: string
   initialExpiresAt: string
   initialCoverId: number | null
   initialCoverThumb: string | null
@@ -53,6 +54,7 @@ export function GalleryEditorClient({
   initialSeoIndexable,
   initialClientName,
   initialClientEmail,
+  initialEventDate,
   initialExpiresAt,
   initialCoverId,
   initialCoverThumb,
@@ -75,6 +77,7 @@ export function GalleryEditorClient({
   const [seoIndexable, setSeoIndexable] = useState(initialSeoIndexable)
   const [clientName, setClientName] = useState(initialClientName)
   const [clientEmail, setClientEmail] = useState(initialClientEmail)
+  const [eventDate, setEventDate] = useState(initialEventDate)
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt)
   const [showShareModal, setShowShareModal] = useState(false)
   const [sharing, setSharing] = useState(false)
@@ -412,6 +415,7 @@ export function GalleryEditorClient({
           photos: photos.map(p => ({ photo: p.id })),
           clientName: clientName.trim() || null,
           clientEmail: clientEmail.trim() || null,
+          eventDate: eventDate || null,
           expiresAt: expiresAt || null,
         }),
       })
@@ -451,7 +455,7 @@ export function GalleryEditorClient({
     autoSaveTimer.current = setTimeout(() => { void save() }, 2500)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos, clientName, clientEmail, expiresAt])
+  }, [hasChanges, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos, clientName, clientEmail, eventDate, expiresAt])
 
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
@@ -482,7 +486,7 @@ export function GalleryEditorClient({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos])
+  }, [saving, selectMode, title, slug, category, status, featured, tapedStyle, isPasswordProtected, allowDownload, favoritesEnabled, favoritesLimit, seoIndexable, galleryPassword, coverId, photos, eventDate])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#141414', overflow: 'hidden' }}>
@@ -963,6 +967,17 @@ export function GalleryEditorClient({
                       <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                     ))}
                   </select>
+                </label>
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b6a6a', fontFamily: ui }}>Event date</span>
+                  <input
+                    type="date"
+                    value={eventDate}
+                    onChange={e => setField(setEventDate)(e.target.value)}
+                    style={{ background: '#181818', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '0.5rem 0.65rem', color: '#e6e1de', fontSize: '0.875rem', outline: 'none', fontFamily: ui, colorScheme: 'dark' }}
+                    aria-label="Event date"
+                  />
                 </label>
 
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
