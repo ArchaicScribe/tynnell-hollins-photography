@@ -8,12 +8,14 @@ type Req = { method: string; url: string; body?: Record<string, unknown> }
 let requests: Req[]
 let createResponse: () => Response
 let presetCategory: string | null
+let presetGate: Promise<void> | null
 
 const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input)
   const method = init?.method ?? 'GET'
   requests.push({ method, url, body: init?.body ? JSON.parse(String(init.body)) : undefined })
   if (url.startsWith('/api/globals/gallery-presets')) {
+    if (presetGate) await presetGate
     return new Response(JSON.stringify({ defaultCategory: presetCategory }), { status: 200 })
   }
   if (url === '/api/galleries' && method === 'POST') return createResponse()
@@ -35,6 +37,7 @@ const createButton = () => screen.getByRole('button', { name: /create collection
 beforeEach(() => {
   requests = []
   presetCategory = null
+  presetGate = null
   createResponse = () => new Response(JSON.stringify({ doc: { id: 42 } }), { status: 201 })
   fetchMock.mockClear()
   vi.stubGlobal('fetch', fetchMock)
@@ -134,5 +137,31 @@ describe('Create New Collection page', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/connection/i)
     expect(createButton()).toBeEnabled()
+  })
+
+  it('keeps the category the user picked when the presets arrive late', async () => {
+    let release!: () => void
+    presetGate = new Promise<void>(resolve => { release = resolve })
+    presetCategory = 'weddings'
+    const { user } = setup()
+
+    await user.selectOptions(screen.getByRole('combobox', { name: /category/i }), 'families')
+    release()
+    await waitFor(() => expect(requests.some(r => r.url.startsWith('/api/globals/gallery-presets'))).toBe(true))
+    await new Promise(resolve => setTimeout(resolve, 20))
+
+    expect(screen.getByRole('combobox', { name: /category/i })).toHaveValue('families')
+  })
+
+  it('does not offer a second create when the new collection could not be opened', async () => {
+    createResponse = () => new Response(JSON.stringify({ doc: {} }), { status: 201 })
+    const { user } = setup()
+
+    await user.type(nameField(), 'Smith Wedding')
+    await user.click(createButton())
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/could not be opened/i)
+    expect(createButton()).toBeDisabled()
+    expect(creates()).toHaveLength(1)
   })
 })

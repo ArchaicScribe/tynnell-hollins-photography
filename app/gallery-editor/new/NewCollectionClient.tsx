@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { extractPayloadErrorMessage } from '@/app/lib/payloadError'
 import { buildCreateCollectionBody } from '@/app/lib/newCollection'
 
@@ -39,19 +39,25 @@ export function NewCollectionClient({
   const [eventDate, setEventDate] = useState('')
   const [category, setCategory] = useState<string>('portraits')
   const [creating, setCreating] = useState(false)
+  // The collection exists but could not be opened; no second create.
+  const [created, setCreated] = useState(false)
   const [error, setError] = useState('')
+
+  // Set once the user picks a category, so a slow presets response never
+  // overwrites their choice.
+  const categoryPicked = useRef(false)
 
   // Start on the Gallery Presets default category (TYN-323), if one is set.
   useEffect(() => {
     fetch('/api/globals/gallery-presets', { credentials: 'include' })
       .then(r => r.json())
       .then((d: { defaultCategory?: string | null }) => {
-        if (d.defaultCategory) setCategory(d.defaultCategory)
+        if (d.defaultCategory && !categoryPicked.current) setCategory(d.defaultCategory)
       })
       .catch(() => {})
   }, [])
 
-  const canCreate = title.trim().length > 0 && !creating
+  const canCreate = title.trim().length > 0 && !creating && !created
 
   const create = async () => {
     if (!canCreate) return
@@ -71,6 +77,9 @@ export function NewCollectionClient({
           navigate(`/gallery-editor/${id}`)
           return
         }
+        // Created but not openable: keep the button disabled so a retry
+        // cannot make a duplicate.
+        setCreated(true)
         setError('The collection was created, but it could not be opened. Find it in Collections.')
       } else {
         const body = await res.json().catch(() => null)
@@ -128,7 +137,7 @@ export function NewCollectionClient({
             <span style={labelTextStyle}>Category</span>
             <select
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={e => { categoryPicked.current = true; setCategory(e.target.value) }}
               style={{ ...fieldStyle, cursor: 'pointer' }}
             >
               {CATEGORIES.map(c => (
