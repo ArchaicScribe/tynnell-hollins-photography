@@ -891,6 +891,18 @@ async function run() {
     console.log('✓ galleries.event_date column ready')
 
     // ------------------------------------------------------------------
+    // Migration 20261112_110000: photos.original_filename (TYN-13 follow-up)
+    // The name of the file as uploaded, before Payload's de-dup suffix. A
+    // Payload `text` field is varchar, so it is created as exactly that.
+    // Photos uploaded earlier stay NULL; readers fall back to filename.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "original_filename" varchar
+    `)
+    console.log('✓ photos.original_filename column ready')
+
+    // ------------------------------------------------------------------
     // Migration 20260806_110000: Rising Roots type system (four font roles)
     // heading_font and body_font are REAL Postgres enums, so new faces need
     // ALTER TYPE ... ADD VALUE rather than a plain column change - same trap

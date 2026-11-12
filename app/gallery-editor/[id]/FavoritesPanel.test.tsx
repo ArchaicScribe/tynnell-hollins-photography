@@ -52,6 +52,23 @@ const renderPanel = (props: Partial<Parameters<typeof FavoritesPanel>[0]> = {}) 
   render(<FavoritesPanel galleryId={5} enabled photos={photos} {...props} />)
 
 describe('FavoritesPanel', () => {
+  // TYN-13 follow-up: Payload stores a second upload of "smith.jpg" as
+  // "smith-1.jpg". Copying that would not match the exported file in Lightroom.
+  it('copies the file names as uploaded, not the de-duplicated stored names', async () => {
+    const user = setup()
+    renderPanel({
+      photos: [
+        { id: 1, thumbUrl: null, filename: 'smith-1-1.jpg', originalFilename: 'smith-1.jpg' },
+        { id: 3, thumbUrl: null, filename: 'smith-3.jpg', originalFilename: null },
+      ],
+    })
+
+    await user.click(await screen.findByRole('button', { name: /jane smith/i }))
+    await user.click(await screen.findByRole('button', { name: /copy file names/i }))
+
+    expect(writeText).toHaveBeenCalledWith('smith-1.jpg, smith-3.jpg')
+  })
+
   it('loads the lists for this gallery', async () => {
     renderPanel()
     await screen.findByRole('button', { name: /john smith/i })

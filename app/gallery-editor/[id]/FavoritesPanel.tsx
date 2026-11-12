@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { fileNameForSearch } from '@/app/lib/photoFileName'
 
 // Gallery editor's Favorites tab (TYN-13): each client's hearted photos for
 // this gallery, read from /api/galleries/[id]/favorites. Inline styles match
@@ -15,7 +16,7 @@ export type FavoritesPanelList = {
   updatedAt: string
 }
 
-type PanelPhoto = { id: number; thumbUrl: string | null; filename: string | null }
+type PanelPhoto = { id: number; thumbUrl: string | null; filename: string | null; originalFilename?: string | null }
 
 type Props = {
   galleryId: number
@@ -60,7 +61,12 @@ export function FavoritesPanel({ galleryId, enabled, photos, openListId = null }
   }, [galleryId])
 
   const byId = new Map(photos.map(p => [p.id, p]))
-  const fileName = (id: number) => byId.get(id)?.filename ?? `Photo ${id}`
+  // The name as exported, so a Lightroom search matches; the stored filename
+  // has Payload's de-dup suffix ("smith-1.jpg") when a name was uploaded twice.
+  const fileName = (id: number) => {
+    const photo = byId.get(id)
+    return (photo && fileNameForSearch(photo)) ?? `Photo ${id}`
+  }
 
   const copyNames = async (list: FavoritesPanelList) => {
     try {
