@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import { recordOriginalFilename } from './photoOriginalFilename'
 
 // Auto-populate title and alt from the filename so bulk uploads never get
 // blocked by required-field validation. Tynnell can clean up titles/alt text
@@ -36,7 +37,7 @@ export const Photos: CollectionConfig = {
     plural: 'Photos',
   },
   hooks: {
-    beforeValidate: [autoPopulateFromFilename],
+    beforeValidate: [autoPopulateFromFilename, recordOriginalFilename],
     afterChange: [revalidatePhoto],
   },
   upload: {
@@ -101,6 +102,14 @@ export const Photos: CollectionConfig = {
           Field: './components/admin/PhotoEditHeader#PhotoEditHeader',
         },
       },
+    },
+    {
+      // The name of the file as uploaded, before Payload's de-dup suffix
+      // ("name-1.jpg"). Filled by recordOriginalFilename; used by the gallery
+      // editor's "Copy file names" so a Lightroom search matches.
+      name: 'originalFilename',
+      type: 'text',
+      admin: { hidden: true },
     },
     {
       name: 'title',

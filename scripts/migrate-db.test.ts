@@ -51,6 +51,14 @@ describe('scripts/migrate-db.mjs', () => {
     })
   })
 
+  // TYN-13 follow-up: photos.original_filename is a Payload `text` field, so
+  // varchar, nullable, matching what the schema push would create.
+  describe('photos original filename (TYN-13)', () => {
+    it('adds original_filename as a nullable varchar', () => {
+      expect(source).toMatch(/ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "original_filename" varchar\s*`\)/)
+    })
+  })
+
   // `next dev` syncs the database to the Payload config. Anything this
   // script creates under a different name, or with a different rule, than
   // Payload would generate is dropped or duplicated the next time dev runs.

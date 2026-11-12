@@ -193,6 +193,7 @@ export interface User {
  */
 export interface Photo {
   id: number;
+  originalFilename?: string | null;
   /**
    * Your private label for this photo - never shown to visitors. Auto-filled from the filename. Rename it to something meaningful for you: "Smith Wedding - First Dance", "Outdoor Portraits - Golden Hour". To add text that appears on your live site beneath this photo, use the Caption field below.
    */
@@ -746,6 +747,7 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "photos_select".
  */
 export interface PhotosSelect<T extends boolean = true> {
+  originalFilename?: T;
   title?: T;
   alt?: T;
   category?: T;

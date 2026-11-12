@@ -6,6 +6,7 @@ import { isValidEmail } from '@/app/lib/validation'
 import { extractPayloadErrorMessage } from '@/app/lib/payloadError'
 import type { PhotoItem, GalleryListItem } from './page'
 import { FavoritesPanel } from './FavoritesPanel'
+import { photoItemFromDoc } from './photoItem'
 
 const CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
 
@@ -244,14 +245,7 @@ export function GalleryEditorClient({
       if (res.ok) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = await res.json() as { docs: any[] }
-        setLibraryPhotos(data.docs.map((p: { id: number; url?: string; sizes?: { card?: { url?: string }; thumbnail?: { url?: string } }; alt?: string; filename?: string; category?: string }) => ({
-          id: p.id,
-          url: p.sizes?.card?.url ?? p.url ?? null,
-          thumbUrl: p.sizes?.thumbnail?.url ?? p.sizes?.card?.url ?? p.url ?? null,
-          alt: p.alt ?? null,
-          filename: p.filename ?? null,
-          category: p.category ?? null,
-        })))
+        setLibraryPhotos(data.docs.map(photoItemFromDoc))
         setLibraryLoaded(true)
       }
     } catch {
@@ -313,14 +307,7 @@ export function GalleryEditorClient({
         // portfolio grids, and client gallery uploads must not land there by
         // default. Tagging is left as an explicit choice in the photo library.
         const doc = await uploadPhotoToLibrary(accepted[i])
-        newPhotos.push({
-          id: doc.id,
-          url: doc.sizes?.card?.url ?? doc.url ?? null,
-          thumbUrl: doc.sizes?.thumbnail?.url ?? doc.sizes?.card?.url ?? doc.url ?? null,
-          alt: doc.alt ?? null,
-          filename: doc.filename ?? null,
-          category: doc.category ?? null,
-        })
+        newPhotos.push(photoItemFromDoc(doc))
       } catch (e) {
         setUploadError(e instanceof Error ? e.message : 'Upload failed.')
       }
