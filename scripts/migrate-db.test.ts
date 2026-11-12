@@ -40,6 +40,17 @@ describe('scripts/migrate-db.mjs', () => {
     }
   })
 
+  // TYN-311: galleries.event_date is a Payload `date` field, which Payload
+  // stores as timestamp(3) with time zone. Anything else here and the schema
+  // push in `next dev` would try to alter the column.
+  describe('galleries event date (TYN-311)', () => {
+    it('adds event_date as a nullable timestamp with time zone', () => {
+      expect(source).toMatch(
+        /ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "event_date" timestamp\(3\) with time zone\s*`\)/,
+      )
+    })
+  })
+
   // `next dev` syncs the database to the Payload config. Anything this
   // script creates under a different name, or with a different rule, than
   // Payload would generate is dropped or duplicated the next time dev runs.

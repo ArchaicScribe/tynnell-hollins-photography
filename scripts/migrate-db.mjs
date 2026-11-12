@@ -879,6 +879,18 @@ async function run() {
     console.log('✓ site_design navbar color columns ready')
 
     // ------------------------------------------------------------------
+    // Migration 20261112_100000: galleries.event_date (TYN-311)
+    // Optional date of the session or event, set on the Create New
+    // Collection page. A Payload `date` field is timestamp(3) with time
+    // zone, so it is created as exactly that to match the schema push.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "galleries" ADD COLUMN IF NOT EXISTS "event_date" timestamp(3) with time zone
+    `)
+    console.log('✓ galleries.event_date column ready')
+
+    // ------------------------------------------------------------------
     // Migration 20260806_110000: Rising Roots type system (four font roles)
     // heading_font and body_font are REAL Postgres enums, so new faces need
     // ALTER TYPE ... ADD VALUE rather than a plain column change - same trap

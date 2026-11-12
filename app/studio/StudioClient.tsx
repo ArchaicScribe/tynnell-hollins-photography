@@ -453,7 +453,7 @@ export function StudioClient({ userName, userRole, galleries, photos }: Props) {
       icon: <PortfolioIcon />,
       links: [
         { label: 'Manage Collections', href: '/gallery-editor' },
-        { label: 'Create Collection', href: '/gallery-editor?new=1' },
+        { label: 'Create Collection', href: '/gallery-editor/new' },
         { label: 'Search Photo Library', href: '/photo-library' },
         { label: 'View Portfolio', href: 'https://tynnellhollinsphotography.com/portfolio', external: true },
       ],
