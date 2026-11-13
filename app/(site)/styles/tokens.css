@@ -1,3 +1,21 @@
+/* Font family fallbacks, for pages that never load the next/font faces.
+   next/font sets these same variables through a class on <html>, naming the
+   face it actually registered ('cormorant', not 'Cormorant Garamond'). A plain
+   :root rule ties that class on specificity and loads later, so it used to
+   win and every heading asked for a family that does not exist (Times).
+   :where() gives these zero specificity, so the next/font class always wins.
+   Do not move them back into :root. */
+:where(:root) {
+  --font-display:         'Tangerine', cursive;
+  --font-display-bold:    'Abril Fatface', cursive;
+  --font-heading:         'Poppins', sans-serif;
+  --font-body:            'Poppins', sans-serif;
+  --font-serif:           'Cormorant Garamond', serif;
+  --font-sans:            'Barlow', sans-serif;
+  --font-label:           'Jost', sans-serif;
+  --font-script:          'Parisienne', cursive;
+}
+
 :root {
   /* ── Colors: dark mode (default) ─────────────────────────── */
   --color-bg:             #0C0C0C;
@@ -43,19 +61,10 @@
   --tape-shadow:          0 4px 14px rgba(60, 55, 40, 0.10);
 
   /* ── Typography ───────────────────────────────────────────── */
-  --font-display:         'Tangerine', cursive;
-  --font-display-bold:    'Abril Fatface', cursive;
-  --font-heading:         'Poppins', sans-serif;
+  /* The font family variables themselves (--font-heading, --font-serif, ...)
+     are declared in the :where(:root) block at the top of this file. */
   --font-prose:           var(--font-heading);
-  --font-body:            'Poppins', sans-serif;
   --font-mono:            var(--font-body);
-
-  /* Rising Roots faces. Set for real by next/font in app/(site)/layout.tsx;
-     these are the same fallback arrangement as the four above. */
-  --font-serif:           'Cormorant Garamond', serif;
-  --font-sans:            'Barlow', sans-serif;
-  --font-label:           'Jost', sans-serif;
-  --font-script:          'Parisienne', cursive;
 
   /* Role vars, selectable per role in /design. --font-accent is the italic
      serif used for emotional accent lines; consumers apply font-style: italic,
