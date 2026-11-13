@@ -22,10 +22,13 @@ export function parallaxProgress(rect: { top: number; height: number }, viewport
   return Math.min(1, Math.max(0, progress))
 }
 
-// Layer offset as a percent of the frame height: +range entering, -range
-// leaving. The photo therefore moves faster than the page, as on the reference.
+// Layer offset as a percent of the LAYER's own height (that is what a CSS
+// translate percentage means): +range of the frame height entering, -range
+// leaving. The layer is (1 + 2 * range) times the frame height, so the percent is
+// scaled down by that, otherwise the layer travels too far and a strip opens at
+// the frame edge. The photo moves faster than the page, as on the reference.
 export function parallaxTranslatePercent(progress: number, range: number): number {
-  return (1 - 2 * progress) * range * 100
+  return ((1 - 2 * progress) * range * 100) / (1 + 2 * range)
 }
 
 // Motion is off for the system reduced-motion preference and for the /design

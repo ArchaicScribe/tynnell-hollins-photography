@@ -31,10 +31,35 @@ describe('parallaxProgress', () => {
 })
 
 describe('parallaxTranslatePercent', () => {
-  it('starts at +range, crosses 0 in the middle, ends at -range (percent of frame height)', () => {
-    expect(parallaxTranslatePercent(0, 0.15)).toBeCloseTo(15)
+  // The percent is of the LAYER's own height, and the layer is (1 + 2 * range)
+  // times the frame height, so it must be scaled down or the layer travels too
+  // far and a gap opens at the frame edge.
+  it('is 0 in the middle and symmetric either side', () => {
     expect(parallaxTranslatePercent(0.5, 0.15)).toBeCloseTo(0)
-    expect(parallaxTranslatePercent(1, 0.15)).toBeCloseTo(-15)
+    expect(parallaxTranslatePercent(0, 0.15)).toBeCloseTo(-parallaxTranslatePercent(1, 0.15))
+    expect(parallaxTranslatePercent(0, 0.15)).toBeGreaterThan(0)
+  })
+
+  it('travels exactly range times the frame height in pixels at either end', () => {
+    for (const range of Object.values(PARALLAX_RANGE)) {
+      const frame = 1000
+      const layer = frame * (1 + 2 * range)
+      const px = (parallaxTranslatePercent(0, range) / 100) * layer
+      expect(px).toBeCloseTo(range * frame)
+    }
+  })
+
+  it('never lets the layer leave a gap inside the frame, at any progress', () => {
+    for (const range of Object.values(PARALLAX_RANGE)) {
+      const frame = 1000
+      const layer = frame * (1 + 2 * range)
+      const top = -range * frame
+      for (let p = 0; p <= 1.0001; p += 0.05) {
+        const shift = (parallaxTranslatePercent(p, range) / 100) * layer
+        expect(top + shift).toBeLessThanOrEqual(1e-6)
+        expect(top + layer + shift).toBeGreaterThanOrEqual(frame - 1e-6)
+      }
+    }
   })
 })
 

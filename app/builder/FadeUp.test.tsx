@@ -75,6 +75,52 @@ describe('FadeUp', () => {
     expect(wrapper().style.opacity).toBe('1')
   })
 
+  it('clears its transform once the fade has finished, so fixed overlays inside keep covering the viewport', () => {
+    vi.useFakeTimers()
+    try {
+      placeAt(2000)
+      render(<FadeUp enabled><p>Hello</p></FadeUp>)
+      act(() => trigger(true))
+      expect(wrapper().style.transform).toBe('translateY(0)')
+
+      act(() => { vi.advanceTimersByTime(1500) })
+
+      expect(wrapper().style.transform).toBe('')
+      expect(wrapper().style.opacity).toBe('')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('shows hidden content again when the control is switched off afterwards', () => {
+    placeAt(2000)
+    const { rerender } = render(<FadeUp enabled><p>Hello</p></FadeUp>)
+    expect(wrapper().style.opacity).toBe('0')
+
+    rerender(<FadeUp enabled={false}><p>Hello</p></FadeUp>)
+
+    expect(wrapper().style.opacity).toBe('')
+    expect(wrapper().style.transform).toBe('')
+  })
+
+  it('reveals when a not-intersecting entry is queued before an intersecting one', () => {
+    placeAt(2000)
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(cb: (entries: { isIntersecting: boolean }[]) => void) {
+          trigger = () => cb([{ isIntersecting: false }, { isIntersecting: true }])
+        }
+        observe() {}
+        disconnect() {}
+      },
+    )
+    render(<FadeUp enabled><p>Hello</p></FadeUp>)
+    act(() => trigger(true))
+
+    expect(wrapper().style.opacity).toBe('1')
+  })
+
   it('shows content untouched where IntersectionObserver does not exist', () => {
     vi.unstubAllGlobals()
     vi.stubGlobal('matchMedia', () => ({ matches: false }))

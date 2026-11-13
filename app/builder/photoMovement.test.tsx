@@ -94,7 +94,7 @@ describe('Text fade-up control', () => {
     expect(draw('SectionHeading', { textFadeUp: undefined }).container.querySelector('[data-fade-up]')).not.toBeNull()
   })
 
-  it('does not wrap the content when switched off', () => {
+  it('does not mark the content as fading up when switched off', () => {
     expect(draw('SectionHeading', { textFadeUp: false }).container.querySelector('[data-fade-up]')).toBeNull()
   })
 })

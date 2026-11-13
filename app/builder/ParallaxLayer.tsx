@@ -32,6 +32,7 @@ export function ParallaxLayer({ level, children }: { level?: PhotoMovement; chil
 
     let scheduled = false
     let near = true
+    let frameId = 0
 
     const update = () => {
       scheduled = false
@@ -45,7 +46,7 @@ export function ParallaxLayer({ level, children }: { level?: PhotoMovement; chil
     const schedule = () => {
       if (!near || scheduled) return
       scheduled = true
-      requestAnimationFrame(update)
+      frameId = requestAnimationFrame(update)
     }
 
     // Only do work while the frame is close to the viewport. Without
@@ -66,6 +67,7 @@ export function ParallaxLayer({ level, children }: { level?: PhotoMovement; chil
     update()
 
     return () => {
+      if (scheduled) cancelAnimationFrame(frameId)
       observer?.disconnect()
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
