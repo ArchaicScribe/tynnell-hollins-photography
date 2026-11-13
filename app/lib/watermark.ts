@@ -6,9 +6,10 @@ import { streamToBuffer } from './r2Stream'
 // Watermarking (TYN-322): composites the site's configured watermark image
 // onto a newly-uploaded photo's thumbnail/card/hero preview sizes - the ones
 // actually rendered on public gallery/portfolio pages - overwriting them in
-// place at the same R2 key. The full original (served by
-// app/api/photos/[id]/download/route.ts for client downloads) is never
-// touched. New uploads only - existing photos are unaffected.
+// place at the same R2 key, plus (TYN-11) the photo's own public file, which
+// is now a display-size copy. The full-resolution original lives in the
+// private originals bucket (served by app/api/photos/[id]/download/route.ts
+// for client downloads) and is never touched.
 //
 // Called as a best-effort post-process step after payload.create() in
 // app/api/photos/ingest/route.ts. Any failure here is logged and swallowed:
@@ -62,9 +63,13 @@ export async function applyWatermarkIfEnabled(params: {
   s3: S3Client
   bucket: string
   sizes: { thumbnail?: SizeSlot; card?: SizeSlot; hero?: SizeSlot } | null | undefined
+  // TYN-11: the photo's own public file, now a display-size copy (the
+  // full-resolution original lives in the private bucket and is never
+  // watermarked). Watermarked too, or it would be the best free copy.
+  main?: SizeSlot
 }): Promise<void> {
-  const { s3, bucket, sizes } = params
-  if (!sizes) return
+  const { s3, bucket, sizes, main } = params
+  if (!sizes && !main) return
 
   const theme = await getSiteDesign()
   if (!theme.watermarkEnabled || !theme.watermarkUrl) return
@@ -83,9 +88,10 @@ export async function applyWatermarkIfEnabled(params: {
   }
 
   const slots: [string, SizeSlot][] = [
-    ['thumbnail', sizes.thumbnail],
-    ['card', sizes.card],
-    ['hero', sizes.hero],
+    ['display copy', main],
+    ['thumbnail', sizes?.thumbnail],
+    ['card', sizes?.card],
+    ['hero', sizes?.hero],
   ]
 
   for (const [name, slot] of slots) {

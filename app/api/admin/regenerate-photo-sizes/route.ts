@@ -6,6 +6,9 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { applyWatermarkIfEnabled } from '@/app/lib/watermark'
 import { applySharpeningIfEnabled } from '@/app/lib/sharpening'
 import type { Photo } from '@/payload-types'
+import { r2OriginalsStore } from '@/app/lib/privateOriginals'
+import { streamToBuffer } from '@/app/lib/r2Stream'
+import { REUSE_ORIGINAL_KEY } from '@/collections/photoOriginals'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -62,11 +65,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Photo not found or has no url' }, { status: 404 })
     }
 
-    const buffer = await fetchBuffer(photo.url)
+    // TYN-11: saving with a file runs it through the private-original hooks,
+    // which publish a display copy of it. So the source must be the private
+    // original whenever one exists: rebuilding from the public display copy
+    // would shrink every size for good. A photo not moved yet still has its
+    // full-resolution file public, so rebuilding it is also what moves it
+    // into the private bucket (the TYN-11 backfill).
+    const buffer = photo.originalKey
+      ? await streamToBuffer((await r2OriginalsStore().get(photo.originalKey)).body as unknown as AsyncIterable<Uint8Array>)
+      : await fetchBuffer(photo.url)
     const updated = (await payload.update({
       collection: 'photos',
       id,
       data: {},
+      // Builder pages and blog posts store photo URLs as plain strings, so
+      // the rebuilt files must keep their names (Payload would otherwise
+      // save first-dance-1.jpg and delete first-dance.jpg).
+      overwriteExistingFiles: true,
+      // Rebuilding from the private original itself: keep it where it is
+      // rather than storing a second copy under a new key.
+      ...(photo.originalKey ? { context: { [REUSE_ORIGINAL_KEY]: photo.originalKey } } : {}),
       file: {
         data: buffer,
         mimetype: photo.mimeType ?? 'image/jpeg',
@@ -86,7 +104,7 @@ export async function POST(request: Request) {
       console.warn(`[regenerate-photo-sizes] sharpening failed for ${id} (non-fatal):`, err)
     }
     try {
-      await applyWatermarkIfEnabled({ s3, bucket, sizes: updated.sizes })
+      await applyWatermarkIfEnabled({ s3, bucket, sizes: updated.sizes, main: { filename: updated.filename, mimeType: updated.mimeType } })
     } catch (err) {
       console.warn(`[regenerate-photo-sizes] watermark failed for ${id} (non-fatal):`, err)
     }

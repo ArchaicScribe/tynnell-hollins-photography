@@ -5,6 +5,7 @@ import type { Photo } from '@/payload-types'
 import { cookies } from 'next/headers'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { isGalleryExpired } from '@/app/lib/galleryExpiry'
+import { r2OriginalsStore } from '@/app/lib/privateOriginals'
 
 // Verify the gallery auth cookie for password-protected galleries.
 function verifyToken(slug: string, passwordHash: string, token: string): boolean {
@@ -81,19 +82,41 @@ export async function GET(req: NextRequest, { params }: Props) {
   }
   if (!photo) return new NextResponse('Not found', { status: 404 })
 
-  // Proxy the photo from R2 so the browser receives it with a download filename.
-  const sourceUrl = photo.url
-  if (!sourceUrl) return new NextResponse('Photo has no URL', { status: 404 })
-
-  const upstream = await fetch(sourceUrl)
-  if (!upstream.ok) return new NextResponse('Failed to fetch photo', { status: 502 })
-
-  const contentType = upstream.headers.get('content-type') ?? 'image/jpeg'
+  // TYN-11: the public file is only a display-size copy. The download is the
+  // full-resolution original, kept in the private bucket. Photos uploaded
+  // before that existed have no originalKey until the backfill moves them,
+  // and are still served from their public file.
+  //
+  // originalKey is only readable by signed-in users, and this route serves
+  // gallery clients. It sees the key because the local API skips field
+  // access by default: pass overrideAccess: false to that lookup and every
+  // photo would quietly fall through to its public display copy below.
+  let body: ReadableStream<Uint8Array> | null
+  let contentType: string
+  if (photo.originalKey) {
+    try {
+      const original = await r2OriginalsStore().get(photo.originalKey)
+      body = original.body
+      contentType = original.contentType
+    } catch (err) {
+      // Never fall back to the public copy: the client would silently get a
+      // smaller file than the one they are entitled to.
+      console.error(`[photos/download] could not read private original "${photo.originalKey}" for photo ${photoId}:`, err)
+      return new NextResponse('Failed to fetch photo', { status: 502 })
+    }
+  } else {
+    const sourceUrl = photo.url
+    if (!sourceUrl) return new NextResponse('Photo has no URL', { status: 404 })
+    const upstream = await fetch(sourceUrl)
+    if (!upstream.ok) return new NextResponse('Failed to fetch photo', { status: 502 })
+    body = upstream.body
+    contentType = upstream.headers.get('content-type') ?? 'image/jpeg'
+  }
   const ext = contentType.split('/')[1]?.split(';')[0] ?? 'jpg'
   // Strip quotes so a crafted filename can't break out of the header value.
   const filename = (photo.filename ?? `photo-${photoId}.${ext}`).replace(/"/g, '')
 
-  return new NextResponse(upstream.body, {
+  return new NextResponse(body, {
     headers: {
       'Content-Type': contentType,
       'Content-Disposition': `attachment; filename="${filename}"`,

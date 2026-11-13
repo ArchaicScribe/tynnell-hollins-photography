@@ -1,6 +1,12 @@
 import { revalidatePath } from 'next/cache'
 import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { recordOriginalFilename } from './photoOriginalFilename'
+import { r2OriginalsStore } from '@/app/lib/privateOriginals'
+import { photoOriginalHooks } from './photoOriginals'
+
+// TYN-11: full-resolution originals live in a private bucket; the public file
+// is a display-size copy. See photoOriginals.ts.
+export const photoOriginals = photoOriginalHooks(r2OriginalsStore)
 
 // Auto-populate title and alt from the filename so bulk uploads never get
 // blocked by required-field validation. Tynnell can clean up titles/alt text
@@ -36,9 +42,16 @@ export const Photos: CollectionConfig = {
     singular: 'Photo',
     plural: 'Photos',
   },
+  // TYN-11: a duplicate would copy originalKey and share the private
+  // original with the photo it came from.
+  disableDuplicate: true,
   hooks: {
+    beforeOperation: [photoOriginals.beforeOperation],
     beforeValidate: [autoPopulateFromFilename, recordOriginalFilename],
+    beforeChange: [photoOriginals.beforeChange],
     afterChange: [revalidatePhoto],
+    afterOperation: [photoOriginals.afterOperation],
+    afterDelete: [photoOriginals.afterDelete],
   },
   upload: {
     staticDir: 'media',
@@ -75,7 +88,9 @@ export const Photos: CollectionConfig = {
         formatOptions: { format: 'jpeg', options: { quality: 88 } },
       },
     ],
-    mimeTypes: ['image/*'],
+    // TYN-11: the formats the upload route accepts. Anything else (TIFF, say)
+    // gets no display copy and would be published at full resolution.
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
   },
   admin: {
     group: 'My Portfolio',
@@ -102,6 +117,14 @@ export const Photos: CollectionConfig = {
           Field: './components/admin/PhotoEditHeader#PhotoEditHeader',
         },
       },
+    },
+    {
+      // TYN-11: where this photo's full-resolution original sits in the
+      // private R2_ORIGINALS_BUCKET. Set by photoOriginals.beforeChange.
+      name: 'originalKey',
+      type: 'text',
+      admin: { hidden: true },
+      access: { read: ({ req }) => Boolean(req.user) },
     },
     {
       // The name of the file as uploaded, before Payload's de-dup suffix
