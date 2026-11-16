@@ -106,6 +106,8 @@
   display: block;
   height: 64px;
   width: auto;
+  /* A wide horizontal logo at 64px tall can be wider than a phone column. */
+  max-width: 100%;
   object-fit: contain;
 }
 
@@ -181,15 +183,17 @@
 
 /* ── Photo strip ─────────────────────────────────────────── */
 
-/* Up to six photos edge to edge in one row. Flowing by column with equal widths
-   means three photos fill the row as three, not half of six. */
+/* Up to six photos, each a sixth of the width. Six fill the row edge to edge; a
+   shorter row is centred instead of stretching, because a single photo stretched
+   to the full width becomes a giant square. */
 .strip {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .stripPhoto {
+  flex: 0 0 calc(100% / 6);
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
@@ -261,9 +265,8 @@
 }
 
 @media (max-width: 768px) {
-  .strip {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(3, 1fr);
+  .stripPhoto {
+    flex: 0 0 calc(100% / 3);
   }
   .bottom {
     flex-direction: column;

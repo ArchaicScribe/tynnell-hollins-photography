@@ -79,6 +79,12 @@ describe('Footer.module.css type', () => {
   })
 })
 
+describe('Footer.module.css logo', () => {
+  it('never lets a wide uploaded logo push the page wider than the screen', () => {
+    expect(bodyOf('.brandLogo')).toMatch(/max-width:\s*100%/)
+  })
+})
+
 describe('Footer.module.css long text', () => {
   it('wraps a long link rather than letting it push past the screen', () => {
     expect(bodyOf('.link')).toMatch(/overflow-wrap:\s*anywhere/)
@@ -86,17 +92,19 @@ describe('Footer.module.css long text', () => {
 })
 
 describe('Footer.module.css photo strip', () => {
-  it('runs the photos edge to edge in one row, however many there are', () => {
+  // Every photo is one sixth of the width, so one or two featured photos stay a
+  // normal size instead of stretching to fill the row (a 1440px square for one).
+  it('sizes each photo to a sixth of the row and centres a short row', () => {
     const strip = bodyOf('.strip')
-    expect(strip).toMatch(/display:\s*grid/)
-    expect(strip).toMatch(/grid-auto-flow:\s*column/)
-    expect(strip).toMatch(/grid-auto-columns:\s*1fr/)
+    expect(strip).toMatch(/display:\s*flex/)
+    expect(strip).toMatch(/flex-wrap:\s*wrap/)
+    expect(strip).toMatch(/justify-content:\s*center/)
+    expect(bodyOf('.stripPhoto')).toMatch(/flex:\s*0 0 calc\(100% \/ 6\)/)
   })
 
-  it('wraps to three across on a narrow screen', () => {
+  it('is three across on a narrow screen, and the last short row is centred, not left with gaps', () => {
     const narrow = mediaBlock('(max-width: 768px)')
-    expect(narrow).toMatch(/\.strip\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*1fr\)/)
-    expect(narrow).toMatch(/\.strip\s*\{[^}]*grid-auto-flow:\s*row/)
+    expect(narrow).toMatch(/\.stripPhoto\s*\{[^}]*flex:\s*0 0 calc\(100% \/ 3\)/)
   })
 })
 
