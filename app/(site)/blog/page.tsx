@@ -100,7 +100,7 @@ export default async function BlogPage() {
       {blogSchema && <JsonLd data={blogSchema} />}
 
       {/* Hero */}
-      <section className={styles.hero} aria-label="Blog">
+      <section className={styles.hero} aria-label="Blog" data-nav-hero={heroCoverUrl ? '' : undefined}>
         {heroCoverUrl && (
           <Image
             src={heroCoverUrl}

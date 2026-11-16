@@ -131,7 +131,7 @@ export default async function BlogPostPage({ params }: Props) {
       <JsonLd data={blogPostingSchema} />
 
       {/* Hero */}
-      <header className={styles.header}>
+      <header className={styles.header} data-nav-hero={coverUrl ? '' : undefined}>
         {coverUrl && (
           <div className={styles.coverImage}>
             <Image

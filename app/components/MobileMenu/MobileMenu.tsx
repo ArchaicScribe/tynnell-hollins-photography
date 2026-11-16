@@ -72,65 +72,71 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks, cards = 
     <div
       id="mobile-menu"
       ref={menuRef}
-      className={`${styles.overlay} ${isOpen ? styles.open : ''}`}
+      className={`${styles.overlay} ${isOpen ? styles.open : ''} ${workCards.length > 0 ? styles.hasCards : ''}`}
       role="dialog"
       aria-modal="true"
       aria-label="Navigation menu"
       aria-hidden={!isOpen ? 'true' : undefined}
     >
-      <nav aria-label="Mobile navigation">
-        <ul className={styles.links}>
-          {links.map((link, i) => (
-            <li key={link.href} className={styles.item}>
-              {link.children ? (
-                <>
-                  <button
-                    className={`${styles.link} ${styles.expandBtn}`}
-                    onClick={() => setExpandedItem(expandedItem === link.href ? null : link.href)}
-                    aria-expanded={expandedItem === link.href}
+      <div className={styles.panel}>
+        <nav aria-label="Mobile navigation">
+          <ul className={styles.links}>
+            {links.map((link, i) => (
+              <li key={link.href} className={styles.item}>
+                {link.children ? (
+                  <>
+                    <button
+                      className={`${styles.link} ${styles.expandBtn}`}
+                      onClick={() => setExpandedItem(expandedItem === link.href ? null : link.href)}
+                      aria-expanded={expandedItem === link.href}
+                      tabIndex={isOpen ? 0 : -1}
+                    >
+                      <span className={styles.num} aria-hidden="true">{pageNumber(i)}</span>
+                      {link.label}
+                      <span
+                        className={`${styles.chevron} ${expandedItem === link.href ? styles.chevronOpen : ''}`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    {expandedItem === link.href && (
+                      <ul className={styles.subLinks}>
+                        {link.children.map(child => (
+                          <li key={child.href}>
+                            <Link
+                              href={child.href}
+                              className={styles.subLink}
+                              onClick={onClose}
+                              tabIndex={isOpen ? 0 : -1}
+                              aria-current={pathname === child.href ? 'page' : undefined}
+                            >
+                              {child.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={link.href}
+                    className={styles.link}
+                    onClick={onClose}
                     tabIndex={isOpen ? 0 : -1}
+                    aria-current={pathname === link.href ? 'page' : undefined}
                   >
                     <span className={styles.num} aria-hidden="true">{pageNumber(i)}</span>
                     {link.label}
-                    <span
-                      className={`${styles.chevron} ${expandedItem === link.href ? styles.chevronOpen : ''}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {expandedItem === link.href && (
-                    <ul className={styles.subLinks}>
-                      {link.children.map(child => (
-                        <li key={child.href}>
-                          <Link
-                            href={child.href}
-                            className={styles.subLink}
-                            onClick={onClose}
-                            tabIndex={isOpen ? 0 : -1}
-                            aria-current={pathname === child.href ? 'page' : undefined}
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              ) : (
-                <Link
-                  href={link.href}
-                  className={styles.link}
-                  onClick={onClose}
-                  tabIndex={isOpen ? 0 : -1}
-                  aria-current={pathname === link.href ? 'page' : undefined}
-                >
-                  <span className={styles.num} aria-hidden="true">{pageNumber(i)}</span>
-                  {link.label}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          <Link href="/contact" className={styles.workBtn} onClick={onClose} tabIndex={isOpen ? 0 : -1}>
+            Work with me
+          </Link>
+        </nav>
+      </div>
 
       {workCards.length > 0 && (
         <section className={styles.work} aria-labelledby="mobile-menu-work">

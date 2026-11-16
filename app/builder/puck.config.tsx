@@ -589,7 +589,7 @@ export const config: Config = {
         cornerRight: '',
         ...responsiveDefaults,
       },
-      render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, align, buttonText, buttonHref, cornerLeft, cornerRight, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, align, buttonText, buttonHref, cornerLeft, cornerRight, hideOnMobile, hideOnDesktop, navHero }: any) => {
         const cls = visClass(hideOnMobile, hideOnDesktop)
         if (layout === 'split') {
           const imageLeft = align !== 'center'
@@ -618,7 +618,7 @@ export const config: Config = {
 
         const centered = layout === 'centered'
         return (
-          <section className={cls} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
+          <section className={cls} data-nav-hero={navHero && imageUrl ? '' : undefined} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
             {imageUrl ? (
               backgroundBehavior === 'fixed' ? (
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
@@ -2456,8 +2456,8 @@ export const config: Config = {
         ...responsiveFields,
       },
       defaultProps: { imageUrl: '', height: '55vh', caption: '', ...responsiveDefaults },
-      render: ({ imageUrl, height, caption, hideOnMobile, hideOnDesktop }: any) => (
-        <section className={visClass(hideOnMobile, hideOnDesktop)}>
+      render: ({ imageUrl, height, caption, hideOnMobile, hideOnDesktop, navHero }: any) => (
+        <section className={visClass(hideOnMobile, hideOnDesktop)} data-nav-hero={navHero && imageUrl ? '' : undefined}>
           <div style={{ position: 'relative', width: '100%', height, background: C.accent }}>
             {imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
