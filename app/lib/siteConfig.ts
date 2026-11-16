@@ -27,6 +27,8 @@ export interface SiteConfigData {
   facebookUrl: string
   tiktokUrl: string
   pinterestUrl: string
+  footerBio: string
+  footerLocation: string
   menuCards: MenuCard[]
 }
 
@@ -39,6 +41,8 @@ export const DEFAULT_SITE_CONFIG: SiteConfigData = {
   facebookUrl: '',
   tiktokUrl: 'https://tiktok.com/@tynnellhollinsphotography',
   pinterestUrl: '',
+  footerBio: '',
+  footerLocation: 'Based in New Mexico | Travel Worldwide',
   menuCards: [],
 }
 
@@ -70,6 +74,8 @@ export const getSiteConfig = cache(async (): Promise<SiteConfigData> => {
       facebookUrl: doc.facebookUrl || DEFAULT_SITE_CONFIG.facebookUrl,
       tiktokUrl: doc.tiktokUrl || DEFAULT_SITE_CONFIG.tiktokUrl,
       pinterestUrl: doc.pinterestUrl || DEFAULT_SITE_CONFIG.pinterestUrl,
+      footerBio: doc.footerBio || DEFAULT_SITE_CONFIG.footerBio,
+      footerLocation: doc.footerLocation || DEFAULT_SITE_CONFIG.footerLocation,
       menuCards: cleanMenuCards(doc.menuCards),
     }
   } catch {

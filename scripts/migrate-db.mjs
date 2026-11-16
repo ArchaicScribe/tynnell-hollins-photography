@@ -1083,6 +1083,20 @@ async function run() {
     console.log('✓ site_config freebie columns ready')
 
     // ------------------------------------------------------------------
+    // Migration 20261116_100000: site_config footer text (Rising Roots
+    // footer). The bio and location line shown in the footer. Plain
+    // nullable text; the bio stays empty until Tynnell writes one.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "footer_bio" varchar
+    `)
+    await client.query(`
+      ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "footer_location" varchar
+    `)
+    console.log('✓ site_config footer columns ready')
+
+    // ------------------------------------------------------------------
     // Migration 20261110_100000: client favorites (TYN-13).
     // Two gallery settings (the per-gallery switch and an optional cap), and
     // the favorite_lists table: one row per client per gallery, holding the

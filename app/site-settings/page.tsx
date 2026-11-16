@@ -30,6 +30,8 @@ export default async function SiteSettingsPage() {
         facebookUrl: siteConfig.facebookUrl ?? '',
         tiktokUrl: siteConfig.tiktokUrl ?? '',
         pinterestUrl: siteConfig.pinterestUrl ?? '',
+        footerBio: siteConfig.footerBio ?? '',
+        footerLocation: siteConfig.footerLocation ?? '',
         freebieTitle: siteConfig.freebieTitle ?? '',
         freebieUrl: siteConfig.freebieUrl ?? '',
         // Raw saved values (not cleaned), so Tynnell sees and can fix

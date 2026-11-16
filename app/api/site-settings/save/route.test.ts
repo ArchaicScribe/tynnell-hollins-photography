@@ -77,6 +77,14 @@ describe('POST /api/site-settings/save, menu cards', () => {
   })
 })
 
+describe('POST /api/site-settings/save, footer text', () => {
+  it('saves the footer bio and location, and only those', async () => {
+    await POST(makeRequest({ footerBio: 'Hi', footerLocation: 'Albuquerque', notAField: 'dropped' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data).toEqual({ footerBio: 'Hi', footerLocation: 'Albuquerque' })
+  })
+})
+
 describe('POST /api/site-settings/save, freebie', () => {
   it('saves the freebie title and link', async () => {
     await POST(makeRequest({ freebieTitle: 'The Wedding Planning Guide', freebieUrl: 'https://media.example/guide.pdf' }))

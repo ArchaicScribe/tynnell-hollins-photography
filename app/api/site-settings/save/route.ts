@@ -20,6 +20,8 @@ const FIELDS = [
   'facebookUrl',
   'tiktokUrl',
   'pinterestUrl',
+  'footerBio',
+  'footerLocation',
   'freebieTitle',
 ] as const
 

@@ -12,6 +12,8 @@ const base = {
   facebookUrl: '',
   tiktokUrl: '',
   pinterestUrl: '',
+  footerBio: '',
+  footerLocation: '',
 }
 const presets = { defaultCategory: '', defaultStatus: 'draft', defaultTapedStyle: false, defaultFeatured: false, defaultAllowDownload: false }
 const templates = {
@@ -33,6 +35,45 @@ async function savedSiteSettings() {
   const call = fetchMock.mock.calls.find(([url]) => url === '/api/site-settings/save')
   return JSON.parse(call![1].body)
 }
+
+describe('Site Settings, footer text', () => {
+  beforeEach(() => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    fetchMock.mockReset()
+  })
+
+  function renderFooterSettings() {
+    render(
+      <SiteSettingsClient
+        initial={{ ...base, footerBio: 'Photographing real moments.', footerLocation: 'Albuquerque', freebieTitle: '', freebieUrl: '', menuCards: [] }}
+        initialPresets={presets}
+        initialEmailTemplates={templates}
+      />,
+    )
+  }
+
+  it('shows the bio and location already saved', () => {
+    renderFooterSettings()
+
+    expect(screen.getByLabelText('Footer bio')).toHaveValue('Photographing real moments.')
+    expect(screen.getByLabelText('Footer location line')).toHaveValue('Albuquerque')
+  })
+
+  it('saves an edited bio and location', async () => {
+    renderFooterSettings()
+
+    fireEvent.change(screen.getByLabelText('Footer bio'), { target: { value: 'New bio' } })
+    fireEvent.change(screen.getByLabelText('Footer location line'), { target: { value: 'Santa Fe' } })
+
+    const saved = await savedSiteSettings()
+    expect(saved.footerBio).toBe('New bio')
+    expect(saved.footerLocation).toBe('Santa Fe')
+  })
+})
 
 describe('Site Settings, menu "Work with me" cards', () => {
   beforeEach(() => {
