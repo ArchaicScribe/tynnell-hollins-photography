@@ -17,6 +17,7 @@ function renderBlock(type: string, props: Record<string, unknown>, puck: Record<
 const cases: { type: string; empty: Record<string, unknown>; filled: Record<string, unknown> }[] = [
   { type: 'SplitImageText', empty: { body: '', buttonText: '' }, filled: { body: 'Hello there' } },
   { type: 'CTA', empty: { heading: '' }, filled: { heading: 'Book now' } },
+  { type: 'AlbumGrid', empty: { resolvedAlbums: [] }, filled: { resolvedAlbums: [{ id: 1, slug: 'june', title: 'June', coverUrl: null, coverAlt: '', previewUrls: [], photoCount: 3 }] } },
   { type: 'StatsRow', empty: { items: [{ value: '', label: '' }] }, filled: { items: [{ value: '150+', label: 'Weddings' }] } },
 ]
 

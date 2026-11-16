@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -1738,10 +1738,15 @@ export const config: Config = {
             { label: 'Scrolling strip', value: 'strip' },
           ],
         },
+        heading: { type: 'text', label: 'Heading above the albums (optional)' },
+        subtext: { type: 'text', label: 'Line under the heading (optional)' },
+        buttonText: { type: 'text', label: 'Button text (optional)' },
+        buttonHref: { type: 'text', label: 'Button link' },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
-      defaultProps: { category: 'weddings', layout: 'grid', ...styleDefaults, ...responsiveDefaults },
+      defaultProps: { category: 'weddings', layout: 'grid', heading: '', subtext: '', buttonText: '', buttonHref: '/portfolio', hideUntilFilled: false, ...styleDefaults, ...responsiveDefaults },
       resolveData: async ({ props }: any) => {
         const category = props.category ?? 'weddings'
         const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
@@ -1754,11 +1759,24 @@ export const config: Config = {
           return { props: { resolvedAlbums: [] } }
         }
       },
-      render: ({ resolvedAlbums, layout, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          <AlbumGridComponent albums={resolvedAlbums ?? []} layout={layout === 'strip' ? 'strip' : 'grid'} />
-        </Section>
-      ),
+      render: ({ resolvedAlbums, layout, heading, subtext, buttonText, buttonHref, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => {
+        const albums = resolvedAlbums ?? []
+        const hasAlbums = albums.length > 0
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={albumsIsEmpty(albums)} editing={puck?.isEditing} label="albums">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {hasAlbums && heading && <h2 style={{ ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), textAlign: 'center' }}>{heading}</h2>}
+              {hasAlbums && heading && subtext && <p style={{ color: C.detail, textAlign: 'center', margin: '0.75rem 0 0' }}>{subtext}</p>}
+              <AlbumGridComponent albums={albums} layout={layout === 'strip' ? 'strip' : 'grid'} hideHeading={Boolean(heading)} />
+              {hasAlbums && buttonText && (
+                <div style={{ textAlign: 'center' }}>
+                  <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>
+                </div>
+              )}
+            </Section>
+          </GateEmpty>
+        )
+      },
     },
 
     // ----------------------------------------------------------- LiveBlog
