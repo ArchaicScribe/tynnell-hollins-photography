@@ -1,6 +1,6 @@
 # Home page: match Rising Roots (step 3 of 5)
 
-Date: 2026-11-16. Status: draft for review.
+Date: 2026-11-16. Status: approved by Alex.
 Part of the "match Rising Roots 100%" project (nav, menu and footer are done:
 PRs #157 and #158). The reference is https://risingroots.showit.site/.
 
@@ -253,13 +253,13 @@ preview and recorded in the PR.
 - Checked on a Vercel preview in Claude in Chrome (never the in-app browser):
   desktop and a 420px phone, no horizontal scroll, no empty frames.
 
-## Questions for Alex (open)
+## Questions for Alex (answered 2026-11-16)
 
 1. The reference hero has a round badge near the bottom (noted in the step 2
    design). I could not see it from text. Send a screenshot, or leave it out for
-   now? Default: leave it out, add later.
+   now? Answer: leave it out. It is not part of this step.
 2. The reference repeats its testimonial slider (sections 5 and 10). Default:
-   one slider, placed at section 5.
+   one slider, placed at section 5. Alex approved.
 
 ## What is left to the builder
 
