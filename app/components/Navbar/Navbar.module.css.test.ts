@@ -46,3 +46,90 @@ describe('Navbar.module.css solid state', () => {
     }
   })
 })
+
+// ── Rising Roots row, menu button and hairline ────────────────────────────────
+
+const norm = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim()
+
+// The body of the first rule whose selector is exactly `selector`, anywhere in
+// the sheet (base rules and rules inside media blocks alike).
+function bodyOf(selector: string): string | undefined {
+  for (const match of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (norm(match[1]) === selector) return match[2]
+  }
+  return undefined
+}
+
+// The text inside `@media <query> { ... }`, found by brace counting.
+function mediaBlock(query: string): string {
+  const start = css.indexOf(`@media ${query}`)
+  if (start === -1) return ''
+  const open = css.indexOf('{', start)
+  let depth = 0
+  for (let i = open; i < css.length; i++) {
+    if (css[i] === '{') depth++
+    if (css[i] === '}' && --depth === 0) return css.slice(open + 1, i)
+  }
+  return ''
+}
+
+describe('Navbar.module.css row links', () => {
+  const link = () => bodyOf('.link') ?? ''
+
+  it('sets the links in the serif role through the variable, never a family name', () => {
+    expect(link()).toContain('font-family: var(--font-serif)')
+  })
+
+  it('is title case with no tracking', () => {
+    expect(link()).not.toMatch(/text-transform:\s*uppercase/)
+    const tracking = link().match(/letter-spacing:\s*([^;]+);/)?.[1].trim()
+    expect(tracking === undefined || tracking === 'normal' || tracking === '0').toBe(true)
+  })
+
+  it('is 18px at desktop width', () => {
+    expect(link()).toMatch(/font-size:\s*(18px|1\.125rem)/)
+  })
+
+  it('has no leftover uppercase or tracking override on the links in the mid-width band', () => {
+    const band = mediaBlock('(min-width: 1025px) and (max-width: 1240px)')
+    const linkRule = band.match(/\.link\s*\{([^}]*)\}/)?.[1] ?? ''
+    expect(linkRule).not.toMatch(/text-transform|letter-spacing/)
+  })
+})
+
+describe('Navbar.module.css menu button', () => {
+  it('is visible on desktop: the base rule does not hide it', () => {
+    expect(bodyOf('.hamburger')).not.toMatch(/display:\s*none/)
+  })
+
+  it('still collapses the link rows below 1024px and keeps the button', () => {
+    const narrow = mediaBlock('(max-width: 1024px)')
+    expect(narrow).toMatch(/\.row\s*\{[^}]*display:\s*none/)
+    expect(narrow).toMatch(/\.hamburger\s*\{[^}]*display:\s*flex/)
+  })
+
+  it('labels the open menu in the script role', () => {
+    expect(bodyOf('.menuLabel')).toContain('font-family: var(--font-script-role, var(--font-display))')
+  })
+})
+
+describe('Navbar.module.css hairline', () => {
+  it('draws a 1px line along the bottom edge while transparent over a hero', () => {
+    const after = bodyOf('.navbar::after') ?? ''
+    expect(after).toMatch(/bottom:\s*0/)
+    expect(after).toMatch(/height:\s*1px/)
+  })
+
+  it('switches the line off once the bar is solid', () => {
+    const off = solidRules().find((r) => /::after/.test(r.selector))
+    expect(off?.selector).toMatch(/\.scrolled::after/)
+    expect(off?.selector).toMatch(/\.menuOpen::after/)
+    expect(off?.body).toMatch(/opacity:\s*0/)
+  })
+})
+
+describe('Navbar.module.css dropdown', () => {
+  it('has no dropdown rules left, the row has no Portfolio menu', () => {
+    expect(css).not.toMatch(/\.(hasDropdown|arrow|arrowOpen|dropdown|dropdownOpen|dropdownItem)\b/)
+  })
+})

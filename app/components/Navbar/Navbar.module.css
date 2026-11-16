@@ -17,6 +17,26 @@
   transition: background 0.35s ease, padding 0.3s ease;
 }
 
+/* The hairline the reference draws along the bottom of the transparent nav. It
+   goes away once the bar is solid, where the colour change already marks the edge. */
+.navbar::after {
+  content: '';
+  position: absolute;
+  left: var(--padding-x);
+  right: var(--padding-x);
+  bottom: 0;
+  height: 1px;
+  background: #ECE9E0;
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.scrolled::after,
+.menuOpen::after {
+  opacity: 0;
+}
+
 /* Solid bar on scroll (the olive, matching the reference). Its colours are
    adjustable from /design > Navbar (TYN-352). Until those are set the two
    variables are not written at all, so each falls back to the button colour
@@ -129,13 +149,13 @@
 
 /* ── Nav links ───────────────────────────────────────────── */
 
+/* Title-case serif, as the reference sets them (measured 18px, #ECE9E0). The
+   family goes through the variable only; never name it (the PR #155 bug). */
 .link {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
   font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
+  color: #ECE9E0;
   text-decoration: none;
   background: none;
   border: none;
@@ -149,7 +169,7 @@
 }
 
 .link:hover {
-  color: rgba(255, 255, 255, 1);
+  color: #fff;
 }
 
 .scrolled .link,
@@ -162,71 +182,12 @@
   color: var(--color-nav-text, var(--color-btn-text));
 }
 
-/* ── Portfolio dropdown ──────────────────────────────────── */
-
-.hasDropdown {
-  position: relative;
-}
-
-.arrow {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-left: 3.5px solid transparent;
-  border-right: 3.5px solid transparent;
-  border-top: 4px solid currentColor;
-  transition: transform 0.2s ease;
-  margin-top: 1px;
-}
-
-.arrowOpen {
-  transform: rotate(180deg);
-}
-
-.dropdown {
-  position: absolute;
-  top: calc(100% + 0.9rem);
-  right: 0;
-  list-style: none;
-  margin: 0;
-  padding: 0.4rem 0;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  min-width: 148px;
-  z-index: 200;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-4px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-
-.dropdownOpen {
-  opacity: 1;
-  pointer-events: all;
-  transform: translateY(0);
-}
-
-.dropdownItem {
-  display: block;
-  padding: 0.55rem 1.2rem;
-  font-family: var(--font-body);
-  font-size: 0.65rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-  text-decoration: none;
-  transition: color 0.15s ease, background 0.15s ease;
-}
-
-.dropdownItem:hover {
-  color: var(--color-heading);
-  background: var(--color-bg-hover);
-}
-
 /* ── Hamburger ───────────────────────────────────────────── */
 
+/* Visible at every width: on desktop it opens the full-screen menu that holds
+   every page, not just the five in the row. */
 .hamburger {
-  display: none;
+  display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
@@ -265,6 +226,15 @@
   transform: translateY(-6px) rotate(-45deg);
 }
 
+/* The script "close menu" beside the X while the menu is open. */
+.menuLabel {
+  font-family: var(--font-script-role, var(--font-display));
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-nav-text, var(--color-btn-text));
+  white-space: nowrap;
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 
 /* The three-column grid needs more room than the old stacked rows, so the
@@ -274,7 +244,7 @@
 @media (min-width: 1025px) and (max-width: 1240px) {
   .row,
   .rowRight { gap: 1.05rem; }
-  .link { font-size: 0.6rem; letter-spacing: 0.12em; }
+  .link { font-size: 1rem; }
   .brandMark { font-size: 1.1rem; letter-spacing: 0.12em; }
   .brandSub { font-size: 0.46rem; letter-spacing: 0.3em; text-indent: 0.3em; }
   .cta { font-size: 1.25rem; }
