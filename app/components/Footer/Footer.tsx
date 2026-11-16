@@ -16,7 +16,7 @@ const STUDIO_LOCATION = 'Based in New Mexico | Travel Worldwide'
 // shared nav constant so a route rename cannot leave the footer pointing at a
 // dead link.
 const FOOTER_NAV_COLUMNS: NavLink[][] = [
-  navLinks.filter(l => ['Home', 'About', 'Portfolio'].includes(l.label)),
+  navLinks.filter(l => ['Home', 'About me', 'Portfolio'].includes(l.label)),
   navLinks.filter(l => ['Services', 'Contact', 'Blog'].includes(l.label)),
 ]
 
