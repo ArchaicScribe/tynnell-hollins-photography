@@ -33,6 +33,8 @@ import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
+import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
+import { statementIsEmpty } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -510,7 +512,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -856,6 +858,51 @@ export const config: Config = {
           </div>
         </Section>
       ),
+    },
+
+    // ----------------------------------------------------------- Statement
+    // Rising Roots home: the text-only emotional intro and the pull quote.
+    // A bold lead-in, a line of text and a closing line, all in the heading
+    // font; "Pull quote" sets the text in the script font instead. Hidden
+    // from visitors until Tynnell has written something (hide switch on by
+    // default), so no placeholder wording ever reaches the public page.
+    Statement: {
+      label: 'Statement',
+      fields: {
+        lead: { type: 'text', label: 'Bold lead-in line (optional)' },
+        text: { type: 'textarea', label: 'Text' },
+        closing: { type: 'text', label: 'Closing line (optional)' },
+        style: {
+          type: 'radio' as const,
+          label: 'Style',
+          options: [
+            { label: 'Text', value: 'text' },
+            { label: 'Pull quote', value: 'quote' },
+          ],
+        },
+        align: alignField,
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { lead: '', text: '', closing: '', style: 'text', align: 'center', hideUntilFilled: true, ...styleDefaults, ...responsiveDefaults },
+      render: ({ lead, text, closing, style, align, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const centered = align === 'center'
+        const line: React.CSSProperties = { ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), lineHeight: 1.2, margin: '0 0 1rem', whiteSpace: 'pre-wrap' }
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={statementIsEmpty({ lead, text, closing })} editing={puck?.isEditing} label="statement">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              <div style={{ maxWidth: '40em', margin: centered ? '0 auto' : undefined, textAlign: centered ? 'center' : 'left' }}>
+                {lead && <p style={line}><strong style={{ fontWeight: 600 }}>{lead}</strong></p>}
+                {text && (style === 'quote'
+                  ? <blockquote style={{ ...line, margin: '0 0 1rem', fontFamily: 'var(--font-script-role, var(--font-heading))', fontSize: 'clamp(2rem, 4.4vw, 3.5rem)' }}>{text}</blockquote>
+                  : <p style={line}>{text}</p>)}
+                {closing && <p style={line}>{closing}</p>}
+              </div>
+            </Section>
+          </GateEmpty>
+        )
+      },
     },
 
     // ------------------------------------------------------ TypewriterHeading
