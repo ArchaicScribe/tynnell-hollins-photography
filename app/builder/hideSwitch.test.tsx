@@ -123,3 +123,15 @@ describe('Split Image + Text without a photo', () => {
     expect(container.querySelector('section')?.children).toHaveLength(2)
   })
 })
+
+describe('Split Image + Text without a photo, text column', () => {
+  it('stays a readable width and keeps the button its own size', () => {
+    renderBlock('SplitImageText', { layout: 'side-by-side', imageUrl: '', heading: 'Hello', body: 'About me.', buttonText: 'My Story', buttonHref: '/about', hideUntilFilled: true })
+
+    const column = screen.getByRole('link', { name: 'My Story' }).parentElement!
+    // A fixed 46rem basis caps the line length; flex-start stops the button
+    // stretching to the column's full width (found on the Home preview).
+    expect(column.style.flex).toContain('46rem')
+    expect(column.style.alignItems).toBe('flex-start')
+  })
+})

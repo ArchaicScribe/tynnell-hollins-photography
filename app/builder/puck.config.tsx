@@ -241,6 +241,11 @@ const eyebrowStyle: React.CSSProperties = {
   color: C.detail,
   margin: '0 0 0.75rem',
 }
+// Hero text over the photograph. The hero's overlay is always dark, so the
+// theme heading and body colours (olive, near-black on the light theme) vanish
+// into it; the text is light instead, like the corner labels below.
+const HERO_TEXT = 'rgba(255,255,255,0.96)'
+const HERO_TEXT_SOFT = 'rgba(255,255,255,0.86)'
 // Hero corner labels. Light rather than C.detail because they always sit over
 // the hero photograph, never over the page ground.
 const cornerLabelStyle: React.CSSProperties = {
@@ -580,21 +585,22 @@ function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, headin
         )}
       </div>
     )
-    const txt = (
-      <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)' }}>
+    const textColumn = (style: React.CSSProperties) => (
+      <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)', ...style }}>
         {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
         <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
         <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
         {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
       </div>
     )
+    const txt = textColumn({})
     // With "Hide until filled in" on, a section with no photo is just its text,
     // not text beside an empty tinted frame. Off keeps the frame, so saved
     // pages that rely on it do not change.
     if (hideUntilFilled && !imageUrl) {
       return (
-        <section className={cls} style={{ ...overlapStyle, display: 'flex', background: bg }}>
-          {txt}
+        <section className={cls} style={{ ...overlapStyle, display: 'flex', justifyContent: 'center', background: bg }}>
+          {textColumn({ flex: '0 1 46rem', alignItems: 'flex-start' })}
         </section>
       )
     }
@@ -738,9 +744,9 @@ export const config: Config = {
             )}
             <div style={{ position: 'absolute', inset: 0, background: centered ? 'rgba(12,12,12,0.45)' : 'linear-gradient(to top, rgba(12,12,12,0.7), rgba(12,12,12,0.1))' }} />
             <div style={{ position: 'relative', padding: 'clamp(2rem,5vw,4rem) clamp(1.25rem,5vw,5rem)', maxWidth: centered ? '70ch' : '60ch', textAlign: centered ? 'center' : align }}>
-              {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-              <h1 style={headingStyle('clamp(2rem,5vw,3.75rem)')}>{heading}</h1>
-              {subheading && <p style={{ marginTop: '1rem', color: C.body, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
+              {eyebrow && <p style={{ ...eyebrowStyle, color: HERO_TEXT_SOFT }}>{eyebrow}</p>}
+              <h1 style={{ ...headingStyle('clamp(2rem,5vw,3.75rem)'), color: HERO_TEXT }}>{heading}</h1>
+              {subheading && <p style={{ marginTop: '1rem', color: HERO_TEXT_SOFT, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
               {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
             </div>
 
