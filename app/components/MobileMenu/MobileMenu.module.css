@@ -146,7 +146,7 @@
 /* The "Work with me" button under the list. Outlined, in the small-caps label
    style the reference uses for its buttons. */
 .workBtn {
-  align-self: flex-start;
+  display: inline-block;
   margin-top: 2.25rem;
   padding: 0.95rem 2.1rem;
   border: 1px solid currentColor;
