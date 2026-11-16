@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -810,7 +810,11 @@ export const config: Config = {
           defaultItemProps: { value: '', label: '' },
           getItemSummary: (item: any) => [item.value, item.label].filter(Boolean).join(' ') || 'New stat',
         },
+        heading: { type: 'text', label: 'Heading above the stats (optional)' },
+        buttonText: { type: 'text', label: 'Button text (optional)' },
+        buttonHref: { type: 'text', label: 'Button link' },
         align: alignField,
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
@@ -820,14 +824,20 @@ export const config: Config = {
           { value: '150+', label: 'Sessions photographed' },
           { value: '7+', label: 'Years behind the camera' },
         ],
+        heading: '',
+        buttonText: '',
+        buttonHref: '/contact',
         align: 'center',
+        hideUntilFilled: false,
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ items, align, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ items, heading, buttonText, buttonHref, hideUntilFilled, puck, align, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => {
         const stats = (items ?? []).filter((item: any) => item?.value?.trim())
         return (
+          <GateEmpty hide={hideUntilFilled} empty={statsIsEmpty({ items })} editing={puck?.isEditing} label="stats">
           <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+            {heading && <h2 style={{ ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), textAlign: align === 'center' ? 'center' : 'left', marginBottom: '2rem' }}>{heading}</h2>}
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 5vw, 4.5rem)', justifyContent: align === 'center' ? 'center' : 'flex-start' }}>
               {stats.map((item: any, i: number) => (
                 <li key={i} style={{ textAlign: align, minWidth: '8rem' }}>
@@ -836,7 +846,13 @@ export const config: Config = {
                 </li>
               ))}
             </ul>
+            {buttonText && (
+              <div style={{ textAlign: align === 'center' ? 'center' : 'left' }}>
+                <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>
+              </div>
+            )}
           </Section>
+          </GateEmpty>
         )
       },
     },
