@@ -116,6 +116,15 @@ describe('MobileMenu.module.css', () => {
     expect(bodyOf('.panel')).toContain('var(--color-nav-text, var(--color-btn-text))')
   })
 
+  it('lets the desktop grid shrink to the screen so a tall panel scrolls instead of being clipped', () => {
+    const wide = css.slice(css.indexOf('@media (min-width: 1025px)'))
+    expect(wide).toMatch(/grid-template-rows:\s*minmax\(0,\s*1fr\)/)
+  })
+
+  it('keeps the top of a tall panel reachable: centring is the safe kind', () => {
+    expect(bodyOf('.panel')).toContain('justify-content: safe center')
+  })
+
   it('lays the cards left and the panel right from 1025px, one column below', () => {
     const wide = css.slice(css.indexOf('@media (min-width: 1025px)'))
     expect(wide).toMatch(/grid-template-areas/)

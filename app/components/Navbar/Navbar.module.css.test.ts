@@ -160,3 +160,9 @@ describe('Navbar.module.css pages without a hero', () => {
     expect(noHero()?.selector).toMatch(/\.navbar/)
   })
 })
+
+describe('Navbar.module.css phones', () => {
+  it('hides the "close menu" label on narrow screens so it cannot push the close button off the edge', () => {
+    expect(mediaBlock('(max-width: 560px)')).toMatch(/\.menuLabel\s*\{[^}]*display:\s*none/)
+  })
+})

@@ -256,6 +256,8 @@
   /* The script CTA and the burger start fighting for the same space; the
      burger wins since the menu contains Contact anyway. */
   .cta { display: none; }
+  /* The label would push the close button off a 360px screen; the X alone closes. */
+  .menuLabel { display: none; }
   .brandMark { font-size: 1rem; letter-spacing: 0.12em; }
   .brandSub { font-size: 0.46rem; letter-spacing: 0.3em; text-indent: 0.3em; }
 }

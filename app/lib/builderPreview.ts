@@ -1,5 +1,6 @@
 import { draftMode } from 'next/headers'
 import type { Data } from '@measured/puck'
+import { markNavHero } from '@/app/lib/navHero'
 
 // TYN-343: "View Page" in the Page Builder only ever showed the live,
 // published version - there was no way to see draft/unpublished edits in
@@ -27,5 +28,5 @@ const EMPTY: Data = { content: [], root: {} }
 // edits that are not live yet.
 export async function pageRenderData(page: { content?: unknown; draftContent?: unknown }): Promise<Data> {
   const doc = (await isPreviewMode()) ? (page.draftContent ?? page.content) : page.content
-  return (doc as Data | null | undefined) ?? EMPTY
+  return markNavHero((doc as Data | null | undefined) ?? EMPTY)
 }

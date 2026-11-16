@@ -37,19 +37,23 @@ describe('data-nav-hero marker', () => {
     expect(container.querySelector(marker)).toBeNull()
   })
 
-  it('is on the page-builder Hero (full-bleed layouts) when it has a photo', () => {
-    expect(draw('Hero', { layout: 'bottom', imageUrl: '/a.jpg' }).container.querySelector(marker)).not.toBeNull()
-    expect(draw('Hero', { layout: 'centered', imageUrl: '/a.jpg' }).container.querySelector(marker)).not.toBeNull()
+  // A builder block only says it opens the page when the page tells it so
+  // (navHero, set by markNavHero on the FIRST block only).
+  it('is on the page-builder Hero (full-bleed layouts) when it is flagged as first and has a photo', () => {
+    expect(draw('Hero', { layout: 'bottom', imageUrl: '/a.jpg', navHero: true }).container.querySelector(marker)).not.toBeNull()
+    expect(draw('Hero', { layout: 'centered', imageUrl: '/a.jpg', navHero: true }).container.querySelector(marker)).not.toBeNull()
   })
 
-  it('is not on a page-builder Hero without a photo, or in the split layout', () => {
-    expect(draw('Hero', { layout: 'bottom', imageUrl: '' }).container.querySelector(marker)).toBeNull()
-    expect(draw('Hero', { layout: 'split', imageUrl: '/a.jpg' }).container.querySelector(marker)).toBeNull()
+  it('is not on a page-builder Hero that is not flagged, has no photo, or is split', () => {
+    expect(draw('Hero', { layout: 'bottom', imageUrl: '/a.jpg' }).container.querySelector(marker)).toBeNull()
+    expect(draw('Hero', { layout: 'bottom', imageUrl: '', navHero: true }).container.querySelector(marker)).toBeNull()
+    expect(draw('Hero', { layout: 'split', imageUrl: '/a.jpg', navHero: true }).container.querySelector(marker)).toBeNull()
   })
 
-  it('is on the page-builder Full Width Image when it has a photo', () => {
-    expect(draw('FullWidthImage', { imageUrl: '/a.jpg' }).container.querySelector(marker)).not.toBeNull()
-    expect(draw('FullWidthImage', { imageUrl: '' }).container.querySelector(marker)).toBeNull()
+  it('is on the page-builder Full Width Image only when flagged as first and it has a photo', () => {
+    expect(draw('FullWidthImage', { imageUrl: '/a.jpg', navHero: true }).container.querySelector(marker)).not.toBeNull()
+    expect(draw('FullWidthImage', { imageUrl: '/a.jpg' }).container.querySelector(marker)).toBeNull()
+    expect(draw('FullWidthImage', { imageUrl: '', navHero: true }).container.querySelector(marker)).toBeNull()
   })
 })
 

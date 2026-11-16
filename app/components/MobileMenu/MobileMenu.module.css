@@ -32,7 +32,9 @@
   padding: 6rem var(--padding-x) 3rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* safe: a panel taller than the screen must stay reachable from its top, which
+     plain centring would push above the scrollable area. */
+  justify-content: safe center;
   flex: 1 0 auto;
   min-width: 0;
 }
@@ -241,6 +243,10 @@
   .overlay {
     display: grid;
     grid-template-columns: 1fr;
+    /* One row exactly the height of the screen. Without it the implicit auto row
+       grows to fit the panel, the overlay clips the overflow and the panel's own
+       scrolling never starts, hiding the last links and the button. */
+    grid-template-rows: minmax(0, 1fr);
     grid-template-areas: 'panel';
     overflow: hidden;
   }
