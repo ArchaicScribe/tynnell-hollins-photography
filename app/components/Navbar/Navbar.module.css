@@ -9,7 +9,10 @@
   right: 0;
   z-index: 100;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* minmax(0, 1fr), not 1fr: a plain 1fr will not shrink below its content, so a
+     wider right-hand group (the "close menu" label) grew its column and dragged
+     the centred logo sideways. Equal fixed-share columns keep the brand centred. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 1.5rem;
   padding: var(--nav-pad) var(--padding-x);
@@ -151,6 +154,13 @@
 
 .cta:hover {
   opacity: 0.75;
+}
+
+/* While the menu is open the "close menu" label takes the Inquire link's place
+   (the menu has its own Work with me button), so the right-hand group never gets
+   wider than it is when closed. */
+.menuOpen .cta {
+  display: none;
 }
 
 /* ── Nav links ───────────────────────────────────────────── */

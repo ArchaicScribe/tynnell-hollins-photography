@@ -161,6 +161,21 @@ describe('Navbar.module.css pages without a hero', () => {
   })
 })
 
+// Opening the menu adds a "close menu" label to the right-hand group. With plain
+// 1fr side columns a wider group grows its column and drags the centred logo left
+// (about 27px at 1278px wide), so the side columns must not size to their content
+// and the label must take the CTA's place rather than sit beside it.
+describe('Navbar.module.css logo stays put when the menu opens', () => {
+  it('keeps both side columns equal whatever their content, so the brand is always centred', () => {
+    const columns = bodyOf('.navbar')?.match(/grid-template-columns:\s*([^;]+);/)?.[1].replace(/\s+/g, ' ').trim()
+    expect(columns).toBe('minmax(0, 1fr) auto minmax(0, 1fr)')
+  })
+
+  it('swaps the Inquire link for the close label while the menu is open', () => {
+    expect(bodyOf('.menuOpen .cta')).toMatch(/display:\s*none/)
+  })
+})
+
 describe('Navbar.module.css phones', () => {
   it('hides the "close menu" label on narrow screens so it cannot push the close button off the edge', () => {
     expect(mediaBlock('(max-width: 560px)')).toMatch(/\.menuLabel\s*\{[^}]*display:\s*none/)
