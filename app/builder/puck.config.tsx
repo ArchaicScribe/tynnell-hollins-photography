@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -512,7 +512,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -1429,6 +1429,64 @@ export const config: Config = {
           </div>
         </Section>
       ),
+    },
+
+    // ---------------------------------------------------------- PathChoice
+    // Rising Roots home "What brings you here today?": a heading and up to two
+    // photo cards, each linking to a page. A card needs a label AND a link to
+    // count; with none complete the block is hidden from visitors.
+    PathChoice: {
+      label: 'Choice Cards',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        cards: {
+          type: 'array',
+          label: 'Cards',
+          max: 2,
+          arrayFields: {
+            imageUrl: imageField('Photo'),
+            label: { type: 'text', label: 'Label' },
+            href: { type: 'text', label: 'Link (a page like /book)' },
+          },
+          defaultItemProps: { imageUrl: '', label: '', href: '' },
+          getItemSummary: (item: any) => item?.label || 'New card',
+        },
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        cards: [{ imageUrl: '', label: '', href: '' }, { imageUrl: '', label: '', href: '' }],
+        hideUntilFilled: true,
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, cards, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const complete = (cards ?? []).filter((c: any) => c?.label?.trim() && c?.href?.trim())
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={pathChoiceIsEmpty({ cards })} editing={puck?.isEditing} label="choice cards">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 3vw, 2.5rem)', maxWidth: '1000px', margin: '0 auto' }}>
+                {complete.map((c: any, i: number) => (
+                  <a key={i} href={c.href} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                    <div style={{ aspectRatio: '4 / 5', overflow: 'hidden', background: C.accent }}>
+                      {c.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      )}
+                    </div>
+                    <p style={{ ...headingStyle('clamp(1.25rem, 2.2vw, 1.75rem)'), marginTop: '1rem' }}>
+                      {c.label} <span aria-hidden="true">→</span>
+                    </p>
+                  </a>
+                ))}
+              </div>
+            </Section>
+          </GateEmpty>
+        )
+      },
     },
 
     // -------------------------------------------------------- PhotoGallery
