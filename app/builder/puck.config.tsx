@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -499,6 +499,101 @@ const styleFields = {
   },
 }
 const styleDefaults = { background: 'transparent', backgroundImage: '', backgroundFade: '0.55', scrollFadeIn: false, scrollOverlap: false, photoMovement: 'gentle', textFadeUp: true, spacing: 'normal' }
+
+// Split Image + Text's three layouts each return their own <section>, so the
+// render body lives here and the block's render wraps it in the hide gate.
+function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, scrollOverlap, photoMovement, hideOnMobile, hideOnDesktop }: any) {
+    const bg = background && background !== 'transparent' ? background : undefined
+    const cls = visClass(hideOnMobile, hideOnDesktop)
+    const overlapStyle: React.CSSProperties = scrollOverlap ? { position: 'sticky', top: 0, zIndex: 1 } : {}
+
+    if (layout === 'overlay') {
+      return (
+        <section className={cls} style={{ position: 'relative', ...overlapStyle, minHeight: '50vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
+          {imageUrl ? (
+            <ParallaxLayer level={photoMovement}>
+              {scrollFadeIn ? (
+                <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              )}
+            </ParallaxLayer>
+          ) : (
+            <div style={{ position: 'absolute', inset: 0, background: C.accent }} />
+          )}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(12,12,12,0.75), rgba(12,12,12,0.1))' }} />
+          <div style={{ position: 'relative', padding: 'clamp(2rem,4vw,3.5rem)', maxWidth: '60ch' }}>
+            {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+            <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+            <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
+            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+          </div>
+        </section>
+      )
+    }
+
+    if (layout === 'stacked') {
+      return (
+        <section className={cls} style={{ ...overlapStyle, background: bg }}>
+          <div style={{ minHeight: '280px', position: 'relative', background: C.accent }}>
+            {imageUrl && (
+              scrollFadeIn ? (
+                <ScrollFadeImage src={imageUrl} style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
+              )
+            )}
+          </div>
+          <div style={{ padding: 'clamp(2rem,4vw,3.5rem)', textAlign: 'center', maxWidth: '65ch', margin: '0 auto' }}>
+            {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+            <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+            <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
+            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+          </div>
+        </section>
+      )
+    }
+
+    // Bleed always runs toward the OUTER edge, so it follows imagePosition
+    // rather than being a separate direction control: an image on the left
+    // bleeds left, on the right bleeds right. A control that let you bleed
+    // an image toward the middle of the page would only ever collide with
+    // the text column.
+    const bleedClass =
+      imageBleed && imageBleed !== 'none' ? `pk-bleed-${imagePosition === 'left' ? 'left' : 'right'}-${imageBleed}` : ''
+    const offsetClass = imageOffset && imageOffset !== 'none' ? `pk-offset-${imageOffset}` : ''
+    const imgCls = [bleedClass, offsetClass].filter(Boolean).join(' ')
+
+    const img = (
+      <div className={imgCls} style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', overflow: photoMovement && photoMovement !== 'none' ? 'hidden' : undefined, background: C.accent }}>
+        {imageUrl && (
+          <ParallaxLayer level={photoMovement}>
+            {scrollFadeIn ? (
+              <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            )}
+          </ParallaxLayer>
+        )}
+      </div>
+    )
+    const txt = (
+      <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)' }}>
+        {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+        <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+        <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
+        {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+      </div>
+    )
+    return (
+      <section className={cls} style={{ ...overlapStyle, display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
+        {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
+      </section>
+    )
+}
 
 export const config: Config = {
   root: {
@@ -1017,6 +1112,7 @@ export const config: Config = {
         scrollFadeIn: scrollFadeInField,
         scrollOverlap: scrollOverlapField,
         photoMovement: photoMovementField,
+        hideUntilFilled: hideUntilFilledField,
         ...responsiveFields,
       },
       defaultProps: {
@@ -1034,100 +1130,14 @@ export const config: Config = {
         scrollFadeIn: false,
         scrollOverlap: false,
         photoMovement: 'gentle',
+        hideUntilFilled: false,
         ...responsiveDefaults,
       },
-      render: ({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, scrollOverlap, photoMovement, hideOnMobile, hideOnDesktop }: any) => {
-        const bg = background && background !== 'transparent' ? background : undefined
-        const cls = visClass(hideOnMobile, hideOnDesktop)
-        const overlapStyle: React.CSSProperties = scrollOverlap ? { position: 'sticky', top: 0, zIndex: 1 } : {}
-
-        if (layout === 'overlay') {
-          return (
-            <section className={cls} style={{ position: 'relative', ...overlapStyle, minHeight: '50vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
-              {imageUrl ? (
-                <ParallaxLayer level={photoMovement}>
-                  {scrollFadeIn ? (
-                    <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  )}
-                </ParallaxLayer>
-              ) : (
-                <div style={{ position: 'absolute', inset: 0, background: C.accent }} />
-              )}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(12,12,12,0.75), rgba(12,12,12,0.1))' }} />
-              <div style={{ position: 'relative', padding: 'clamp(2rem,4vw,3.5rem)', maxWidth: '60ch' }}>
-                {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-                <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
-                <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-                {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
-              </div>
-            </section>
-          )
-        }
-
-        if (layout === 'stacked') {
-          return (
-            <section className={cls} style={{ ...overlapStyle, background: bg }}>
-              <div style={{ minHeight: '280px', position: 'relative', background: C.accent }}>
-                {imageUrl && (
-                  scrollFadeIn ? (
-                    <ScrollFadeImage src={imageUrl} style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={imageUrl} alt="" style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
-                  )
-                )}
-              </div>
-              <div style={{ padding: 'clamp(2rem,4vw,3.5rem)', textAlign: 'center', maxWidth: '65ch', margin: '0 auto' }}>
-                {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-                <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
-                <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-                {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
-              </div>
-            </section>
-          )
-        }
-
-        // Bleed always runs toward the OUTER edge, so it follows imagePosition
-        // rather than being a separate direction control: an image on the left
-        // bleeds left, on the right bleeds right. A control that let you bleed
-        // an image toward the middle of the page would only ever collide with
-        // the text column.
-        const bleedClass =
-          imageBleed && imageBleed !== 'none' ? `pk-bleed-${imagePosition === 'left' ? 'left' : 'right'}-${imageBleed}` : ''
-        const offsetClass = imageOffset && imageOffset !== 'none' ? `pk-offset-${imageOffset}` : ''
-        const imgCls = [bleedClass, offsetClass].filter(Boolean).join(' ')
-
-        const img = (
-          <div className={imgCls} style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', overflow: photoMovement && photoMovement !== 'none' ? 'hidden' : undefined, background: C.accent }}>
-            {imageUrl && (
-              <ParallaxLayer level={photoMovement}>
-                {scrollFadeIn ? (
-                  <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                )}
-              </ParallaxLayer>
-            )}
-          </div>
-        )
-        const txt = (
-          <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)' }}>
-            {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-            <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
-            <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
-          </div>
-        )
-        return (
-          <section className={cls} style={{ ...overlapStyle, display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
-            {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
-          </section>
-        )
-      },
+      render: (props: any) => (
+        <GateEmpty hide={props.hideUntilFilled} empty={splitIsEmpty(props)} editing={props.puck?.isEditing} label="story section">
+          {renderSplitImageText(props)}
+        </GateEmpty>
+      ),
     },
 
     // -------------------------------------------------------------- Services
@@ -1424,6 +1434,7 @@ export const config: Config = {
         subtext: { type: 'textarea', label: 'Subtext (optional)' },
         buttonText: { type: 'text', label: 'Button text' },
         buttonHref: { type: 'text', label: 'Button link' },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
@@ -1434,9 +1445,11 @@ export const config: Config = {
         buttonHref: '/contact',
         background: 'var(--color-bg-accent, #131313)',
         spacing: 'spacious',
+        hideUntilFilled: false,
         ...responsiveDefaults,
       },
-      render: ({ heading, subtext, buttonText, buttonHref, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      render: ({ heading, subtext, buttonText, buttonHref, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <GateEmpty hide={hideUntilFilled} empty={ctaIsEmpty({ heading })} editing={puck?.isEditing} label="call to action">
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: 'center' }}>
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
@@ -1444,6 +1457,7 @@ export const config: Config = {
             {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
           </div>
         </Section>
+        </GateEmpty>
       ),
     },
 

@@ -15,6 +15,8 @@ function renderBlock(type: string, props: Record<string, unknown>, puck: Record<
 }
 
 const cases: { type: string; empty: Record<string, unknown>; filled: Record<string, unknown> }[] = [
+  { type: 'SplitImageText', empty: { body: '', buttonText: '' }, filled: { body: 'Hello there' } },
+  { type: 'CTA', empty: { heading: '' }, filled: { heading: 'Book now' } },
   { type: 'StatsRow', empty: { items: [{ value: '', label: '' }] }, filled: { items: [{ value: '150+', label: 'Weddings' }] } },
 ]
 
