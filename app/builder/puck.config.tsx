@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -1325,12 +1325,14 @@ export const config: Config = {
           options: [
             { label: 'Photo beside each quote', value: false },
             { label: 'Sticky photo, changes on scroll', value: true },
+            { label: 'Slider with numbers (two or more quotes)', value: 'slider' },
           ],
         },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
-      defaultProps: { stickyPhotoScroll: false, ...styleDefaults, ...responsiveDefaults },
+      defaultProps: { stickyPhotoScroll: false, hideUntilFilled: false, ...styleDefaults, ...responsiveDefaults },
       resolveData: async () => {
         const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
         try {
@@ -1342,10 +1344,12 @@ export const config: Config = {
           return { props: { resolvedTestimonials: [] } }
         }
       },
-      render: ({ resolvedTestimonials, stickyPhotoScroll, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          <TestimonialsListComponent testimonials={resolvedTestimonials ?? []} stickyPhotoScroll={stickyPhotoScroll} />
-        </Section>
+      render: ({ resolvedTestimonials, stickyPhotoScroll, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <GateEmpty hide={hideUntilFilled} empty={testimonialsIsEmpty(resolvedTestimonials)} editing={puck?.isEditing} label="testimonials">
+          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+            <TestimonialsListComponent testimonials={resolvedTestimonials ?? []} stickyPhotoScroll={stickyPhotoScroll} />
+          </Section>
+        </GateEmpty>
       ),
     },
 

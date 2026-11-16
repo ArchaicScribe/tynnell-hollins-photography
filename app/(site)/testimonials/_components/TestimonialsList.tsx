@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useActiveOnScroll } from '@/app/hooks/useActiveOnScroll'
+import TestimonialSlider from './TestimonialSlider'
 import styles from './TestimonialsList.module.css'
 
 export type TestimonialItem = {
@@ -98,12 +99,19 @@ function StickyScrollTestimonials({ testimonials }: { testimonials: TestimonialI
 // LiveTestimonials builder block (app/builder/puck.config.tsx) without
 // duplicating markup. `stickyPhotoScroll` is an opt-in layout (TYN-354/338
 // style-exposure convention) - default stays the original per-item layout.
-export default function TestimonialsList({ testimonials, stickyPhotoScroll = false }: { testimonials: TestimonialItem[]; stickyPhotoScroll?: boolean }) {
+// `stickyPhotoScroll` is true (sticky photo), 'slider' (numbered slider, two or
+// more testimonials only) or false/absent (the plain list). Never branch on its
+// truthiness: 'slider' is truthy.
+export default function TestimonialsList({ testimonials, stickyPhotoScroll = false }: { testimonials: TestimonialItem[]; stickyPhotoScroll?: boolean | 'slider' }) {
   if (testimonials.length === 0) {
     return <p className={styles.empty}>Kind words are on their way.</p>
   }
 
-  if (stickyPhotoScroll) {
+  if (stickyPhotoScroll === 'slider' && testimonials.length >= 2) {
+    return <TestimonialSlider testimonials={testimonials} />
+  }
+
+  if (stickyPhotoScroll === true) {
     return <StickyScrollTestimonials testimonials={testimonials} />
   }
 
