@@ -1,0 +1,73 @@
+/* Numbered testimonial slider. Colours and fonts come from the theme
+   variables so it follows the /design editor. */
+
+.slider {
+  max-width: 52rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.stage {
+  min-height: 12rem;
+}
+
+.slide {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .slide {
+    animation: slideIn 0.5s ease both;
+  }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.quote {
+  margin: 0;
+  font-family: var(--font-heading, serif);
+  font-size: clamp(1.4rem, 2.8vw, 2.1rem);
+  line-height: 1.35;
+  color: var(--color-heading, inherit);
+}
+
+.name {
+  margin-top: 1.5rem;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-detail, inherit);
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.control {
+  background: none;
+  border: 0;
+  padding: 0.25rem 0;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  color: var(--color-detail, inherit);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.control[aria-current='true'] {
+  color: var(--color-heading, inherit);
+  border-bottom-color: currentColor;
+}
+
+.control:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}

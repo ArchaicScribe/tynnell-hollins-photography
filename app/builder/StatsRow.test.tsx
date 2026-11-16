@@ -62,3 +62,24 @@ describe('StatsRow block', () => {
     )
   })
 })
+
+describe('StatsRow heading and button', () => {
+  it('shows the heading above and the button below the stats', () => {
+    renderStats({
+      heading: 'Wedding and lifestyle photographer',
+      buttonText: "Let's chat",
+      buttonHref: '/contact',
+      items: [{ value: '150+', label: 'Weddings photographed' }],
+    })
+
+    expect(screen.getByRole('heading', { name: 'Wedding and lifestyle photographer' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: "Let's chat" })).toHaveAttribute('href', '/contact')
+  })
+
+  it('leaves the heading and button out when blank', () => {
+    renderStats({ items: [{ value: '150+', label: 'Weddings photographed' }] })
+
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+  })
+})

@@ -54,3 +54,28 @@ describe('TestimonialsList sticky photo layout', () => {
     expect(pinnedPhoto()).toHaveAttribute('alt', 'Ben session')
   })
 })
+
+describe('TestimonialsList slider layout', () => {
+  beforeEach(() => vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver))
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('uses the numbered slider when asked and there are two or more testimonials', () => {
+    render(<TestimonialsList testimonials={testimonials} stickyPhotoScroll="slider" />)
+
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['01', '02', '03'])
+  })
+
+  it('falls back to the plain list with exactly one testimonial, with no lone control', () => {
+    render(<TestimonialsList testimonials={[testimonials[0]]} stickyPhotoScroll="slider" />)
+
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
+    expect(screen.getByRole('article', { name: 'Review from Ana' })).toBeInTheDocument()
+  })
+
+  it('the value slider does not switch on the sticky photo layout', () => {
+    render(<TestimonialsList testimonials={[testimonials[0], testimonials[1]]} stickyPhotoScroll="slider" />)
+
+    // The sticky layout renders every quote as an article; the slider shows one.
+    expect(screen.queryAllByRole('article')).toHaveLength(0)
+  })
+})

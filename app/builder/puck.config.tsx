@@ -33,6 +33,8 @@ import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
+import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -498,6 +500,111 @@ const styleFields = {
 }
 const styleDefaults = { background: 'transparent', backgroundImage: '', backgroundFade: '0.55', scrollFadeIn: false, scrollOverlap: false, photoMovement: 'gentle', textFadeUp: true, spacing: 'normal' }
 
+// Split Image + Text's three layouts each return their own <section>, so the
+// render body lives here and the block's render wraps it in the hide gate.
+function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, scrollOverlap, photoMovement, hideOnMobile, hideOnDesktop, hideUntilFilled }: any) {
+    const bg = background && background !== 'transparent' ? background : undefined
+    const cls = visClass(hideOnMobile, hideOnDesktop)
+    const overlapStyle: React.CSSProperties = scrollOverlap ? { position: 'sticky', top: 0, zIndex: 1 } : {}
+
+    if (layout === 'overlay') {
+      return (
+        <section className={cls} style={{ position: 'relative', ...overlapStyle, minHeight: '50vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
+          {imageUrl ? (
+            <ParallaxLayer level={photoMovement}>
+              {scrollFadeIn ? (
+                <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              )}
+            </ParallaxLayer>
+          ) : (
+            <div style={{ position: 'absolute', inset: 0, background: C.accent }} />
+          )}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(12,12,12,0.75), rgba(12,12,12,0.1))' }} />
+          <div style={{ position: 'relative', padding: 'clamp(2rem,4vw,3.5rem)', maxWidth: '60ch' }}>
+            {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+            <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+            <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
+            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+          </div>
+        </section>
+      )
+    }
+
+    if (layout === 'stacked') {
+      return (
+        <section className={cls} style={{ ...overlapStyle, background: bg }}>
+          <div style={{ minHeight: '280px', position: 'relative', background: C.accent }}>
+            {imageUrl && (
+              scrollFadeIn ? (
+                <ScrollFadeImage src={imageUrl} style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
+              )
+            )}
+          </div>
+          <div style={{ padding: 'clamp(2rem,4vw,3.5rem)', textAlign: 'center', maxWidth: '65ch', margin: '0 auto' }}>
+            {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+            <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+            <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
+            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+          </div>
+        </section>
+      )
+    }
+
+    // Bleed always runs toward the OUTER edge, so it follows imagePosition
+    // rather than being a separate direction control: an image on the left
+    // bleeds left, on the right bleeds right. A control that let you bleed
+    // an image toward the middle of the page would only ever collide with
+    // the text column.
+    const bleedClass =
+      imageBleed && imageBleed !== 'none' ? `pk-bleed-${imagePosition === 'left' ? 'left' : 'right'}-${imageBleed}` : ''
+    const offsetClass = imageOffset && imageOffset !== 'none' ? `pk-offset-${imageOffset}` : ''
+    const imgCls = [bleedClass, offsetClass].filter(Boolean).join(' ')
+
+    const img = (
+      <div className={imgCls} style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', overflow: photoMovement && photoMovement !== 'none' ? 'hidden' : undefined, background: C.accent }}>
+        {imageUrl && (
+          <ParallaxLayer level={photoMovement}>
+            {scrollFadeIn ? (
+              <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            )}
+          </ParallaxLayer>
+        )}
+      </div>
+    )
+    const txt = (
+      <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)' }}>
+        {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
+        <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+        <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
+        {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+      </div>
+    )
+    // With "Hide until filled in" on, a section with no photo is just its text,
+    // not text beside an empty tinted frame. Off keeps the frame, so saved
+    // pages that rely on it do not change.
+    if (hideUntilFilled && !imageUrl) {
+      return (
+        <section className={cls} style={{ ...overlapStyle, display: 'flex', background: bg }}>
+          {txt}
+        </section>
+      )
+    }
+    return (
+      <section className={cls} style={{ ...overlapStyle, display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
+        {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
+      </section>
+    )
+}
+
 export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
@@ -510,7 +617,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA'] },
+    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -710,6 +817,7 @@ export const config: Config = {
         body: { type: 'textarea', label: 'Text' },
         buttonText: { type: 'text', label: 'Button text' },
         successMessage: { type: 'text', label: 'Message after signing up' },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
@@ -721,10 +829,28 @@ export const config: Config = {
         body: 'New sessions, favorite moments and the occasional tip, straight to your inbox.',
         buttonText: 'Sign me up',
         successMessage: 'Thank you for signing up!',
+        hideUntilFilled: false,
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ kind, imageUrl, eyebrow, heading, body, buttonText, successMessage, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      // A Freebie sign-up needs its guide link set in Site Settings, or visitors
+      // would sign up and receive nothing; ask the server (a boolean only) and
+      // fail closed. Same relative-in-browser, absolute-on-server pattern as the
+      // other data-bound blocks.
+      resolveData: async ({ props }: any) => {
+        if (props.kind !== 'freebie') return { props: { resolvedFreebieReady: true } }
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/public-freebie-ready`)
+          if (!res.ok) return { props: { resolvedFreebieReady: false } }
+          const data = await res.json()
+          return { props: { resolvedFreebieReady: data.ready === true } }
+        } catch {
+          return { props: { resolvedFreebieReady: false } }
+        }
+      },
+      render: ({ kind, imageUrl, eyebrow, heading, body, buttonText, successMessage, hideUntilFilled, resolvedFreebieReady, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <GateEmpty hide={hideUntilFilled} empty={signupIsEmpty({ kind, heading, body }, resolvedFreebieReady)} editing={puck?.isEditing} label="sign-up">
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div className="pk-signup" style={{ display: 'grid', gridTemplateColumns: imageUrl ? 'minmax(0, 1fr) minmax(0, 1.2fr)' : '1fr', gap: 'clamp(2rem, 5vw, 5rem)', alignItems: 'center', maxWidth: imageUrl ? undefined : '40rem', margin: imageUrl ? undefined : '0 auto' }}>
             {imageUrl && (
@@ -739,6 +865,7 @@ export const config: Config = {
             </div>
           </div>
         </Section>
+        </GateEmpty>
       ),
     },
 
@@ -808,7 +935,11 @@ export const config: Config = {
           defaultItemProps: { value: '', label: '' },
           getItemSummary: (item: any) => [item.value, item.label].filter(Boolean).join(' ') || 'New stat',
         },
+        heading: { type: 'text', label: 'Heading above the stats (optional)' },
+        buttonText: { type: 'text', label: 'Button text (optional)' },
+        buttonHref: { type: 'text', label: 'Button link' },
         align: alignField,
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
@@ -818,14 +949,20 @@ export const config: Config = {
           { value: '150+', label: 'Sessions photographed' },
           { value: '7+', label: 'Years behind the camera' },
         ],
+        heading: '',
+        buttonText: '',
+        buttonHref: '/contact',
         align: 'center',
+        hideUntilFilled: false,
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ items, align, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => {
+      render: ({ items, heading, buttonText, buttonHref, hideUntilFilled, puck, align, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => {
         const stats = (items ?? []).filter((item: any) => item?.value?.trim())
         return (
+          <GateEmpty hide={hideUntilFilled} empty={statsIsEmpty({ items })} editing={puck?.isEditing} label="stats">
           <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+            {heading && <h2 style={{ ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), textAlign: align === 'center' ? 'center' : 'left', marginBottom: '2rem' }}>{heading}</h2>}
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 5vw, 4.5rem)', justifyContent: align === 'center' ? 'center' : 'flex-start' }}>
               {stats.map((item: any, i: number) => (
                 <li key={i} style={{ textAlign: align, minWidth: '8rem' }}>
@@ -834,7 +971,13 @@ export const config: Config = {
                 </li>
               ))}
             </ul>
+            {buttonText && (
+              <div style={{ textAlign: align === 'center' ? 'center' : 'left' }}>
+                <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>
+              </div>
+            )}
           </Section>
+          </GateEmpty>
         )
       },
     },
@@ -856,6 +999,51 @@ export const config: Config = {
           </div>
         </Section>
       ),
+    },
+
+    // ----------------------------------------------------------- Statement
+    // Rising Roots home: the text-only emotional intro and the pull quote.
+    // A bold lead-in, a line of text and a closing line, all in the heading
+    // font; "Pull quote" sets the text in the script font instead. Hidden
+    // from visitors until Tynnell has written something (hide switch on by
+    // default), so no placeholder wording ever reaches the public page.
+    Statement: {
+      label: 'Statement',
+      fields: {
+        lead: { type: 'text', label: 'Bold lead-in line (optional)' },
+        text: { type: 'textarea', label: 'Text' },
+        closing: { type: 'text', label: 'Closing line (optional)' },
+        style: {
+          type: 'radio' as const,
+          label: 'Style',
+          options: [
+            { label: 'Text', value: 'text' },
+            { label: 'Pull quote', value: 'quote' },
+          ],
+        },
+        align: alignField,
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: { lead: '', text: '', closing: '', style: 'text', align: 'center', hideUntilFilled: true, ...styleDefaults, ...responsiveDefaults },
+      render: ({ lead, text, closing, style, align, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const centered = align === 'center'
+        const line: React.CSSProperties = { ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), lineHeight: 1.2, margin: '0 0 1rem', whiteSpace: 'pre-wrap' }
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={statementIsEmpty({ lead, text, closing })} editing={puck?.isEditing} label="statement">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              <div style={{ maxWidth: '40em', margin: centered ? '0 auto' : undefined, textAlign: centered ? 'center' : 'left' }}>
+                {lead && <p style={line}><strong style={{ fontWeight: 600 }}>{lead}</strong></p>}
+                {text && (style === 'quote'
+                  ? <blockquote style={{ ...line, margin: '0 0 1rem', fontFamily: 'var(--font-script-role, var(--font-heading))', fontSize: 'clamp(2rem, 4.4vw, 3.5rem)' }}>{text}</blockquote>
+                  : <p style={line}>{text}</p>)}
+                {closing && <p style={line}>{closing}</p>}
+              </div>
+            </Section>
+          </GateEmpty>
+        )
+      },
     },
 
     // ------------------------------------------------------ TypewriterHeading
@@ -954,6 +1142,7 @@ export const config: Config = {
         scrollFadeIn: scrollFadeInField,
         scrollOverlap: scrollOverlapField,
         photoMovement: photoMovementField,
+        hideUntilFilled: hideUntilFilledField,
         ...responsiveFields,
       },
       defaultProps: {
@@ -971,100 +1160,14 @@ export const config: Config = {
         scrollFadeIn: false,
         scrollOverlap: false,
         photoMovement: 'gentle',
+        hideUntilFilled: false,
         ...responsiveDefaults,
       },
-      render: ({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, scrollOverlap, photoMovement, hideOnMobile, hideOnDesktop }: any) => {
-        const bg = background && background !== 'transparent' ? background : undefined
-        const cls = visClass(hideOnMobile, hideOnDesktop)
-        const overlapStyle: React.CSSProperties = scrollOverlap ? { position: 'sticky', top: 0, zIndex: 1 } : {}
-
-        if (layout === 'overlay') {
-          return (
-            <section className={cls} style={{ position: 'relative', ...overlapStyle, minHeight: '50vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
-              {imageUrl ? (
-                <ParallaxLayer level={photoMovement}>
-                  {scrollFadeIn ? (
-                    <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  )}
-                </ParallaxLayer>
-              ) : (
-                <div style={{ position: 'absolute', inset: 0, background: C.accent }} />
-              )}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(12,12,12,0.75), rgba(12,12,12,0.1))' }} />
-              <div style={{ position: 'relative', padding: 'clamp(2rem,4vw,3.5rem)', maxWidth: '60ch' }}>
-                {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-                <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
-                <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-                {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
-              </div>
-            </section>
-          )
-        }
-
-        if (layout === 'stacked') {
-          return (
-            <section className={cls} style={{ ...overlapStyle, background: bg }}>
-              <div style={{ minHeight: '280px', position: 'relative', background: C.accent }}>
-                {imageUrl && (
-                  scrollFadeIn ? (
-                    <ScrollFadeImage src={imageUrl} style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={imageUrl} alt="" style={{ width: '100%', height: '100%', maxHeight: '55vh', objectFit: 'cover', display: 'block' }} />
-                  )
-                )}
-              </div>
-              <div style={{ padding: 'clamp(2rem,4vw,3.5rem)', textAlign: 'center', maxWidth: '65ch', margin: '0 auto' }}>
-                {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-                <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
-                <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-                {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
-              </div>
-            </section>
-          )
-        }
-
-        // Bleed always runs toward the OUTER edge, so it follows imagePosition
-        // rather than being a separate direction control: an image on the left
-        // bleeds left, on the right bleeds right. A control that let you bleed
-        // an image toward the middle of the page would only ever collide with
-        // the text column.
-        const bleedClass =
-          imageBleed && imageBleed !== 'none' ? `pk-bleed-${imagePosition === 'left' ? 'left' : 'right'}-${imageBleed}` : ''
-        const offsetClass = imageOffset && imageOffset !== 'none' ? `pk-offset-${imageOffset}` : ''
-        const imgCls = [bleedClass, offsetClass].filter(Boolean).join(' ')
-
-        const img = (
-          <div className={imgCls} style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', overflow: photoMovement && photoMovement !== 'none' ? 'hidden' : undefined, background: C.accent }}>
-            {imageUrl && (
-              <ParallaxLayer level={photoMovement}>
-                {scrollFadeIn ? (
-                  <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                )}
-              </ParallaxLayer>
-            )}
-          </div>
-        )
-        const txt = (
-          <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)' }}>
-            {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-            <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
-            <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
-          </div>
-        )
-        return (
-          <section className={cls} style={{ ...overlapStyle, display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
-            {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
-          </section>
-        )
-      },
+      render: (props: any) => (
+        <GateEmpty hide={props.hideUntilFilled} empty={splitIsEmpty(props)} editing={props.puck?.isEditing} label="story section">
+          {renderSplitImageText(props)}
+        </GateEmpty>
+      ),
     },
 
     // -------------------------------------------------------------- Services
@@ -1252,12 +1355,14 @@ export const config: Config = {
           options: [
             { label: 'Photo beside each quote', value: false },
             { label: 'Sticky photo, changes on scroll', value: true },
+            { label: 'Slider with numbers (two or more quotes)', value: 'slider' },
           ],
         },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
-      defaultProps: { stickyPhotoScroll: false, ...styleDefaults, ...responsiveDefaults },
+      defaultProps: { stickyPhotoScroll: false, hideUntilFilled: false, ...styleDefaults, ...responsiveDefaults },
       resolveData: async () => {
         const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
         try {
@@ -1269,10 +1374,12 @@ export const config: Config = {
           return { props: { resolvedTestimonials: [] } }
         }
       },
-      render: ({ resolvedTestimonials, stickyPhotoScroll, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          <TestimonialsListComponent testimonials={resolvedTestimonials ?? []} stickyPhotoScroll={stickyPhotoScroll} />
-        </Section>
+      render: ({ resolvedTestimonials, stickyPhotoScroll, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <GateEmpty hide={hideUntilFilled} empty={testimonialsIsEmpty(resolvedTestimonials)} editing={puck?.isEditing} label="testimonials">
+          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+            <TestimonialsListComponent testimonials={resolvedTestimonials ?? []} stickyPhotoScroll={stickyPhotoScroll} />
+          </Section>
+        </GateEmpty>
       ),
     },
 
@@ -1361,6 +1468,7 @@ export const config: Config = {
         subtext: { type: 'textarea', label: 'Subtext (optional)' },
         buttonText: { type: 'text', label: 'Button text' },
         buttonHref: { type: 'text', label: 'Button link' },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
@@ -1371,9 +1479,11 @@ export const config: Config = {
         buttonHref: '/contact',
         background: 'var(--color-bg-accent, #131313)',
         spacing: 'spacious',
+        hideUntilFilled: false,
         ...responsiveDefaults,
       },
-      render: ({ heading, subtext, buttonText, buttonHref, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      render: ({ heading, subtext, buttonText, buttonHref, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <GateEmpty hide={hideUntilFilled} empty={ctaIsEmpty({ heading })} editing={puck?.isEditing} label="call to action">
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: 'center' }}>
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
@@ -1381,7 +1491,66 @@ export const config: Config = {
             {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
           </div>
         </Section>
+        </GateEmpty>
       ),
+    },
+
+    // ---------------------------------------------------------- PathChoice
+    // Rising Roots home "What brings you here today?": a heading and up to two
+    // photo cards, each linking to a page. A card needs a label AND a link to
+    // count; with none complete the block is hidden from visitors.
+    PathChoice: {
+      label: 'Choice Cards',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        cards: {
+          type: 'array',
+          label: 'Cards',
+          max: 2,
+          arrayFields: {
+            imageUrl: imageField('Photo'),
+            label: { type: 'text', label: 'Label' },
+            href: { type: 'text', label: 'Link (a page like /book)' },
+          },
+          defaultItemProps: { imageUrl: '', label: '', href: '' },
+          getItemSummary: (item: any) => item?.label || 'New card',
+        },
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        cards: [{ imageUrl: '', label: '', href: '' }, { imageUrl: '', label: '', href: '' }],
+        hideUntilFilled: true,
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, cards, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const complete = (cards ?? []).filter((c: any) => c?.label?.trim() && c?.href?.trim())
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={pathChoiceIsEmpty({ cards })} editing={puck?.isEditing} label="choice cards">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 3vw, 2.5rem)', maxWidth: '1000px', margin: '0 auto' }}>
+                {complete.map((c: any, i: number) => (
+                  <a key={i} href={c.href} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                    <div style={{ aspectRatio: '4 / 5', overflow: 'hidden', background: C.accent }}>
+                      {c.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      )}
+                    </div>
+                    <p style={{ ...headingStyle('clamp(1.25rem, 2.2vw, 1.75rem)'), marginTop: '1rem' }}>
+                      {c.label} <span aria-hidden="true">→</span>
+                    </p>
+                  </a>
+                ))}
+              </div>
+            </Section>
+          </GateEmpty>
+        )
+      },
     },
 
     // -------------------------------------------------------- PhotoGallery
@@ -1603,10 +1772,15 @@ export const config: Config = {
             { label: 'Scrolling strip', value: 'strip' },
           ],
         },
+        heading: { type: 'text', label: 'Heading above the albums (optional)' },
+        subtext: { type: 'text', label: 'Line under the heading (optional)' },
+        buttonText: { type: 'text', label: 'Button text (optional)' },
+        buttonHref: { type: 'text', label: 'Button link' },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
-      defaultProps: { category: 'weddings', layout: 'grid', ...styleDefaults, ...responsiveDefaults },
+      defaultProps: { category: 'weddings', layout: 'grid', heading: '', subtext: '', buttonText: '', buttonHref: '/portfolio', hideUntilFilled: false, ...styleDefaults, ...responsiveDefaults },
       resolveData: async ({ props }: any) => {
         const category = props.category ?? 'weddings'
         const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
@@ -1619,11 +1793,24 @@ export const config: Config = {
           return { props: { resolvedAlbums: [] } }
         }
       },
-      render: ({ resolvedAlbums, layout, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          <AlbumGridComponent albums={resolvedAlbums ?? []} layout={layout === 'strip' ? 'strip' : 'grid'} />
-        </Section>
-      ),
+      render: ({ resolvedAlbums, layout, heading, subtext, buttonText, buttonHref, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => {
+        const albums = resolvedAlbums ?? []
+        const hasAlbums = albums.length > 0
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={albumsIsEmpty(albums)} editing={puck?.isEditing} label="albums">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {hasAlbums && heading && <h2 style={{ ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), textAlign: 'center' }}>{heading}</h2>}
+              {hasAlbums && heading && subtext && <p style={{ color: C.detail, textAlign: 'center', margin: '0.75rem 0 0' }}>{subtext}</p>}
+              <AlbumGridComponent albums={albums} layout={layout === 'strip' ? 'strip' : 'grid'} hideHeading={Boolean(heading)} />
+              {hasAlbums && buttonText && (
+                <div style={{ textAlign: 'center' }}>
+                  <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>
+                </div>
+              )}
+            </Section>
+          </GateEmpty>
+        )
+      },
     },
 
     // ----------------------------------------------------------- LiveBlog

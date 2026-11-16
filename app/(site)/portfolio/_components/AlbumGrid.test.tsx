@@ -54,3 +54,38 @@ describe('AlbumGrid builder block', () => {
     expect(screen.getByRole('region', { name: 'Albums' })).toBeInTheDocument()
   })
 })
+
+describe('AlbumGrid own heading', () => {
+  it('omits its own Albums heading when told the page supplies one', () => {
+    render(<AlbumGrid albums={albums} hideHeading />)
+
+    expect(screen.queryByRole('heading', { name: 'Albums' })).not.toBeInTheDocument()
+  })
+})
+
+describe('AlbumGrid block heading and button', () => {
+  const draw = (props: Record<string, unknown>) =>
+    render(block.render({ ...block.defaultProps, ...props, puck: {} }) as ReactElement)
+
+  it('shows the heading, subtext and button around the albums, with no second Albums heading', () => {
+    draw({ heading: 'A Few Favorites', subtext: 'Every frame tells a story', buttonText: 'View more galleries', buttonHref: '/portfolio', resolvedAlbums: albums })
+
+    expect(screen.getByRole('heading', { name: 'A Few Favorites' })).toBeInTheDocument()
+    expect(screen.getByText('Every frame tells a story')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'View more galleries' })).toHaveAttribute('href', '/portfolio')
+    expect(screen.queryByRole('heading', { name: 'Albums' })).not.toBeInTheDocument()
+  })
+
+  it('leaves the heading and button out when there are no albums, even with the switch off', () => {
+    draw({ heading: 'A Few Favorites', buttonText: 'View more galleries', resolvedAlbums: [] })
+
+    expect(screen.queryByRole('heading', { name: 'A Few Favorites' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'View more galleries' })).not.toBeInTheDocument()
+  })
+
+  it('keeps showing its own Albums heading when the page sets none, so live pages do not change', () => {
+    draw({ resolvedAlbums: albums })
+
+    expect(screen.getByRole('heading', { name: 'Albums' })).toBeInTheDocument()
+  })
+})

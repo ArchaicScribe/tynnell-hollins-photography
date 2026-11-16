@@ -1,4 +1,5 @@
 import type { Data } from '@measured/puck'
+import { buildHome, BLANK_HOME_WORDS } from './homeLayout'
 
 // Starter templates for new builder pages (TYN-230). A non-technical user
 // faces a blank canvas otherwise; these seed a ready-made layout she can edit
@@ -8,18 +9,21 @@ import type { Data } from '@measured/puck'
 //
 // Each item needs a unique props.id within the document; ids are namespaced
 // per template so they never collide inside one page.
-export type TemplateKey = 'blank' | 'landing' | 'about' | 'gallery' | 'freeform'
+export type TemplateKey = 'blank' | 'landing' | 'about' | 'gallery' | 'freeform' | 'home'
 
 export const templateOptions: { value: TemplateKey; label: string; description: string }[] = [
   { value: 'blank', label: 'Blank', description: 'Start from nothing and add sections yourself.' },
   { value: 'landing', label: 'Landing page', description: 'Hero, a story section, services, a quote, and a call to action.' },
   { value: 'about', label: 'About page', description: 'Intro hero, your story with a photo, and a closing call to action.' },
   { value: 'gallery', label: 'Photo gallery', description: 'Hero, a heading, and a photo grid ready for your images.' },
+  { value: 'home', label: 'Home page (Rising Roots)', description: 'The full home layout: hero, intro, stats, choice cards, testimonials, albums and more. Each section stays hidden until you fill in your words.' },
   { value: 'freeform', label: 'Freeform layout', description: 'A drag-and-arrange section with a heading, text, image, and button already placed - move anything, anywhere.' },
 ]
 
 const TEMPLATES: Record<TemplateKey, Data> = {
   blank: { content: [], root: {} },
+
+  home: buildHome(BLANK_HOME_WORDS),
 
   landing: {
     root: {},
