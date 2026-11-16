@@ -101,7 +101,7 @@ export default async function RootLayout({
         <a href="#main-content" className="skipLink">Skip to content</a>
         <Navbar builderLinks={builderLinks} logoUrl={theme.logoUrl} siteTitle={site.title} menuCards={site.menuCards} />
         <div id="main-content" tabIndex={-1}>{children}</div>
-        <Footer />
+        <Footer logoUrl={theme.logoUrl} />
         <DesignPreviewBridge />
         {/* No consent gate (TYN-27, investigated): Vercel Web Analytics and Speed
             Insights are cookieless by design - no persistent identifiers, no
