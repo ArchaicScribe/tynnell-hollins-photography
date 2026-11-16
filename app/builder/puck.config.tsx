@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -807,6 +807,7 @@ export const config: Config = {
         body: { type: 'textarea', label: 'Text' },
         buttonText: { type: 'text', label: 'Button text' },
         successMessage: { type: 'text', label: 'Message after signing up' },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
@@ -818,10 +819,28 @@ export const config: Config = {
         body: 'New sessions, favorite moments and the occasional tip, straight to your inbox.',
         buttonText: 'Sign me up',
         successMessage: 'Thank you for signing up!',
+        hideUntilFilled: false,
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ kind, imageUrl, eyebrow, heading, body, buttonText, successMessage, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      // A Freebie sign-up needs its guide link set in Site Settings, or visitors
+      // would sign up and receive nothing; ask the server (a boolean only) and
+      // fail closed. Same relative-in-browser, absolute-on-server pattern as the
+      // other data-bound blocks.
+      resolveData: async ({ props }: any) => {
+        if (props.kind !== 'freebie') return { props: { resolvedFreebieReady: true } }
+        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+        try {
+          const res = await fetch(`${base}/api/public-freebie-ready`)
+          if (!res.ok) return { props: { resolvedFreebieReady: false } }
+          const data = await res.json()
+          return { props: { resolvedFreebieReady: data.ready === true } }
+        } catch {
+          return { props: { resolvedFreebieReady: false } }
+        }
+      },
+      render: ({ kind, imageUrl, eyebrow, heading, body, buttonText, successMessage, hideUntilFilled, resolvedFreebieReady, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <GateEmpty hide={hideUntilFilled} empty={signupIsEmpty({ kind, heading, body }, resolvedFreebieReady)} editing={puck?.isEditing} label="sign-up">
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div className="pk-signup" style={{ display: 'grid', gridTemplateColumns: imageUrl ? 'minmax(0, 1fr) minmax(0, 1.2fr)' : '1fr', gap: 'clamp(2rem, 5vw, 5rem)', alignItems: 'center', maxWidth: imageUrl ? undefined : '40rem', margin: imageUrl ? undefined : '0 auto' }}>
             {imageUrl && (
@@ -836,6 +855,7 @@ export const config: Config = {
             </div>
           </div>
         </Section>
+        </GateEmpty>
       ),
     },
 

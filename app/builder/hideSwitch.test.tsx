@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { config } from './puck.config'
@@ -50,5 +50,53 @@ describe.each(cases)('$type hide switch', ({ type, empty, filled }) => {
 
     expect(container.querySelector('section')).not.toBeNull()
     expect(container.querySelector('[data-empty-outline]')).toBeNull()
+  })
+})
+
+describe('Email Signup hide switch', () => {
+  const words = { heading: 'Free venue guide', body: 'Get the guide by email.' }
+
+  it('is off by default, so existing pages do not change', () => {
+    expect(components.EmailSignup.defaultProps.hideUntilFilled).toBe(false)
+  })
+
+  it('a freebie sign-up with words stays hidden until the guide link is ready', () => {
+    for (const resolvedFreebieReady of [false, undefined]) {
+      const { container, unmount } = renderBlock('EmailSignup', { ...words, kind: 'freebie', hideUntilFilled: true, resolvedFreebieReady })
+      expect(container.innerHTML).toBe('')
+      unmount()
+    }
+    const { container } = renderBlock('EmailSignup', { ...words, kind: 'freebie', hideUntilFilled: true, resolvedFreebieReady: true })
+    expect(container.querySelector('section')).not.toBeNull()
+  })
+
+  it('a block saved without the switch is unaffected by readiness', () => {
+    const { container } = renderBlock('EmailSignup', { ...words, kind: 'freebie', resolvedFreebieReady: false })
+
+    expect(container.querySelector('section')).not.toBeNull()
+  })
+
+  it('a newsletter sign-up needs words but not a guide link', () => {
+    const { container } = renderBlock('EmailSignup', { ...words, kind: 'newsletter', hideUntilFilled: true })
+    expect(container.querySelector('section')).not.toBeNull()
+
+    const blank = renderBlock('EmailSignup', { heading: '', body: '', kind: 'newsletter', hideUntilFilled: true })
+    expect(blank.container.innerHTML).toBe('')
+  })
+
+  it('asks the server whether the guide is ready for the freebie type, and fails closed', async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error('offline'))
+    vi.stubGlobal('fetch', fetchMock)
+    try {
+      const out = await components.EmailSignup.resolveData({ props: { kind: 'freebie' } })
+      expect(out.props.resolvedFreebieReady).toBe(false)
+
+      fetchMock.mockClear()
+      const news = await components.EmailSignup.resolveData({ props: { kind: 'newsletter' } })
+      expect(news.props.resolvedFreebieReady).toBe(true)
+      expect(fetchMock).not.toHaveBeenCalled()
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })
