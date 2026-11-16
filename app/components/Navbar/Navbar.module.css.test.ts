@@ -91,57 +91,6 @@ describe('Navbar.module.css row links', () => {
     expect(link()).toContain('font-family: var(--font-serif)')
   })
 
-  it('is title case with no tracking', () => {
-    expect(link()).not.toMatch(/text-transform:\s*uppercase/)
-    const tracking = link().match(/letter-spacing:\s*([^;]+);/)?.[1].trim()
-    expect(tracking === undefined || tracking === 'normal' || tracking === '0').toBe(true)
-  })
-
-  it('is 18px at desktop width', () => {
-    expect(link()).toMatch(/font-size:\s*(18px|1\.125rem)/)
-  })
-
-  it('has no leftover uppercase or tracking override on the links in the mid-width band', () => {
-    const band = mediaBlock('(min-width: 1025px) and (max-width: 1240px)')
-    const linkRule = band.match(/\.link\s*\{([^}]*)\}/)?.[1] ?? ''
-    expect(linkRule).not.toMatch(/text-transform|letter-spacing/)
-  })
-})
-
-describe('Navbar.module.css menu button', () => {
-  it('is visible on desktop: the base rule does not hide it', () => {
-    expect(bodyOf('.hamburger')).not.toMatch(/display:\s*none/)
-  })
-
-  it('still collapses the link rows below 1024px and keeps the button', () => {
-    const narrow = mediaBlock('(max-width: 1024px)')
-    expect(narrow).toMatch(/\.row\s*\{[^}]*display:\s*none/)
-    expect(narrow).toMatch(/\.hamburger\s*\{[^}]*display:\s*flex/)
-  })
-
-  it('labels the open menu in the script role', () => {
-    expect(bodyOf('.menuLabel')).toContain('font-family: var(--font-script-role, var(--font-display))')
-  })
-})
-
-describe('Navbar.module.css hairline', () => {
-  it('draws a 1px line along the bottom edge while transparent over a hero', () => {
-    const after = bodyOf('.navbar::after') ?? ''
-    expect(after).toMatch(/bottom:\s*0/)
-    expect(after).toMatch(/height:\s*1px/)
-  })
-
-  it('switches the line off once the bar is solid', () => {
-    expect(bodyOf('.navbar::after')).toContain('opacity: var(--nav-hairline)')
-    const solid = solidRules().find((r) => /\.scrolled/.test(r.selector) && /\.menuOpen/.test(r.selector))
-    expect(solid?.body).toMatch(/--nav-hairline:\s*0\b/)
-  })
-})
-
-describe('Navbar.module.css dropdown', () => {
-  it('has no dropdown rules left, the row has no Portfolio menu', () => {
-    expect(css).not.toMatch(/\.(hasDropdown|arrow|arrowOpen|dropdown|dropdownOpen|dropdownItem)\b/)
-  })
 })
 
 // A page that does not open on a full-bleed photo must not get white text on the

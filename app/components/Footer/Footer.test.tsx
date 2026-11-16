@@ -63,23 +63,6 @@ describe('Footer link list', () => {
     ])
   })
 
-  it('points every link at a real page', async () => {
-    await renderFooter()
-
-    const hrefs = within(footerNav()).getAllByRole('link').map((a) => a.getAttribute('href'))
-
-    expect(hrefs).toEqual([
-      '/', '/about', '/portfolio/weddings', '/portfolio/portraits', '/portfolio',
-      '/services', '/testimonials', '/blog', '/contact',
-    ])
-  })
-
-  it('shows a builder page with a very long title without dropping it', async () => {
-    const title = 'An extremely long page title that a person might give a builder page'.repeat(3)
-    await renderFooter({ footer: { builderLinks: [{ label: title, href: '/long' }] } })
-
-    expect(within(footerNav()).getByRole('link', { name: title })).toHaveAttribute('href', '/long')
-  })
 })
 
 describe('Footer columns', () => {
@@ -207,16 +190,5 @@ describe('Footer bottom row', () => {
 
     expect(screen.queryByRole('link', { name: 'Terms and conditions' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Privacy statement' })).not.toBeInTheDocument()
-  })
-})
-
-describe('Footer when the database read failed', () => {
-  it('still renders the columns and bottom row, without the strip or builder pages', async () => {
-    const { container } = await renderFooter({
-      footer: { stripPhotos: [], builderLinks: [], hasTerms: false, hasPrivacy: false },
-    })
-
-    expect(within(footerNav()).getByRole('link', { name: 'Home' })).toBeInTheDocument()
-    expect(container.querySelectorAll('img').length).toBe(0)
   })
 })

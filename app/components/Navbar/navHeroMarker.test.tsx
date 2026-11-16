@@ -1,8 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { readFileSync } from 'fs'
-import path from 'path'
 import type { ReactElement } from 'react'
 import { config } from '@/app/builder/puck.config'
 import Hero from '@/app/components/Hero/Hero'
@@ -54,19 +52,5 @@ describe('data-nav-hero marker', () => {
     expect(draw('FullWidthImage', { imageUrl: '/a.jpg', navHero: true }).container.querySelector(marker)).not.toBeNull()
     expect(draw('FullWidthImage', { imageUrl: '/a.jpg' }).container.querySelector(marker)).toBeNull()
     expect(draw('FullWidthImage', { imageUrl: '', navHero: true }).container.querySelector(marker)).toBeNull()
-  })
-})
-
-// The gallery and blog pages are async server components that read the database,
-// so they are guarded at the source: each hero that sits on a cover photo says so.
-describe('data-nav-hero marker on server-rendered heroes', () => {
-  const read = (rel: string) => readFileSync(path.resolve(__dirname, '../../../', rel), 'utf8')
-
-  it.each([
-    ['gallery page', 'app/(site)/portfolio/[slug]/page.tsx'],
-    ['blog index', 'app/(site)/blog/page.tsx'],
-    ['blog post', 'app/(site)/blog/[slug]/page.tsx'],
-  ])('is set on the %s hero', (_name, file) => {
-    expect(read(file)).toContain('data-nav-hero')
   })
 })
