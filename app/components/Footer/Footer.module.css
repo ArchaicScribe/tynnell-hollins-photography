@@ -1,223 +1,206 @@
+/* Rising Roots footer. Three columns on the olive ground, a strip of featured
+   photos, then a bottom row. The colours are the navbar's (TYN-352), falling
+   back to the button colours, so /design controls the nav, the full-screen menu
+   and this footer together. Every font goes through a variable, never a family
+   name (the PR #155 bug). */
+
 .footer {
-  background: var(--color-bg);
-  border-top: 1px solid var(--color-border);
+  background: var(--color-nav-bg, var(--color-btn-bg));
+  color: var(--color-nav-text, var(--color-btn-text));
   margin-top: auto;
 }
 
-/* ── CTA row ─────────────────────────────────────────────── */
+/* ── Three columns ───────────────────────────────────────── */
 
-.cta {
-  padding: 4rem var(--padding-x);
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 3rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.ctaText {
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-body);
-  line-height: 2;
-  max-width: 520px;
-}
-
-.ctaLink {
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-heading);
-  text-decoration: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-  position: relative;
-  padding-bottom: 0.5rem;
-  transition: color 0.2s ease;
-}
-
-.ctaLink::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: currentColor;
-}
-
-.ctaLink:hover {
-  color: var(--color-detail);
-}
-
-/* ── Instagram strip ─────────────────────────────────────── */
-
-.instagram {
-  padding: 2.5rem var(--padding-x);
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  gap: 3rem;
-}
-
-.igInfo {
-  flex-shrink: 0;
-}
-
-.igLabel {
-  font-family: var(--font-body);
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-  margin-bottom: 0.5rem;
-}
-
-.igHandle {
-  font-family: var(--font-heading);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--color-heading);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.igHandle:hover {
-  color: var(--color-detail);
-}
-
-.igPhotos {
-  display: flex;
-  gap: 0.5rem;
-  flex: 1;
-  max-width: 560px;
-}
-
-.igPhoto {
-  flex: 1;
-  aspect-ratio: 1;
-  position: relative;
-  overflow: hidden;
-  max-width: 130px;
-}
-
-.igPhotoImg {
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.igPhoto:hover .igPhotoImg {
-  transform: scale(1.04);
-}
-
-/* ── Main footer (wordmark / contact / nav) ──────────────── */
-
-.main {
+.columns {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 2.5rem;
-  align-items: start;
-  padding: 3.5rem var(--padding-x) 2.5rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.footerBrand {
-  display: flex;
-  flex-direction: column;
-  text-decoration: none;
-  line-height: 1.05;
-}
-
-.footerMark {
-  font-family: var(--font-heading);
-  font-size: 1.6rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-heading);
-  white-space: nowrap;
-}
-
-.footerSub {
-  font-family: var(--font-label, var(--font-body));
-  font-size: 0.5rem;
-  letter-spacing: 0.42em;
-  text-indent: 0.42em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-  margin-top: 0.3rem;
-}
-
-.contactBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  justify-self: center;
-}
-
-.location,
-.contactEmail {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-detail);
-  text-decoration: none;
-}
-
-.contactEmail {
-  transition: color 0.2s ease;
-}
-
-.contactEmail:hover {
-  color: var(--color-heading);
-}
-
-.footerNav {
-  display: flex;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 3rem;
+  align-items: start;
+  padding: 5rem var(--padding-x) 4rem;
 }
 
-.footerNavColumn {
+.links,
+.connect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+/* "Where to next?" and "Let's connect": the one script moment in the footer. */
+.script {
+  font-family: var(--font-script-role, var(--font-display));
+  font-size: 2.1rem;
+  font-weight: 400;
+  line-height: 1;
+  margin: 0 0 0.85rem;
+}
+
+.linkList {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.85rem;
 }
 
-.footerNavLink {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
+/* Rising Roots small caps: Barlow 12px, weight 300, 1.8px tracking. Shared by
+   the link list, the location line, the buttons and the bottom row. */
+.link,
+.label,
+.button,
+.legalLink,
+.copy {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
-  color: var(--color-detail);
   text-decoration: none;
-  transition: color 0.2s ease;
+  line-height: 1.6;
 }
 
-.footerNavLink:hover {
-  color: var(--color-heading);
+.link {
+  color: inherit;
+  /* A builder page flagged show-in-menu can have any title; a long one must
+     wrap, never push the column wider than the screen. */
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  transition: opacity 0.2s ease;
 }
 
-@media (max-width: 900px) {
-  .main {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    text-align: center;
-    justify-items: center;
-  }
-  .footerBrand { align-items: center; }
-  .contactBlock { justify-self: center; align-items: center; }
-  .footerNav { gap: 2.5rem; }
-  .footerNavColumn { align-items: center; }
+.link:hover,
+.link:focus-visible {
+  opacity: 0.7;
+  outline: none;
 }
 
-/* ── Bottom bar ──────────────────────────────────────────── */
+.label {
+  margin: 0;
+}
+
+/* ── Centre: mark, bio, button ───────────────────────────── */
+
+.about {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+  min-width: 0;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  line-height: 1.05;
+}
+
+.brandLogo {
+  display: block;
+  height: 64px;
+  width: auto;
+  object-fit: contain;
+}
+
+.brandMark {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.brandSub {
+  font-family: var(--font-label, var(--font-body));
+  font-size: 0.5rem;
+  letter-spacing: 0.42em;
+  /* The tracking adds a trailing gap on the last letter; pull it back so the
+     subline stays optically centred under the mark. */
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+  opacity: 0.8;
+}
+
+.bio {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 300;
+  line-height: 1.7;
+  max-width: 28rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.95rem 2.1rem;
+  border: 1px solid currentColor;
+  color: inherit;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  background: var(--color-nav-text, var(--color-btn-text));
+  color: var(--color-nav-bg, var(--color-btn-bg));
+  outline: none;
+}
+
+/* ── Socials ─────────────────────────────────────────────── */
+
+.socials {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.socialLink {
+  color: inherit;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s ease;
+}
+
+.socialLink:hover,
+.socialLink:focus-visible {
+  opacity: 0.7;
+  outline: none;
+}
+
+/* ── Photo strip ─────────────────────────────────────────── */
+
+/* Up to six photos edge to edge in one row. Flowing by column with equal widths
+   means three photos fill the row as three, not half of six. */
+.strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+
+.stripPhoto {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.stripImg {
+  object-fit: cover;
+}
+
+/* ── Bottom row ──────────────────────────────────────────── */
 
 .bottom {
   padding: 1.5rem var(--padding-x);
@@ -225,56 +208,66 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-}
-
-.socials {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.socialLink {
-  color: var(--color-detail);
-  display: flex;
-  align-items: center;
-  transition: color 0.2s ease;
-}
-
-.socialLink:hover {
-  color: var(--color-heading);
+  flex-wrap: wrap;
+  border-top: 1px solid color-mix(in srgb, var(--color-nav-text, var(--color-btn-text)) 25%, transparent);
 }
 
 .copy {
-  font-family: var(--font-body);
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  color: var(--color-detail);
-  opacity: 0.5;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.legal {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+}
+
+.legalLink {
+  color: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.legalLink:hover,
+.legalLink:focus-visible {
+  opacity: 0.7;
+  outline: none;
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
 
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3rem;
+    justify-items: center;
+    padding: 4rem var(--padding-x) 3rem;
+  }
+  .links,
+  .connect {
+    align-items: center;
+    text-align: center;
+  }
+  .linkList {
+    align-items: center;
+  }
+  /* The mark leads on a phone, as in the reference. */
+  .about {
+    order: -1;
+  }
+}
+
 @media (max-width: 768px) {
-  .cta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-    padding: 3rem var(--padding-x);
+  .strip {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, 1fr);
   }
-
-  .instagram {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-
-  .igPhotos {
-    max-width: 100%;
-  }
-
   .bottom {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: center;
+    text-align: center;
   }
 }
