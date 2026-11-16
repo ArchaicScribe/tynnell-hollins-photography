@@ -502,7 +502,7 @@ const styleDefaults = { background: 'transparent', backgroundImage: '', backgrou
 
 // Split Image + Text's three layouts each return their own <section>, so the
 // render body lives here and the block's render wraps it in the hide gate.
-function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, scrollOverlap, photoMovement, hideOnMobile, hideOnDesktop }: any) {
+function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, scrollOverlap, photoMovement, hideOnMobile, hideOnDesktop, hideUntilFilled }: any) {
     const bg = background && background !== 'transparent' ? background : undefined
     const cls = visClass(hideOnMobile, hideOnDesktop)
     const overlapStyle: React.CSSProperties = scrollOverlap ? { position: 'sticky', top: 0, zIndex: 1 } : {}
@@ -588,6 +588,16 @@ function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, headin
         {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
       </div>
     )
+    // With "Hide until filled in" on, a section with no photo is just its text,
+    // not text beside an empty tinted frame. Off keeps the frame, so saved
+    // pages that rely on it do not change.
+    if (hideUntilFilled && !imageUrl) {
+      return (
+        <section className={cls} style={{ ...overlapStyle, display: 'flex', background: bg }}>
+          {txt}
+        </section>
+      )
+    }
     return (
       <section className={cls} style={{ ...overlapStyle, display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
         {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}

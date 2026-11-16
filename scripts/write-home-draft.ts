@@ -29,7 +29,7 @@ async function main() {
     process.exit(1)
   }
 
-  const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false } })
+  const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: true } })
   await client.connect()
   try {
     const { rows } = await client.query(
@@ -39,6 +39,11 @@ async function main() {
     const row = rows[0]
     if (!row) throw new Error(`No page with id ${pageId}`)
     if (!row.is_homepage) throw new Error(`Page ${pageId} (${row.slug}) is not the homepage; refusing to write`)
+    // A saved draft is someone's unpublished work; the builder's Publish button also
+    // publishes every page's draft at once. Never overwrite one silently.
+    if (row.draft_content != null && !process.argv.includes('--dry-run')) {
+      throw new Error(`Page ${pageId} already has a saved draft; refusing to overwrite it`)
+    }
 
     fs.mkdirSync(backupDir, { recursive: true })
     const backupFile = path.join(backupDir, `page-${pageId}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`)

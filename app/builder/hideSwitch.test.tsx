@@ -100,3 +100,26 @@ describe('Email Signup hide switch', () => {
     }
   })
 })
+
+describe('Split Image + Text without a photo', () => {
+  const words = { body: 'A few words about me.', heading: 'Hello', layout: 'side-by-side', imageUrl: '' }
+
+  it('keeps its empty photo frame when the switch is off, so existing pages do not change', () => {
+    const { container } = renderBlock('SplitImageText', words)
+
+    expect(container.querySelector('section')?.children).toHaveLength(2)
+  })
+
+  it('drops the empty photo frame when the switch is on, leaving just the text', () => {
+    const { container } = renderBlock('SplitImageText', { ...words, hideUntilFilled: true })
+
+    expect(container.querySelector('section')?.children).toHaveLength(1)
+    expect(screen.getByText('A few words about me.')).toBeInTheDocument()
+  })
+
+  it('still shows the photo when there is one and the switch is on', () => {
+    const { container } = renderBlock('SplitImageText', { ...words, imageUrl: '/me.jpg', hideUntilFilled: true })
+
+    expect(container.querySelector('section')?.children).toHaveLength(2)
+  })
+})
