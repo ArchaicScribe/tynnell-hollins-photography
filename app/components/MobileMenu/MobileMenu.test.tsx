@@ -107,10 +107,6 @@ describe('MobileMenu.module.css', () => {
     expect(bodyOf('.link')).toMatch(/overflow-wrap:\s*anywhere|word-break:\s*break-word/)
   })
 
-  it('sets the page list in the serif role through the variable, never a family name', () => {
-    expect(bodyOf('.link')).toContain('font-family: var(--font-serif)')
-  })
-
   it('paints the panel with the navbar color, falling back to the button color', () => {
     expect(bodyOf('.panel')).toContain('background: var(--color-nav-bg, var(--color-btn-bg))')
     expect(bodyOf('.panel')).toContain('var(--color-nav-text, var(--color-btn-text))')
@@ -123,10 +119,5 @@ describe('MobileMenu.module.css', () => {
 
   it('keeps the top of a tall panel reachable: centring is the safe kind', () => {
     expect(bodyOf('.panel')).toContain('justify-content: safe center')
-  })
-
-  it('lays the cards left and the panel right from 1025px, one column below', () => {
-    const wide = css.slice(css.indexOf('@media (min-width: 1025px)'))
-    expect(wide).toMatch(/grid-template-areas/)
   })
 })

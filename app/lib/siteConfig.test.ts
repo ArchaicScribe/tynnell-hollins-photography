@@ -14,6 +14,35 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+describe('getSiteConfig footer text', () => {
+  it('passes the saved footer bio and location to the site', async () => {
+    findGlobalMock.mockResolvedValue({ footerBio: 'Photographing real moments.', footerLocation: 'Albuquerque, New Mexico' })
+
+    const site = await getSiteConfig()
+
+    expect(site.footerBio).toBe('Photographing real moments.')
+    expect(site.footerLocation).toBe('Albuquerque, New Mexico')
+  })
+
+  it('has no bio and the original location line before either is saved', async () => {
+    findGlobalMock.mockResolvedValue({ title: 'Tynnell Hollins Photography' })
+
+    const site = await getSiteConfig()
+
+    expect(site.footerBio).toBe('')
+    expect(site.footerLocation).toBe('Based in New Mexico | Travel Worldwide')
+  })
+
+  it('falls back to the same defaults when the read fails', async () => {
+    findGlobalMock.mockRejectedValue(new Error('database down'))
+
+    const site = await getSiteConfig()
+
+    expect(site.footerBio).toBe('')
+    expect(site.footerLocation).toBe('Based in New Mexico | Travel Worldwide')
+  })
+})
+
 describe('getSiteConfig menu cards', () => {
   it('passes the saved "Work with me" cards to the site, cleaned', async () => {
     // Payload adds an `id` to every array row; the site does not need it.

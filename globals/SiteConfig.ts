@@ -82,6 +82,21 @@ export const SiteConfig: GlobalConfig = {
         description: 'Your full Pinterest profile URL.',
       },
     },
+    // Rising Roots footer: the bio in the centre column and the location line
+    // under "Let's connect". Edited on /site-settings. The bio has no default
+    // and is left out of the footer when empty, so nothing is invented.
+    {
+      name: 'footerBio',
+      type: 'textarea',
+      label: 'Footer bio',
+      admin: { description: 'A sentence or two about you, shown in the middle of the footer. Leave empty to show nothing.' },
+    },
+    {
+      name: 'footerLocation',
+      type: 'text',
+      label: 'Footer location line',
+      admin: { description: 'Shown with your email in the footer. Example: "Based in New Mexico | Travel Worldwide".' },
+    },
     // Rising Roots gap 5: the freebie emailed to anyone who signs up through
     // an Email Signup block set to Freebie. Edited on /site-settings. Only
     // read server-side by /api/subscribe, never taken from the visitor.

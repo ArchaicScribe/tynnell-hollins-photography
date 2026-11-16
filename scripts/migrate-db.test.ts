@@ -53,6 +53,16 @@ describe('scripts/migrate-db.mjs', () => {
 
   // TYN-13 follow-up: photos.original_filename is a Payload `text` field, so
   // varchar, nullable, matching what the schema push would create.
+  describe('site_config footer text', () => {
+    for (const column of ['footer_bio', 'footer_location']) {
+      it(`adds ${column} as a nullable varchar`, () => {
+        expect(source).toMatch(
+          new RegExp(`ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "${column}" varchar\\s*\`\\)`),
+        )
+      })
+    }
+  })
+
   describe('photos original filename (TYN-13)', () => {
     it('adds original_filename as a nullable varchar', () => {
       expect(source).toMatch(/ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "original_filename" varchar\s*`\)/)

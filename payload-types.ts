@@ -1141,6 +1141,14 @@ export interface SiteConfig {
    */
   pinterestUrl?: string | null;
   /**
+   * A sentence or two about you, shown in the middle of the footer. Leave empty to show nothing.
+   */
+  footerBio?: string | null;
+  /**
+   * Shown with your email in the footer. Example: "Based in New Mexico | Travel Worldwide".
+   */
+  footerLocation?: string | null;
+  /**
    * The name of your free guide, used in the email subject and heading.
    */
   freebieTitle?: string | null;
@@ -1392,6 +1400,8 @@ export interface SiteConfigSelect<T extends boolean = true> {
   facebookUrl?: T;
   tiktokUrl?: T;
   pinterestUrl?: T;
+  footerBio?: T;
+  footerLocation?: T;
   freebieTitle?: T;
   freebieUrl?: T;
   menuCards?:
