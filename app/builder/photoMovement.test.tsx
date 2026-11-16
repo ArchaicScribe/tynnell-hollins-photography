@@ -60,7 +60,9 @@ describe('Photo movement control', () => {
     let rendered = 0
     for (const [name] of withMovement.filter(([n]) => n !== 'SplitImageText')) {
       try {
-        const { container, unmount } = draw(name, { backgroundImage: '/bg.jpg', photoMovement: 'medium' })
+        // Statement and Path Choice hide until filled by default; this test draws
+        // blocks bare, so switch the hiding off to reach their markup.
+        const { container, unmount } = draw(name, { backgroundImage: '/bg.jpg', photoMovement: 'medium', hideUntilFilled: false })
         rendered += 1
         if (!container.querySelector('[data-parallax-layer]')) missed.push(name)
         unmount()
