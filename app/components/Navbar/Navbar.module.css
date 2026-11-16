@@ -12,9 +12,21 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 1.5rem;
-  padding: 1.25rem var(--padding-x);
-  background: transparent;
+  padding: var(--nav-pad) var(--padding-x);
+  background: var(--nav-bg);
   transition: background 0.35s ease, padding 0.3s ease;
+
+  /* The transparent state, over a hero. Every element below reads these, so the
+     solid state (next rule) only has to override them in one place. */
+  --nav-pad: 1.25rem;
+  --nav-bg: transparent;
+  --nav-mark: rgba(255, 255, 255, 0.96);
+  --nav-sub: rgba(255, 255, 255, 0.62);
+  --nav-cta: rgba(255, 255, 255, 0.95);
+  --nav-link: #ECE9E0;
+  --nav-link-hover: #fff;
+  --nav-bar: rgba(255, 255, 255, 0.9);
+  --nav-hairline: 0.4;
 }
 
 /* The hairline the reference draws along the bottom of the transparent nav. It
@@ -27,25 +39,34 @@
   bottom: 0;
   height: 1px;
   background: #ECE9E0;
-  opacity: 0.4;
+  opacity: var(--nav-hairline);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
 
-.scrolled::after,
-.menuOpen::after {
-  opacity: 0;
-}
+/* The solid bar (the olive, matching the reference). It applies in three cases,
+   written once so they cannot drift apart: after scrolling, while the menu is
+   open, and on any page that does not open on a full-bleed photo, so white text
+   never lands on the bone ground. A hero opts out by carrying [data-nav-hero].
+   Pure CSS, so there is no flash and no JS state; a browser without :has() keeps
+   the transparent bar.
 
-/* Solid bar on scroll (the olive, matching the reference). Its colours are
-   adjustable from /design > Navbar (TYN-352). Until those are set the two
-   variables are not written at all, so each falls back to the button colour
-   the navbar used before it had its own. Keep that fallback: a literal here
-   would hide the olive the day someone clears the setting. */
+   Its colours are adjustable from /design > Navbar (TYN-352). Until those are set
+   the two variables are not written at all, so each falls back to the button
+   colour the navbar used before it had its own. Keep that fallback: a literal
+   here would hide the olive the day someone clears the setting. */
 .scrolled,
-.menuOpen {
-  background: var(--color-nav-bg, var(--color-btn-bg));
-  padding: 0.85rem var(--padding-x);
+.menuOpen,
+:global(body):not(:has([data-nav-hero])) .navbar {
+  --nav-pad: 0.85rem;
+  --nav-bg: var(--color-nav-bg, var(--color-btn-bg));
+  --nav-mark: var(--color-nav-text, var(--color-btn-text));
+  --nav-sub: color-mix(in srgb, var(--color-nav-text, var(--color-btn-text)) 70%, transparent);
+  --nav-cta: var(--color-nav-text, var(--color-btn-text));
+  --nav-link: color-mix(in srgb, var(--color-nav-text, var(--color-btn-text)) 82%, transparent);
+  --nav-link-hover: var(--color-nav-text, var(--color-btn-text));
+  --nav-bar: var(--color-nav-text, var(--color-btn-text));
+  --nav-hairline: 0;
 }
 
 /* ── Brand ───────────────────────────────────────────────── */
@@ -74,7 +95,7 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: rgba(255, 255, 255, 0.96);
+  color: var(--nav-mark);
   transition: color 0.3s ease;
 }
 
@@ -88,19 +109,9 @@
   /* The tracking adds a trailing gap on the last letter; pull it back so the
      subline stays optically centred under the mark. */
   text-indent: 0.42em;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--nav-sub);
   margin-top: 0.28rem;
   transition: color 0.3s ease;
-}
-
-.scrolled .brandMark,
-.menuOpen .brandMark {
-  color: var(--color-nav-text, var(--color-btn-text));
-}
-
-.scrolled .brandSub,
-.menuOpen .brandSub {
-  color: color-mix(in srgb, var(--color-nav-text, var(--color-btn-text)) 70%, transparent);
 }
 
 /* ── Desktop link rows ───────────────────────────────────── */
@@ -132,7 +143,7 @@
   font-family: var(--font-script-role, var(--font-display));
   font-size: 1.5rem;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--nav-cta);
   text-decoration: none;
   white-space: nowrap;
   transition: color 0.2s ease, opacity 0.2s ease;
@@ -140,11 +151,6 @@
 
 .cta:hover {
   opacity: 0.75;
-}
-
-.scrolled .cta,
-.menuOpen .cta {
-  color: var(--color-nav-text, var(--color-btn-text));
 }
 
 /* ── Nav links ───────────────────────────────────────────── */
@@ -155,7 +161,7 @@
   font-family: var(--font-serif);
   font-size: 1.125rem;
   font-weight: 400;
-  color: #ECE9E0;
+  color: var(--nav-link);
   text-decoration: none;
   background: none;
   border: none;
@@ -169,17 +175,7 @@
 }
 
 .link:hover {
-  color: #fff;
-}
-
-.scrolled .link,
-.menuOpen .link {
-  color: color-mix(in srgb, var(--color-nav-text, var(--color-btn-text)) 82%, transparent);
-}
-
-.scrolled .link:hover,
-.menuOpen .link:hover {
-  color: var(--color-nav-text, var(--color-btn-text));
+  color: var(--nav-link-hover);
 }
 
 /* ── Hamburger ───────────────────────────────────────────── */
@@ -205,14 +201,9 @@
   display: block;
   width: 100%;
   height: 1px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--nav-bar);
   transform-origin: center;
   transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease;
-}
-
-.scrolled .bar,
-.menuOpen .bar {
-  background: var(--color-nav-text, var(--color-btn-text));
 }
 
 .hamburgerOpen .bar:nth-child(1) {

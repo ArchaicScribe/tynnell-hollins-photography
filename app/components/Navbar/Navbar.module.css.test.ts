@@ -22,21 +22,32 @@ function solidRules(): { selector: string; body: string }[] {
 }
 
 describe('Navbar.module.css solid state', () => {
-  it('finds the solid-state rules it is meant to check', () => {
-    expect(solidRules().length).toBeGreaterThan(5)
+  it('finds the solid-state rule it is meant to check', () => {
+    expect(solidRules().length).toBeGreaterThanOrEqual(1)
   })
 
-  it('paints the solid bar with the navbar color, falling back to the button color', () => {
-    const bar = solidRules().find((r) => r.selector.replace(/\s+/g, '') === '.scrolled,.menuOpen')
+  // The solid state is written once, as custom properties on .navbar, and every
+  // element rule reads them. That is what lets scrolling, the open menu and a
+  // page with no hero all share it (see the no-hero tests below).
+  const solid = () => solidRules().find((r) => /\.scrolled/.test(r.selector) && /\.menuOpen/.test(r.selector))
 
-    expect(bar?.body).toContain(`background: ${BG_WITH_FALLBACK}`)
+  it('paints the solid bar with the navbar color, falling back to the button color', () => {
+    expect(solid()?.body).toContain(`--nav-bg: ${BG_WITH_FALLBACK}`)
   })
 
   it('colors the solid bar text with the navbar text color, falling back to the button text color', () => {
-    const rules = solidRules().filter((r) => r.body.includes('--color-nav-text'))
-
     // brand mark, brand sub, CTA, link, link hover, hamburger bar
-    expect(rules.length).toBeGreaterThanOrEqual(6)
+    expect(solid()?.body.match(/--color-nav-text/g)?.length ?? 0).toBeGreaterThanOrEqual(6)
+  })
+
+  it('reads the state variables in the element rules, not literal colors', () => {
+    expect(bodyOf('.navbar')).toContain('background: var(--nav-bg)')
+    expect(bodyOf('.brandMark')).toContain('color: var(--nav-mark)')
+    expect(bodyOf('.brandSub')).toContain('color: var(--nav-sub)')
+    expect(bodyOf('.cta')).toContain('color: var(--nav-cta)')
+    expect(bodyOf('.link')).toContain('color: var(--nav-link)')
+    expect(bodyOf('.link:hover')).toContain('color: var(--nav-link-hover)')
+    expect(bodyOf('.bar')).toContain('background: var(--nav-bar)')
   })
 
   it('never reads a button color in the solid state except as the fallback', () => {
@@ -121,15 +132,31 @@ describe('Navbar.module.css hairline', () => {
   })
 
   it('switches the line off once the bar is solid', () => {
-    const off = solidRules().find((r) => /::after/.test(r.selector))
-    expect(off?.selector).toMatch(/\.scrolled::after/)
-    expect(off?.selector).toMatch(/\.menuOpen::after/)
-    expect(off?.body).toMatch(/opacity:\s*0/)
+    expect(bodyOf('.navbar::after')).toContain('opacity: var(--nav-hairline)')
+    const solid = solidRules().find((r) => /\.scrolled/.test(r.selector) && /\.menuOpen/.test(r.selector))
+    expect(solid?.body).toMatch(/--nav-hairline:\s*0\b/)
   })
 })
 
 describe('Navbar.module.css dropdown', () => {
   it('has no dropdown rules left, the row has no Portfolio menu', () => {
     expect(css).not.toMatch(/\.(hasDropdown|arrow|arrowOpen|dropdown|dropdownOpen|dropdownItem)\b/)
+  })
+})
+
+// A page that does not open on a full-bleed photo must not get white text on the
+// bone ground, so the nav is solid from the first paint unless a hero marks the
+// page with [data-nav-hero]. Pure CSS: no JS state, so no flash.
+describe('Navbar.module.css pages without a hero', () => {
+  const sharedSolid = () => solidRules().find((r) => /\.scrolled/.test(r.selector) && /\.menuOpen/.test(r.selector))
+  const noHero = () => solidRules().find((r) => /:global\(body\):not\(:has\(\[data-nav-hero\]\)\)/.test(r.selector))
+
+  it('shares the solid state with scrolling and the open menu, so there is one source of truth', () => {
+    expect(noHero()).toBeDefined()
+    expect(noHero()).toEqual(sharedSolid())
+  })
+
+  it('targets the navbar, so the rule is a valid CSS module selector', () => {
+    expect(noHero()?.selector).toMatch(/\.navbar/)
   })
 })

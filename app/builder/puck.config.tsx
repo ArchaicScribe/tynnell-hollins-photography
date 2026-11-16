@@ -589,7 +589,7 @@ export const config: Config = {
 
         const centered = layout === 'centered'
         return (
-          <section className={cls} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
+          <section className={cls} data-nav-hero={imageUrl ? '' : undefined} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
             {imageUrl ? (
               backgroundBehavior === 'fixed' ? (
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
@@ -2422,7 +2422,7 @@ export const config: Config = {
       },
       defaultProps: { imageUrl: '', height: '55vh', caption: '', ...responsiveDefaults },
       render: ({ imageUrl, height, caption, hideOnMobile, hideOnDesktop }: any) => (
-        <section className={visClass(hideOnMobile, hideOnDesktop)}>
+        <section className={visClass(hideOnMobile, hideOnDesktop)} data-nav-hero={imageUrl ? '' : undefined}>
           <div style={{ position: 'relative', width: '100%', height, background: C.accent }}>
             {imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element

@@ -179,7 +179,7 @@ export default async function GalleryPage({ params, searchParams }: Props) {
       <JsonLd data={imageGallerySchema} />
       {/* Hero */}
       {coverUrl ? (
-        <div className={styles.hero}>
+        <div className={styles.hero} data-nav-hero="">
           <ProtectedImage
             src={coverUrl}
             alt={hero?.alt ?? gallery.title}
