@@ -22,7 +22,7 @@ export function buildWedding(): Data {
           heading: '',
           subheading: '',
           imageUrl: '',
-          height: '80vh',
+          height: '45vh', // short while blank; raise it in the editor once there is a photo
           backgroundBehavior: 'scroll',
           align: 'left',
           buttonText: '',
