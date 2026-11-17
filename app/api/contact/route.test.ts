@@ -288,3 +288,118 @@ describe('POST /api/contact - Turnstile (TYN-357)', () => {
     expect(sendMock).not.toHaveBeenCalled()
   })
 })
+
+describe('POST /api/contact - wedding and portrait inquiry kinds', () => {
+  const originalSecret = process.env.TURNSTILE_SECRET_KEY
+
+  afterEach(() => {
+    if (originalSecret === undefined) delete process.env.TURNSTILE_SECRET_KEY
+    else process.env.TURNSTILE_SECRET_KEY = originalSecret
+    vi.unstubAllGlobals()
+  })
+
+  function weddingBody(overrides: Record<string, unknown> = {}) {
+    return { kind: 'wedding', name: 'Ana Reyes', email: 'ana@example.com', partnerName: 'Sam Ortiz', message: 'We are getting married!', ...overrides }
+  }
+  function portraitBody(overrides: Record<string, unknown> = {}) {
+    return { kind: 'portrait', name: 'Ana Reyes', email: 'ana@example.com', sessionType: 'Maternity', message: 'Hello there', ...overrides }
+  }
+
+  it('accepts a wedding with no phone, no contact preference and no date, and sends both emails', async () => {
+    const res = await POST(makeRequest(weddingBody()))
+
+    expect(res.status).toBe(200)
+    expect(sendMock).toHaveBeenCalledTimes(2)
+    const inquiry = sendMock.mock.calls[0][0]
+    expect(inquiry.subject).toBe('New Wedding Inquiry - Ana Reyes')
+    expect(inquiry.html).toContain('Sam Ortiz')
+    expect(sendMock.mock.calls[1][0].html).not.toContain('undefined')
+  })
+
+  it('accepts a portrait and shows the chosen session in the email', async () => {
+    const res = await POST(makeRequest(portraitBody()))
+
+    expect(res.status).toBe(200)
+    const inquiry = sendMock.mock.calls[0][0]
+    expect(inquiry.subject).toBe('New Portrait Inquiry - Ana Reyes')
+    expect(inquiry.html).toContain('Maternity')
+  })
+
+  it('rejects a bad email, a missing partner name, an unknown session and an unknown kind', async () => {
+    for (const body of [
+      weddingBody({ email: 'not-an-email' }),
+      weddingBody({ partnerName: '' }),
+      portraitBody({ sessionType: 'Other' }),
+      weddingBody({ kind: 'admin' }),
+    ]) {
+      const res = await POST(makeRequest(body))
+      expect(res.status).toBe(400)
+    }
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('still silently drops a honeypot submission', async () => {
+    const res = await POST(makeRequest(weddingBody({ website: 'http://spam.example' })))
+
+    expect(res.status).toBe(200)
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('still rate limits', async () => {
+    safeLimitMock.mockResolvedValue({ success: false })
+    const res = await POST(makeRequest(weddingBody()))
+
+    expect(res.status).toBe(429)
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('still rejects a failed Turnstile check', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'test-secret'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ json: () => Promise.resolve({ success: false }) }))
+    const res = await POST(makeRequest(weddingBody({ turnstileToken: 'bad' })))
+
+    expect(res.status).toBe(400)
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('refuses a date inside a blocked range', async () => {
+    findGlobalMock.mockImplementation(({ slug }: { slug: string }) => {
+      if (slug === 'booking-settings') return Promise.resolve({ minLeadTimeHours: 48, maxBookingMonths: 24 })
+      if (slug === 'availability') return Promise.resolve({ blockedRanges: [{ startDate: payloadDate(5), endDate: payloadDate(15), applyReturnBuffer: false }] })
+      return Promise.resolve(null)
+    })
+    const res = await POST(makeRequest(weddingBody({ date: futureDate(10) })))
+
+    expect(res.status).toBe(400)
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('does not date-check a blank date, even when a range is blocked', async () => {
+    findGlobalMock.mockImplementation(({ slug }: { slug: string }) => {
+      if (slug === 'booking-settings') return Promise.resolve({ minLeadTimeHours: 48, maxBookingMonths: 24 })
+      if (slug === 'availability') return Promise.resolve({ blockedRanges: [{ startDate: payloadDate(5), endDate: payloadDate(15), applyReturnBuffer: false }] })
+      return Promise.resolve(null)
+    })
+    const res = await POST(makeRequest(weddingBody({ date: '' })))
+
+    expect(res.status).toBe(200)
+  })
+
+  it('rejects a date that is too soon, like the general form', async () => {
+    const res = await POST(makeRequest(weddingBody({ date: futureDate(0) })))
+
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects an over-long partner name', async () => {
+    const res = await POST(makeRequest(weddingBody({ partnerName: 'x'.repeat(101) })))
+
+    expect(res.status).toBe(400)
+  })
+
+  it('leaves the general form (no kind) requiring a phone number as before', async () => {
+    const res = await POST(makeRequest(validBody({ phone: '' })))
+
+    expect(res.status).toBe(400)
+  })
+})

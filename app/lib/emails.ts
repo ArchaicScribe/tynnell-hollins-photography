@@ -132,12 +132,13 @@ function signature(): string {
 export interface InquiryEmailFields {
   name: string
   email: string
-  phone: string
-  contactPreference: string
+  phone?: string
+  contactPreference?: string
   sessionType: string
-  date: string
-  location: string
-  howHeard: string
+  partnerName?: string
+  date?: string
+  location?: string
+  howHeard?: string
   message: string
 }
 
@@ -152,10 +153,11 @@ export function inquiryEmailHtml(f: InquiryEmailFields): string {
     ${table([
       tableRow('Name', f.name),
       tableRow('Email', `<a href="mailto:${f.email}" style="color:#333;">${f.email}</a>`),
-      tableRow('Phone', f.phone),
-      tableRow('Preferred Contact', f.contactPreference),
+      f.phone ? tableRow('Phone', f.phone) : '',
+      f.contactPreference ? tableRow('Preferred Contact', f.contactPreference) : '',
       tableRow('Session Type', f.sessionType),
-      tableRow('Desired Date', f.date),
+      f.partnerName ? tableRow("Partner's Name", f.partnerName) : '',
+      f.date ? tableRow('Desired Date', f.date) : '',
       optionalRows,
     ].join(''))}
     <h3 style="margin:20px 0 8px;font-size:15px;">Message</h3>
@@ -171,7 +173,7 @@ export function inquiryEmailHtml(f: InquiryEmailFields): string {
 export interface ClientAcknowledgmentEmailFields {
   name: string
   sessionType: string
-  date: string
+  date?: string
   oooMessage?: string
 }
 
@@ -183,7 +185,7 @@ export function clientAcknowledgmentEmailHtml(f: ClientAcknowledgmentEmailFields
   return emailWrapper(`
     ${eyebrow('Inquiry received')}
     ${heading('Thank you for reaching out.')}
-    ${body(`Hi ${f.name}, I&rsquo;m so glad you connected with me about a <strong>${f.sessionType}</strong> session on <strong>${f.date}</strong>.`)}
+    ${body(`Hi ${f.name}, I&rsquo;m so glad you connected with me about a <strong>${f.sessionType}</strong> session${f.date ? ` on <strong>${f.date}</strong>` : ''}.`)}
     ${responseNote}
     ${body("In the meantime, feel free to <a href='${SITE_URL}/portfolio' style='color:" + BRAND_DARK + ";'>browse my portfolio</a> or <a href='${SITE_URL}/services' style='color:" + BRAND_DARK + ";'>review my services</a>.")}
     ${divider()}
