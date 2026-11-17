@@ -1512,7 +1512,7 @@ export const config: Config = {
     },
 
     // ---------------------------------------------------------- PathChoice
-    // Rising Roots home "What brings you here today?": a heading and up to two
+    // Rising Roots home "What brings you here today?": a heading and up to four
     // photo cards, each linking to a page. A card needs a label AND a link to
     // count; with none complete the block is hidden from visitors.
     PathChoice: {
@@ -1522,7 +1522,7 @@ export const config: Config = {
         cards: {
           type: 'array',
           label: 'Cards',
-          max: 2,
+          max: 4,
           arrayFields: {
             imageUrl: imageField('Photo'),
             label: { type: 'text', label: 'Label' },

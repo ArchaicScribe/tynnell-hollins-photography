@@ -1,6 +1,7 @@
 import type { Data } from '@measured/puck'
 import { buildHome, BLANK_HOME_WORDS } from './homeLayout'
 import { buildWedding } from './weddingLayout'
+import { buildPortraits } from './portraitsLayout'
 
 // Starter templates for new builder pages (TYN-230). A non-technical user
 // faces a blank canvas otherwise; these seed a ready-made layout she can edit
@@ -10,7 +11,7 @@ import { buildWedding } from './weddingLayout'
 //
 // Each item needs a unique props.id within the document; ids are namespaced
 // per template so they never collide inside one page.
-export type TemplateKey = 'blank' | 'landing' | 'about' | 'gallery' | 'freeform' | 'home' | 'wedding'
+export type TemplateKey = 'blank' | 'landing' | 'about' | 'gallery' | 'freeform' | 'home' | 'wedding' | 'portraits'
 
 export const templateOptions: { value: TemplateKey; label: string; description: string }[] = [
   { value: 'blank', label: 'Blank', description: 'Start from nothing and add sections yourself.' },
@@ -19,6 +20,7 @@ export const templateOptions: { value: TemplateKey; label: string; description: 
   { value: 'gallery', label: 'Photo gallery', description: 'Hero, a heading, and a photo grid ready for your images.' },
   { value: 'home', label: 'Home page (Rising Roots)', description: 'The full home layout: hero, intro, stats, choice cards, testimonials, albums and more. Each section stays hidden until you fill in your words.' },
   { value: 'wedding', label: 'Wedding page (Rising Roots)', description: 'The wedding page: intro, packages, steps, albums and an inquiry form. Each section stays hidden until you fill in your words.' },
+  { value: 'portraits', label: 'Portraits page (Rising Roots)', description: 'The portraits page: session choices, packages, steps and an inquiry form. Each section stays hidden until you fill in your words.' },
   { value: 'freeform', label: 'Freeform layout', description: 'A drag-and-arrange section with a heading, text, image, and button already placed - move anything, anywhere.' },
 ]
 
@@ -28,6 +30,8 @@ const TEMPLATES: Record<TemplateKey, Data> = {
   home: buildHome(BLANK_HOME_WORDS),
 
   wedding: buildWedding(),
+
+  portraits: buildPortraits(),
 
   landing: {
     root: {},

@@ -24,6 +24,13 @@ describe('PathChoice block', () => {
     expect(screen.getByRole('link', { name: /Explore portraits/ })).toHaveAttribute('href', '/portraits')
   })
 
+  it('takes up to four cards, each shown as a link', () => {
+    renderChoice({ cards: ['A', 'B', 'C', 'D'].map((l) => ({ imageUrl: '', label: l, href: '/' + l })) })
+
+    expect(screen.getAllByRole('link')).toHaveLength(4)
+    expect(block.fields.cards.max).toBe(4)
+  })
+
   it('leaves out a card that has no label or no link', () => {
     renderChoice({
       cards: [
@@ -53,8 +60,8 @@ describe('PathChoice block', () => {
     expect(screen.getByText('Add your words here: choice cards')).toBeInTheDocument()
   })
 
-  it('allows at most two cards and is offered in the drawer', () => {
-    expect(block.fields.cards.max).toBe(2)
+  it('allows at most four cards and is offered in the drawer', () => {
+    expect(block.fields.cards.max).toBe(4)
     const offered = Object.values(config.categories ?? {}).flatMap((c) => c.components ?? [])
     expect(offered).toContain('PathChoice')
   })
