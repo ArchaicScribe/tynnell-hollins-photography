@@ -1,6 +1,7 @@
 import type { Data } from '@measured/puck'
 import { buildWedding } from './weddingLayout'
 import { buildPortraits } from './portraitsLayout'
+import { buildAbout, aboutWordsFromCurrent } from './aboutLayout'
 
 // Page address (slug) -> the layout that page is built from. `current` is the
 // page's saved content, so a layout that rebuilds an existing page can carry
@@ -9,6 +10,10 @@ import { buildPortraits } from './portraitsLayout'
 export const LAYOUTS: Record<string, (current?: unknown) => Data> = {
   'wedding-photography': () => buildWedding(),
   portraits: () => buildPortraits(),
+  about: (current) => {
+    const { specialties, ...words } = aboutWordsFromCurrent(current)
+    return buildAbout(words, specialties)
+  },
 }
 
 export function layoutForSlug(slug: string, current?: unknown): Data | null {
