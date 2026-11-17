@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty, packagesIsEmpty, stepsIsEmpty, columnsIsEmpty, linesOf } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty, packagesIsEmpty, stepsIsEmpty, columnsIsEmpty, faqIsEmpty, linesOf } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -1404,6 +1404,7 @@ export const config: Config = {
           defaultItemProps: { title: 'A common question', body: 'The answer, in a sentence or two.' },
           getItemSummary: (item: any) => item?.title || 'Section',
         },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
@@ -1412,14 +1413,17 @@ export const config: Config = {
         items: [
           { title: 'How far in advance should I book?', body: 'Most sessions book 4-8 weeks out - weddings often further ahead.' },
         ],
+        hideUntilFilled: false,
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      render: ({ heading, items, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <GateEmpty hide={hideUntilFilled} empty={faqIsEmpty({ items })} editing={puck?.isEditing} label="questions">
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2rem' }}>{heading}</h2>}
           <AccordionBlock items={items ?? []} />
         </Section>
+        </GateEmpty>
       ),
     },
     // ------------------------------------------------------- ContactFormBlock

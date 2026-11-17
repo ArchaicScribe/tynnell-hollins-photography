@@ -19,6 +19,7 @@ const cases: { type: string; empty: Record<string, unknown>; filled: Record<stri
   { type: 'CTA', empty: { heading: '' }, filled: { heading: 'Book now' } },
   { type: 'AlbumGrid', empty: { resolvedAlbums: [] }, filled: { resolvedAlbums: [{ id: 1, slug: 'june', title: 'June', coverUrl: null, coverAlt: '', previewUrls: [], photoCount: 3 }] } },
   { type: 'LiveTestimonials', empty: { resolvedTestimonials: [] }, filled: { resolvedTestimonials: [{ id: 1, clientName: 'Ana', quote: 'Wonderful.' }] } },
+  { type: 'Accordion', empty: { heading: '', items: [{ title: '', body: '' }] }, filled: { items: [{ title: 'Q', body: 'A' }] } },
   { type: 'StatsRow', empty: { items: [{ value: '', label: '' }] }, filled: { items: [{ value: '150+', label: 'Weddings' }] } },
 ]
 
