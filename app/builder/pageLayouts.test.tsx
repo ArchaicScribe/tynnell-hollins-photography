@@ -5,6 +5,7 @@ import type { ReactElement } from 'react'
 import type { Data } from '@measured/puck'
 import { buildWedding } from './weddingLayout'
 import { buildPortraits } from './portraitsLayout'
+import { buildContact } from './contactLayout'
 import { LAYOUTS, layoutForSlug, assertCanCreate, assertCanDraft } from './pageLayouts'
 import { getTemplateContent } from './templates'
 import { config } from './puck.config'
@@ -121,6 +122,22 @@ describe('portraits page', () => {
   it('is registered for its page address and as a starter template', () => {
     expect(layoutForSlug('portraits')).toEqual(buildPortraits())
     expect(getTemplateContent('portraits')).toEqual(buildPortraits())
+  })
+})
+
+describe('contact page', () => {
+  it('lists its sections in order', () => {
+    expect(types(buildContact())).toEqual(['Hero', 'InquiryForm', 'Statement', 'Accordion', 'LiveTestimonials'])
+  })
+
+  it('lets the visitor choose between the wedding and portrait form', () => {
+    const form = buildContact().content.find((b) => b.type === 'InquiryForm')!.props as { kind: string }
+
+    expect(form.kind).toBe('choice')
+  })
+
+  it('is registered for its page address', () => {
+    expect(layoutForSlug('contact')).toEqual(buildContact())
   })
 })
 
