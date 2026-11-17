@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty, packagesIsEmpty, linesOf } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty, packagesIsEmpty, stepsIsEmpty, columnsIsEmpty, linesOf } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -623,7 +623,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice', 'Packages'] },
+    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice', 'Packages', 'Steps', 'FeatureColumns'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -1622,6 +1622,123 @@ export const config: Config = {
                     </div>
                   )
                 })}
+              </div>
+            </Section>
+          </GateEmpty>
+        )
+      },
+    },
+
+    // --------------------------------------------------------------- Steps
+    // Rising Roots "How booking works": numbered steps. Numbers come from the
+    // position of each filled step (01, 02, ...), never typed, so reordering or
+    // removing a step renumbers the rest. A step needs a title to show.
+    Steps: {
+      label: 'Booking Steps',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        steps: {
+          type: 'array',
+          label: 'Steps',
+          max: 6,
+          arrayFields: {
+            title: { type: 'text', label: 'Title' },
+            body: { type: 'textarea', label: 'A sentence or two' },
+          },
+          defaultItemProps: { title: '', body: '' },
+          getItemSummary: (item: any) => item?.title || 'New step',
+        },
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        steps: [
+          { title: '', body: '' },
+          { title: '', body: '' },
+          { title: '', body: '' },
+          { title: '', body: '' },
+          { title: '', body: '' },
+        ],
+        hideUntilFilled: true,
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, steps, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const filled = (steps ?? []).filter((s: any) => s?.title?.trim())
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={stepsIsEmpty({ steps })} editing={puck?.isEditing} label="booking steps">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+              <ol style={{ listStyle: 'none', margin: '0 auto', padding: 0, maxWidth: '760px', display: 'grid', gap: 'clamp(1.25rem, 3vw, 2rem)' }}>
+                {filled.map((s: any, i: number) => (
+                  <li key={i} style={{ display: 'flex', gap: 'clamp(1rem, 3vw, 2rem)', alignItems: 'baseline' }}>
+                    <span data-step-number="" style={{ ...headingStyle('clamp(1.75rem, 3.5vw, 2.5rem)'), color: C.detail, minWidth: '3rem' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <h3 style={headingStyle('clamp(1.2rem, 2.2vw, 1.6rem)')}>{s.title}</h3>
+                      {s.body?.trim() && <p style={{ margin: '0.5rem 0 0', color: C.body, whiteSpace: 'pre-wrap' }}>{s.body}</p>}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </Section>
+          </GateEmpty>
+        )
+      },
+    },
+
+    // ------------------------------------------------------ FeatureColumns
+    // Rising Roots "What's included" and benefits lists: up to four titled
+    // columns of short lines. One filled column renders as a single list. A
+    // column needs a title and at least one line to show.
+    FeatureColumns: {
+      label: 'Columns List',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        columns: {
+          type: 'array',
+          label: 'Columns',
+          max: 4,
+          arrayFields: {
+            title: { type: 'text', label: 'Column title' },
+            lines: { type: 'textarea', label: 'Lines (one per line)' },
+          },
+          defaultItemProps: { title: '', lines: '' },
+          getItemSummary: (item: any) => item?.title || 'New column',
+        },
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        columns: [
+          { title: '', lines: '' },
+          { title: '', lines: '' },
+          { title: '', lines: '' },
+        ],
+        hideUntilFilled: true,
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, columns, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const filled = (columns ?? []).filter((c: any) => c?.title?.trim() && linesOf(c.lines).length > 0)
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={columnsIsEmpty({ columns })} editing={puck?.isEditing} label="columns">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${filled.length === 1 ? '280px' : '220px'}, 1fr))`, gap: 'clamp(1.5rem, 3vw, 2.5rem)', maxWidth: filled.length === 1 ? '640px' : '1100px', margin: '0 auto' }}>
+                {filled.map((c: any, i: number) => (
+                  <div key={i}>
+                    <h3 style={headingStyle('clamp(1.2rem, 2.2vw, 1.6rem)')}>{c.title}</h3>
+                    <ul style={{ margin: '0.85rem 0 0', paddingLeft: '1.1rem', color: C.body }}>
+                      {linesOf(c.lines).map((l, j) => <li key={j} style={{ marginBottom: '0.4rem' }}>{l}</li>)}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </Section>
           </GateEmpty>
