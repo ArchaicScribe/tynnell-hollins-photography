@@ -32,6 +32,7 @@ import BlogClientComponent from '@/app/(site)/blog/BlogClient'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
+import InquiryFormComponent from '@/app/(site)/contact/InquiryForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
 import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty, packagesIsEmpty, stepsIsEmpty, columnsIsEmpty, faqIsEmpty, linesOf } from './emptyRules'
@@ -503,6 +504,21 @@ const styleFields = {
     ],
   },
 }
+// Booking-date bounds for the contact and inquiry forms, from the same public
+// endpoint the real /contact page used. Gives nothing (an unbounded date input)
+// when the lookup fails; the server still enforces the real rules on submit.
+async function resolveBookingDates() {
+  const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+  try {
+    const res = await fetch(`${base}/api/public-booking-dates`)
+    if (!res.ok) return { props: {} }
+    const data = await res.json()
+    return { props: { resolvedMinDate: data.minDate, resolvedMaxDate: data.maxDate } }
+  } catch {
+    return { props: {} }
+  }
+}
+
 const styleDefaults = { background: 'transparent', backgroundImage: '', backgroundFade: '0.55', scrollFadeIn: false, scrollOverlap: false, photoMovement: 'gentle', textFadeUp: true, spacing: 'normal' }
 
 // Split Image + Text's three layouts each return their own <section>, so the
@@ -623,7 +639,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice', 'Packages', 'Steps', 'FeatureColumns'] },
+    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice', 'Packages', 'Steps', 'FeatureColumns', 'InquiryForm'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -1448,17 +1464,7 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      resolveData: async () => {
-        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
-        try {
-          const res = await fetch(`${base}/api/public-booking-dates`)
-          if (!res.ok) return { props: {} }
-          const data = await res.json()
-          return { props: { resolvedMinDate: data.minDate, resolvedMaxDate: data.maxDate } }
-        } catch {
-          return { props: {} }
-        }
-      },
+      resolveData: resolveBookingDates,
       render: ({ eyebrow, heading, subtext, resolvedMinDate, resolvedMaxDate, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ maxWidth: '640px', margin: '0 auto' }}>
@@ -1748,6 +1754,48 @@ export const config: Config = {
           </GateEmpty>
         )
       },
+    },
+
+    // -------------------------------------------------------- InquiryForm
+    // The shorter wedding / portrait inquiry forms from Rising Roots. Posts to
+    // /api/contact with a `kind`. Not gated: a form is useful with no words.
+    InquiryForm: {
+      label: 'Inquiry Form',
+      fields: {
+        kind: {
+          type: 'radio',
+          label: 'Which form',
+          options: [
+            { label: 'Wedding', value: 'wedding' },
+            { label: 'Portrait', value: 'portrait' },
+            { label: 'Visitor chooses', value: 'choice' },
+          ],
+        },
+        eyebrow: { type: 'text', label: 'Eyebrow (optional)' },
+        heading: { type: 'text', label: 'Heading (optional)' },
+        subtext: { type: 'textarea', label: 'Subtext (optional)' },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        kind: 'wedding',
+        eyebrow: '',
+        heading: '',
+        subtext: '',
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      resolveData: resolveBookingDates,
+      render: ({ kind, eyebrow, heading, subtext, resolvedMinDate, resolvedMaxDate, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <div id="inquire" style={{ maxWidth: '640px', margin: '0 auto' }}>
+            {eyebrow && <p style={{ ...eyebrowStyle, textAlign: 'center' }}>{eyebrow}</p>}
+            {heading && <h2 style={{ ...headingStyle('clamp(1.5rem,3vw,2.4rem)'), textAlign: 'center' }}>{heading}</h2>}
+            {subtext && <p style={{ marginTop: '0.85rem', marginBottom: '2rem', color: C.detail, textAlign: 'center' }}>{subtext}</p>}
+            <InquiryFormComponent kind={kind ?? 'wedding'} minDate={resolvedMinDate} maxDate={resolvedMaxDate} />
+          </div>
+        </Section>
+      ),
     },
 
     // -------------------------------------------------------- PhotoGallery
