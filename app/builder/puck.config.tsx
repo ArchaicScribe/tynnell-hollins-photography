@@ -32,9 +32,10 @@ import BlogClientComponent from '@/app/(site)/blog/BlogClient'
 import { AccordionBlock } from './AccordionBlock'
 import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
+import InquiryFormComponent from '@/app/(site)/contact/InquiryForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty, packagesIsEmpty, stepsIsEmpty, columnsIsEmpty, faqIsEmpty, linesOf } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -503,6 +504,21 @@ const styleFields = {
     ],
   },
 }
+// Booking-date bounds for the contact and inquiry forms, from the same public
+// endpoint the real /contact page used. Gives nothing (an unbounded date input)
+// when the lookup fails; the server still enforces the real rules on submit.
+async function resolveBookingDates() {
+  const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
+  try {
+    const res = await fetch(`${base}/api/public-booking-dates`)
+    if (!res.ok) return { props: {} }
+    const data = await res.json()
+    return { props: { resolvedMinDate: data.minDate, resolvedMaxDate: data.maxDate } }
+  } catch {
+    return { props: {} }
+  }
+}
+
 const styleDefaults = { background: 'transparent', backgroundImage: '', backgroundFade: '0.55', scrollFadeIn: false, scrollOverlap: false, photoMovement: 'gentle', textFadeUp: true, spacing: 'normal' }
 
 // Split Image + Text's three layouts each return their own <section>, so the
@@ -623,7 +639,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice'] },
+    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice', 'Packages', 'Steps', 'FeatureColumns', 'InquiryForm'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -1404,6 +1420,7 @@ export const config: Config = {
           defaultItemProps: { title: 'A common question', body: 'The answer, in a sentence or two.' },
           getItemSummary: (item: any) => item?.title || 'Section',
         },
+        hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
@@ -1412,14 +1429,17 @@ export const config: Config = {
         items: [
           { title: 'How far in advance should I book?', body: 'Most sessions book 4-8 weeks out - weddings often further ahead.' },
         ],
+        hideUntilFilled: false,
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      render: ({ heading, items, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <GateEmpty hide={hideUntilFilled} empty={faqIsEmpty({ items })} editing={puck?.isEditing} label="questions">
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2rem' }}>{heading}</h2>}
           <AccordionBlock items={items ?? []} />
         </Section>
+        </GateEmpty>
       ),
     },
     // ------------------------------------------------------- ContactFormBlock
@@ -1444,17 +1464,7 @@ export const config: Config = {
         ...styleDefaults,
         ...responsiveDefaults,
       },
-      resolveData: async () => {
-        const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
-        try {
-          const res = await fetch(`${base}/api/public-booking-dates`)
-          if (!res.ok) return { props: {} }
-          const data = await res.json()
-          return { props: { resolvedMinDate: data.minDate, resolvedMaxDate: data.maxDate } }
-        } catch {
-          return { props: {} }
-        }
-      },
+      resolveData: resolveBookingDates,
       render: ({ eyebrow, heading, subtext, resolvedMinDate, resolvedMaxDate, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ maxWidth: '640px', margin: '0 auto' }}>
@@ -1557,6 +1567,235 @@ export const config: Config = {
           </GateEmpty>
         )
       },
+    },
+
+    // ------------------------------------------------------------ Packages
+    // Rising Roots "Collections": up to three priced cards. Prices and what is
+    // included are Tynnell's own words, never computed. A card needs a name AND
+    // a price line to show; with none complete the block is hidden from visitors.
+    Packages: {
+      label: 'Packages',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        cards: {
+          type: 'array',
+          label: 'Packages',
+          max: 3,
+          arrayFields: {
+            name: { type: 'text', label: 'Name' },
+            price: { type: 'text', label: 'Price line (for example "From $4,000")' },
+            description: { type: 'textarea', label: 'Short description' },
+            features: { type: 'textarea', label: 'What is included (one per line)' },
+            buttonText: { type: 'text', label: 'Button text (optional)' },
+            buttonHref: { type: 'text', label: 'Button link (optional)' },
+          },
+          defaultItemProps: { name: '', price: '', description: '', features: '', buttonText: '', buttonHref: '' },
+          getItemSummary: (item: any) => item?.name || 'New package',
+        },
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        cards: [
+          { name: '', price: '', description: '', features: '', buttonText: '', buttonHref: '' },
+          { name: '', price: '', description: '', features: '', buttonText: '', buttonHref: '' },
+          { name: '', price: '', description: '', features: '', buttonText: '', buttonHref: '' },
+        ],
+        hideUntilFilled: true,
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, cards, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const complete = (cards ?? []).filter((c: any) => c?.name?.trim() && c?.price?.trim())
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={packagesIsEmpty({ cards })} editing={puck?.isEditing} label="packages">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 3vw, 2rem)', maxWidth: '1100px', margin: '0 auto' }}>
+                {complete.map((c: any, i: number) => {
+                  const features = linesOf(c.features)
+                  return (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', padding: 'clamp(1.5rem, 3vw, 2.25rem)', border: `1px solid ${C.border}`, background: C.accent }}>
+                      <h3 style={headingStyle('clamp(1.35rem, 2.4vw, 1.9rem)')}>{c.name}</h3>
+                      <p style={{ margin: '0.5rem 0 0', color: C.detail, fontFamily: BODY_FONT, letterSpacing: '0.04em' }}>{c.price}</p>
+                      {c.description?.trim() && <p style={{ margin: '1rem 0 0', color: C.body, whiteSpace: 'pre-wrap' }}>{c.description}</p>}
+                      {features.length > 0 && (
+                        <ul style={{ margin: '1rem 0 0', paddingLeft: '1.1rem', color: C.body }}>
+                          {features.map((f, j) => <li key={j} style={{ marginBottom: '0.35rem' }}>{f}</li>)}
+                        </ul>
+                      )}
+                      {c.buttonText?.trim() && c.buttonHref?.trim() && (
+                        <a href={c.buttonHref} style={{ ...btnStyle(), alignSelf: 'flex-start' }}>{c.buttonText}</a>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </Section>
+          </GateEmpty>
+        )
+      },
+    },
+
+    // --------------------------------------------------------------- Steps
+    // Rising Roots "How booking works": numbered steps. Numbers come from the
+    // position of each filled step (01, 02, ...), never typed, so reordering or
+    // removing a step renumbers the rest. A step needs a title to show.
+    Steps: {
+      label: 'Booking Steps',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        steps: {
+          type: 'array',
+          label: 'Steps',
+          max: 6,
+          arrayFields: {
+            title: { type: 'text', label: 'Title' },
+            body: { type: 'textarea', label: 'A sentence or two' },
+          },
+          defaultItemProps: { title: '', body: '' },
+          getItemSummary: (item: any) => item?.title || 'New step',
+        },
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        steps: [
+          { title: '', body: '' },
+          { title: '', body: '' },
+          { title: '', body: '' },
+          { title: '', body: '' },
+          { title: '', body: '' },
+        ],
+        hideUntilFilled: true,
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, steps, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const filled = (steps ?? []).filter((s: any) => s?.title?.trim())
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={stepsIsEmpty({ steps })} editing={puck?.isEditing} label="booking steps">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+              <ol style={{ listStyle: 'none', margin: '0 auto', padding: 0, maxWidth: '760px', display: 'grid', gap: 'clamp(1.25rem, 3vw, 2rem)' }}>
+                {filled.map((s: any, i: number) => (
+                  <li key={i} style={{ display: 'flex', gap: 'clamp(1rem, 3vw, 2rem)', alignItems: 'baseline' }}>
+                    <span data-step-number="" style={{ ...headingStyle('clamp(1.75rem, 3.5vw, 2.5rem)'), color: C.detail, minWidth: '3rem' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <h3 style={headingStyle('clamp(1.2rem, 2.2vw, 1.6rem)')}>{s.title}</h3>
+                      {s.body?.trim() && <p style={{ margin: '0.5rem 0 0', color: C.body, whiteSpace: 'pre-wrap' }}>{s.body}</p>}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </Section>
+          </GateEmpty>
+        )
+      },
+    },
+
+    // ------------------------------------------------------ FeatureColumns
+    // Rising Roots "What's included" and benefits lists: up to four titled
+    // columns of short lines. One filled column renders as a single list. A
+    // column needs a title and at least one line to show.
+    FeatureColumns: {
+      label: 'Columns List',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        columns: {
+          type: 'array',
+          label: 'Columns',
+          max: 4,
+          arrayFields: {
+            title: { type: 'text', label: 'Column title' },
+            lines: { type: 'textarea', label: 'Lines (one per line)' },
+          },
+          defaultItemProps: { title: '', lines: '' },
+          getItemSummary: (item: any) => item?.title || 'New column',
+        },
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        columns: [
+          { title: '', lines: '' },
+          { title: '', lines: '' },
+          { title: '', lines: '' },
+        ],
+        hideUntilFilled: true,
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, columns, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const filled = (columns ?? []).filter((c: any) => c?.title?.trim() && linesOf(c.lines).length > 0)
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={columnsIsEmpty({ columns })} editing={puck?.isEditing} label="columns">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${filled.length === 1 ? '280px' : '220px'}, 1fr))`, gap: 'clamp(1.5rem, 3vw, 2.5rem)', maxWidth: filled.length === 1 ? '640px' : '1100px', margin: '0 auto' }}>
+                {filled.map((c: any, i: number) => (
+                  <div key={i}>
+                    <h3 style={headingStyle('clamp(1.2rem, 2.2vw, 1.6rem)')}>{c.title}</h3>
+                    <ul style={{ margin: '0.85rem 0 0', paddingLeft: '1.1rem', color: C.body }}>
+                      {linesOf(c.lines).map((l, j) => <li key={j} style={{ marginBottom: '0.4rem' }}>{l}</li>)}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </Section>
+          </GateEmpty>
+        )
+      },
+    },
+
+    // -------------------------------------------------------- InquiryForm
+    // The shorter wedding / portrait inquiry forms from Rising Roots. Posts to
+    // /api/contact with a `kind`. Not gated: a form is useful with no words.
+    InquiryForm: {
+      label: 'Inquiry Form',
+      fields: {
+        kind: {
+          type: 'radio',
+          label: 'Which form',
+          options: [
+            { label: 'Wedding', value: 'wedding' },
+            { label: 'Portrait', value: 'portrait' },
+            { label: 'Visitor chooses', value: 'choice' },
+          ],
+        },
+        eyebrow: { type: 'text', label: 'Eyebrow (optional)' },
+        heading: { type: 'text', label: 'Heading (optional)' },
+        subtext: { type: 'textarea', label: 'Subtext (optional)' },
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        kind: 'wedding',
+        eyebrow: '',
+        heading: '',
+        subtext: '',
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      resolveData: resolveBookingDates,
+      render: ({ kind, eyebrow, heading, subtext, resolvedMinDate, resolvedMaxDate, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          <div id="inquire" style={{ maxWidth: '640px', margin: '0 auto' }}>
+            {eyebrow && <p style={{ ...eyebrowStyle, textAlign: 'center' }}>{eyebrow}</p>}
+            {heading && <h2 style={{ ...headingStyle('clamp(1.5rem,3vw,2.4rem)'), textAlign: 'center' }}>{heading}</h2>}
+            {subtext && <p style={{ marginTop: '0.85rem', marginBottom: '2rem', color: C.detail, textAlign: 'center' }}>{subtext}</p>}
+            <InquiryFormComponent kind={kind ?? 'wedding'} minDate={resolvedMinDate} maxDate={resolvedMaxDate} />
+          </div>
+        </Section>
+      ),
     },
 
     // -------------------------------------------------------- PhotoGallery

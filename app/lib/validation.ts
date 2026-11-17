@@ -11,6 +11,7 @@ export const CONTACT_MAX_LENGTHS = {
   location:          300,
   message:          5000,
   howHeard:          100,
+  partnerName:       100,
 } as const
 
 export const CHECKOUT_MAX_LENGTHS = {

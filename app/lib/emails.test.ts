@@ -48,3 +48,23 @@ describe('clientAcknowledgmentEmailHtml', () => {
     expect(html).not.toContain("I'll be in touch within 48 hours")
   })
 })
+
+describe('inquiry emails without phone, preference or date', () => {
+  it('leaves the phone, preference and date rows out of the notification', () => {
+    const html = inquiryEmailHtml({ name: 'Ana', email: 'ana@example.com', sessionType: 'Wedding', partnerName: 'Sam', message: 'Hi', location: '', howHeard: '' })
+
+    expect(html).toContain('Sam')
+    expect(html).not.toContain('Phone')
+    expect(html).not.toContain('Preferred Contact')
+    expect(html).not.toContain('Desired Date')
+    expect(html).not.toContain('undefined')
+  })
+
+  it('leaves the "on <date>" phrase out of the acknowledgment when no date was sent', () => {
+    const html = clientAcknowledgmentEmailHtml({ name: 'Ana', sessionType: 'Wedding' })
+
+    expect(html).toContain('Wedding</strong> session')
+    expect(html).not.toContain(' on <strong>')
+    expect(html).not.toContain('undefined')
+  })
+})

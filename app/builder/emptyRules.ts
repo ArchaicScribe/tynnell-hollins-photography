@@ -45,3 +45,26 @@ export function signupIsEmpty(
   if (p.kind === 'freebie' && freebieReady !== true) return true
   return false
 }
+
+// Newline-separated text (one list item per line) as a clean list.
+export function linesOf(text?: string): string[] {
+  if (typeof text !== 'string') return []
+  return text.split('\n').map((l) => l.trim()).filter((l) => l !== '')
+}
+
+// A package card needs a name and a price line to be worth showing.
+export function packagesIsEmpty(p: { cards?: { name?: string; price?: string }[] }): boolean {
+  return !(p.cards ?? []).some((c) => !isBlank(c?.name) && !isBlank(c?.price))
+}
+
+export function stepsIsEmpty(p: { steps?: { title?: string }[] }): boolean {
+  return !(p.steps ?? []).some((s) => !isBlank(s?.title))
+}
+
+export function columnsIsEmpty(p: { columns?: { title?: string; lines?: string }[] }): boolean {
+  return !(p.columns ?? []).some((c) => !isBlank(c?.title) && linesOf(c?.lines).length > 0)
+}
+
+export function faqIsEmpty(p: { items?: { title?: string; body?: string }[] }): boolean {
+  return !(p.items ?? []).some((i) => !isBlank(i?.title) && !isBlank(i?.body))
+}
