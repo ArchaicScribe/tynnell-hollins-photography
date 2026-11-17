@@ -733,7 +733,7 @@ export const config: Config = {
           const txt = (
             <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)' }}>
               {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-              <h1 style={headingStyle('clamp(1.75rem,3.5vw,3rem)')}>{heading}</h1>
+              {heading?.trim() && <h1 style={headingStyle('clamp(1.75rem,3.5vw,3rem)')}>{heading}</h1>}
               {subheading && <p style={{ marginTop: '1rem', color: C.body, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
               {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
             </div>
@@ -761,7 +761,7 @@ export const config: Config = {
             <div style={{ position: 'absolute', inset: 0, background: centered ? 'rgba(12,12,12,0.45)' : 'linear-gradient(to top, rgba(12,12,12,0.7), rgba(12,12,12,0.1))' }} />
             <div style={{ position: 'relative', padding: 'clamp(2rem,5vw,4rem) clamp(1.25rem,5vw,5rem)', maxWidth: centered ? '70ch' : '60ch', textAlign: centered ? 'center' : align }}>
               {eyebrow && <p style={{ ...eyebrowStyle, color: HERO_TEXT_SOFT }}>{eyebrow}</p>}
-              <h1 style={{ ...headingStyle('clamp(2rem,5vw,3.75rem)'), color: HERO_TEXT }}>{heading}</h1>
+              {heading?.trim() && <h1 style={{ ...headingStyle('clamp(2rem,5vw,3.75rem)'), color: HERO_TEXT }}>{heading}</h1>}
               {subheading && <p style={{ marginTop: '1rem', color: HERO_TEXT_SOFT, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
               {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
             </div>

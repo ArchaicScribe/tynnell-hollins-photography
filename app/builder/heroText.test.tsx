@@ -41,3 +41,19 @@ describe('Hero text over the photograph', () => {
     expect(isLight(container.querySelector('h1')!.style.color)).toBe(false)
   })
 })
+
+// A blank page (a new inner page before Tynnell adds words) used to render an
+// empty <h1>, which screen readers announce as an empty heading.
+describe('Hero with no heading', () => {
+  it.each(['bottom', 'centered', 'split'])('renders no <h1> in the %s layout', (layout) => {
+    const { container } = drawHero({ heading: '   ', subheading: 'Weddings', layout })
+
+    expect(container.querySelector('h1')).toBeNull()
+  })
+
+  it('still renders the <h1> once there is a heading', () => {
+    const { container } = drawHero({ heading: 'Hello', layout: 'bottom' })
+
+    expect(container.querySelector('h1')?.textContent).toBe('Hello')
+  })
+})

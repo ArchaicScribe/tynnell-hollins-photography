@@ -190,3 +190,12 @@ describe('Hero height in layouts', () => {
     }
   })
 })
+
+describe('blank page heroes', () => {
+  it('are short until there is a photo and a heading, so no big empty band shows', () => {
+    for (const data of [buildWedding(), buildPortraits(), buildContact()]) {
+      const hero = data.content.find((b) => b.type === 'Hero')!.props as { height: string }
+      expect(hero.height).toBe('45vh')
+    }
+  })
+})
