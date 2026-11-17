@@ -4,7 +4,7 @@ import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import type { Data } from '@measured/puck'
 import { buildWedding } from './weddingLayout'
-import { LAYOUTS, layoutForSlug } from './pageLayouts'
+import { LAYOUTS, layoutForSlug, assertCanCreate, assertCanDraft } from './pageLayouts'
 import { getTemplateContent } from './templates'
 import { config } from './puck.config'
 
@@ -86,5 +86,38 @@ describe('wedding page', () => {
 describe('layoutForSlug', () => {
   it('gives nothing for a page with no layout', () => {
     expect(layoutForSlug('nope')).toBeNull()
+  })
+})
+
+describe('assertCanCreate', () => {
+  it('passes for a slug with a layout that is not a page yet', () => {
+    expect(() => assertCanCreate(['about', 'contact'], 'wedding-photography')).not.toThrow()
+  })
+
+  it('refuses to create a page that already exists', () => {
+    expect(() => assertCanCreate(['about', 'wedding-photography'], 'wedding-photography')).toThrow(/already/)
+  })
+
+  it('refuses a slug with no layout', () => {
+    expect(() => assertCanCreate([], 'nope')).toThrow(/no layout/)
+  })
+})
+
+describe('assertCanDraft', () => {
+  const row = { id: 7, slug: 'wedding-photography', draft_content: null as unknown }
+
+  it('passes for a page with no saved draft', () => {
+    expect(() => assertCanDraft(row, false)).not.toThrow()
+  })
+
+  it('refuses to overwrite a saved draft, except in a dry run', () => {
+    const saved = { ...row, draft_content: { content: [], root: {} } }
+
+    expect(() => assertCanDraft(saved, false)).toThrow(/draft/)
+    expect(() => assertCanDraft(saved, true)).not.toThrow()
+  })
+
+  it('refuses a page whose slug has no layout', () => {
+    expect(() => assertCanDraft({ ...row, slug: 'nope' }, true)).toThrow(/no layout/)
   })
 })
