@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import type { Data } from '@measured/puck'
 import { buildWedding } from './weddingLayout'
+import { buildPortraits } from './portraitsLayout'
 import { LAYOUTS, layoutForSlug, assertCanCreate, assertCanDraft } from './pageLayouts'
 import { getTemplateContent } from './templates'
 import { config } from './puck.config'
@@ -80,6 +81,46 @@ describe('wedding page', () => {
   it('is registered for its page address and as a starter template', () => {
     expect(layoutForSlug('wedding-photography')).toEqual(buildWedding())
     expect(getTemplateContent('wedding')).toEqual(buildWedding())
+  })
+})
+
+describe('portraits page', () => {
+  it('lists its sections in the Rising Roots order', () => {
+    expect(types(buildPortraits())).toEqual([
+      'Hero',
+      'Statement',
+      'StatsRow',
+      'Statement',
+      'PathChoice',
+      'SplitImageText',
+      'Packages',
+      'Steps',
+      'CTA',
+      'LiveTestimonials',
+      'Accordion',
+      'InquiryForm',
+      'CTA',
+    ])
+  })
+
+  it('has a portrait inquiry form, four session cards, and no album cards', () => {
+    const data = buildPortraits()
+    const byId = Object.fromEntries(data.content.map((b) => [idOf(b), b.props as Record<string, unknown>]))
+
+    expect(byId['portraits-inquiry'].kind).toBe('portrait')
+    expect(byId['portraits-sessions'].cards).toHaveLength(4)
+    expect(types(data)).not.toContain('AlbumGrid')
+  })
+
+  it('shows no invented review count: the stats start blank', () => {
+    const stats = buildPortraits().content.find((b) => b.type === 'StatsRow')!.props as { items: { value: string; label: string }[] }
+
+    expect(stats.items.every((i) => i.value === '' && i.label === '')).toBe(true)
+  })
+
+  it('is registered for its page address and as a starter template', () => {
+    expect(layoutForSlug('portraits')).toEqual(buildPortraits())
+    expect(getTemplateContent('portraits')).toEqual(buildPortraits())
   })
 })
 
