@@ -403,3 +403,13 @@ describe('POST /api/contact - wedding and portrait inquiry kinds', () => {
     expect(res.status).toBe(400)
   })
 })
+
+describe('POST /api/contact - partner name only belongs to wedding inquiries', () => {
+  it('leaves a partner name out of the email for the general form and a portrait inquiry', async () => {
+    await POST(makeRequest(validBody({ partnerName: 'Sneaky' })))
+    await POST(makeRequest({ kind: 'portrait', name: 'Ana', email: 'ana@example.com', sessionType: 'Family', message: 'Hi', partnerName: 'Sneaky' }))
+
+    expect(sendMock.mock.calls[0][0].html).not.toContain('Sneaky')
+    expect(sendMock.mock.calls[2][0].html).not.toContain('Sneaky')
+  })
+})

@@ -57,8 +57,8 @@ async function main() {
       console.log('Will create unpublished page:', JSON.stringify({ title, slug }))
       console.log('Blocks:', (layout.content as { type: string }[]).map((b) => b.type).join(', '))
       const { rows } = await client.query(
-        'INSERT INTO pages (title, slug, content, published, show_in_nav) VALUES ($1, $2, $3, false, false) RETURNING id',
-        [title, slug, JSON.stringify(layout)],
+        'INSERT INTO pages (title, slug, content, published, show_in_nav, display_order) VALUES ($1, $2, $3, false, false, $4) RETURNING id',
+        [title, slug, JSON.stringify(layout), Date.now()], // display_order as the builder sets it
       )
       console.log(`Created page ${rows[0].id} ("${slug}"), unpublished.`)
       return

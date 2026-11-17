@@ -118,3 +118,66 @@ describe('InquiryForm - visitor chooses', () => {
     expect(sentBody()).toMatchObject({ kind: 'portrait', sessionType: 'Newborn' })
   })
 })
+
+describe('InquiryForm - robustness', () => {
+  it('ignores a tab switch while a request is in flight', async () => {
+    let finish!: (r: Response) => void
+    fetchMock.mockReturnValue(new Promise<Response>((r) => { finish = r }))
+    const user = userEvent.setup()
+    render(<InquiryForm kind="choice" />)
+
+    await user.type(screen.getByLabelText(/^Name/i), 'Ana')
+    await user.type(screen.getByLabelText(/^Email/i), 'ana@example.com')
+    await user.type(screen.getByLabelText(/Partner.s name/i), 'Sam')
+    await user.type(screen.getByLabelText(/Message/i), 'Hi')
+    await user.click(screen.getByRole('button', { name: 'Send Inquiry' }))
+    await user.click(screen.getByRole('tab', { name: 'Portrait inquiry' }))
+
+    expect(screen.getByRole('tab', { name: 'Wedding inquiry' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('button', { name: /Sending/ })).toBeDisabled()
+    finish(new Response(JSON.stringify({ success: true }), { status: 200 }))
+  })
+
+  it('gives two forms on one page different input ids', () => {
+    const { container } = render(<><InquiryForm kind="wedding" /><InquiryForm kind="portrait" /></>)
+
+    const ids = [...container.querySelectorAll('[id]')].map((e) => e.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+})
+
+describe('InquiryForm - Turnstile token is single use', () => {
+  it('gets a fresh token after a rejected submission, not the spent one', async () => {
+    vi.resetModules()
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', 'site-key')
+    let mounts = 0
+    vi.doMock('@/app/components/Turnstile/Turnstile', async () => {
+      const React = await import('react')
+      return {
+        default: function FakeTurnstile({ onVerify }: { onVerify: (t: string) => void }) {
+          const [n] = React.useState(() => ++mounts)
+          React.useEffect(() => { onVerify(`token-${n}`) }, [n, onVerify])
+          return <div data-testid="turnstile" />
+        },
+      }
+    })
+    const { default: Form } = await import('./InquiryForm')
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ error: 'That date is blocked.' }), { status: 400 }))
+    const user = userEvent.setup()
+    render(<Form kind="wedding" />)
+
+    await user.type(screen.getByLabelText(/^Name/i), 'Ana')
+    await user.type(screen.getByLabelText(/^Email/i), 'ana@example.com')
+    await user.type(screen.getByLabelText(/Partner.s name/i), 'Sam')
+    await user.type(screen.getByLabelText(/Message/i), 'Hi')
+    await user.click(screen.getByRole('button', { name: 'Send Inquiry' }))
+    await screen.findByRole('alert')
+    await user.click(screen.getByRole('button', { name: 'Send Inquiry' }))
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1].body)).turnstileToken).toBe('token-1')
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1].body)).turnstileToken).toBe('token-2')
+    vi.doUnmock('@/app/components/Turnstile/Turnstile')
+    vi.unstubAllEnvs()
+  })
+})

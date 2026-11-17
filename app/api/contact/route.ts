@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
-  const { name, email, phone, contactPreference, partnerName, date, location, message, howHeard, website, turnstileToken } = body
+  const { name, email, phone, contactPreference, date, location, message, howHeard, website, turnstileToken } = body
   let { sessionType } = body
 
   // Honeypot (TYN-357): a real visitor never sees or fills in `website` (see
@@ -50,6 +50,8 @@ export async function POST(request: Request) {
   if (kind === 'invalid') {
     return NextResponse.json({ error: 'Invalid inquiry type' }, { status: 400 })
   }
+  // Only a wedding inquiry has a partner; the other forms ignore the field.
+  const partnerName = kind === 'wedding' ? body.partnerName : undefined
   if (kind) {
     const problem = validateKindFields(kind, body)
     if (problem) return NextResponse.json({ error: problem }, { status: 400 })

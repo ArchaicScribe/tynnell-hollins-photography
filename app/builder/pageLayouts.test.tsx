@@ -121,3 +121,14 @@ describe('assertCanDraft', () => {
     expect(() => assertCanDraft({ ...row, slug: 'nope' }, true)).toThrow(/no layout/)
   })
 })
+
+describe('Hero height in layouts', () => {
+  it('is one of the heights the editor offers, so its select shows the value', () => {
+    const offered = components.Hero.fields.height.options.map((o: { value: string }) => o.value)
+    for (const [slug, build] of Object.entries(LAYOUTS)) {
+      for (const b of build(undefined).content.filter((x) => x.type === 'Hero')) {
+        expect(offered, `${slug}`).toContain((b.props as { height: string }).height)
+      }
+    }
+  })
+})

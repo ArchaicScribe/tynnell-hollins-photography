@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, FormEvent, ReactNode } from 'react'
+import { useState, useEffect, useRef, useId, FormEvent, ReactNode } from 'react'
 import styles from './ContactForm.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import Turnstile from '@/app/components/Turnstile/Turnstile'
@@ -36,6 +36,10 @@ export default function InquiryForm({ kind, minDate, maxDate }: { kind: Kind | '
   const [status, setStatus] = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<ReactNode>('')
   const [turnstileToken, setTurnstileToken] = useState('')
+  // A Turnstile token works once. After any attempt the widget is remounted
+  // (new key) and the spent token dropped, so a retry never sends a stale one.
+  const [widgetKey, setWidgetKey] = useState(0)
+  const uid = useId()
   const successRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -56,6 +60,8 @@ export default function InquiryForm({ kind, minDate, maxDate }: { kind: Kind | '
 
     setStatus('loading')
     setErrorMessage('')
+    setTurnstileToken('')
+    setWidgetKey((k) => k + 1)
 
     // Only send the fields this kind uses, so switching tabs never sends a
     // stale partner name with a portrait inquiry.
@@ -125,7 +131,7 @@ export default function InquiryForm({ kind, minDate, maxDate }: { kind: Kind | '
   }
 
   const wedding = active === 'wedding'
-  const id = (name: string) => `inquiry-${name}`
+  const id = (name: string) => `${uid}-${name}`
 
   return (
     <div>
@@ -138,7 +144,7 @@ export default function InquiryForm({ kind, minDate, maxDate }: { kind: Kind | '
               role="tab"
               aria-selected={picked === k}
               className={`${styles.tab} ${picked === k ? styles.tabActive : ''}`}
-              onClick={() => { setPicked(k); setStatus('idle'); setErrorMessage('') }}
+              onClick={() => { if (status === 'loading') return; setPicked(k); setStatus('idle'); setErrorMessage('') }}
             >
               {k === 'wedding' ? 'Wedding inquiry' : 'Portrait inquiry'}
             </button>
@@ -201,7 +207,7 @@ export default function InquiryForm({ kind, minDate, maxDate }: { kind: Kind | '
 
         {TURNSTILE_SITE_KEY && (
           <div className={styles.field}>
-            <Turnstile siteKey={TURNSTILE_SITE_KEY} onVerify={setTurnstileToken} />
+            <Turnstile key={widgetKey} siteKey={TURNSTILE_SITE_KEY} onVerify={setTurnstileToken} />
           </div>
         )}
 
