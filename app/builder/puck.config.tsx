@@ -34,7 +34,7 @@ import { TypewriterText } from './TypewriterText'
 import ContactForm from '@/app/(site)/contact/ContactForm'
 import { LayoutVariantField, type LayoutOption } from './LayoutVariantField'
 import { GateEmpty, hideUntilFilledField } from './hideUntilFilled'
-import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty } from './emptyRules'
+import { statementIsEmpty, pathChoiceIsEmpty, statsIsEmpty, splitIsEmpty, ctaIsEmpty, albumsIsEmpty, testimonialsIsEmpty, signupIsEmpty, packagesIsEmpty, linesOf } from './emptyRules'
 
 // CSS-var-backed (TYN-314) so page-builder content follows the site-wide
 // Design editor theme, not a fixed palette - fallbacks match tokens.css's
@@ -623,7 +623,7 @@ export const config: Config = {
 
   categories: {
     layout: { title: 'Layout', components: ['SectionHeading', 'Spacer', 'Shape', 'Line', 'SocialLinks', 'FreeformSection'] },
-    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice'] },
+    content: { title: 'Content', components: ['RichText', 'Statement', 'StatsRow', 'TypewriterHeading', 'SplitImageText', 'StickyPanels', 'Services', 'LiveServices', 'SpecialtiesReveal', 'Testimonials', 'LiveTestimonials', 'Accordion', 'ContactFormBlock', 'EmailSignup', 'CTA', 'PathChoice', 'Packages'] },
     media: { title: 'Media', components: ['Hero', 'PhotoGallery', 'PortfolioGrid', 'AlbumGrid', 'LiveBlog', 'PhotoCarousel', 'ImageGrid', 'FreeformPhotoCanvas', 'FullWidthImage', 'Video', 'Map', 'InstagramFeed', 'TikTokFeed'] },
     // Freeform child elements (TextElement/ImageElement/ButtonElement/ShapeElement)
     // are real registered components (so they can live inside a FreeformSection's
@@ -1552,6 +1552,76 @@ export const config: Config = {
                     </p>
                   </a>
                 ))}
+              </div>
+            </Section>
+          </GateEmpty>
+        )
+      },
+    },
+
+    // ------------------------------------------------------------ Packages
+    // Rising Roots "Collections": up to three priced cards. Prices and what is
+    // included are Tynnell's own words, never computed. A card needs a name AND
+    // a price line to show; with none complete the block is hidden from visitors.
+    Packages: {
+      label: 'Packages',
+      fields: {
+        heading: { type: 'text', label: 'Heading (optional)' },
+        cards: {
+          type: 'array',
+          label: 'Packages',
+          max: 3,
+          arrayFields: {
+            name: { type: 'text', label: 'Name' },
+            price: { type: 'text', label: 'Price line (for example "From $4,000")' },
+            description: { type: 'textarea', label: 'Short description' },
+            features: { type: 'textarea', label: 'What is included (one per line)' },
+            buttonText: { type: 'text', label: 'Button text (optional)' },
+            buttonHref: { type: 'text', label: 'Button link (optional)' },
+          },
+          defaultItemProps: { name: '', price: '', description: '', features: '', buttonText: '', buttonHref: '' },
+          getItemSummary: (item: any) => item?.name || 'New package',
+        },
+        hideUntilFilled: hideUntilFilledField,
+        ...styleFields,
+        ...responsiveFields,
+      },
+      defaultProps: {
+        heading: '',
+        cards: [
+          { name: '', price: '', description: '', features: '', buttonText: '', buttonHref: '' },
+          { name: '', price: '', description: '', features: '', buttonText: '', buttonHref: '' },
+          { name: '', price: '', description: '', features: '', buttonText: '', buttonHref: '' },
+        ],
+        hideUntilFilled: true,
+        ...styleDefaults,
+        ...responsiveDefaults,
+      },
+      render: ({ heading, cards, hideUntilFilled, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop, puck }: any) => {
+        const complete = (cards ?? []).filter((c: any) => c?.name?.trim() && c?.price?.trim())
+        return (
+          <GateEmpty hide={hideUntilFilled} empty={packagesIsEmpty({ cards })} editing={puck?.isEditing} label="packages">
+            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 3vw, 2rem)', maxWidth: '1100px', margin: '0 auto' }}>
+                {complete.map((c: any, i: number) => {
+                  const features = linesOf(c.features)
+                  return (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', padding: 'clamp(1.5rem, 3vw, 2.25rem)', border: `1px solid ${C.border}`, background: C.accent }}>
+                      <h3 style={headingStyle('clamp(1.35rem, 2.4vw, 1.9rem)')}>{c.name}</h3>
+                      <p style={{ margin: '0.5rem 0 0', color: C.detail, fontFamily: BODY_FONT, letterSpacing: '0.04em' }}>{c.price}</p>
+                      {c.description?.trim() && <p style={{ margin: '1rem 0 0', color: C.body, whiteSpace: 'pre-wrap' }}>{c.description}</p>}
+                      {features.length > 0 && (
+                        <ul style={{ margin: '1rem 0 0', paddingLeft: '1.1rem', color: C.body }}>
+                          {features.map((f, j) => <li key={j} style={{ marginBottom: '0.35rem' }}>{f}</li>)}
+                        </ul>
+                      )}
+                      {c.buttonText?.trim() && c.buttonHref?.trim() && (
+                        <a href={c.buttonHref} style={{ ...btnStyle(), alignSelf: 'flex-start' }}>{c.buttonText}</a>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </Section>
           </GateEmpty>
