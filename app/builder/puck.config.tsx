@@ -531,7 +531,9 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
     const extraUrls = (Array.isArray(extraPhotos) ? extraPhotos : [])
       .map((p: { imageUrl?: string } | undefined) => (p?.imageUrl ?? '').trim())
       .filter(Boolean)
-    const fadeImages = imageUrl && extraUrls.length ? [imageUrl, ...extraUrls].map((url) => ({ url })) : null
+    // Not while "Scroll overlap" pins the section: its position then stops
+    // changing, which would freeze the crossfade half-blended.
+    const fadeImages = imageUrl && extraUrls.length && !scrollOverlap ? [imageUrl, ...extraUrls].map((url) => ({ url })) : null
     const bg = background && background !== 'transparent' ? background : undefined
     const cls = visClass(hideOnMobile, hideOnDesktop)
     const overlapStyle: React.CSSProperties = scrollOverlap ? { position: 'sticky', top: 0, zIndex: 1 } : {}
@@ -1139,10 +1141,11 @@ export const config: Config = {
         layout: layoutField(SPLIT_LAYOUT_OPTIONS),
         imageUrl: imageField('Image'),
         // Step 5: more photos that fade in over the main one as the section
-        // scrolls past. Leave empty for a single still photo.
+        // scrolls past. Leave empty for a single still photo. Replaces "Scroll
+        // fade-in" for the photo, and is off while "Scroll overlap" is on.
         extraPhotos: {
           type: 'array',
-          label: 'Extra photos (fade in as you scroll)',
+          label: 'Extra photos, fade in as you scroll (Side by side and Image overlay only)',
           arrayFields: { imageUrl: imageField('Photo') },
           defaultItemProps: { imageUrl: '' },
           getItemSummary: (item: any, i?: number) => (item?.imageUrl ? `Photo ${(i ?? 0) + 2}` : 'Empty photo'),

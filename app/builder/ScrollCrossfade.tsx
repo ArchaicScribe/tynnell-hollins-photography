@@ -28,14 +28,15 @@ export function ScrollCrossfade({
   useEffect(() => {
     const frame = frameRef.current
     if (!frame || count < 2) return
-    const layers = [...frame.querySelectorAll<HTMLElement>('[data-crossfade-layer]')]
-
     let scheduled = false
     let near = true
     let frameId = 0
 
     const update = () => {
       scheduled = false
+      // Looked up on every frame, not once: in the editor a photo can be replaced
+      // without the count changing, which mounts a new <img> the effect never saw.
+      const layers = frame.querySelectorAll<HTMLElement>('[data-crossfade-layer]')
       const opacities = motionAllowed(window, document)
         ? crossfadeLayerOpacities(parallaxProgress(frame.getBoundingClientRect(), window.innerHeight), count)
         : crossfadeLayerOpacities(0, count)

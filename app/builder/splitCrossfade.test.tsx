@@ -40,6 +40,16 @@ describe('Split Image + Text extra photos', () => {
     expect(layers(c)).toEqual(['/a.jpg', '/b.jpg'])
   })
 
+  it('does not crossfade while the section is pinned by Scroll overlap, which would freeze it half-blended', () => {
+    const c = draw({ scrollOverlap: true, extraPhotos: [{ imageUrl: '/b.jpg' }] })
+    expect(c.querySelector('[data-crossfade]')).toBeNull()
+    expect(c.querySelectorAll('img')).toHaveLength(1)
+  })
+
+  it('says in the editor which layouts the extra photos apply to', () => {
+    expect(block.fields.extraPhotos.label).toMatch(/Side by side and Image overlay/)
+  })
+
   it('does nothing without a main photo, because there is nothing to fade from', () => {
     const c = draw({ imageUrl: '', extraPhotos: [{ imageUrl: '/b.jpg' }] })
     expect(layers(c)).toEqual([])

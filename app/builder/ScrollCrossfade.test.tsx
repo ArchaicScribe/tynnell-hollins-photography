@@ -116,6 +116,20 @@ describe('ScrollCrossfade', () => {
     expect(container.innerHTML).toBe('')
   })
 
+  it('still drives the right photos after one is swapped for another of the same count', () => {
+    // In the editor Tynnell replaces a photo: the keys change so React mounts a
+    // new <img> while the count stays the same. The new layer must still fade in.
+    placeFrame(-400) // progress 1: every layer should be fully on
+    const { container, rerender } = render(<ScrollCrossfade images={photos} />)
+    expect(opacities(container)).toEqual([1, 1, 1])
+
+    rerender(<ScrollCrossfade images={[photos[0], { url: '/swapped.jpg' }, photos[2]]} />)
+    fireEvent.scroll(window)
+
+    expect(layers(container).map((l) => l.getAttribute('src'))).toEqual(['/a.jpg', '/swapped.jpg', '/c.jpg'])
+    expect(opacities(container)).toEqual([1, 1, 1])
+  })
+
   it('stops listening to scroll when unmounted', () => {
     placeFrame(800)
     const remove = vi.spyOn(window, 'removeEventListener')
