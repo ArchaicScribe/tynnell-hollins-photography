@@ -54,6 +54,38 @@ const HEADING_FONT = "var(--font-heading, Archivo, sans-serif)"
 const BODY_FONT = "var(--font-body, 'Roboto Mono', monospace)"
 const PAD_X = 'clamp(1.25rem, 5vw, 5rem)'
 
+// Palette match with Rising Roots: the reference alternates bone sections with
+// olive and deep-olive bands that carry cream words. A band is a section
+// background that is a theme colour (the button colour, and the button hover
+// colour, which is the deep olive), so it follows /design. Inside a band the
+// words and the button flip to light by overriding the colour variables the
+// blocks already read. The section itself gets only --color-bg (set to the band
+// colour, resolved before the buttons are overridden) so a button label reads
+// as the band colour on a cream button.
+const BAND_OLIVE = 'var(--color-btn-bg, #6F6950)'
+const BAND_DEEP = 'var(--color-btn-hover, #2E2A19)'
+const CREAM = 'var(--color-btn-text, #ECE9E0)'
+const isBand = (background?: string) => background === BAND_OLIVE || background === BAND_DEEP
+// On the element that carries the band background.
+function bandGround(background?: string): React.CSSProperties {
+  return isBand(background) ? ({ '--color-bg': background } as React.CSSProperties) : {}
+}
+// On the element that wraps the section's words and button.
+function bandText(background?: string): React.CSSProperties {
+  if (!isBand(background)) return {}
+  return {
+    '--color-heading': CREAM,
+    '--color-body': CREAM,
+    '--color-detail': `color-mix(in srgb, ${CREAM} 78%, transparent)`,
+    '--color-btn-bg': CREAM,
+    '--color-btn-hover': `color-mix(in srgb, ${CREAM} 85%, white)`,
+  } as React.CSSProperties
+}
+// The dark wash over a photograph: the palette overlay colour (deep olive on
+// the live theme) scaled to the alpha the design wants, never neutral black.
+const scrim = (alpha: number) =>
+  `color-mix(in srgb, var(--color-bg-overlay, rgba(12,12,12,0.76)) ${Math.round((alpha / 0.76) * 100)}%, transparent)`
+
 // Vertical spacing presets for the shared Section wrapper.
 const SPACING: Record<string, string> = {
   none: '0',
@@ -229,7 +261,7 @@ function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, sc
   // opaque Background (color or photo) - with Background left "None" the
   // sticky section is still transparent, so pair the two for the full effect.
   return (
-    <section className={className} style={{ position: scrollOverlap ? 'sticky' : 'relative', top: scrollOverlap ? 0 : undefined, zIndex: scrollOverlap ? 1 : undefined, background: bg, overflow: backgroundImage ? 'clip' : undefined }}>
+    <section className={className} style={{ position: scrollOverlap ? 'sticky' : 'relative', top: scrollOverlap ? 0 : undefined, zIndex: scrollOverlap ? 1 : undefined, background: bg, overflow: backgroundImage ? 'clip' : undefined, ...bandGround(background) }}>
       {backgroundImage && (
         <>
           <ParallaxLayer level={photoMovement}>
@@ -240,12 +272,12 @@ function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, sc
               <img src={backgroundImage} alt="" style={bgImageStyle} />
             )}
           </ParallaxLayer>
-          <div style={{ position: 'absolute', inset: 0, background: `rgba(12,12,12,${fade})` }} />
+          <div style={{ position: 'absolute', inset: 0, background: scrim(fade) }} />
         </>
       )}
       {/* TYN-358: blocks saved before the control existed have no value, which
           counts as on; only an explicit "Off" switches the fade-up off. */}
-      <div style={{ position: 'relative', padding: `${padY} ${PAD_X}` }}><FadeUp enabled={textFadeUp !== false}>{children}</FadeUp></div>
+      <div style={{ position: 'relative', padding: `${padY} ${PAD_X}`, ...bandText(background) }}><FadeUp enabled={textFadeUp !== false}>{children}</FadeUp></div>
     </section>
   )
 }
@@ -261,8 +293,8 @@ const eyebrowStyle: React.CSSProperties = {
 // Hero text over the photograph. The hero's overlay is always dark, so the
 // theme heading and body colours (olive, near-black on the light theme) vanish
 // into it; the text is light instead, like the corner labels below.
-const HERO_TEXT = 'rgba(255,255,255,0.96)'
-const HERO_TEXT_SOFT = 'rgba(255,255,255,0.86)'
+const HERO_TEXT = '#ECE9E0'
+const HERO_TEXT_SOFT = 'rgba(236,233,224,0.86)'
 // Hero corner labels. Light rather than C.detail because they always sit over
 // the hero photograph, never over the page ground.
 const cornerLabelStyle: React.CSSProperties = {
@@ -270,7 +302,7 @@ const cornerLabelStyle: React.CSSProperties = {
   fontSize: '0.6rem',
   letterSpacing: '0.22em',
   textTransform: 'uppercase',
-  color: 'rgba(255,255,255,0.82)',
+  color: 'rgba(236,233,224,0.82)',
   whiteSpace: 'pre-wrap',
 }
 const headingStyle = (size = 'clamp(1.6rem, 3.5vw, 2.75rem)'): React.CSSProperties => ({
@@ -448,6 +480,8 @@ const bgField = {
     { label: 'None', value: 'transparent' },
     { label: 'Dark', value: 'var(--color-bg, #0C0C0C)' },
     { label: 'Accent', value: 'var(--color-bg-accent, #131313)' },
+    { label: 'Olive band', value: BAND_OLIVE },
+    { label: 'Deep olive band', value: BAND_DEEP },
   ],
 }
 // Faded background photo (TYN-305): an optional user-picked image behind the
@@ -576,7 +610,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
           ) : (
             <div style={{ position: 'absolute', inset: 0, background: C.accent }} />
           )}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(12,12,12,0.75), rgba(12,12,12,0.1))' }} />
+          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${scrim(0.75)}, ${scrim(0.1)})` }} />
           <div style={{ position: 'relative', padding: 'clamp(2rem,4vw,3.5rem)', maxWidth: '60ch' }}>
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
@@ -589,7 +623,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
 
     if (layout === 'stacked') {
       return (
-        <section className={cls} style={{ ...overlapStyle, background: bg }}>
+        <section className={cls} style={{ ...overlapStyle, background: bg, ...bandGround(background) }}>
           <div style={{ minHeight: '280px', position: 'relative', background: C.accent }}>
             {imageUrl && (
               scrollFadeIn ? (
@@ -600,7 +634,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
               )
             )}
           </div>
-          <div style={{ padding: 'clamp(2rem,4vw,3.5rem)', textAlign: 'center', maxWidth: '65ch', margin: '0 auto' }}>
+          <div style={{ padding: 'clamp(2rem,4vw,3.5rem)', textAlign: 'center', maxWidth: '65ch', margin: '0 auto', ...bandText(background) }}>
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
             <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
@@ -637,7 +671,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
       </div>
     )
     const textColumn = (style: React.CSSProperties) => (
-      <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)', ...style }}>
+      <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)', ...bandText(background), ...style }}>
         {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
         <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
         <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
@@ -650,13 +684,13 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
     // pages that rely on it do not change.
     if (hideUntilFilled && !imageUrl) {
       return (
-        <section className={cls} style={{ ...overlapStyle, display: 'flex', justifyContent: 'center', background: bg }}>
+        <section className={cls} style={{ ...overlapStyle, display: 'flex', justifyContent: 'center', background: bg, ...bandGround(background) }}>
           {textColumn({ flex: '0 1 46rem', alignItems: 'flex-start' })}
         </section>
       )
     }
     return (
-      <section className={cls} style={{ ...overlapStyle, display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg }}>
+      <section className={cls} style={{ ...overlapStyle, display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', background: bg, ...bandGround(background) }}>
         {imagePosition === 'left' ? <>{img}{txt}</> : <>{txt}{img}</>}
       </section>
     )
@@ -802,7 +836,7 @@ export const config: Config = {
             ) : (
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a1a,#0c0c0c)' }} />
             )}
-            <div style={{ position: 'absolute', inset: 0, background: centered ? 'rgba(12,12,12,0.45)' : 'linear-gradient(to top, rgba(12,12,12,0.7), rgba(12,12,12,0.1))' }} />
+            <div style={{ position: 'absolute', inset: 0, background: centered ? scrim(0.45) : `linear-gradient(to top, ${scrim(0.7)}, ${scrim(0.1)})` }} />
             <div style={{ position: 'relative', padding: 'clamp(2rem,5vw,4rem) clamp(1.25rem,5vw,5rem)', maxWidth: centered ? '70ch' : '60ch', textAlign: centered ? 'center' : align }}>
               {eyebrow && <p style={{ ...eyebrowStyle, color: HERO_TEXT_SOFT }}>{eyebrow}</p>}
               {heading?.trim() && <h1 style={{ ...headingStyle('clamp(2rem,5vw,3.75rem)'), color: HERO_TEXT }}>{heading}</h1>}
