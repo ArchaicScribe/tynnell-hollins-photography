@@ -75,6 +75,21 @@ const RESPONSIVE_CSS = `
 @media (max-width:${MOBILE_MAX}px){.pk-signup{grid-template-columns:1fr !important}}
 `
 
+// Step 5, item 3: builder button hover. btnStyle() is inline, and an inline style
+// cannot carry :hover, so every builder button also wears the pk-btn class (see
+// btnProps) and this rule is injected once at the root. The colour change uses the
+// theme hover colour (/design) and beats the inline background with !important; it
+// also fires on keyboard focus. The small lift and the ease only run where hover
+// exists, when the visitor has not asked for less motion, and when the /design
+// "Enable animations" switch is on; otherwise the colour simply changes at once.
+const BUTTON_CSS = `
+.pk-btn:hover,.pk-btn:focus-visible{background:var(--color-btn-hover, #807F7F) !important}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+html:not([data-animations="off"]) .pk-btn{transition:background-color 0.2s ease,transform 0.2s ease}
+html:not([data-animations="off"]) .pk-btn:hover{transform:translateY(-2px)}
+}
+`
+
 // Editorial bleed/offset for Split Image + Text (issue 5). The image runs off
 // the canvas edge and sits off the section baseline, which is what stops a run
 // of alternating rows reading as a stack of equal boxes.
@@ -279,6 +294,12 @@ function btnStyle(): React.CSSProperties {
     fontFamily: BODY_FONT,
     borderRadius: 'var(--btn-radius, 2px)',
   }
+}
+
+// The props every builder button spreads: the inline look plus the hover class.
+// `extra` is for the few per-site tweaks (alignment, margin) on top of the look.
+function btnProps(extra: React.CSSProperties = {}): { className: string; style: React.CSSProperties } {
+  return { className: 'pk-btn', style: { ...btnStyle(), ...extra } }
 }
 
 const alignField = {
@@ -560,7 +581,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
             <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+            {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
           </div>
         </section>
       )
@@ -583,7 +604,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
             <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+            {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
           </div>
         </section>
       )
@@ -620,7 +641,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
         {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
         <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
         <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
-        {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+        {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
       </div>
     )
     const txt = textColumn({})
@@ -645,7 +666,7 @@ export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
       <div style={{ background: C.bg, color: C.body, minHeight: '100%', fontFamily: BODY_FONT }}>
-        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + EDITORIAL_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + BUTTON_CSS + EDITORIAL_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
         {children}
       </div>
     ),
@@ -756,7 +777,7 @@ export const config: Config = {
               {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
               {heading?.trim() && <h1 style={headingStyle('clamp(1.75rem,3.5vw,3rem)')}>{heading}</h1>}
               {subheading && <p style={{ marginTop: '1rem', color: C.body, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
-              {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+              {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
             </div>
           )
           return (
@@ -786,7 +807,7 @@ export const config: Config = {
               {eyebrow && <p style={{ ...eyebrowStyle, color: HERO_TEXT_SOFT }}>{eyebrow}</p>}
               {heading?.trim() && <h1 style={{ ...headingStyle('clamp(2rem,5vw,3.75rem)'), color: HERO_TEXT }}>{heading}</h1>}
               {subheading && <p style={{ marginTop: '1rem', color: HERO_TEXT_SOFT, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
-              {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+              {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
             </div>
 
             {/* Corner labels sit above the overlay but outside the text
@@ -1018,7 +1039,7 @@ export const config: Config = {
             </ul>
             {buttonText && (
               <div style={{ textAlign: align === 'center' ? 'center' : 'left' }}>
-                <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>
+                <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>
               </div>
             )}
           </Section>
@@ -1538,7 +1559,7 @@ export const config: Config = {
           <div style={{ textAlign: 'center' }}>
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
             {subtext && <p style={{ marginTop: '0.85rem', color: C.detail, maxWidth: '60ch', margin: '0.85rem auto 0' }}>{subtext}</p>}
-            {buttonText && <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>}
+            {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
           </div>
         </Section>
         </GateEmpty>
@@ -1661,7 +1682,7 @@ export const config: Config = {
                         </ul>
                       )}
                       {c.buttonText?.trim() && c.buttonHref?.trim() && (
-                        <a href={c.buttonHref} style={{ ...btnStyle(), alignSelf: 'flex-start' }}>{c.buttonText}</a>
+                        <a href={c.buttonHref} {...btnProps({ alignSelf: 'flex-start' })}>{c.buttonText}</a>
                       )}
                     </div>
                   )
@@ -2083,7 +2104,7 @@ export const config: Config = {
               <AlbumGridComponent albums={albums} layout={layout === 'strip' ? 'strip' : 'grid'} hideHeading={Boolean(heading)} />
               {hasAlbums && buttonText && (
                 <div style={{ textAlign: 'center' }}>
-                  <a href={buttonHref || '#'} style={btnStyle()}>{buttonText}</a>
+                  <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>
                 </div>
               )}
             </Section>
@@ -2496,7 +2517,7 @@ export const config: Config = {
             display: 'flex', alignItems: 'center', justifyContent: align === 'center' ? 'center' : 'flex-start',
           }}
         >
-          <a href={href || '#'} style={{ ...btnStyle(), marginTop: 0 }}>{text}</a>
+          <a href={href || '#'} {...btnProps({ marginTop: 0 })}>{text}</a>
         </div>
       ),
     },
