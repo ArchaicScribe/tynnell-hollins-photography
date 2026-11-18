@@ -111,6 +111,21 @@ a {
   outline-offset: 3px;
 }
 
+/* ── Page-to-page fade (step 5) ────────────────────────────── */
+/* PageFade puts this class on the page area after a client-side navigation (never
+   on the first load). Opacity only, no transform: a transform would make the page
+   the containing block for position:fixed overlays inside it. "backwards" applies
+   the starting state during the animation and leaves nothing behind afterwards.
+   The reduced-motion and animations-off rules below cut the duration to nothing. */
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pageFadeIn {
+  animation: pageFadeIn var(--motion-base) var(--ease) backwards;
+}
+
 /* ── Reduced motion ────────────────────────────────────────── */
 /* Respect OS-level "reduce motion" preference (WCAG 2.3.3).  */
 
