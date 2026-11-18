@@ -297,8 +297,9 @@ function btnStyle(): React.CSSProperties {
 }
 
 // The props every builder button spreads: the inline look plus the hover class.
-function btnProps(): { className: string; style: React.CSSProperties } {
-  return { className: 'pk-btn', style: btnStyle() }
+// `extra` is for the few per-site tweaks (alignment, margin) on top of the look.
+function btnProps(extra: React.CSSProperties = {}): { className: string; style: React.CSSProperties } {
+  return { className: 'pk-btn', style: { ...btnStyle(), ...extra } }
 }
 
 const alignField = {
@@ -1681,7 +1682,7 @@ export const config: Config = {
                         </ul>
                       )}
                       {c.buttonText?.trim() && c.buttonHref?.trim() && (
-                        <a href={c.buttonHref} className="pk-btn" style={{ ...btnStyle(), alignSelf: 'flex-start' }}>{c.buttonText}</a>
+                        <a href={c.buttonHref} {...btnProps({ alignSelf: 'flex-start' })}>{c.buttonText}</a>
                       )}
                     </div>
                   )
@@ -2516,7 +2517,7 @@ export const config: Config = {
             display: 'flex', alignItems: 'center', justifyContent: align === 'center' ? 'center' : 'flex-start',
           }}
         >
-          <a href={href || '#'} className="pk-btn" style={{ ...btnStyle(), marginTop: 0 }}>{text}</a>
+          <a href={href || '#'} {...btnProps({ marginTop: 0 })}>{text}</a>
         </div>
       ),
     },

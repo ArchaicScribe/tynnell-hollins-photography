@@ -43,6 +43,30 @@ describe('builder button hover', () => {
     expect(screen.getByRole('link', { name: 'Go' })).toHaveClass('pk-btn')
   })
 
+  it('every button-coloured element any block renders carries the hover class, so a new block cannot forget it', () => {
+    const missing: string[] = []
+    let buttons = 0
+    for (const [name, block] of Object.entries(components)) {
+      const cards = [{ name: 'n', price: 'p', description: 'd', features: 'f', buttonText: 'Go', buttonHref: '/go' }]
+      const props = { ...block.defaultProps, buttonText: 'Go', buttonHref: '/go', text: 'Go', href: '/go', cards, puck: {} }
+      try {
+        for (const layout of [undefined, 'bottom', 'centered', 'split', 'stacked']) {
+          const { container, unmount } = render(block.render({ ...props, ...(layout ? { layout } : {}) }) as ReactElement)
+          for (const el of container.querySelectorAll<HTMLElement>('[style*="--color-btn-bg"]')) {
+            buttons++
+            if (!el.classList.contains('pk-btn')) missing.push(name)
+          }
+          unmount()
+        }
+      } catch {
+        // a block that needs props this generic render does not supply is covered by its own tests
+      }
+    }
+
+    expect(buttons).toBeGreaterThan(5)
+    expect(missing).toEqual([])
+  })
+
   it('keeps the inline colours, so the button looks right before any stylesheet loads', () => {
     const [a] = buttonsIn('CTA')
 
