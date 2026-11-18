@@ -37,6 +37,11 @@ animations" switch is off or the visitor prefers reduced motion.
 3. **Button hover** for builder buttons and the nav "Inquire" link: colour and a
    small lift, using the existing `--color-btn-hover`. Needs a class, because
    `btnStyle()` is inline and cannot express `:hover`.
+   Built (PR #173): every builder button wears `pk-btn` (via `btnProps()`) and a
+   rule injected once at the root changes the colour on hover and keyboard focus
+   (beats the inline background with `!important`); the 2px lift and 0.2s ease only
+   run with hover available, no reduced-motion, and animations on. The nav Inquire
+   link already had its own hover (fade to 75%), so it is left as is.
 4. **Photo cross-fade inside a frame** (the Rising Roots signature effect, found
    in the 2026-11-18 side-by-side; it replaces the earlier "photo zoom on hover"
    idea): Split Image + Text gets an Extra photos list, and the frame fades each
