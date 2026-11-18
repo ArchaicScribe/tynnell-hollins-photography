@@ -43,7 +43,10 @@ animations" switch is off or the visitor prefers reduced motion.
    photo in over the one beneath as it scrolls through the screen. PR #168.
    Photo hover zoom stays as it is on album cards.
 5. **Hero parallax**: a `photoMovement` choice on the Hero block, same levels as
-   other blocks.
+   other blocks. Built in PR #169: applies to the Bottom-aligned, Centered and
+   Split layouts; ignored when "Stays fixed" is chosen (already a parallax); new
+   heroes default to Gentle, saved heroes have no value and stay still until the
+   layouts are updated (item 6).
 6. **Turn parallax on in the six page layouts** (Gentle on large photos, none on
    small ones), and on the stacked SplitImageText photo. New pages get it; the
    live pages need a separate, backed-up data update, done only on Alex's yes.

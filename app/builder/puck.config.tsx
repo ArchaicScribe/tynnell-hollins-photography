@@ -707,6 +707,9 @@ export const config: Config = {
             { label: 'Stays fixed (parallax)', value: 'fixed' },
           ],
         },
+        // Step 5: the photo drifts as the page scrolls. Not applied on top of
+        // "Stays fixed", which is already its own parallax.
+        photoMovement: photoMovementField,
         align: alignField,
         buttonText: { type: 'text', label: 'Button text (optional)' },
         buttonHref: { type: 'text', label: 'Button link' },
@@ -726,6 +729,7 @@ export const config: Config = {
         imageUrl: '',
         height: '60vh',
         backgroundBehavior: 'scroll',
+        photoMovement: 'gentle',
         align: 'left',
         buttonText: '',
         buttonHref: '',
@@ -733,15 +737,17 @@ export const config: Config = {
         cornerRight: '',
         ...responsiveDefaults,
       },
-      render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, align, buttonText, buttonHref, cornerLeft, cornerRight, hideOnMobile, hideOnDesktop, navHero }: any) => {
+      render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, photoMovement, align, buttonText, buttonHref, cornerLeft, cornerRight, hideOnMobile, hideOnDesktop, navHero }: any) => {
         const cls = visClass(hideOnMobile, hideOnDesktop)
         if (layout === 'split') {
           const imageLeft = align !== 'center'
           const img = (
-            <div style={{ flex: '1 1 340px', minHeight: height, position: 'relative', background: C.accent }}>
+            <div style={{ flex: '1 1 340px', minHeight: height, position: 'relative', overflow: 'hidden', background: C.accent }}>
               {imageUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                <ParallaxLayer level={photoMovement}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                </ParallaxLayer>
               )}
             </div>
           )
@@ -767,8 +773,10 @@ export const config: Config = {
               backgroundBehavior === 'fixed' ? (
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                <ParallaxLayer level={photoMovement}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                </ParallaxLayer>
               )
             ) : (
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a1a,#0c0c0c)' }} />

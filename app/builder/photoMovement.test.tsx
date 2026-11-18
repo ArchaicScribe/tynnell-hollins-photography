@@ -58,7 +58,9 @@ describe('Photo movement control', () => {
   it('passes the setting through every block that offers it', () => {
     const missed: string[] = []
     let rendered = 0
-    for (const [name] of withMovement.filter(([n]) => n !== 'SplitImageText')) {
+    // Hero and Split Image + Text take `imageUrl`, not `backgroundImage`; their own
+    // tests (heroParallax.test.tsx, and the one below) cover them.
+    for (const [name] of withMovement.filter(([n]) => n !== 'SplitImageText' && n !== 'Hero')) {
       try {
         // Statement and Path Choice hide until filled by default; this test draws
         // blocks bare, so switch the hiding off to reach their markup.
