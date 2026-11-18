@@ -145,7 +145,7 @@ export function buildWedding(): Data {
           subtext: '',
           buttonText: '',
           buttonHref: '#inquire',
-          background: 'var(--color-bg-accent, #131313)',
+          background: 'transparent',
           spacing: 'spacious',
           hideUntilFilled: true,
         },
