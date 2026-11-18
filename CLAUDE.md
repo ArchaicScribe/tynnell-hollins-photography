@@ -128,7 +128,7 @@ Two confirmed rules for reliable production deploys:
 - Storage: the `pages` collection. Each row is one page: `title`, `slug` (unique), `content` (Puck document JSON), `published`, `displayOrder`, `showInNav`, `isHomepage`. Hidden from the admin nav; managed via `/builder`.
 - Editor: `/builder` (page list, create/rename/delete/duplicate/reorder, plus In-menu / Homepage toggles) and `/builder/[slug]` (the Puck editor, auth-gated). The editor lazy-loads Puck (`next/dynamic`, `ssr:false`).
 - Public render: `app/(site)/[...slug]/page.tsx` catch-all renders published pages via `@measured/puck/rsc`. It only fills slugs not owned by an explicit route; unknown or unpublished slugs `notFound()`. `app/(site)/page.tsx` renders an `isHomepage` page at `/`; `app/lib/nav.ts` merges `showInNav` pages into the site menu (Navbar + MobileMenu, fed from the `(site)` layout).
-- Block library + config: `app/builder/puck.config.tsx` (Hero, SectionHeading, Text, SplitImageText, Services, Testimonials, CTA, PhotoGallery, FullWidthImage, Spacer). Per-section Background/Spacing, per-device visibility (`.pk-hide-mobile` / `.pk-hide-desktop` injected at root), and a Photo Gallery "Taped" style. Image fields use `ImagePickerField` (pick from library or upload). Starter templates in `app/builder/templates.ts`.
+- Block library + config: `app/builder/puck.config.tsx` (Hero, SectionHeading, Text, SplitImageText, Services, Testimonials, CTA, PhotoGallery, FullWidthImage, Spacer, and the Rising Roots blocks Statement, StatsRow, PathChoice, Packages, Steps, FeatureColumns, InquiryForm, Accordion; the Rising Roots blocks carry a per-block "Hide until filled in" switch, see `app/builder/emptyRules.ts`). The Rising Roots inner pages (`/wedding-photography`, `/portraits`, About, My work, Contact) are pure layouts in `app/builder/*Layout.ts` registered in `pageLayouts.ts`, written to the `pages` table by `scripts/write-page-drafts.ts`; `scripts/publish-placeholder-pages.ts` published them with `[Placeholder]` words. Per-section Background/Spacing, per-device visibility (`.pk-hide-mobile` / `.pk-hide-desktop` injected at root), and a Photo Gallery "Taped" style. Image fields use `ImagePickerField` (pick from library or upload). Starter templates in `app/builder/templates.ts`.
 - Save vs publish: `POST /api/builder/save` honors a `publish` flag. Default false saves a DRAFT (leaves `published` untouched); true publishes. Other routes: `/api/builder/{delete,rename,duplicate,reorder,settings}`.
 - KEY GOTCHAS: Puck's preview iframe drops the session cookie on the save fetch (401), so MUST keep `iframe={{ enabled: false }}`. Render props are typed `any` with a file-level eslint-disable (Puck's generic Config carries no per-block prop types). Cross-root-layout links (`/builder` <-> `/admin`) cannot soft-navigate, use plain `<a>` with an eslint-disable.
 
@@ -267,6 +267,7 @@ TYN-338 is the reference example: the taped/polaroid photo-frame mat and tape-st
 | Route | Description |
 |---|---|
 | `/` | Home: Hero, PortfolioTeaser, AboutPreview, Testimonials, Contact |
+| `/wedding-photography`, `/portraits` | Builder pages (not promoted routes). `/portfolio/weddings`, `/portfolio/portraits` and `/portfolio/family` redirect to them permanently (`app/constants/redirects.mjs`) |
 | `/portfolio` | Category tiles (Portraits / Family / Weddings) linking to each subpage. Currently replaced by a promoted builder page. |
 | `/portfolio/[slug]` | Gallery hero + photo grid (photos in Tynnell's sorted order) |
 | `/about` | Headshot, bio, tagline, values |
@@ -286,7 +287,7 @@ TYN-338 is the reference example: the taped/polaroid photo-frame mat and tape-st
 
 | Route | Purpose |
 |---|---|
-| `POST /api/contact` | Contact form, Resend email, rate-limited |
+| `POST /api/contact` | Contact form, Resend email, rate-limited. Optional `kind` (`wedding` or `portrait`) is the shorter Inquiry Form: phone, contact preference and date become optional (a date that is sent is still checked), a wedding needs `partnerName`, a portrait needs a `sessionType` from `PORTRAIT_SESSIONS` (`app/lib/inquiry.ts`). No `kind` is the original form, unchanged. Honeypot, Turnstile and the rate limit apply to both |
 | `POST /api/subscribe` | Email Signup block: adds a Resend contact (segment via optional `RESEND_SEGMENT_ID`; needs a Resend key with contacts access, not sending-only). Freebie signups are emailed the SiteConfig `freebieUrl`, never a link from the request; 1 freebie per address per day (`freebieRecipientRatelimit`, fails closed). Turnstile via shared `app/lib/turnstile.ts` |
 | `POST /api/checkout` | Stripe Checkout session |
 | `POST /api/webhooks/stripe` | Handles `checkout.session.completed` |
