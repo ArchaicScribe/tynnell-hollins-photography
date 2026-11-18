@@ -79,6 +79,12 @@ animations" switch is off or the visitor prefers reduced motion.
    never set). Not staggered: the live Services and Testimonials blocks and album
    grids (their items are separate components).
 8. **Accordion** open and close eases open instead of snapping.
+   Built (PR #177): each answer is a one-row grid that grows from 0fr to 1fr on
+   `--motion-base` / `--ease` (no height is measured) while its text fades; a shut
+   answer is also `visibility:hidden` once collapsed, so keyboard and screen readers
+   skip it, and the button now has `aria-controls`. Answers now stay in the page
+   when shut. Reduced motion and the /design animations switch already cut every
+   transition globally (`globals.css`), so there is no extra switch.
 9. **Page-to-page fade** between routes: a short fade on the main content, with
    the nav and footer held still.
 10. **Distances tuned by eye** on the live site after 6 is on, with Alex's

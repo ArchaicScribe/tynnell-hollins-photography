@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { staggerItem } from './stagger'
 
 export interface AccordionItem {
@@ -14,17 +14,20 @@ const BODY_FONT = "var(--font-body, 'Roboto Mono', monospace)"
 // matching the common FAQ-accordion convention.
 export function AccordionBlock({ items }: { items: AccordionItem[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
+  const baseId = useId()
 
   return (
     <div style={{ maxWidth: '760px', margin: '0 auto' }}>
       {items.map((item, i) => {
         const isOpen = openIndex === i
+        const panelId = `${baseId}-panel-${i}`
         return (
           <div key={i} {...staggerItem(i + 1, { borderBottom: '1px solid rgba(155,154,154,0.18)' })}>
             <button
               type="button"
               onClick={() => setOpenIndex(isOpen ? null : i)}
               aria-expanded={isOpen}
+              aria-controls={panelId}
               style={{
                 width: '100%',
                 display: 'flex',
@@ -48,26 +51,49 @@ export function AccordionBlock({ items }: { items: AccordionItem[] }) {
                   flexShrink: 0,
                   color: 'var(--color-detail, #9B9A9A)',
                   transform: isOpen ? 'rotate(180deg)' : 'none',
-                  transition: 'transform 0.2s',
+                  transition: 'transform var(--motion-fast, 0.2s) var(--ease, ease-out)',
                 }}
               >
                 &#9660;
               </span>
             </button>
-            {isOpen && (
-              <p
+            {/* The answer eases open: a one-row grid grows from 0fr to 1fr, so no height
+                is measured. While shut it is also visibility:hidden (after the collapse
+                has finished) so keyboard and screen readers skip it. Reduced motion and
+                the /design animations switch cut the transition to nothing globally. */}
+            <div
+              id={panelId}
+              style={{
+                display: 'grid',
+                gridTemplateRows: isOpen ? '1fr' : '0fr',
+                visibility: isOpen ? 'visible' : 'hidden',
+                transition: `grid-template-rows var(--motion-base, 0.35s) var(--ease, ease-out), visibility 0s linear ${isOpen ? '0s' : 'var(--motion-base, 0.35s)'}`,
+              }}
+            >
+              <div
+                data-accordion-inner=""
                 style={{
-                  margin: '0 0 1.25rem',
-                  color: 'var(--color-body, #E6E1DE)',
-                  fontFamily: BODY_FONT,
-                  lineHeight: 1.7,
-                  fontSize: '0.92rem',
-                  whiteSpace: 'pre-wrap',
+                  overflow: 'hidden',
+                  minHeight: 0,
+                  opacity: isOpen ? 1 : 0,
+                  transition: 'opacity var(--motion-base, 0.35s) var(--ease, ease-out)',
                 }}
               >
-                {item.body}
-              </p>
-            )}
+                <p
+                  style={{
+                    margin: 0,
+                    paddingBottom: '1.25rem',
+                    color: 'var(--color-body, #E6E1DE)',
+                    fontFamily: BODY_FONT,
+                    lineHeight: 1.7,
+                    fontSize: '0.92rem',
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
+                  {item.body}
+                </p>
+              </div>
+            </div>
           </div>
         )
       })}
