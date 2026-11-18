@@ -5,18 +5,25 @@ import { FadeUp } from './FadeUp'
 
 // TYN-358: section content fades and lifts in once, when it first enters view.
 
+type Watcher = { cb: (entries: { isIntersecting: boolean }[]) => void; opts?: IntersectionObserverInit; disconnected: boolean }
+let watchers: Watcher[] = []
+// reveal through the main (inset) observer, the one that does the work on a real page
 let trigger: (isIntersecting: boolean) => void = () => {}
 
 function stubEnvironment({ reduce = false, animations }: { reduce?: boolean; animations?: string } = {}) {
+  watchers = []
   vi.stubGlobal('matchMedia', () => ({ matches: reduce }))
   vi.stubGlobal(
     'IntersectionObserver',
     class {
-      constructor(cb: (entries: { isIntersecting: boolean }[]) => void) {
-        trigger = (isIntersecting) => cb([{ isIntersecting }])
+      w: Watcher
+      constructor(cb: Watcher['cb'], opts?: IntersectionObserverInit) {
+        this.w = { cb, opts, disconnected: false }
+        watchers.push(this.w)
+        if (opts?.rootMargin) trigger = (isIntersecting) => cb([{ isIntersecting }])
       }
       observe() {}
-      disconnect() {}
+      disconnect() { this.w.disconnected = true }
     },
   )
   if (animations) document.documentElement.setAttribute('data-animations', animations)
@@ -109,6 +116,49 @@ describe('FadeUp', () => {
     act(() => fallback!.cb([{ isIntersecting: true }]))
 
     expect(wrapper().style.opacity).toBe('1')
+  })
+
+  it('stops watching with both observers once revealed, so the rise happens once', () => {
+    placeAt(2000)
+    render(<FadeUp enabled><p>Hello</p></FadeUp>)
+    expect(watchers).toHaveLength(2)
+
+    act(() => trigger(true))
+
+    expect(watchers.every((w) => w.disconnected)).toBe(true)
+  })
+
+  it('stops watching with both observers when it unmounts before revealing', () => {
+    placeAt(2000)
+    const { unmount } = render(<FadeUp enabled><p>Hello</p></FadeUp>)
+
+    unmount()
+
+    expect(watchers.every((w) => w.disconnected)).toBe(true)
+  })
+
+  it('shows content again after the control goes Off then On while the block is in view', () => {
+    placeAt(2000)
+    const { rerender } = render(<FadeUp enabled><p>Hello</p></FadeUp>)
+    expect(wrapper().style.opacity).toBe('0')
+    rerender(<FadeUp enabled={false}><p>Hello</p></FadeUp>)
+
+    placeAt(100) // scrolled into view in the editor, then switched back On
+    rerender(<FadeUp enabled><p>Hello</p></FadeUp>)
+
+    expect(wrapper().style.opacity).toBe('')
+  })
+
+  it('shows content again after the control goes On with reduced motion in force', () => {
+    placeAt(2000)
+    const { rerender } = render(<FadeUp enabled><p>Hello</p></FadeUp>)
+    expect(wrapper().style.opacity).toBe('0')
+    rerender(<FadeUp enabled={false}><p>Hello</p></FadeUp>)
+
+    vi.stubGlobal('matchMedia', () => ({ matches: true }))
+    rerender(<FadeUp enabled><p>Hello</p></FadeUp>)
+
+    expect(wrapper().style.opacity).toBe('')
   })
 
   it('stays revealed after it leaves the viewport', () => {
