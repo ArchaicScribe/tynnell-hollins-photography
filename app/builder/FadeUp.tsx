@@ -12,8 +12,15 @@ import { motionAllowed } from '@/app/hooks/parallax'
 
 type Phase = 'visible' | 'hidden' | 'revealed'
 
-const TRANSITION = 'opacity 0.9s ease, transform 0.9s ease'
-const SETTLE_MS = 1000 // a little longer than the 0.9s transition
+// Step 5: stronger than the first version (24px over 0.9s, easily missed), with
+// the easing the Rising Roots reveals use (ease-out). The reference has no
+// scroll-triggered text rise of its own, so this is deliberately a notch past it.
+const RISE_PX = 48
+const TRANSITION = 'opacity 1s ease-out, transform 1s ease-out'
+const SETTLE_MS = 1100 // a little longer than the 1s transition
+// Start once the block is inside the screen (its top 12% of the viewport above
+// the bottom edge) so the rise is seen, not spent off-screen at the very edge.
+const ROOT_MARGIN = '0px 0px -12% 0px'
 
 export function FadeUp({ enabled, children }: { enabled?: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -26,14 +33,20 @@ export function FadeUp({ enabled, children }: { enabled?: boolean; children: Rea
     if (el.getBoundingClientRect().top < window.innerHeight) return
 
     setPhase('hidden')
-    const observer = new IntersectionObserver((entries) => {
+    const reveal = (entries: IntersectionObserverEntry[]) => {
       if (entries.some((entry) => entry.isIntersecting)) {
         setPhase('revealed')
-        observer.disconnect()
+        observers.forEach((o) => o.disconnect())
       }
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
+    }
+    // A short block at the very bottom of the page can never scroll up to the
+    // inset line, so a second watcher reveals it once it is wholly on screen.
+    const observers = [
+      new IntersectionObserver(reveal, { rootMargin: ROOT_MARGIN }),
+      new IntersectionObserver(reveal, { threshold: 1 }),
+    ]
+    observers.forEach((o) => o.observe(el))
+    return () => observers.forEach((o) => o.disconnect())
   }, [enabled])
 
   // Once the fade has had time to finish, drop every inline style. A leftover
@@ -50,7 +63,7 @@ export function FadeUp({ enabled, children }: { enabled?: boolean; children: Rea
   const style: React.CSSProperties = !enabled
     ? {}
     : phase === 'hidden'
-      ? { opacity: 0, transform: 'translateY(24px)', transition: TRANSITION }
+      ? { opacity: 0, transform: `translateY(${RISE_PX}px)`, transition: TRANSITION }
       : phase === 'revealed'
         ? { opacity: 1, transform: 'translateY(0)', transition: TRANSITION }
         : {}

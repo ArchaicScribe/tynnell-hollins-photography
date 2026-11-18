@@ -58,12 +58,57 @@ describe('FadeUp', () => {
     placeAt(2000)
     render(<FadeUp enabled><p>Hello</p></FadeUp>)
     expect(wrapper().style.opacity).toBe('0')
-    expect(wrapper().style.transform).toBe('translateY(24px)')
+    expect(wrapper().style.transform).toBe('translateY(48px)')
 
     act(() => trigger(true))
 
     expect(wrapper().style.opacity).toBe('1')
     expect(wrapper().style.transform).toBe('translateY(0)')
+  })
+
+  it('rises a clearly visible distance, over a second, easing out like the Rising Roots reveals', () => {
+    placeAt(2000)
+    render(<FadeUp enabled><p>Hello</p></FadeUp>)
+
+    expect(wrapper().style.transition).toBe('opacity 1s ease-out, transform 1s ease-out')
+  })
+
+  it('starts the reveal once the content is inside the screen, not at its very edge where nobody sees it', () => {
+    placeAt(2000)
+    const margins: (string | undefined)[] = []
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(_cb: unknown, opts?: IntersectionObserverInit) { margins.push(opts?.rootMargin) }
+        observe() {}
+        disconnect() {}
+      },
+    )
+    render(<FadeUp enabled><p>Hello</p></FadeUp>)
+
+    expect(margins).toContain('0px 0px -12% 0px')
+  })
+
+  it('still reveals a short block at the very bottom of the page, which can never reach that inset line', () => {
+    placeAt(2000)
+    const made: { cb: (e: { isIntersecting: boolean }[]) => void; opts?: IntersectionObserverInit }[] = []
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(cb: (e: { isIntersecting: boolean }[]) => void, opts?: IntersectionObserverInit) { made.push({ cb, opts }) }
+        observe() {}
+        disconnect() {}
+      },
+    )
+    render(<FadeUp enabled><p>Hello</p></FadeUp>)
+    expect(wrapper().style.opacity).toBe('0')
+
+    // a second watcher with no inset fires once the whole block is on screen
+    const fallback = made.find((m) => !m.opts?.rootMargin)
+    expect(fallback?.opts?.threshold).toBe(1)
+    act(() => fallback!.cb([{ isIntersecting: true }]))
+
+    expect(wrapper().style.opacity).toBe('1')
   })
 
   it('stays revealed after it leaves the viewport', () => {
