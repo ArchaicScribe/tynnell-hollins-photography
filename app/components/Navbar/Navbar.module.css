@@ -23,12 +23,12 @@
      solid state (next rule) only has to override them in one place. */
   --nav-pad: 1.25rem;
   --nav-bg: transparent;
-  --nav-mark: rgba(255, 255, 255, 0.96);
-  --nav-sub: rgba(255, 255, 255, 0.62);
-  --nav-cta: rgba(255, 255, 255, 0.95);
+  --nav-mark: #ECE9E0;
+  --nav-sub: rgba(236, 233, 224, 0.62);
+  --nav-cta: #E4E2D8;
   --nav-link: #ECE9E0;
-  --nav-link-hover: #fff;
-  --nav-bar: rgba(255, 255, 255, 0.9);
+  --nav-link-hover: #F6F4EE;
+  --nav-bar: rgba(236, 233, 224, 0.9);
   --nav-hairline: 0.4;
 }
 

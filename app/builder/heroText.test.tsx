@@ -11,7 +11,9 @@ function drawHero(props: Record<string, unknown>) {
   return render(hero.render({ ...hero.defaultProps, ...props, puck: {} }) as ReactElement)
 }
 
-const isLight = (color: string) => /^rgba\(255, 255, 255/.test(color) || color === '#fff' || color === 'white'
+// Light means white or the Rising Roots cream (#ECE9E0), never a theme colour.
+const isLight = (color: string) =>
+  /^rgba\((255, 255, 255|236, 233, 224)/.test(color) || color === 'rgb(236, 233, 224)' || color === '#fff' || color === 'white'
 
 // The hero's overlay is always dark, so on the light Rising Roots theme the
 // theme heading and body colours (olive and near-black) vanished into the photo.
