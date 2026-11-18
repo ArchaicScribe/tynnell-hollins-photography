@@ -65,6 +65,13 @@ animations" switch is off or the visitor prefers reduced motion.
 
 ## Calls made (mine, not Alex's)
 
+- Text rise (2026-11-18, at Alex's request): measured on risingroots.showit.site, the
+  reference has no scroll-triggered text rise at all (its text is static; motion is
+  photos, the hero fade and the nav). Alex asked for a stronger rise and to follow
+  the reference "if not better", so ours is deliberately a notch past it: 48px (was
+  24px) over 1s with ease-out (the reference's easing), starting once the block is
+  12% inside the screen, plus a fallback watcher so a short last block still shows.
+
 - Hover and stagger have no per-block control. The "Enable animations" switch is
   the control, which keeps the builder from growing another field per effect.
 - Parallax distances stay at gentle 8, medium 15, strong 25 percent until tuned.
