@@ -66,7 +66,7 @@ export function AccordionBlock({ items }: { items: AccordionItem[] }) {
               style={{
                 display: 'grid',
                 gridTemplateRows: isOpen ? '1fr' : '0fr',
-                visibility: isOpen ? 'visible' : 'hidden',
+                visibility: isOpen ? 'inherit' : 'hidden',
                 transition: `grid-template-rows var(--motion-base, 0.35s) var(--ease, ease-out), visibility 0s linear ${isOpen ? '0s' : 'var(--motion-base, 0.35s)'}`,
               }}
             >

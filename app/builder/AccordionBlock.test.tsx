@@ -67,8 +67,20 @@ describe('Accordion easing', () => {
 
     expect(shut.style.visibility).toBe('hidden')
     expect(shut.style.transition).toContain('visibility 0s linear var(--motion-base, 0.35s)')
-    expect(open.style.visibility).toBe('visible')
+    expect(open.style.visibility).toBe('inherit') // inherit, not visible, so a hidden ancestor still wins
     expect(open.style.transition).toContain('visibility 0s linear 0s')
+  })
+
+  it('clips the answer so a 0fr row really collapses, and keeps the spacing inside the clip', () => {
+    render(<AccordionBlock items={items} />)
+
+    const inner = screen.getByText('Second answer').closest('[data-accordion-inner]') as HTMLElement
+    const para = screen.getByText('Second answer')
+
+    expect(inner.style.overflow).toBe('hidden')
+    // spacing is padding on the paragraph (inside the clip), never a margin that would leave a gap under a shut row
+    expect(para.style.margin).toMatch(/^0(px)?$/)
+    expect(para.style.paddingBottom).toBe('1.25rem')
   })
 
   it('fades the answer with the height', () => {
