@@ -11,9 +11,8 @@ export const navLinks: NavLink[] = [
     label: 'Portfolio',
     href: '/portfolio',
     children: [
-      { label: 'Portraits', href: '/portfolio/portraits' },
-      { label: 'Family', href: '/portfolio/family' },
-      { label: 'Weddings', href: '/portfolio/weddings' },
+      { label: 'Portraits', href: '/portraits' },
+      { label: 'Weddings', href: '/wedding-photography' },
     ],
   },
   { label: 'Services', href: '/services' },
@@ -30,10 +29,10 @@ export const navRow: { left: NavLink[]; right: NavLink[]; cta: NavLink } = {
   left: [
     { label: 'Home', href: '/' },
     { label: 'About me', href: '/about' },
-    { label: 'Wedding photography', href: '/portfolio/weddings' },
+    { label: 'Wedding photography', href: '/wedding-photography' },
   ],
   right: [
-    { label: 'Portraits', href: '/portfolio/portraits' },
+    { label: 'Portraits', href: '/portraits' },
     { label: 'My work', href: '/portfolio' },
   ],
   cta: { label: 'Inquire now', href: '/contact' },
