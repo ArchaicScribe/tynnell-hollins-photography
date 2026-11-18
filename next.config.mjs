@@ -1,4 +1,5 @@
 import { withPayload } from '@payloadcms/next/withPayload'
+import { legacyRedirects } from './app/constants/redirects.mjs'
 
 // A per-request nonce would let script-src drop 'unsafe-inline', but that
 // requires every root layout to call headers() to read it - which forces
@@ -85,6 +86,7 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      ...legacyRedirects,
       {
         source: '/admin/collections/galleries',
         destination: '/gallery-editor',

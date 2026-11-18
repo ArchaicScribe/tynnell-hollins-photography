@@ -109,7 +109,7 @@ describe('getFooterData, builder links', () => {
     givenDatabase({})
     builderLinksMock.mockResolvedValue([
       { label: 'Services again', href: '/services' },
-      { label: 'Weddings again', href: '/portfolio/weddings' },
+      { label: 'Weddings again', href: '/wedding-photography' },
       { label: 'Pricing', href: '/pricing' },
     ])
 

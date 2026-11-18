@@ -9,12 +9,12 @@ const flat = (links: NavLink[]): NavLink[] => links.flatMap(l => [l, ...(l.child
 describe('navRow', () => {
   it('has Home, About me and Wedding photography on the left', () => {
     expect(navRow.left.map(l => l.label)).toEqual(['Home', 'About me', 'Wedding photography'])
-    expect(navRow.left.map(l => l.href)).toEqual(['/', '/about', '/portfolio/weddings'])
+    expect(navRow.left.map(l => l.href)).toEqual(['/', '/about', '/wedding-photography'])
   })
 
   it('has Portraits and My work on the right', () => {
     expect(navRow.right.map(l => l.label)).toEqual(['Portraits', 'My work'])
-    expect(navRow.right.map(l => l.href)).toEqual(['/portfolio/portraits', '/portfolio'])
+    expect(navRow.right.map(l => l.href)).toEqual(['/portraits', '/portfolio'])
   })
 
   it('has an Inquire now call to action to /contact', () => {
@@ -30,6 +30,14 @@ describe('navRow', () => {
 })
 
 describe('navLinks', () => {
+  it('lists Portraits and Weddings under Portfolio at their new pages, with no Family page', () => {
+    const portfolio = navLinks.find(l => l.label === 'Portfolio')!
+    expect(portfolio.children).toEqual([
+      { label: 'Portraits', href: '/portraits' },
+      { label: 'Weddings', href: '/wedding-photography' },
+    ])
+  })
+
   it('calls the about page "About me", not "About"', () => {
     const labels = navLinks.map(l => l.label)
     expect(labels).toContain('About me')

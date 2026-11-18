@@ -70,7 +70,7 @@ describe('Navbar row', () => {
       .getAllByRole('link')
       .filter(a => rowLabels.includes(a.textContent ?? ''))
     expect(row.map(a => a.textContent)).toEqual(rowLabels)
-    expect(row.map(a => a.getAttribute('href'))).toEqual(['/', '/about', '/portfolio/weddings', '/portfolio/portraits', '/portfolio'])
+    expect(row.map(a => a.getAttribute('href'))).toEqual(['/', '/about', '/wedding-photography', '/portraits', '/portfolio'])
   })
 
   it('renders "Inquire now" linking to /contact', () => {
