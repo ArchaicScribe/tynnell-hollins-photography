@@ -28,9 +28,19 @@ export function FadeUp({ enabled, children }: { enabled?: boolean; children: Rea
 
   useEffect(() => {
     const el = ref.current
-    if (!enabled || !el || !motionAllowed(window, document)) return
-    if (typeof IntersectionObserver === 'undefined') return
-    if (el.getBoundingClientRect().top < window.innerHeight) return
+    // Every way out below shows the content: a block hidden earlier (the editor
+    // switched the control Off, then On again while it was in view) would
+    // otherwise keep its old 'hidden' phase with no observer left to reveal it.
+    if (
+      !enabled ||
+      !el ||
+      !motionAllowed(window, document) ||
+      typeof IntersectionObserver === 'undefined' ||
+      el.getBoundingClientRect().top < window.innerHeight
+    ) {
+      setPhase('visible')
+      return
+    }
 
     setPhase('hidden')
     const reveal = (entries: IntersectionObserverEntry[]) => {
