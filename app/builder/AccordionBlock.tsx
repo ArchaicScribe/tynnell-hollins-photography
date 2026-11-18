@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { staggerItem } from './stagger'
 
 export interface AccordionItem {
   title: string
@@ -19,7 +20,7 @@ export function AccordionBlock({ items }: { items: AccordionItem[] }) {
       {items.map((item, i) => {
         const isOpen = openIndex === i
         return (
-          <div key={i} style={{ borderBottom: '1px solid rgba(155,154,154,0.18)' }}>
+          <div key={i} {...staggerItem(i + 1, { borderBottom: '1px solid rgba(155,154,154,0.18)' })}>
             <button
               type="button"
               onClick={() => setOpenIndex(isOpen ? null : i)}

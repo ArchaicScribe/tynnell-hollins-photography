@@ -18,11 +18,18 @@ type Phase = 'visible' | 'hidden' | 'revealed'
 const RISE_PX = 48
 const TRANSITION = 'opacity var(--motion-slow, 1s) var(--ease, ease-out), transform var(--motion-slow, 1s) var(--ease, ease-out)'
 const SETTLE_MS = 1100 // a little longer than --motion-slow (1s)
+// Staggered items start 120ms apart, up to 7 steps (the CSS caps the index), so
+// the section must stay marked until the last of them has finished.
+const STAGGER_TAIL_MS = 7 * 120
 // Start once the block is inside the screen (its top 12% of the viewport above
 // the bottom edge) so the rise is seen, not spent off-screen at the very edge.
 const ROOT_MARGIN = '0px 0px -12% 0px'
 
-export function FadeUp({ enabled, children }: { enabled?: boolean; children: ReactNode }) {
+// With `stagger` the wrapper itself never fades: it only publishes its phase as
+// data-fade-phase, and items marked pk-stagger (see STAGGER_CSS in puck.config)
+// rise one after another, each delayed by its own --i. Without it the whole
+// block rises together, as before.
+export function FadeUp({ enabled, stagger, children }: { enabled?: boolean; stagger?: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   const [phase, setPhase] = useState<Phase>('visible')
 
@@ -65,12 +72,12 @@ export function FadeUp({ enabled, children }: { enabled?: boolean; children: Rea
   // full-screen overlay to the size of the block.
   useEffect(() => {
     if (phase !== 'revealed') return
-    const id = setTimeout(() => setPhase('visible'), SETTLE_MS)
+    const id = setTimeout(() => setPhase('visible'), stagger ? SETTLE_MS + STAGGER_TAIL_MS : SETTLE_MS)
     return () => clearTimeout(id)
-  }, [phase])
+  }, [phase, stagger])
 
   // Switched off after mount (the editor toggle): show everything at once.
-  const style: React.CSSProperties = !enabled
+  const style: React.CSSProperties = !enabled || stagger
     ? {}
     : phase === 'hidden'
       ? { opacity: 0, transform: `translateY(${RISE_PX}px)`, transition: TRANSITION }
@@ -78,5 +85,6 @@ export function FadeUp({ enabled, children }: { enabled?: boolean; children: Rea
         ? { opacity: 1, transform: 'translateY(0)', transition: TRANSITION }
         : {}
 
-  return <div ref={ref} style={style} data-fade-up={enabled ? '' : undefined}>{children}</div>
+  const staggerPhase = enabled && stagger && phase !== 'visible' ? phase : undefined
+  return <div ref={ref} style={style} data-fade-up={enabled ? '' : undefined} data-fade-phase={staggerPhase}>{children}</div>
 }

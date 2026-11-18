@@ -19,6 +19,7 @@ import { ScrollFadeImage } from './ScrollFadeImage'
 import { ParallaxLayer } from './ParallaxLayer'
 import { ScrollCrossfade } from './ScrollCrossfade'
 import { FadeUp } from './FadeUp'
+import { STAGGER_CSS, staggerItem } from './stagger'
 import type { PhotoMovement } from '@/app/hooks/parallax'
 import { SpecialtiesRevealBlock } from './SpecialtiesRevealBlock'
 import { PhotoCarouselBlock } from './PhotoCarouselBlock'
@@ -273,7 +274,7 @@ const responsiveDefaults = { hideOnMobile: false, hideOnDesktop: false }
 // so every content block has consistent, Pixieset-style design options.
 // backgroundImage/backgroundFade (TYN-305) layer a user-picked, dimmed photo
 // behind the content instead of/under the flat background color.
-function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, className, children }: { background?: string; backgroundImage?: string; backgroundFade?: string; scrollFadeIn?: boolean; scrollOverlap?: boolean; photoMovement?: PhotoMovement; textFadeUp?: boolean; spacing?: string; className?: string; children?: ReactNode }) {
+function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, stagger, spacing, className, children }: { background?: string; stagger?: boolean; backgroundImage?: string; backgroundFade?: string; scrollFadeIn?: boolean; scrollOverlap?: boolean; photoMovement?: PhotoMovement; textFadeUp?: boolean; spacing?: string; className?: string; children?: ReactNode }) {
   const padY = SPACING[spacing ?? 'normal'] ?? SPACING.normal
   const bg = background && background !== 'transparent' ? background : undefined
   const fade = backgroundFade ? Number(backgroundFade) : 0.55
@@ -302,7 +303,7 @@ function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, sc
       )}
       {/* TYN-358: blocks saved before the control existed have no value, which
           counts as on; only an explicit "Off" switches the fade-up off. */}
-      <div style={{ position: 'relative', padding: `${padY} ${PAD_X}`, ...bandText(background) }}><FadeUp enabled={textFadeUp !== false}>{children}</FadeUp></div>
+      <div style={{ position: 'relative', padding: `${padY} ${PAD_X}`, ...bandText(background) }}><FadeUp enabled={textFadeUp !== false} stagger={stagger}>{children}</FadeUp></div>
     </section>
   )
 }
@@ -725,7 +726,7 @@ export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
       <div style={{ background: C.bg, color: C.body, minHeight: '100%', fontFamily: BODY_FONT }}>
-        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + BUTTON_CSS + EDITORIAL_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + BUTTON_CSS + STAGGER_CSS + EDITORIAL_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
         {children}
       </div>
     ),
@@ -1086,11 +1087,11 @@ export const config: Config = {
         const stats = (items ?? []).filter((item: any) => item?.value?.trim())
         return (
           <GateEmpty hide={hideUntilFilled} empty={statsIsEmpty({ items })} editing={puck?.isEditing} label="stats">
-          <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-            {heading && <h2 style={{ ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), textAlign: align === 'center' ? 'center' : 'left', marginBottom: '2rem' }}>{heading}</h2>}
+          <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+            {heading && <h2 {...staggerItem(0, { ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), textAlign: align === 'center' ? 'center' : 'left', marginBottom: '2rem' })}>{heading}</h2>}
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 5vw, 4.5rem)', justifyContent: align === 'center' ? 'center' : 'flex-start' }}>
               {stats.map((item: any, i: number) => (
-                <li key={i} style={{ textAlign: align, minWidth: '8rem' }}>
+                <li key={i} {...staggerItem(i + 1, { textAlign: align, minWidth: '8rem' })}>
                   <p style={headingStyle('clamp(2.25rem, 5vw, 3.5rem)')}>{item.value}</p>
                   {item.label && <p style={{ ...eyebrowStyle, margin: '0.6rem 0 0' }}>{item.label}</p>}
                 </li>
@@ -1335,11 +1336,11 @@ export const config: Config = {
         ...responsiveDefaults,
       },
       render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+        <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          {heading && <h2 {...staggerItem(0, { ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' })}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
-              <div key={i} style={{ background: C.accent, border: `1px solid ${C.border}`, borderRadius: '4px', padding: '1.75rem' }}>
+              <div key={i} {...staggerItem(i + 1, { background: C.accent, border: `1px solid ${C.border}`, borderRadius: '4px', padding: '1.75rem' })}>
                 <h3 style={{ fontFamily: HEADING_FONT, color: C.heading, fontSize: '1.15rem', margin: 0 }}>{it.name}</h3>
                 {it.price && <p style={{ color: C.detail, fontSize: '1.4rem', fontFamily: HEADING_FONT, margin: '0.5rem 0 0.85rem' }}>{it.price}</p>}
                 {it.description && <p style={{ color: C.body, lineHeight: 1.7, fontSize: '0.9rem', margin: 0 }}>{it.description}</p>}
@@ -1456,11 +1457,11 @@ export const config: Config = {
         ...responsiveDefaults,
       },
       render: ({ heading, items, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+        <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          {heading && <h2 {...staggerItem(0, { ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' })}>{heading}</h2>}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', maxWidth: '1100px', margin: '0 auto' }}>
             {(items ?? []).map((it: any, i: number) => (
-              <figure key={i} style={{ margin: 0, padding: '1.75rem', border: `1px solid ${C.border}`, borderRadius: '4px' }}>
+              <figure key={i} {...staggerItem(i + 1, { margin: 0, padding: '1.75rem', border: `1px solid ${C.border}`, borderRadius: '4px' })}>
                 <blockquote style={{ margin: 0, color: C.body, fontStyle: 'italic', lineHeight: 1.7 }}>&ldquo;{it.quote}&rdquo;</blockquote>
                 {it.name && <figcaption style={{ marginTop: '1rem', color: C.detail, fontSize: '0.8rem', letterSpacing: '0.06em' }}><span aria-hidden="true">- </span>{it.name}</figcaption>}
               </figure>
@@ -1549,8 +1550,8 @@ export const config: Config = {
       },
       render: ({ heading, items, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <GateEmpty hide={hideUntilFilled} empty={faqIsEmpty({ items })} editing={puck?.isEditing} label="questions">
-        <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-          {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2rem' }}>{heading}</h2>}
+        <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+          {heading && <h2 {...staggerItem(0, { ...headingStyle(), textAlign: 'center', marginBottom: '2rem' })}>{heading}</h2>}
           <AccordionBlock items={items ?? []} />
         </Section>
         </GateEmpty>
@@ -1660,11 +1661,11 @@ export const config: Config = {
         const complete = (cards ?? []).filter((c: any) => c?.label?.trim() && c?.href?.trim())
         return (
           <GateEmpty hide={hideUntilFilled} empty={pathChoiceIsEmpty({ cards })} editing={puck?.isEditing} label="choice cards">
-            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+            <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 {...staggerItem(0, { ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' })}>{heading}</h2>}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 3vw, 2.5rem)', maxWidth: '1000px', margin: '0 auto' }}>
                 {complete.map((c: any, i: number) => (
-                  <a key={i} href={c.href} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                  <a key={i} href={c.href} {...staggerItem(i + 1, { display: 'block', textDecoration: 'none', color: 'inherit' })}>
                     <div style={{ aspectRatio: '4 / 5', overflow: 'hidden', background: C.accent }}>
                       {c.imageUrl && (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -1725,13 +1726,13 @@ export const config: Config = {
         const complete = (cards ?? []).filter((c: any) => c?.name?.trim() && c?.price?.trim())
         return (
           <GateEmpty hide={hideUntilFilled} empty={packagesIsEmpty({ cards })} editing={puck?.isEditing} label="packages">
-            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+            <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 {...staggerItem(0, { ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' })}>{heading}</h2>}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 3vw, 2rem)', maxWidth: '1100px', margin: '0 auto' }}>
                 {complete.map((c: any, i: number) => {
                   const features = linesOf(c.features)
                   return (
-                    <div key={i} style={{ display: 'flex', flexDirection: 'column', padding: 'clamp(1.5rem, 3vw, 2.25rem)', border: `1px solid ${C.border}`, background: C.accent }}>
+                    <div key={i} {...staggerItem(i + 1, { display: 'flex', flexDirection: 'column', padding: 'clamp(1.5rem, 3vw, 2.25rem)', border: `1px solid ${C.border}`, background: C.accent })}>
                       <h3 style={headingStyle('clamp(1.35rem, 2.4vw, 1.9rem)')}>{c.name}</h3>
                       <p style={{ margin: '0.5rem 0 0', color: C.detail, fontFamily: BODY_FONT, letterSpacing: '0.04em' }}>{c.price}</p>
                       {c.description?.trim() && <p style={{ margin: '1rem 0 0', color: C.body, whiteSpace: 'pre-wrap' }}>{c.description}</p>}
@@ -1793,11 +1794,11 @@ export const config: Config = {
         const filled = (steps ?? []).filter((s: any) => s?.title?.trim())
         return (
           <GateEmpty hide={hideUntilFilled} empty={stepsIsEmpty({ steps })} editing={puck?.isEditing} label="booking steps">
-            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+            <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 {...staggerItem(0, { ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' })}>{heading}</h2>}
               <ol style={{ listStyle: 'none', margin: '0 auto', padding: 0, maxWidth: '760px', display: 'grid', gap: 'clamp(1.25rem, 3vw, 2rem)' }}>
                 {filled.map((s: any, i: number) => (
-                  <li key={i} style={{ display: 'flex', gap: 'clamp(1rem, 3vw, 2rem)', alignItems: 'baseline' }}>
+                  <li key={i} {...staggerItem(i + 1, { display: 'flex', gap: 'clamp(1rem, 3vw, 2rem)', alignItems: 'baseline' })}>
                     <span data-step-number="" style={{ ...headingStyle('clamp(1.75rem, 3.5vw, 2.5rem)'), color: C.detail, minWidth: '3rem' }}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
@@ -1852,11 +1853,11 @@ export const config: Config = {
         const filled = (columns ?? []).filter((c: any) => c?.title?.trim() && linesOf(c.lines).length > 0)
         return (
           <GateEmpty hide={hideUntilFilled} empty={columnsIsEmpty({ columns })} editing={puck?.isEditing} label="columns">
-            <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-              {heading && <h2 style={{ ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' }}>{heading}</h2>}
+            <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
+              {heading && <h2 {...staggerItem(0, { ...headingStyle(), textAlign: 'center', marginBottom: '2.5rem' })}>{heading}</h2>}
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${filled.length === 1 ? '280px' : '220px'}, 1fr))`, gap: 'clamp(1.5rem, 3vw, 2.5rem)', maxWidth: filled.length === 1 ? '640px' : '1100px', margin: '0 auto' }}>
                 {filled.map((c: any, i: number) => (
-                  <div key={i}>
+                  <div key={i} {...staggerItem(i + 1)}>
                     <h3 style={headingStyle('clamp(1.2rem, 2.2vw, 1.6rem)')}>{c.title}</h3>
                     <ul style={{ margin: '0.85rem 0 0', paddingLeft: '1.1rem', color: C.body }}>
                       {linesOf(c.lines).map((l, j) => <li key={j} style={{ marginBottom: '0.4rem' }}>{l}</li>)}
