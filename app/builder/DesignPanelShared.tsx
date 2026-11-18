@@ -85,7 +85,7 @@ export const COLOR_FIELDS: {
   { key: 'colorBtnHover', label: 'Button hover color' },
   { key: 'colorBgCard', label: 'Card background color' },
   { key: 'colorBgHover', label: 'Hover background color' },
-  { key: 'colorBgOverlay', label: 'Overlay box color (sits on photos)' },
+  { key: 'colorBgOverlay', label: 'Overlay color (boxes on photos, and the wash behind hero text)' },
   { key: 'colorBorder', label: 'Border color' },
   { key: 'colorBorderSubtle', label: 'Subtle border color' },
   { key: 'colorBorderSolid', label: 'Solid border color' },

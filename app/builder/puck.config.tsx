@@ -65,26 +65,51 @@ const PAD_X = 'clamp(1.25rem, 5vw, 5rem)'
 const BAND_OLIVE = 'var(--color-btn-bg, #6F6950)'
 const BAND_DEEP = 'var(--color-btn-hover, #2E2A19)'
 const CREAM = 'var(--color-btn-text, #ECE9E0)'
-const isBand = (background?: string) => background === BAND_OLIVE || background === BAND_DEEP
-// On the element that carries the band background.
+// Detected by the theme colour's name, not the whole stored string, so a page
+// saved before the fallback hex changed still counts as a band.
+const isBand = (background?: string) => typeof background === 'string' && /^var\(--color-btn-(bg|hover)\b/.test(background)
+// On the element that carries the band background. --color-bg becomes the band
+// colour (what a button label should be), and --band-cream pins the cream here,
+// before the wrapper below re-points the button variables, so nothing resolves
+// in a circle.
 function bandGround(background?: string): React.CSSProperties {
-  return isBand(background) ? ({ '--color-bg': background } as React.CSSProperties) : {}
+  return isBand(background) ? ({ '--color-bg': background, '--band-cream': CREAM } as React.CSSProperties) : {}
 }
-// On the element that wraps the section's words and button.
+// On the element that wraps the section's words and button. Besides the words,
+// the button flips (cream button, band-coloured label: the Contact and Inquiry
+// forms, Live Services and Email Signup label theirs with --color-btn-text) and
+// card and field surfaces darken so cream words stay readable on them.
 function bandText(background?: string): React.CSSProperties {
   if (!isBand(background)) return {}
   return {
-    '--color-heading': CREAM,
-    '--color-body': CREAM,
-    '--color-detail': `color-mix(in srgb, ${CREAM} 78%, transparent)`,
-    '--color-btn-bg': CREAM,
-    '--color-btn-hover': `color-mix(in srgb, ${CREAM} 85%, white)`,
+    '--color-heading': 'var(--band-cream)',
+    '--color-body': 'var(--band-cream)',
+    '--color-detail': 'color-mix(in srgb, var(--band-cream) 78%, transparent)',
+    '--color-btn-bg': 'var(--band-cream)',
+    '--color-btn-text': 'var(--color-bg)',
+    '--color-btn-hover': 'color-mix(in srgb, var(--band-cream) 85%, white)',
+    '--color-bg-accent': 'color-mix(in srgb, var(--color-bg) 85%, black)',
   } as React.CSSProperties
 }
 // The dark wash over a photograph: the palette overlay colour (deep olive on
 // the live theme) scaled to the alpha the design wants, never neutral black.
-const scrim = (alpha: number) =>
-  `color-mix(in srgb, var(--color-bg-overlay, rgba(12,12,12,0.76)) ${Math.round((alpha / 0.76) * 100)}%, transparent)`
+// The percentage is capped at 100, and every wash carries a plain rgba fallback
+// underneath for browsers without color-mix (a declaration they cannot parse is
+// dropped, which would otherwise remove the wash altogether). Note the alpha
+// follows the overlay colour's own alpha, set in /design.
+const SCRIM_FALLBACK = '46,42,25'
+const scrimColor = (alpha: number) =>
+  `color-mix(in srgb, var(--color-bg-overlay, rgba(${SCRIM_FALLBACK},0.76)) ${Math.min(100, Math.round((alpha / 0.76) * 100))}%, transparent)`
+const plainScrim = (alpha: number) => `rgba(${SCRIM_FALLBACK},${Math.min(1, alpha)})`
+function scrimStyle(alpha: number): React.CSSProperties {
+  return { background: plainScrim(alpha), backgroundImage: `linear-gradient(${scrimColor(alpha)}, ${scrimColor(alpha)})` }
+}
+function scrimGradient(from: number, to: number): React.CSSProperties {
+  return {
+    background: `linear-gradient(to top, ${plainScrim(from)}, ${plainScrim(to)})`,
+    backgroundImage: `linear-gradient(to top, ${scrimColor(from)}, ${scrimColor(to)})`,
+  }
+}
 
 // Vertical spacing presets for the shared Section wrapper.
 const SPACING: Record<string, string> = {
@@ -272,7 +297,7 @@ function Section({ background, backgroundImage, backgroundFade, scrollFadeIn, sc
               <img src={backgroundImage} alt="" style={bgImageStyle} />
             )}
           </ParallaxLayer>
-          <div style={{ position: 'absolute', inset: 0, background: scrim(fade) }} />
+          <div style={{ position: 'absolute', inset: 0, ...scrimStyle(fade) }} />
         </>
       )}
       {/* TYN-358: blocks saved before the control existed have no value, which
@@ -610,7 +635,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
           ) : (
             <div style={{ position: 'absolute', inset: 0, background: C.accent }} />
           )}
-          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${scrim(0.75)}, ${scrim(0.1)})` }} />
+          <div style={{ position: 'absolute', inset: 0, ...scrimGradient(0.75, 0.1) }} />
           <div style={{ position: 'relative', padding: 'clamp(2rem,4vw,3.5rem)', maxWidth: '60ch' }}>
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
             <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
@@ -836,7 +861,7 @@ export const config: Config = {
             ) : (
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a1a,#0c0c0c)' }} />
             )}
-            <div style={{ position: 'absolute', inset: 0, background: centered ? scrim(0.45) : `linear-gradient(to top, ${scrim(0.7)}, ${scrim(0.1)})` }} />
+            <div style={{ position: 'absolute', inset: 0, ...(centered ? scrimStyle(0.45) : scrimGradient(0.7, 0.1)) }} />
             <div style={{ position: 'relative', padding: 'clamp(2rem,5vw,4rem) clamp(1.25rem,5vw,5rem)', maxWidth: centered ? '70ch' : '60ch', textAlign: centered ? 'center' : align }}>
               {eyebrow && <p style={{ ...eyebrowStyle, color: HERO_TEXT_SOFT }}>{eyebrow}</p>}
               {heading?.trim() && <h1 style={{ ...headingStyle('clamp(2rem,5vw,3.75rem)'), color: HERO_TEXT }}>{heading}</h1>}

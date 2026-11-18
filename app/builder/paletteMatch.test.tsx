@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { readFileSync } from 'fs'
 import path from 'path'
 import type { ReactElement } from 'react'
@@ -78,11 +79,11 @@ describe('olive and deep olive bands', () => {
     const wrap = container.querySelector('h2')!.parentElement!.closest('[style*="--color-heading"]') as HTMLElement
 
     expect(wrap).not.toBeNull()
-    expect(wrap.style.getPropertyValue('--color-heading')).toContain('--color-btn-text')
-    expect(wrap.style.getPropertyValue('--color-body')).toContain('--color-btn-text')
+    expect(wrap.style.getPropertyValue('--color-heading')).toContain('--band-cream')
+    expect(wrap.style.getPropertyValue('--color-body')).toContain('--band-cream')
     // the button turns cream; its label is the band colour, set on the section
     // itself so it resolves before the button variables are overridden
-    expect(wrap.style.getPropertyValue('--color-btn-bg')).toContain('--color-btn-text')
+    expect(wrap.style.getPropertyValue('--color-btn-bg')).toContain('--band-cream')
     expect((container.querySelector('section') as HTMLElement).style.getPropertyValue('--color-bg')).toBe(band(label))
   })
 
@@ -97,6 +98,86 @@ describe('olive and deep olive bands', () => {
     const wrap = container.querySelector('h2')!.parentElement!.closest('[style*="--color-heading"]')
 
     expect(wrap).not.toBeNull()
+  })
+})
+
+describe('inside a band (review findings)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const options = components.CTA.fields.background.options as any[]
+  const wrapFor = (name: string, props: Record<string, unknown>) => {
+    const { container } = draw(name, props)
+    return container.querySelector('h2')!.parentElement!.closest('[style*="--color-heading"]') as HTMLElement
+  }
+  const olive = options.find((o) => o.label === 'Olive band').value as string
+
+  it('pins the cream on the section so the wrapper can safely re-point the button label', () => {
+    const { container } = draw('CTA', { heading: 'x', background: olive })
+
+    expect((container.querySelector('section') as HTMLElement).style.getPropertyValue('--band-cream')).toContain('--color-btn-text')
+  })
+
+  it('keeps a visible label on every embedded button: cream button, band-coloured label', () => {
+    const wrap = wrapFor('CTA', { heading: 'x', background: olive })
+
+    // Forms, Live Services and Email Signup label their button with --color-btn-text.
+    expect(wrap.style.getPropertyValue('--color-btn-bg')).toContain('--band-cream')
+    expect(wrap.style.getPropertyValue('--color-btn-text')).toContain('--color-bg')
+    expect(wrap.style.getPropertyValue('--color-btn-bg')).not.toBe(wrap.style.getPropertyValue('--color-btn-text'))
+  })
+
+  it('darkens card and field surfaces so cream words stay readable on them', () => {
+    const wrap = wrapFor('CTA', { heading: 'x', background: olive })
+
+    expect(wrap.style.getPropertyValue('--color-bg-accent')).toMatch(/color-mix\(in srgb, var\(--color-bg\) \d+%, black\)/)
+  })
+
+  it('is detected by theme colour, so a changed fallback hex on a saved page still counts', () => {
+    const savedWithOldFallback = 'var(--color-btn-bg, #123456)'
+    const wrap = wrapFor('CTA', { heading: 'x', background: savedWithOldFallback })
+
+    expect(wrap).not.toBeNull()
+  })
+
+  it('pins the stored option values, so changing them is a deliberate act', () => {
+    expect(options.find((o) => o.label === 'Olive band').value).toBe('var(--color-btn-bg, #6F6950)')
+    expect(options.find((o) => o.label === 'Deep olive band').value).toBe('var(--color-btn-hover, #2E2A19)')
+  })
+
+  it.each([
+    ['stacked layout', { layout: 'stacked', imageUrl: '/a.jpg' }],
+    ['hide-until-filled with no photo', { layout: 'split', imageUrl: '', hideUntilFilled: true }],
+  ])('Split Image + Text, %s', (_label, extra) => {
+    const wrap = wrapFor('SplitImageText', { heading: 'Hi', body: 'Words', background: olive, ...extra })
+
+    expect(wrap).not.toBeNull()
+  })
+})
+
+describe('scrims survive an old browser and a strong overlay colour', () => {
+  // Server-rendered markup is what an old browser parses: the plain colour first,
+  // then the color-mix declaration it will drop as invalid. (jsdom accepts both and
+  // keeps only the later one, so these read the server output.)
+  const markup = (name: string, props: Record<string, unknown>) =>
+    renderToStaticMarkup(components[name].render({ ...components[name].defaultProps, ...props, puck: {} }) as ReactElement)
+
+  it('a flat section scrim carries a plain rgba fallback before the color-mix', () => {
+    const html = markup('CTA', { heading: 'x', backgroundImage: '/bg.jpg' })
+
+    expect(html).toMatch(/background:rgba\(46,42,25,[^;]*;background-image:linear-gradient\(color-mix/)
+  })
+
+  it('a hero gradient scrim carries a plain rgba fallback before the color-mix', () => {
+    const html = markup('Hero', { heading: 'x', imageUrl: '/a.jpg', layout: 'bottom' })
+
+    expect(html).toMatch(/background:linear-gradient\(to top,\s*rgba\(46,42,25,[^;]*;background-image:linear-gradient\(to top,\s*color-mix/)
+  })
+
+  it('never asks color-mix for more than 100 percent', () => {
+    const { container } = draw('CTA', { heading: 'x', backgroundImage: '/bg.jpg', backgroundFade: '1.2' })
+    const pcts = [...container.innerHTML.matchAll(/(\d+)%, transparent/g)].map((m) => Number(m[1]))
+
+    expect(pcts.length).toBeGreaterThan(0)
+    expect(Math.max(...pcts)).toBeLessThanOrEqual(100)
   })
 })
 
