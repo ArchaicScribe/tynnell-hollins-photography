@@ -37,9 +37,11 @@ animations" switch is off or the visitor prefers reduced motion.
 3. **Button hover** for builder buttons and the nav "Inquire" link: colour and a
    small lift, using the existing `--color-btn-hover`. Needs a class, because
    `btnStyle()` is inline and cannot express `:hover`.
-4. **Photo hover**: a slow gentle zoom on album cards, Choice Cards and gallery
-   tiles, matching what `AlbumGrid` already does, so every photo card behaves the
-   same.
+4. **Photo cross-fade inside a frame** (the Rising Roots signature effect, found
+   in the 2026-11-18 side-by-side; it replaces the earlier "photo zoom on hover"
+   idea): Split Image + Text gets an Extra photos list, and the frame fades each
+   photo in over the one beneath as it scrolls through the screen. PR #168.
+   Photo hover zoom stays as it is on album cards.
 5. **Hero parallax**: a `photoMovement` choice on the Hero block, same levels as
    other blocks.
 6. **Turn parallax on in the six page layouts** (Gentle on large photos, none on
@@ -61,6 +63,15 @@ animations" switch is off or the visitor prefers reduced motion.
   the control, which keeps the builder from growing another field per effect.
 - Parallax distances stay at gentle 8, medium 15, strong 25 percent until tuned.
 - No smooth or inertial scrolling (the reference has none).
+- Cross-fade (item 4): the fade window (the middle half of the frame's trip across
+  the screen, `CROSSFADE_START` 0.25 to `CROSSFADE_END` 0.75 in
+  `app/hooks/crossfade.ts`) is a fixed code constant, not an owner control. This is
+  the recorded exception to the TYN-338 style-exposure rule: Tynnell's controls
+  are the Extra photos list (empty is the off switch) and the /design "Enable
+  animations" switch, and a timing slider would be a control nobody can judge
+  without watching. It is off while "Scroll overlap" pins the section (a pinned
+  frame stops moving, which would freeze it half-blended), and it replaces the
+  single-photo "Scroll fade-in" colour effect.
 - Item 9 uses a plain CSS fade, not the browser View Transitions API, because
   Safari and Firefox support is uneven and a missing effect would look like a
   bug.
