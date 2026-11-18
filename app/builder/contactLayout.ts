@@ -15,6 +15,7 @@ export function buildContact(): Data {
         type: 'Hero',
         props: {
           id: 'contact-hero',
+          photoMovement: 'gentle',
           layout: 'bottom',
           eyebrow: '',
           heading: '',
