@@ -17,6 +17,7 @@ import { ImagePickerField } from './ImagePickerField'
 import { FreeformPhotoCanvasField } from './FreeformPhotoCanvasField'
 import { ScrollFadeImage } from './ScrollFadeImage'
 import { ParallaxLayer } from './ParallaxLayer'
+import { ScrollCrossfade } from './ScrollCrossfade'
 import { FadeUp } from './FadeUp'
 import type { PhotoMovement } from '@/app/hooks/parallax'
 import { SpecialtiesRevealBlock } from './SpecialtiesRevealBlock'
@@ -523,7 +524,14 @@ const styleDefaults = { background: 'transparent', backgroundImage: '', backgrou
 
 // Split Image + Text's three layouts each return their own <section>, so the
 // render body lives here and the block's render wraps it in the hide gate.
-function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, scrollOverlap, photoMovement, hideOnMobile, hideOnDesktop, hideUntilFilled }: any) {
+function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, eyebrow, heading, body, buttonText, buttonHref, imageBleed, imageOffset, background, scrollFadeIn, scrollOverlap, photoMovement, hideOnMobile, hideOnDesktop, hideUntilFilled }: any) {
+    // Step 5: with extra photos the frame crossfades through them as it scrolls
+    // past (Rising Roots' signature effect). Blank rows are ignored. This replaces
+    // the single-photo colour-in effect, since the photos already change.
+    const extraUrls = (Array.isArray(extraPhotos) ? extraPhotos : [])
+      .map((p: { imageUrl?: string } | undefined) => (p?.imageUrl ?? '').trim())
+      .filter(Boolean)
+    const fadeImages = imageUrl && extraUrls.length ? [imageUrl, ...extraUrls].map((url) => ({ url })) : null
     const bg = background && background !== 'transparent' ? background : undefined
     const cls = visClass(hideOnMobile, hideOnDesktop)
     const overlapStyle: React.CSSProperties = scrollOverlap ? { position: 'sticky', top: 0, zIndex: 1 } : {}
@@ -533,7 +541,9 @@ function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, headin
         <section className={cls} style={{ position: 'relative', ...overlapStyle, minHeight: '50vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
           {imageUrl ? (
             <ParallaxLayer level={photoMovement}>
-              {scrollFadeIn ? (
+              {fadeImages ? (
+                <ScrollCrossfade images={fadeImages} />
+              ) : scrollFadeIn ? (
                 <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -591,7 +601,9 @@ function renderSplitImageText({ layout, imageUrl, imagePosition, eyebrow, headin
       <div className={imgCls} style={{ flex: '1 1 340px', minHeight: '320px', position: 'relative', overflow: photoMovement && photoMovement !== 'none' ? 'hidden' : undefined, background: C.accent }}>
         {imageUrl && (
           <ParallaxLayer level={photoMovement}>
-            {scrollFadeIn ? (
+            {fadeImages ? (
+              <ScrollCrossfade images={fadeImages} />
+            ) : scrollFadeIn ? (
               <ScrollFadeImage src={imageUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
@@ -1126,6 +1138,15 @@ export const config: Config = {
         // for a single full-width image.
         layout: layoutField(SPLIT_LAYOUT_OPTIONS),
         imageUrl: imageField('Image'),
+        // Step 5: more photos that fade in over the main one as the section
+        // scrolls past. Leave empty for a single still photo.
+        extraPhotos: {
+          type: 'array',
+          label: 'Extra photos (fade in as you scroll)',
+          arrayFields: { imageUrl: imageField('Photo') },
+          defaultItemProps: { imageUrl: '' },
+          getItemSummary: (item: any, i?: number) => (item?.imageUrl ? `Photo ${(i ?? 0) + 2}` : 'Empty photo'),
+        },
         imagePosition: {
           type: 'radio',
           label: 'Image position (Side by side only)',
@@ -1171,6 +1192,7 @@ export const config: Config = {
       defaultProps: {
         layout: 'side-by-side',
         imageUrl: '',
+        extraPhotos: [],
         imagePosition: 'left',
         eyebrow: '',
         heading: 'Where It All Began',
