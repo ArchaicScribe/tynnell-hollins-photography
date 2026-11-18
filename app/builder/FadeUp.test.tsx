@@ -73,11 +73,13 @@ describe('FadeUp', () => {
     expect(wrapper().style.transform).toBe('translateY(0)')
   })
 
-  it('rises a clearly visible distance, over a second, easing out like the Rising Roots reveals', () => {
+  it('rises a clearly visible distance, on the slow motion token (a second, easing out like the Rising Roots reveals)', () => {
     placeAt(2000)
     render(<FadeUp enabled><p>Hello</p></FadeUp>)
 
-    expect(wrapper().style.transition).toBe('opacity 1s ease-out, transform 1s ease-out')
+    expect(wrapper().style.transition).toBe(
+      'opacity var(--motion-slow, 1s) var(--ease, ease-out), transform var(--motion-slow, 1s) var(--ease, ease-out)',
+    )
   })
 
   it('starts the reveal once the content is inside the screen, not at its very edge where nobody sees it', () => {

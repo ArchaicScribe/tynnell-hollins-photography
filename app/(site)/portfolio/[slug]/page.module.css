@@ -104,7 +104,7 @@
   text-transform: uppercase;
   color: var(--color-detail);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color var(--motion-fast) var(--ease);
 }
 
 .back:hover {
@@ -170,7 +170,7 @@
 }
 
 .tapedTilt {
-  transition: transform 0.3s ease;
+  transition: transform var(--motion-base) var(--ease);
 }
 
 .tapedTilt:nth-child(odd) {
@@ -258,7 +258,7 @@
   background: var(--color-btn-bg);
   text-decoration: none;
   padding: 0.875rem 2rem;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 .ctaBtn:hover {
@@ -275,7 +275,7 @@
   text-decoration: none;
   padding: 0.875rem 2rem;
   border: 1px solid rgba(155,154,154,0.3);
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition: color var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease);
 }
 
 .ctaBtnSecondary:hover {

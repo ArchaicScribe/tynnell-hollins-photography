@@ -85,7 +85,7 @@ const RESPONSIVE_CSS = `
 const BUTTON_CSS = `
 .pk-btn:hover,.pk-btn:focus-visible{background:var(--color-btn-hover, #807F7F) !important}
 @media (hover:hover) and (prefers-reduced-motion:no-preference){
-html:not([data-animations="off"]) .pk-btn{transition:background-color 0.2s ease,transform 0.2s ease}
+html:not([data-animations="off"]) .pk-btn{transition:background-color var(--motion-fast, 0.2s) var(--ease, ease-out),transform var(--motion-fast, 0.2s) var(--ease, ease-out)}
 html:not([data-animations="off"]) .pk-btn:hover{transform:translateY(-2px)}
 }
 `

@@ -87,7 +87,7 @@
   padding: 0.8rem 0.8rem 1.6rem;
   box-shadow: var(--tape-shadow);
   transform: rotate(-2deg);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--motion-base) var(--ease), box-shadow var(--motion-base) var(--ease);
   align-self: center;
 }
 
@@ -386,7 +386,7 @@
   text-decoration: none;
   display: inline-block;
   margin-top: 0.5rem;
-  transition: background 0.2s ease;
+  transition: background var(--motion-fast) var(--ease);
 }
 
 .ctaBtn:hover {

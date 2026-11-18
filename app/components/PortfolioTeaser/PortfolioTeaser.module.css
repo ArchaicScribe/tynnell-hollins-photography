@@ -40,7 +40,7 @@
   background: var(--tape-mat);
   padding: 0.7rem 0.7rem 2.25rem;
   transform: rotate(var(--rotation));
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--motion-base) var(--ease), box-shadow var(--motion-base) var(--ease);
   box-shadow: var(--tape-shadow);
   cursor: pointer;
   text-decoration: none;
@@ -119,7 +119,7 @@
   color: var(--color-btn-text);
   background: var(--color-btn-bg);
   padding: 0.9rem 2.75rem;
-  transition: background 0.2s ease;
+  transition: background var(--motion-fast) var(--ease);
   text-decoration: none;
   display: inline-block;
 }

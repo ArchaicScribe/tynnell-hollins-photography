@@ -69,7 +69,7 @@
      wrap, never push the column wider than the screen. */
   overflow-wrap: anywhere;
   max-width: 100%;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 .link:hover,
@@ -147,7 +147,7 @@
   padding: 0.95rem 2.1rem;
   border: 1px solid currentColor;
   color: inherit;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 
 .button:hover,
@@ -172,7 +172,7 @@
   color: inherit;
   display: flex;
   align-items: center;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 .socialLink:hover,
@@ -232,7 +232,7 @@
 
 .legalLink {
   color: inherit;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 .legalLink:hover,

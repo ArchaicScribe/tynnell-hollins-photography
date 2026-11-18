@@ -38,7 +38,7 @@
   cursor: pointer;
   position: relative;
   padding-bottom: 0.5rem;
-  transition: color 0.2s ease;
+  transition: color var(--motion-fast) var(--ease);
 }
 
 .loadMore::after {
@@ -106,7 +106,7 @@
   padding: 0.9rem 2.25rem;
   text-decoration: none;
   display: inline-block;
-  transition: background 0.2s ease;
+  transition: background var(--motion-fast) var(--ease);
 }
 
 .emptyBtn:hover {
@@ -125,7 +125,7 @@
   padding: 0.9rem 2.25rem;
   text-decoration: none;
   display: inline-block;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: border-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 
 .emptyBtnSecondary:hover {
