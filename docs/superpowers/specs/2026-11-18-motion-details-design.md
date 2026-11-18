@@ -34,6 +34,15 @@ animations" switch is off or the visitor prefers reduced motion.
 2. **One set of motion tokens** (`--motion-fast` 0.2s, `--motion-base` 0.35s,
    `--motion-slow` 0.9s, one `--ease`) in `app/(site)/styles/tokens.css`, used by
    everything below, so the site moves with one feel.
+   Built (PR #174): `--motion-fast` 0.2s, `--motion-base` 0.35s, `--motion-slow` 1s,
+   `--ease` ease-out, in tokens.css. Two changes from the plan above: slow is 1s
+   (not 0.9s) to match the Rising Roots reveals and the text rise, and the easing
+   is ease-out everywhere (the reference uses ease-out; the old CSS mixed `ease`).
+   All 0.2s, 0.3s and 0.35s transitions in the public CSS now use the tokens (91
+   declarations, 25 files; 0.3s moved to 0.35s) and `motionTokens.test.ts` fails
+   if a stylesheet adds a raw one. Left as they were: sub-0.2s feedback (0.1 to
+   0.15s), the 0.4 to 0.7s photo zooms and fades, keyframe animations, and the
+   admin and editor screens.
 3. **Button hover** for builder buttons and the nav "Inquire" link: colour and a
    small lift, using the existing `--color-btn-hover`. Needs a class, because
    `btnStyle()` is inline and cannot express `:hover`.

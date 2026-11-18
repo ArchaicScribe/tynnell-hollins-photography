@@ -60,7 +60,7 @@
   border-radius: 2px;
   padding: 0.75rem 1rem;
   width: 100%;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--motion-fast) var(--ease);
   appearance: none;
   -webkit-appearance: none;
 }
@@ -110,7 +110,7 @@
   padding: 1rem 2.5rem;
   cursor: pointer;
   align-self: flex-start;
-  transition: background 0.2s ease;
+  transition: background var(--motion-fast) var(--ease);
 }
 
 .submit:hover:not(:disabled) {
@@ -176,7 +176,7 @@
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
-  transition: color 0.2s ease;
+  transition: color var(--motion-fast) var(--ease);
 }
 
 .resetBtn:hover {
@@ -215,7 +215,7 @@
   border: 1px solid rgba(214, 209, 206, 0.18);
   padding: 0.75rem 1.5rem;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 
 .tab:hover {

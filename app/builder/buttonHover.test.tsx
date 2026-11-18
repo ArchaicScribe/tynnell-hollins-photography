@@ -87,6 +87,6 @@ describe('builder button hover', () => {
 
     expect(motion).toContain('prefers-reduced-motion:no-preference')
     expect(motion).toContain('html:not([data-animations="off"])')
-    expect(motion).toMatch(/transition:[^;}]*0\.2s/)
+    expect(motion).toMatch(/transition:[^;}]*var\(--motion-fast/)
   })
 })

@@ -54,7 +54,7 @@
   border: none;
   padding: 0.9rem 1.8rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background var(--motion-fast) var(--ease);
 }
 
 .button:hover:not(:disabled) {

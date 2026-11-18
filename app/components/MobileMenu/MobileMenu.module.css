@@ -15,7 +15,7 @@
   opacity: 0;
   pointer-events: none;
   transform: translateY(-8px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--motion-base) var(--ease), transform var(--motion-base) var(--ease);
 }
 
 .overlay.open {
@@ -76,7 +76,7 @@
      never push the panel wider than the screen. */
   overflow-wrap: anywhere;
   max-width: 100%;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 /* Rising Roots page number: small, quiet, sitting on the link's baseline. */
@@ -107,7 +107,7 @@
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 6px solid currentColor;
-  transition: transform 0.2s ease;
+  transition: transform var(--motion-fast) var(--ease);
   margin-top: 2px;
   flex-shrink: 0;
 }
@@ -136,7 +136,7 @@
   color: var(--color-nav-text, var(--color-btn-text));
   text-decoration: none;
   overflow-wrap: anywhere;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 .subLink:hover,
@@ -159,7 +159,7 @@
   text-transform: uppercase;
   text-decoration: none;
   color: var(--color-nav-text, var(--color-btn-text));
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 
 .workBtn:hover,
@@ -208,7 +208,7 @@
   aspect-ratio: 4 / 5;
   object-fit: cover;
   background: var(--color-bg-accent);
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-base) var(--ease);
 }
 
 .card:hover .cardImg,

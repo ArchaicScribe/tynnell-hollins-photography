@@ -21,7 +21,7 @@
   color: #fff;
   cursor: pointer;
   backdrop-filter: blur(4px);
-  transition: opacity 0.2s ease, background 0.2s ease, transform 0.15s ease;
+  transition: opacity var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease), transform 0.15s ease;
 }
 
 .heart:hover:not([aria-disabled='true']),
@@ -117,7 +117,7 @@
   background: transparent;
   color: var(--color-heading);
   cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
+  transition: opacity var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
 }
 
 .btn:hover:not(:disabled) {

@@ -16,8 +16,8 @@ type Phase = 'visible' | 'hidden' | 'revealed'
 // the easing the Rising Roots reveals use (ease-out). The reference has no
 // scroll-triggered text rise of its own, so this is deliberately a notch past it.
 const RISE_PX = 48
-const TRANSITION = 'opacity 1s ease-out, transform 1s ease-out'
-const SETTLE_MS = 1100 // a little longer than the 1s transition
+const TRANSITION = 'opacity var(--motion-slow, 1s) var(--ease, ease-out), transform var(--motion-slow, 1s) var(--ease, ease-out)'
+const SETTLE_MS = 1100 // a little longer than --motion-slow (1s)
 // Start once the block is inside the screen (its top 12% of the viewport above
 // the bottom edge) so the rise is seen, not spent off-screen at the very edge.
 const ROOT_MARGIN = '0px 0px -12% 0px'

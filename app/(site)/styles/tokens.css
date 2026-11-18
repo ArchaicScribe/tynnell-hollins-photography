@@ -35,6 +35,17 @@
   --color-error:          #c87171;
   --btn-radius:           2px;
 
+  /* ── Motion (step 5) ──────────────────────────────────────── */
+  /* One feel for the whole site. Quick feedback (hovers, colour changes), the
+     medium moves (nav, menu, cards), and the slow scroll reveal, all easing the
+     way the Rising Roots reveals do (ease-out). Code constants, not /design
+     controls: Tynnell switches motion off with "Enable animations", she does not
+     tune timings. */
+  --motion-fast:          0.2s;
+  --motion-base:          0.35s;
+  --motion-slow:          1s;
+  --ease:                 ease-out;
+
   /* ── Colors: light mode override ─────────────────────────── */
   /* Every --color-* token above is now driven by the SiteDesign global and
      editable in /design (see app/lib/siteTheme.ts themeToCssVarMap). The
