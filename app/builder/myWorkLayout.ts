@@ -97,7 +97,7 @@ export function buildMyWork(words: MyWorkWords = { heroEyebrow: '', heroHeading:
           subtext: '',
           buttonText: '',
           buttonHref: '/contact',
-          background: 'var(--color-bg-accent, #131313)',
+          background: 'transparent',
           spacing: 'spacious',
           hideUntilFilled: true,
         },

@@ -187,7 +187,7 @@ export function buildAbout(words: AboutWords = BLANK_ABOUT_WORDS, specialties: L
         subtext: w.ctaSubtext,
         buttonText: w.ctaButtonText,
         buttonHref: w.ctaButtonHref,
-        background: 'var(--color-bg-accent, #131313)',
+        background: 'transparent',
         spacing: 'spacious',
         hideUntilFilled: true,
       },

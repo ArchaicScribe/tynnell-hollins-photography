@@ -679,6 +679,7 @@ export const config: Config = {
           type: 'select',
           label: 'Height',
           options: [
+            { label: 'Full screen', value: '100vh' },
             { label: 'Tall', value: '80vh' },
             { label: 'Medium', value: '60vh' },
             { label: 'Short', value: '45vh' },
@@ -1493,7 +1494,7 @@ export const config: Config = {
         subtext: '',
         buttonText: 'Book a Session',
         buttonHref: '/contact',
-        background: 'var(--color-bg-accent, #131313)',
+        background: 'transparent',
         spacing: 'spacious',
         hideUntilFilled: false,
         ...responsiveDefaults,
