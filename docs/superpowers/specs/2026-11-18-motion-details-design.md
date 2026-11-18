@@ -70,6 +70,14 @@ animations" switch is off or the visitor prefers reduced motion.
 7. **Staggered fade-up** for repeated items (cards, steps, columns, FAQ rows):
    each item rises a little after the one before, instead of the whole block
    rising at once.
+   Built (PR #176): heading first (index 0), then each item 120ms after the one
+   before (capped at the 7th step), on Stats Row, Services, Testimonials, Choice
+   Cards, Packages, Booking Steps, Columns List and Accordion rows. `FadeUp` takes a
+   `stagger` prop: the wrapper stops fading and publishes `data-fade-phase`, and
+   rules in `app/builder/stagger.ts` animate the items marked `pk-stagger`. Stops
+   with reduced motion and "Enable animations" off, like the rest (the phase is
+   never set). Not staggered: the live Services and Testimonials blocks and album
+   grids (their items are separate components).
 8. **Accordion** open and close eases open instead of snapping.
 9. **Page-to-page fade** between routes: a short fade on the main content, with
    the nav and footer held still.

@@ -218,6 +218,52 @@ describe('FadeUp', () => {
     expect(wrapper().style.opacity).toBe('1')
   })
 
+  describe('with stagger', () => {
+    const staggered = () => screen.getByText('Hello').parentElement as HTMLElement
+
+    it('leaves the wrapper itself showing and marks the phase for the items to read', () => {
+      placeAt(2000)
+      render(<FadeUp enabled stagger><p>Hello</p></FadeUp>)
+
+      expect(staggered().style.opacity).toBe('')
+      expect(staggered().style.transform).toBe('')
+      expect(staggered().getAttribute('data-fade-phase')).toBe('hidden')
+
+      act(() => trigger(true))
+
+      expect(staggered().getAttribute('data-fade-phase')).toBe('revealed')
+    })
+
+    it('waits for the last item before clearing, so a late item is not cut short', () => {
+      vi.useFakeTimers()
+      try {
+        placeAt(2000)
+        render(<FadeUp enabled stagger><p>Hello</p></FadeUp>)
+        act(() => trigger(true))
+
+        act(() => { vi.advanceTimersByTime(1500) }) // past the plain 1.1s settle
+        expect(staggered().getAttribute('data-fade-phase')).toBe('revealed')
+
+        act(() => { vi.advanceTimersByTime(1000) }) // past 1s fade + 7 steps of 120ms
+        expect(staggered().getAttribute('data-fade-phase')).toBeNull()
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('never hides content already in view, or when motion is reduced', () => {
+      placeAt(100)
+      const { unmount } = render(<FadeUp enabled stagger><p>Hello</p></FadeUp>)
+      expect(staggered().getAttribute('data-fade-phase')).toBeNull()
+      unmount()
+
+      stubEnvironment({ reduce: true })
+      placeAt(2000)
+      render(<FadeUp enabled stagger><p>Hello</p></FadeUp>)
+      expect(staggered().getAttribute('data-fade-phase')).toBeNull()
+    })
+  })
+
   it('shows content untouched where IntersectionObserver does not exist', () => {
     vi.unstubAllGlobals()
     vi.stubGlobal('matchMedia', () => ({ matches: false }))
