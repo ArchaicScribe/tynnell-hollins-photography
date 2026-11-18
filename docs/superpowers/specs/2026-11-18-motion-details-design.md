@@ -47,6 +47,9 @@ animations" switch is off or the visitor prefers reduced motion.
    Split layouts; ignored when "Stays fixed" is chosen (already a parallax); new
    heroes default to Gentle, saved heroes have no value and stay still until the
    layouts are updated (item 6).
+   Item 6 (PR #170): all six layouts set Gentle on every hero and side-by-side
+   photo; the live pages were updated the same day (14 blocks, backed up first).
+   The stacked Split photo stays still (no layout uses that layout).
 6. **Turn parallax on in the six page layouts** (Gentle on large photos, none on
    small ones), and on the stacked SplitImageText photo. New pages get it; the
    live pages need a separate, backed-up data update, done only on Alex's yes.

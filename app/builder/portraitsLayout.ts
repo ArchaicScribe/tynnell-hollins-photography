@@ -18,6 +18,7 @@ export function buildPortraits(): Data {
         type: 'Hero',
         props: {
           id: 'portraits-hero',
+          photoMovement: 'gentle',
           layout: 'bottom',
           eyebrow: '',
           heading: '',
@@ -67,6 +68,7 @@ export function buildPortraits(): Data {
         type: 'SplitImageText',
         props: {
           id: 'portraits-philosophy',
+          photoMovement: 'gentle',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'right',

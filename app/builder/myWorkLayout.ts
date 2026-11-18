@@ -31,6 +31,7 @@ export function buildMyWork(words: MyWorkWords = { heroEyebrow: '', heroHeading:
         type: 'Hero',
         props: {
           id: 'mywork-hero',
+          photoMovement: 'gentle',
           layout: 'bottom',
           eyebrow: words.heroEyebrow,
           heading: words.heroHeading,
@@ -71,6 +72,7 @@ export function buildMyWork(words: MyWorkWords = { heroEyebrow: '', heroHeading:
         type: 'SplitImageText',
         props: {
           id: 'mywork-about',
+          photoMovement: 'gentle',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'right',
