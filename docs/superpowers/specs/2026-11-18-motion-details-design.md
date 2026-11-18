@@ -86,6 +86,18 @@ animations" switch is off or the visitor prefers reduced motion.
   24px) over 1s with ease-out (the reference's easing), starting once the block is
   12% inside the screen, plus a fallback watcher so a short last block still shows.
 
+- Palette match (2026-11-18, Tynnell said the colours looked off): measured on
+  risingroots.showit.site and on ours. The theme values already match exactly
+  (bone #E4E2D8, olive #6F6950, deep olive #2E2A19, cream #ECE9E0, body #242424,
+  hover #2E2A19, card #D4D1C4, footer olive with cream words). The differences were
+  usage: hero text was pure white (now cream), the hero scrim and section photo
+  scrims were neutral black rgba(12,12,12) (now the palette overlay colour, deep
+  olive), the transparent nav was pure white (now cream), and sections could not
+  be an olive or deep-olive band with cream words, which the reference alternates
+  (About story band olive, closing call to action deep olive). Added "Olive band"
+  and "Deep olive band" to every section Background control. Not changed: the
+  /design photo muting (0.65), which is a chosen setting.
+
 - Hover and stagger have no per-block control. The "Enable animations" switch is
   the control, which keeps the builder from growing another field per effect.
 - Parallax distances stay at gentle 8, medium 15, strong 25 percent until tuned.
