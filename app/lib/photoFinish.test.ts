@@ -122,6 +122,44 @@ describe('finishBuffer', () => {
     expect((await pixel(out, 350, 150))[0]).toBeGreaterThan(240) // bottom right marked (80px wide, 12px margin)
   })
 
+  it('keeps a margin of about 3% of the width between the watermark and the edge', async () => {
+    const base = await solid(128, 128, 128, 400, 200)
+    const mark = await sharp({ create: { width: 50, height: 50, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } } }).png().toBuffer()
+
+    const out = await finishBuffer(base, { ...NOTHING, watermark: mark }, 95)
+
+    expect((await pixel(out, 396, 150))[0]).toBeLessThan(135) // inside the 12px right margin: still photo
+    expect((await pixel(out, 384, 150))[0]).toBeGreaterThan(240) // just inside the watermark
+  })
+
+  // A watermark that cannot be laid on (a file sharp cannot read, or one so tall it does
+  // not fit) must cost the photo only its watermark, not its colour treatment and sharpening.
+  describe('when the watermark cannot be applied', () => {
+    beforeEach(() => void vi.spyOn(console, 'warn').mockImplementation(() => {}))
+
+    it('still treats and sharpens when the watermark is not an image', async () => {
+      const out = await finishBuffer(await solid(200, 60, 60, 100, 100), { saturation: 0, sharpenSigma: 1, watermark: Buffer.from('<html>502 Bad Gateway</html>') }, 90)
+
+      const [r, g, b] = await pixel(out)
+      expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThanOrEqual(2) // black and white was applied
+    })
+
+    it('still treats when the watermark is too tall to fit the photo', async () => {
+      const tall = await sharp({ create: { width: 10, height: 80, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } } }).png().toBuffer()
+
+      const out = await finishBuffer(await solid(200, 60, 60, 400, 200), { ...NOTHING, saturation: 0, watermark: tall }, 90)
+
+      const [r, g, b] = await pixel(out)
+      expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThanOrEqual(2)
+    })
+
+    it('hands the photo back untouched when the watermark was the only step', async () => {
+      const input = await solid(200, 60, 60)
+
+      expect(await finishBuffer(input, { ...NOTHING, watermark: Buffer.from('not an image') }, 85)).toBe(input)
+    })
+  })
+
   // The point of doing it in one go: JPEG is lossy, so every extra encode costs detail.
   // Compare with the lossless reference (all three steps on raw pixels, no encode in
   // between) against the old way (encode after treatment, then again after sharpening and
@@ -243,6 +281,36 @@ describe('finishPhotoSizes', () => {
     const puts = sent.filter((s) => s.cmd === 'PutObjectCommand')
     expect(puts.map((p) => p.key)).toEqual(['a-400x300.jpg', 'a-1200x900.jpg', 'a-2560x1440.jpg'])
     expect(puts.every((p) => p.type === 'image/jpeg')).toBe(true)
+  })
+
+  // Each size is encoded at the quality Payload generated it with (80 / 85 / 88), not at
+  // one default. The same noisy picture comes out bigger at a higher quality.
+  it('encodes the thumbnail, card and hero at their own qualities', async () => {
+    const noise = Buffer.alloc(300 * 200 * 3)
+    for (let i = 0; i < noise.length; i++) noise[i] = (i * 7919 + ((i * i) % 251)) % 256
+    const noisy = await sharp(noise, { raw: { width: 300, height: 200, channels: 3 } }).jpeg({ quality: 100, chromaSubsampling: '4:4:4' }).toBuffer()
+    getSiteDesignMock.mockResolvedValue({ photoTreatment: 'muted', sharpeningLevel: 'none', watermarkEnabled: false })
+    const bodies: Record<string, number> = {}
+    const send = vi.fn(async (command: { constructor: { name: string }; input: { Key: string; Body?: Buffer } }) => {
+      if (command.constructor.name === 'GetObjectCommand') return { Body: (async function* () { yield noisy })() }
+      bodies[command.input.Key] = (command.input.Body as Buffer).length
+      return {}
+    })
+
+    await finishPhotoSizes({ s3: { send } as never, bucket: 'b', sizes })
+
+    expect(bodies['a-400x300.jpg']).toBeLessThan(bodies['a-1200x900.jpg'])
+    expect(bodies['a-1200x900.jpg']).toBeLessThan(bodies['a-2560x1440.jpg'])
+  })
+
+  it('does not upload a size it left untouched', async () => {
+    getSiteDesignMock.mockResolvedValue({ photoTreatment: 'color', sharpeningLevel: 'none', watermarkEnabled: true, watermarkUrl: 'https://m.example/w.png' })
+    vi.mocked(fetch).mockResolvedValue(new Response('<html>not an image</html>'))
+
+    await run()
+
+    expect(count('GetObjectCommand')).toBe(3)
+    expect(count('PutObjectCommand')).toBe(0)
   })
 
   it('carries on with the other sizes when one fails', async () => {

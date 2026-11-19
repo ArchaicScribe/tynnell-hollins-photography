@@ -733,7 +733,7 @@ async function run() {
     // seo_indexable controls whether a gallery is excluded from search-engine
     // indexing (robots noindex), independent of `status`. sharpening_level
     // is a sitewide default applied to newly-uploaded photos' web display
-    // sizes only (see app/lib/sharpening.ts) - the full original is untouched.
+    // sizes only (see app/lib/photoFinish.ts) - the full original is untouched.
     // ------------------------------------------------------------------
 
     await client.query(`

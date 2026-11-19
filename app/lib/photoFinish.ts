@@ -68,8 +68,22 @@ async function materialise(image: Sharp): Promise<Sharp> {
   return sharp(data, { raw: { width: info.width, height: info.height, channels: info.channels } })
 }
 
-/** One rendition in, one rendition out. Returns the input itself when there is nothing to do. */
+/**
+ * One rendition in, one rendition out. Returns the input itself when there is nothing to do.
+ * A watermark that cannot be laid on (not an image, or too tall to fit) costs the photo only
+ * its watermark: the colour treatment and sharpening are still applied.
+ */
 export async function finishBuffer(input: Buffer, plan: FinishPlan, quality: number): Promise<Buffer> {
+  if (!plan.watermark) return finishWith(input, plan, quality)
+  try {
+    return await finishWith(input, plan, quality)
+  } catch (err) {
+    console.warn('[photo-finish] the watermark could not be applied, finishing without it:', err)
+    return finishWith(input, { ...plan, watermark: null }, quality)
+  }
+}
+
+async function finishWith(input: Buffer, plan: FinishPlan, quality: number): Promise<Buffer> {
   if (isNoop(plan)) return input
 
   const steps: ((image: Sharp) => Sharp)[] = []
@@ -130,6 +144,7 @@ async function finishOneSize(params: { s3: S3Client; bucket: string; plan: Finis
   if (!Body) return
   const input = await streamToBuffer(Body as AsyncIterable<Uint8Array>)
   const output = await finishBuffer(input, plan, quality)
+  if (output === input) return // nothing was applied to this size
 
   await s3.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: output, ContentType: slot?.mimeType ?? 'image/jpeg' }))
 }
@@ -152,6 +167,7 @@ export async function finishPhotoSizes(params: {
     ['card', sizes.card],
     ['hero', sizes.hero],
   ]
+  const start = Date.now()
   for (const [name, slot] of slots) {
     try {
       await finishOneSize({ s3, bucket, plan, slot, quality: SLOT_QUALITY[name] })
@@ -159,4 +175,5 @@ export async function finishPhotoSizes(params: {
       console.warn(`[photo-finish] failed to finish the "${name}" size of ${label} (non-fatal):`, err)
     }
   }
+  console.log(`[photo-finish] finished the sizes of ${label} in ${Date.now() - start}ms`)
 }
