@@ -15,10 +15,12 @@ import { revalidatePath } from 'next/cache'
 //   Home into its options - isHomepage already shipped and works, and Home's
 //   check lives in a different file (app/(site)/page.tsx) than every other
 //   promoted route would, so unifying them isn't worth the migration risk.
-// 'portfolio/weddings' promotes real Gallery album cards via the AlbumGrid
-// Puck block (app/builder/puck.config.tsx), alongside PortfolioGrid for its
-// individual wedding photos - together they match what the hardcoded page
-// already shows, so promoting it doesn't drop either feature.
+// 'portfolio/portraits', 'portfolio/family' and 'portfolio/weddings' used to be
+// promotable too. They redirect permanently to the Portraits and Wedding
+// photography builder pages now (app/constants/redirects.mjs), so promoting a
+// page to one did nothing and they are no longer offered. Their values stay in
+// the Postgres enum (nothing is promoted to them) because dropping enum values
+// needs a migration for no benefit.
 // 'services' and 'testimonials' promote via the LiveServices/LiveTestimonials
 // blocks, live-bound to the real collections (not the static, manually-typed
 // Services/Testimonials blocks already used on Home) - phase 4 of TYN-341.
@@ -30,7 +32,7 @@ import { revalidatePath } from 'next/cache'
 // 'blog' - phase 6 - promotes via the LiveBlog block, which reuses
 // BlogClient.tsx directly (already a self-contained client component with no
 // server-only dependency, so no markup extraction was needed).
-const PROMOTABLE_ROUTES = ['about', 'portfolio', 'portfolio/portraits', 'portfolio/family', 'portfolio/weddings', 'services', 'testimonials', 'contact', 'blog'] as const
+const PROMOTABLE_ROUTES = ['about', 'portfolio', 'services', 'testimonials', 'contact', 'blog'] as const
 
 // Only one page may claim a given real route at a time - unlike isHomepage
 // (which has no such guard and silently first-match-wins if ever duplicated),

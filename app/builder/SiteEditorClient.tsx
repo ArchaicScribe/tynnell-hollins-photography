@@ -27,9 +27,6 @@ export interface SitePage {
 const PROMOTABLE_ROUTES: { route: string; label: string }[] = [
   { route: 'about', label: 'About' },
   { route: 'portfolio', label: 'Portfolio' },
-  { route: 'portfolio/portraits', label: 'Portfolio - Portraits' },
-  { route: 'portfolio/family', label: 'Portfolio - Family' },
-  { route: 'portfolio/weddings', label: 'Portfolio - Weddings' },
   { route: 'services', label: 'Services' },
   { route: 'testimonials', label: 'Testimonials' },
   { route: 'contact', label: 'Contact' },
@@ -52,14 +49,7 @@ type NavItem  = { key: string; label: string; href: string; route?: string; chil
 const SITE_NAV: NavItem[] = [
   { key: 'home',         label: 'Home',         href: '/' },
   { key: 'about',        label: 'About',        href: '/about', route: 'about' },
-  {
-    key: 'portfolio', label: 'Portfolio', href: '/portfolio', route: 'portfolio',
-    children: [
-      { key: 'portraits', label: 'Portraits', href: '/portfolio/portraits', route: 'portfolio/portraits' },
-      { key: 'family',    label: 'Family',    href: '/portfolio/family',    route: 'portfolio/family'    },
-      { key: 'weddings',  label: 'Weddings',  href: '/portfolio/weddings',  route: 'portfolio/weddings'  },
-    ],
-  },
+  { key: 'portfolio',    label: 'Portfolio',     href: '/portfolio',    route: 'portfolio'    },
   { key: 'services',     label: 'Services',      href: '/services',     route: 'services'     },
   { key: 'testimonials', label: 'Testimonials',  href: '/testimonials', route: 'testimonials' },
   { key: 'contact',      label: 'Contact',       href: '/contact',      route: 'contact'      },
