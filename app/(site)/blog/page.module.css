@@ -71,7 +71,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color var(--motion-fast) var(--ease);
   white-space: nowrap;
 }
 
@@ -193,7 +193,7 @@
 .cardLink {
   color: inherit;
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--motion-fast) var(--ease);
 }
 
 .cardLink:hover {
@@ -229,7 +229,7 @@
   border-bottom: 1px solid rgba(230, 225, 222, 0.35);
   padding-bottom: 3px;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition: color var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease);
 }
 
 .loadMore:hover {

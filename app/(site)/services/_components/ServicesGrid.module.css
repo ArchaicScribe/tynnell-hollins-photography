@@ -114,7 +114,7 @@
   background: var(--color-btn-bg);
   padding: 0.85rem 2.25rem;
   text-decoration: none;
-  transition: background 0.2s ease;
+  transition: background var(--motion-fast) var(--ease);
   display: inline-block;
 }
 

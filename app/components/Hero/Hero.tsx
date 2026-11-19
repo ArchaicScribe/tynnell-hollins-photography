@@ -20,7 +20,7 @@ export default function Hero({ slides, defaultTagline = FALLBACK_TAGLINE }: Prop
   const validSlides = slides.filter(s => s.imageUrl)
 
   return (
-    <section className={styles.hero} aria-label="Introduction">
+    <section className={styles.hero} aria-label="Introduction" data-nav-hero={validSlides.length > 0 ? '' : undefined}>
       <HeroSlideshow slides={validSlides} />
       <div className={styles.overlay}>
         <div className={styles.overlayContent}>

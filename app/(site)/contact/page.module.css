@@ -82,7 +82,7 @@
   letter-spacing: 0.05em;
   color: var(--color-detail);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color var(--motion-fast) var(--ease);
 }
 
 .contactLink:hover {

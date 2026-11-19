@@ -36,6 +36,9 @@ body {
 
 body::before {
   content: '';
+  /* none when no grain is chosen or in Performance mode (see themeToCssVarMap),
+     so the full-viewport layer does not exist at all, not just at opacity 0. */
+  display: var(--paper-grain-display, none);
   position: fixed;
   inset: 0;
   z-index: 1;
@@ -54,16 +57,22 @@ body::before {
 }
 
 /* ── Photo color treatment ────────────────────────────────── */
-/* Rising Roots runs its photography desaturated. Applied by the shell rather
-   than baked into the uploads, so it works on whatever gets uploaded later and
-   is reversible from /design.
+/* Rising Roots runs its photography desaturated. The thumbnail, card and hero
+   renditions have the treatment baked in when a photo is processed (see
+   app/lib/photoTreatment.ts), because a CSS filter on a large photo is GPU work on
+   every frame while scrolling. Anything else (a full-size original, a legacy file, a
+   static image) is not baked, so it keeps the live filter below and still looks
+   muted. The baked sizes are excluded by their filename suffix, which
+   collections/Photos.ts generates (a test keeps the two in step).
 
    Scoped to real photography: <img> inside content areas. Deliberately NOT
    applied to inline SVG (social icons, the logo mark) which should keep their
    own color, and skipped for anything opting out with .no-photo-treatment. */
 
-img:not(.no-photo-treatment) {
-  filter: saturate(var(--photo-saturation, 1));
+img:not(.no-photo-treatment):not([src*="-400x300."]):not([src*="-1200x900."]):not([src*="-2560x1440."]) {
+  /* --photo-filter is "none" at natural colour and in Performance mode, and
+     "saturate(x)" otherwise (see themeToCssVarMap). */
+  filter: var(--photo-filter, none);
 }
 
 a {
@@ -109,6 +118,21 @@ a {
 :focus-visible {
   outline: 2px solid var(--color-detail);
   outline-offset: 3px;
+}
+
+/* ── Page-to-page fade (step 5) ────────────────────────────── */
+/* PageFade puts this class on the page area after a client-side navigation (never
+   on the first load). Opacity only, no transform: a transform would make the page
+   the containing block for position:fixed overlays inside it. "backwards" applies
+   the starting state during the animation and leaves nothing behind afterwards.
+   The reduced-motion and animations-off rules below cut the duration to nothing. */
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pageFadeIn {
+  animation: pageFadeIn var(--motion-base) var(--ease) backwards;
 }
 
 /* ── Reduced motion ────────────────────────────────────────── */

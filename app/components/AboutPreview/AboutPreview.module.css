@@ -82,7 +82,7 @@
   color: var(--color-btn-text);
   background: var(--color-btn-bg);
   padding: 0.875rem 2rem;
-  transition: background 0.2s ease;
+  transition: background var(--motion-fast) var(--ease);
   align-self: flex-start;
   margin-top: 0.5rem;
 }

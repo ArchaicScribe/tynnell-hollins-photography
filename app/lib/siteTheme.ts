@@ -53,6 +53,7 @@ export interface SiteTheme {
   spacingScale: 'compact' | 'normal' | 'spacious'
   buttonStyle: 'sharp' | 'rounded' | 'pill'
   animationsEnabled: boolean
+  performanceMode: boolean
   sharpeningLevel: 'none' | 'subtle' | 'moderate' | 'strong'
 }
 
@@ -89,6 +90,7 @@ export const DEFAULT_THEME: SiteTheme = {
   spacingScale: 'normal',
   buttonStyle: 'sharp',
   animationsEnabled: true,
+  performanceMode: false,
   sharpeningLevel: 'none',
 }
 
@@ -136,6 +138,11 @@ const PHOTO_SATURATION: Record<PhotoTreatment, string> = {
   bw: '0',
 }
 
+// The saturation a treatment bakes into photos (1 = natural, nothing to do).
+export function photoSaturation(treatment: PhotoTreatment): number {
+  return Number(PHOTO_SATURATION[treatment])
+}
+
 // Warm, low-alpha shadows rather than near-black. On a bone ground a
 // rgba(0,0,0,0.45) drop reads as grime under the print; these are tinted
 // toward the olive so the frame sits on the paper instead of hovering over it.
@@ -179,8 +186,21 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--tape-mat': theme.tapeMatColor,
     '--tape-color': theme.tapeColor,
     '--tape-shadow': TAPE_SHADOW[theme.tapeShadow],
-    '--paper-grain-opacity': GRAIN_OPACITY[theme.paperGrain],
+    // Performance mode turns the grain off: the one effect still drawn over the
+    // whole page on every frame.
+    '--paper-grain-opacity': theme.performanceMode ? '0' : GRAIN_OPACITY[theme.paperGrain],
+    // The grain is a full-viewport fixed layer: at opacity 0 the browser skips
+    // painting it but can still keep the layer, so it is removed outright when
+    // it would be invisible (no grain chosen, or Performance mode).
+    '--paper-grain-display': theme.performanceMode || theme.paperGrain === 'none' ? 'none' : 'block',
     '--photo-saturation': PHOTO_SATURATION[theme.photoTreatment],
+    // The live filter, for any photo that is not a pre-muted rendition (a full-size
+    // original, a legacy file, a static image): the thumbnail, card and hero sizes
+    // have the treatment baked in (app/lib/photoTreatment.ts) and are skipped in
+    // globals.css. Written only when it does something: at natural colour it is
+    // `none`, because saturate(1) is invisible but still makes the browser filter.
+    '--photo-filter':
+      PHOTO_SATURATION[theme.photoTreatment] === '1' ? 'none' : `saturate(${PHOTO_SATURATION[theme.photoTreatment]})`,
     '--space-scale': String(SPACE_SCALE[theme.spacingScale]),
     '--btn-radius': BTN_RADIUS[theme.buttonStyle],
   }

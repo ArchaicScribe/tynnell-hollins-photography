@@ -76,7 +76,7 @@
   background: var(--color-btn-bg);
   padding: 0.9rem 2.5rem;
   text-decoration: none;
-  transition: background 0.2s ease;
+  transition: background var(--motion-fast) var(--ease);
   margin-top: 0.5rem;
   border-radius: var(--btn-radius, 2px);
 }

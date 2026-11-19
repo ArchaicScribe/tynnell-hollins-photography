@@ -15,6 +15,8 @@ type SiteSettingsData = {
   facebookUrl: string
   tiktokUrl: string
   pinterestUrl: string
+  footerBio: string
+  footerLocation: string
   freebieTitle: string
   freebieUrl: string
   menuCards: MenuCard[]
@@ -170,12 +172,14 @@ function TextAreaField({
   value: string
   onChange: (v: string) => void
 }) {
+  const id = useId()
   return (
     <div style={{ marginBottom: '1.5rem' }}>
-      <label style={{ display: 'block', color: '#D6D1CE', fontSize: '0.85rem', fontWeight: 600, fontFamily: ui, marginBottom: '0.5rem' }}>
+      <label htmlFor={id} style={{ display: 'block', color: '#D6D1CE', fontSize: '0.85rem', fontWeight: 600, fontFamily: ui, marginBottom: '0.5rem' }}>
         {label}
       </label>
       <textarea
+        id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={4}
@@ -575,6 +579,21 @@ export function SiteSettingsClient({
             description="Your phone number, displayed on your contact page."
             value={data.phone}
             onChange={(v) => set('phone', v)}
+          />
+        </Section>
+
+        <Section title="Footer">
+          <TextAreaField
+            label="Footer bio"
+            description="A sentence or two about you, shown in the middle of the footer. Leave it empty and nothing is shown."
+            value={data.footerBio}
+            onChange={(v) => set('footerBio', v)}
+          />
+          <Field
+            label="Footer location line"
+            description='Shown with your email in the footer. Example: "Based in New Mexico | Travel Worldwide".'
+            value={data.footerLocation}
+            onChange={(v) => set('footerLocation', v)}
           />
         </Section>
 

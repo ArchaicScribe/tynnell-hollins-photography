@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 
 let mockPathname = '/'
 vi.mock('next/navigation', () => ({
@@ -53,5 +53,63 @@ describe('Navbar mobile menu', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
 
     expect(hamburger()).toHaveAttribute('aria-expanded', 'false')
+  })
+})
+
+describe('Navbar row', () => {
+  beforeEach(() => {
+    mockPathname = '/'
+  })
+
+  const mainNav = () => screen.getByRole('navigation', { name: /main navigation/i })
+  const rowLabels = ['Home', 'About me', 'Wedding photography', 'Portraits', 'My work']
+
+  it('renders the five row links in order with their hrefs', () => {
+    render(<Navbar />)
+    const row = within(mainNav())
+      .getAllByRole('link')
+      .filter(a => rowLabels.includes(a.textContent ?? ''))
+    expect(row.map(a => a.textContent)).toEqual(rowLabels)
+    expect(row.map(a => a.getAttribute('href'))).toEqual(['/', '/about', '/wedding-photography', '/portraits', '/portfolio'])
+  })
+
+  it('renders "Inquire now" linking to /contact', () => {
+    render(<Navbar />)
+    expect(within(mainNav()).getByRole('link', { name: 'Inquire now' })).toHaveAttribute('href', '/contact')
+  })
+
+  it('has no Portfolio dropdown button', () => {
+    const { container } = render(<Navbar />)
+    expect(container.querySelector('[aria-haspopup]')).toBeNull()
+    expect(within(mainNav()).queryByRole('button', { name: /portfolio/i })).toBeNull()
+  })
+
+  it('keeps builder-page links out of the row but passes them to the menu', () => {
+    render(<Navbar builderLinks={[{ label: 'Pricing', href: '/pricing' }]} />)
+    expect(within(mainNav()).queryByRole('link', { name: 'Pricing' })).toBeNull()
+
+    fireEvent.click(hamburger())
+    expect(within(mobileMenu()).getByRole('link', { name: /Pricing/ })).toHaveAttribute('href', '/pricing')
+  })
+
+  it('shows the logo image when logoUrl is set and the text wordmark when not', () => {
+    const { unmount } = render(<Navbar logoUrl="/logo.png" siteTitle="Tynnell Hollins Photography" />)
+    expect(within(mainNav()).getByRole('img', { name: 'Tynnell Hollins Photography' })).toHaveAttribute('src', '/logo.png')
+    unmount()
+
+    render(<Navbar siteTitle="Tynnell Hollins Photography" />)
+    expect(within(mainNav()).queryByRole('img')).toBeNull()
+    expect(within(mainNav()).getByRole('link', { name: 'Tynnell Hollins Photography, home' })).toHaveTextContent(/Tynnell/)
+  })
+
+  it('shows "close menu" next to the button only while the menu is open', () => {
+    render(<Navbar />)
+    expect(screen.queryByText('close menu')).toBeNull()
+
+    fireEvent.click(hamburger())
+    expect(screen.getByText('close menu')).toBeInTheDocument()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByText('close menu')).toBeNull()
   })
 })

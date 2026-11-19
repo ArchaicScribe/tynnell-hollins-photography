@@ -746,6 +746,12 @@ async function run() {
     `)
     console.log('✓ site_design.sharpening_level column ready')
 
+    // Performance mode (2026-11-19): turns the photo filter and paper grain off.
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "performance_mode" boolean DEFAULT false
+    `)
+    console.log('✓ site_design.performance_mode column ready')
+
     // ------------------------------------------------------------------
     // Migration 20260721_100000: drop NOT NULL on galleries.cover_photo_id
     // (TYN-312). A brand-new gallery has no photos yet, so requiring a cover
@@ -1081,6 +1087,20 @@ async function run() {
       ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "freebie_url" varchar
     `)
     console.log('✓ site_config freebie columns ready')
+
+    // ------------------------------------------------------------------
+    // Migration 20261116_100000: site_config footer text (Rising Roots
+    // footer). The bio and location line shown in the footer. Plain
+    // nullable text; the bio stays empty until Tynnell writes one.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "footer_bio" varchar
+    `)
+    await client.query(`
+      ALTER TABLE "site_config" ADD COLUMN IF NOT EXISTS "footer_location" varchar
+    `)
+    console.log('✓ site_config footer columns ready')
 
     // ------------------------------------------------------------------
     // Migration 20261110_100000: client favorites (TYN-13).

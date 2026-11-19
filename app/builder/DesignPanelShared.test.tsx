@@ -82,3 +82,51 @@ describe('Design panel: Navbar section', () => {
     expect(set).toHaveBeenCalledWith('colorNavText', '')
   })
 })
+
+// Performance mode turns the photo muting and the paper grain off. While it is
+// on, the two Texture controls it overrides must say so: a select that shows
+// "Medium" while nothing changes on the site reads as a broken control.
+describe('Design panel: Performance mode', () => {
+  it('has a Performance mode checkbox that saves to the right setting', () => {
+    const set = renderPanel({}, 'performance')
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Performance mode/ }))
+
+    expect(set).toHaveBeenCalledWith('performanceMode', true)
+  })
+
+  it('says the grain choice is kept and comes back when it is turned off, and that photo colour is unaffected', () => {
+    renderPanel({}, 'performance')
+
+    expect(screen.getByText(/Paper grain choice is kept/i)).toBeTruthy()
+    expect(screen.getByText(/Photo colour is not affected/i)).toBeTruthy()
+  })
+
+  it('leaves the Texture controls usable while it is off', () => {
+    renderPanel({ performanceMode: false }, 'texture')
+
+    expect((screen.getByRole('combobox', { name: 'Paper grain' }) as HTMLSelectElement).disabled).toBe(false)
+    expect((screen.getByRole('combobox', { name: 'Photo color treatment' }) as HTMLSelectElement).disabled).toBe(false)
+    expect(screen.queryByText(/Off while Performance mode is on/)).toBeNull()
+  })
+
+  it('disables the paper grain control it overrides, and says why, while it is on', () => {
+    renderPanel({ performanceMode: true }, 'texture')
+
+    expect((screen.getByRole('combobox', { name: 'Paper grain' }) as HTMLSelectElement).disabled).toBe(true)
+    expect(screen.getByText(/Off while Performance mode is on/)).toBeTruthy()
+  })
+
+  it('leaves the photo treatment alone: it is baked into photos, not a live filter', () => {
+    renderPanel({ performanceMode: true }, 'texture')
+
+    expect((screen.getByRole('combobox', { name: 'Photo color treatment' }) as HTMLSelectElement).disabled).toBe(false)
+  })
+
+  it('explains that the treatment applies when a photo is processed, and offers to apply it to existing photos', () => {
+    renderPanel({}, 'texture')
+
+    expect(screen.getByText(/uploaded or reprocessed/i)).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Apply to all photos/ })).toBeTruthy()
+  })
+})

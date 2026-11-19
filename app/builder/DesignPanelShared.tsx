@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import { themeToCssVarMap, type SiteTheme } from '@/app/lib/siteTheme'
+import { ApplyPhotoTreatment } from './ApplyPhotoTreatment'
 
 // Shared pieces between the standalone /design editor (DesignClient.tsx) and
 // the embedded Design tab inside the /builder Website hub (SiteEditorClient.tsx),
@@ -85,7 +86,7 @@ export const COLOR_FIELDS: {
   { key: 'colorBtnHover', label: 'Button hover color' },
   { key: 'colorBgCard', label: 'Card background color' },
   { key: 'colorBgHover', label: 'Hover background color' },
-  { key: 'colorBgOverlay', label: 'Overlay box color (sits on photos)' },
+  { key: 'colorBgOverlay', label: 'Overlay color (boxes on photos, and the wash behind hero text)' },
   { key: 'colorBorder', label: 'Border color' },
   { key: 'colorBorderSubtle', label: 'Subtle border color' },
   { key: 'colorBorderSolid', label: 'Solid border color' },
@@ -140,12 +141,36 @@ export function FieldLabel({ children, style }: { children: React.ReactNode; sty
   return <label style={{ display: 'block', color: '#9b9a9a', fontSize: 11.5, marginBottom: 6, ...style }}>{children}</label>
 }
 
-export function Select<T extends string>({ value, onChange, options }: { value: T; onChange: (v: string) => void; options: { label: string; value: T }[] }) {
+export function Select<T extends string>({
+  value,
+  onChange,
+  options,
+  disabled,
+  ariaLabel,
+}: {
+  value: T
+  onChange: (v: string) => void
+  options: { label: string; value: T }[]
+  disabled?: boolean
+  ariaLabel?: string
+}) {
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      style={{ width: '100%', background: '#1a1a1a', color: '#e6e1de', border: '1px solid #2a2a2a', borderRadius: 5, padding: '8px 10px', fontSize: 13 }}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      style={{
+        width: '100%',
+        background: '#1a1a1a',
+        color: '#e6e1de',
+        border: '1px solid #2a2a2a',
+        borderRadius: 5,
+        padding: '8px 10px',
+        fontSize: 13,
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : undefined,
+      }}
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>
@@ -291,6 +316,18 @@ export function DesignSections({
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>Turns off decorative transitions/animations sitewide when unchecked.</p>
       </AccordionRow>
 
+      <AccordionRow label="Performance" isOpen={open === 'performance'} onToggle={() => setOpen(open === 'performance' ? null : 'performance')}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e6e1de', fontSize: 13, cursor: 'pointer' }}>
+          <input type="checkbox" checked={theme.performanceMode} onChange={(e) => set('performanceMode', e.target.checked)} />
+          Performance mode
+        </label>
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          Turns off the paper grain texture, the one effect drawn over the whole page on every frame, so scrolling stays
+          smooth on slower computers and phones. Your Paper grain choice is kept and comes back when you turn this off.
+          Photo colour is not affected: it is applied to each photo when it is processed. Leave unchecked for the full look.
+        </p>
+      </AccordionRow>
+
       <AccordionRow label="Spacing" isOpen={open === 'spacing'} onToggle={() => setOpen(open === 'spacing' ? null : 'spacing')}>
         <FieldLabel>Overall spacing</FieldLabel>
         <Select value={theme.spacingScale} onChange={(v) => set('spacingScale', v as SiteTheme['spacingScale'])} options={SPACING_OPTIONS} />
@@ -303,17 +340,24 @@ export function DesignSections({
 
       <AccordionRow label="Texture" isOpen={open === 'texture'} onToggle={() => setOpen(open === 'texture' ? null : 'texture')}>
         <FieldLabel>Paper grain</FieldLabel>
-        <Select value={theme.paperGrain} onChange={(v) => set('paperGrain', v as SiteTheme['paperGrain'])} options={GRAIN_OPTIONS} />
+        {theme.performanceMode && (
+          <p style={{ color: '#c9a45c', fontSize: 11, marginBottom: 8 }}>
+            Off while Performance mode is on. Your grain choice is kept and applies again when you turn it off.
+          </p>
+        )}
+        <Select value={theme.paperGrain} onChange={(v) => set('paperGrain', v as SiteTheme['paperGrain'])} options={GRAIN_OPTIONS} disabled={theme.performanceMode} ariaLabel="Paper grain" />
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
           A fine paper texture over the whole site. Keep it low: past &quot;Medium&quot; it starts competing with your photos
           instead of sitting under them.
         </p>
         <FieldLabel style={{ marginTop: 12 }}>Photo color treatment</FieldLabel>
-        <Select value={theme.photoTreatment} onChange={(v) => set('photoTreatment', v as SiteTheme['photoTreatment'])} options={PHOTO_TREATMENT_OPTIONS} />
+        <Select value={theme.photoTreatment} onChange={(v) => set('photoTreatment', v as SiteTheme['photoTreatment'])} options={PHOTO_TREATMENT_OPTIONS} ariaLabel="Photo color treatment" />
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
-          Changes how photos are displayed sitewide. Your uploaded files are never altered, and a client&apos;s download is
-          always the untouched original.
+          Applied to each photo&apos;s web sizes when it is uploaded or reprocessed, so it costs nothing while visitors
+          scroll. Photos you have already uploaded keep their current look until you press Apply to all photos. Your
+          uploaded files are never altered, and a client&apos;s download is always the untouched original.
         </p>
+        <ApplyPhotoTreatment />
       </AccordionRow>
 
       <AccordionRow label="Photo Sharpening" isOpen={open === 'sharpening'} onToggle={() => setOpen(open === 'sharpening' ? null : 'sharpening')}>

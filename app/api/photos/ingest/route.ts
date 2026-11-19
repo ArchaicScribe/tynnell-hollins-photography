@@ -5,6 +5,7 @@ import config from '@payload-config'
 import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { applyWatermarkIfEnabled } from '@/app/lib/watermark'
 import { applySharpeningIfEnabled } from '@/app/lib/sharpening'
+import { applyPhotoTreatmentIfEnabled } from '@/app/lib/photoTreatment'
 import type { Photo } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -147,6 +148,17 @@ export async function POST(request: Request) {
         })
 
         console.log(`[photos/ingest] payload.create done for ${filename} in ${Date.now() - createStart}ms (total: ${Date.now() - requestStart}ms)`)
+
+        // Bake the photo colour treatment (muted, faded, black and white) into the
+        // preview sizes, first so sharpening and the watermark work on the final
+        // colours. Best-effort, never fails the upload; the original stays untouched.
+        try {
+          const treatStart = Date.now()
+          await applyPhotoTreatmentIfEnabled({ s3, bucket, sizes: (doc as Photo).sizes })
+          console.log(`[photos/ingest] photo treatment step for ${filename} took ${Date.now() - treatStart}ms`)
+        } catch (err) {
+          console.warn(`[photos/ingest] photo treatment step failed for ${filename} (non-fatal):`, err)
+        }
 
         // Sharpen the preview sizes if enabled (TYN-325), before watermarking so
         // the watermark itself is never re-sharpened. Both are best-effort and

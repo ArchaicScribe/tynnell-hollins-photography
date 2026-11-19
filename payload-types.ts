@@ -479,19 +479,7 @@ export interface Page {
   /**
    * Make this page render at one of your real site routes instead of its own URL. Only one page can be promoted to a given route at a time.
    */
-  promotedRoute?:
-    | (
-        | 'about'
-        | 'portfolio'
-        | 'portfolio/portraits'
-        | 'portfolio/family'
-        | 'portfolio/weddings'
-        | 'services'
-        | 'testimonials'
-        | 'contact'
-        | 'blog'
-      )
-    | null;
+  promotedRoute?: ('about' | 'portfolio' | 'services' | 'testimonials' | 'contact' | 'blog') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1143,6 +1131,14 @@ export interface SiteConfig {
    */
   pinterestUrl?: string | null;
   /**
+   * A sentence or two about you, shown in the middle of the footer. Leave empty to show nothing.
+   */
+  footerBio?: string | null;
+  /**
+   * Shown with your email in the footer. Example: "Based in New Mexico | Travel Worldwide".
+   */
+  footerLocation?: string | null;
+  /**
    * The name of your free guide, used in the email subject and heading.
    */
   freebieTitle?: string | null;
@@ -1203,6 +1199,7 @@ export interface SiteDesign {
   spacingScale?: ('compact' | 'normal' | 'spacious') | null;
   buttonStyle?: ('sharp' | 'rounded' | 'pill') | null;
   animationsEnabled?: boolean | null;
+  performanceMode?: boolean | null;
   sharpeningLevel?: ('none' | 'subtle' | 'moderate' | 'strong') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1394,6 +1391,8 @@ export interface SiteConfigSelect<T extends boolean = true> {
   facebookUrl?: T;
   tiktokUrl?: T;
   pinterestUrl?: T;
+  footerBio?: T;
+  footerLocation?: T;
   freebieTitle?: T;
   freebieUrl?: T;
   menuCards?:
@@ -1446,6 +1445,7 @@ export interface SiteDesignSelect<T extends boolean = true> {
   spacingScale?: T;
   buttonStyle?: T;
   animationsEnabled?: T;
+  performanceMode?: T;
   sharpeningLevel?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -22,14 +22,14 @@ export type AlbumItem = {
 // view is otherwise unreachable without a mouse or touch).
 export type AlbumLayout = 'grid' | 'strip'
 
-export default function AlbumGrid({ albums, layout = 'grid' }: { albums: AlbumItem[]; layout?: AlbumLayout }) {
+export default function AlbumGrid({ albums, layout = 'grid', hideHeading = false }: { albums: AlbumItem[]; layout?: AlbumLayout; hideHeading?: boolean }) {
   if (albums.length === 0) return null
 
   const isStrip = layout === 'strip'
 
   return (
     <section className={styles.albums}>
-      <h2 className={styles.albumsHeading}>Albums</h2>
+      {!hideHeading && <h2 className={styles.albumsHeading}>Albums</h2>}
       <div
         className={isStrip ? styles.albumStrip : styles.albumGrid}
         {...(isStrip ? { role: 'region', 'aria-label': 'Albums', tabIndex: 0 } : {})}

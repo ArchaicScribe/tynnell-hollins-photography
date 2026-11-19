@@ -5,6 +5,7 @@ import config from '@payload-config'
 import { S3Client } from '@aws-sdk/client-s3'
 import { applyWatermarkIfEnabled } from '@/app/lib/watermark'
 import { applySharpeningIfEnabled } from '@/app/lib/sharpening'
+import { applyPhotoTreatmentIfEnabled } from '@/app/lib/photoTreatment'
 import type { Photo } from '@/payload-types'
 import { r2OriginalsStore } from '@/app/lib/privateOriginals'
 import { streamToBuffer } from '@/app/lib/r2Stream'
@@ -98,6 +99,13 @@ export async function POST(request: Request) {
     const s3 = buildS3Client()
     const bucket = process.env.R2_BUCKET ?? 'tynnell-hollins-photos'
 
+    // Treatment first: it is not idempotent, which is fine here because the sizes
+    // were just rebuilt from the original above.
+    try {
+      await applyPhotoTreatmentIfEnabled({ s3, bucket, sizes: updated.sizes })
+    } catch (err) {
+      console.warn(`[regenerate-photo-sizes] photo treatment failed for ${id} (non-fatal):`, err)
+    }
     try {
       await applySharpeningIfEnabled({ s3, bucket, sizes: updated.sizes })
     } catch (err) {

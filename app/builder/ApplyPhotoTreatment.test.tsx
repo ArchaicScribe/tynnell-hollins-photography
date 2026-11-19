@@ -1,0 +1,89 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
+import { ApplyPhotoTreatment } from './ApplyPhotoTreatment'
+
+// The photo colour treatment is baked into each photo's web renditions when it is
+// processed. Photos uploaded before a change keep their old look until they are
+// reprocessed, so /design offers "Apply to all photos": it rebuilds every photo's
+// sizes from the original through the existing admin route, one photo at a time
+// (each request stays well inside the serverless time limit).
+
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
+
+type Call = { url: string; body?: unknown }
+
+function stubFetch(ids: number[], failing: number[] = []) {
+  const calls: Call[] = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: string, init?: { method?: string; body?: string }) => {
+      calls.push({ url, body: init?.body ? JSON.parse(init.body) : undefined })
+      if (url.startsWith('/api/photos')) return { ok: true, json: async () => ({ docs: ids.map((id) => ({ id })) }) }
+      const id = JSON.parse(init!.body!).id
+      return failing.includes(id)
+        ? { ok: false, status: 500, json: async () => ({ error: 'sharp could not read it' }) }
+        : { ok: true, json: async () => ({ ok: true, id }) }
+    }),
+  )
+  return calls
+}
+
+describe('Apply to all photos', () => {
+  it('rebuilds every photo one at a time, in order, through the admin route', async () => {
+    const calls = stubFetch([3, 1, 2])
+    render(<ApplyPhotoTreatment />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Apply to all photos/ }))
+
+    await waitFor(() => expect(screen.getByText(/Done: 3 of 3 photos/)).toBeTruthy())
+    const posts = calls.filter((c) => c.url === '/api/admin/regenerate-photo-sizes')
+    expect(posts.map((c) => (c.body as { id: number }).id)).toEqual([3, 1, 2])
+  })
+
+  it('shows progress while it works and stops the button being pressed twice', async () => {
+    const release: (() => void)[] = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.startsWith('/api/photos')) return { ok: true, json: async () => ({ docs: [{ id: 1 }, { id: 2 }] }) }
+        await new Promise<void>((r) => release.push(r))
+        return { ok: true, json: async () => ({ ok: true }) }
+      }),
+    )
+    render(<ApplyPhotoTreatment />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Apply to all photos/ }))
+
+    await waitFor(() => expect(screen.getByText(/Processing photo 1 of 2/)).toBeTruthy())
+    expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(true)
+    release[0]()
+    await waitFor(() => expect(screen.getByText(/Processing photo 2 of 2/)).toBeTruthy())
+    release[1]()
+    await waitFor(() => expect(screen.getByText(/Done: 2 of 2 photos/)).toBeTruthy())
+    expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('keeps going past a photo that fails, and says which one', async () => {
+    stubFetch([1, 2, 3], [2])
+    render(<ApplyPhotoTreatment />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Apply to all photos/ }))
+
+    await waitFor(() => expect(screen.getByText(/Done: 2 of 3 photos/)).toBeTruthy())
+    expect(screen.getByText(/Photo 2 failed: sharp could not read it/)).toBeTruthy()
+  })
+
+  it('reports a failure to list the photos instead of hanging', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 401, json: async () => ({}) })))
+    render(<ApplyPhotoTreatment />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Apply to all photos/ }))
+
+    await waitFor(() => expect(screen.getByText(/Could not list your photos/)).toBeTruthy())
+    expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(false)
+  })
+})
