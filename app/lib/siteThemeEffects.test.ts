@@ -25,12 +25,29 @@ describe('photo filter', () => {
     expect(themeToCssVarMap(theme({ photoTreatment }))['--photo-filter']).toBe(expected)
   })
 
-  it('is the only thing the stylesheet applies to photos, with no filter of its own left over', () => {
-    const css = readFileSync(path.resolve(__dirname, '../(site)/globals.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
-    const rule = css.match(/img:not\(\.no-photo-treatment\)\s*\{([^}]*)\}/)?.[1] ?? ''
+  // The thumbnail, card and hero renditions have the colour treatment baked in when
+  // a photo is processed (app/lib/photoTreatment.ts). Anything else (a full-size
+  // original, a legacy file, a static image) is not baked, so it keeps the live
+  // filter and still looks muted. Filtering a baked rendition too would mute it twice.
+  const globalCss = () => readFileSync(path.resolve(__dirname, '../(site)/globals.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  const photoRule = () => globalCss().match(/(img:not\(\.no-photo-treatment\)[^{]*)\{([^}]*)\}/)
 
-    expect(rule).toContain('filter: var(--photo-filter, none)')
-    expect(rule).not.toContain('saturate(')
+  it('is the only thing the stylesheet applies to photos, with no filter of its own left over', () => {
+    const body = photoRule()?.[2] ?? ''
+
+    expect(body).toContain('filter: var(--photo-filter, none)')
+    expect(body).not.toContain('saturate(')
+  })
+
+  it('skips the baked renditions, so they are not muted twice', async () => {
+    const { Photos } = await import('@/collections/Photos')
+    const sizes = (Photos.upload as { imageSizes: { name: string; width: number; height: number }[] }).imageSizes
+    const selector = photoRule()?.[1] ?? ''
+
+    expect(sizes.length).toBe(3)
+    for (const { width, height } of sizes) {
+      expect(selector, `${width}x${height} rendition is not excluded`).toContain(`:not([src*="-${width}x${height}."])`)
+    }
   })
 })
 
@@ -46,11 +63,14 @@ describe('performance mode', () => {
     expect(vars['--paper-grain-opacity']).toBe('0.06')
   })
 
-  it('turns the photo filter and the paper grain off together, whatever was chosen', () => {
+  // The colour treatment is baked into the renditions now, so Performance mode no
+  // longer has anything to do with photos: it removes the one effect still drawn
+  // over the whole page on every frame, the paper grain.
+  it('turns the paper grain off whatever was chosen, and leaves the photo treatment alone', () => {
     const vars = themeToCssVarMap(theme({ performanceMode: true, photoTreatment: 'muted', paperGrain: 'strong' }))
 
-    expect(vars['--photo-filter']).toBe('none')
     expect(vars['--paper-grain-opacity']).toBe('0')
+    expect(vars['--photo-filter']).toBe('saturate(0.65)')
   })
 
   it('keeps the rest of the look: colours and fonts are untouched', () => {

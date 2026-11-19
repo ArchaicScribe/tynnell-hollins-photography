@@ -57,18 +57,21 @@ body::before {
 }
 
 /* ── Photo color treatment ────────────────────────────────── */
-/* Rising Roots runs its photography desaturated. Applied by the shell rather
-   than baked into the uploads, so it works on whatever gets uploaded later and
-   is reversible from /design.
+/* Rising Roots runs its photography desaturated. The thumbnail, card and hero
+   renditions have the treatment baked in when a photo is processed (see
+   app/lib/photoTreatment.ts), because a CSS filter on a large photo is GPU work on
+   every frame while scrolling. Anything else (a full-size original, a legacy file, a
+   static image) is not baked, so it keeps the live filter below and still looks
+   muted. The baked sizes are excluded by their filename suffix, which
+   collections/Photos.ts generates (a test keeps the two in step).
 
    Scoped to real photography: <img> inside content areas. Deliberately NOT
    applied to inline SVG (social icons, the logo mark) which should keep their
    own color, and skipped for anything opting out with .no-photo-treatment. */
 
-img:not(.no-photo-treatment) {
+img:not(.no-photo-treatment):not([src*="-400x300."]):not([src*="-1200x900."]):not([src*="-2560x1440."]) {
   /* --photo-filter is "none" at natural colour and in Performance mode, and
-     "saturate(x)" otherwise (see themeToCssVarMap), so photos are only filtered
-     when the filter changes how they look. */
+     "saturate(x)" otherwise (see themeToCssVarMap). */
   filter: var(--photo-filter, none);
 }
 
