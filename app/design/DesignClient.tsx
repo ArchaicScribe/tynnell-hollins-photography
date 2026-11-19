@@ -11,10 +11,13 @@ export function DesignClient({ initialTheme }: { initialTheme: SiteTheme }) {
   const [open, setOpen] = useState<string | null>('logo')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  // Changes made on screen that are not published yet (the server only sees what is published).
+  const [dirty, setDirty] = useState(false)
   const { iframeRef, openPreviewTab } = useDesignPreviewSync(theme, true)
 
   const set = <K extends keyof SiteTheme>(key: K, value: SiteTheme[K]) => {
     setSaved(false)
+    setDirty(true)
     setTheme((t) => ({ ...t, [key]: value }))
   }
 
@@ -26,7 +29,10 @@ export function DesignClient({ initialTheme }: { initialTheme: SiteTheme }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(theme),
       })
-      if (res.ok) setSaved(true)
+      if (res.ok) {
+        setSaved(true)
+        setDirty(false)
+      }
     } finally {
       setSaving(false)
     }
@@ -53,7 +59,7 @@ export function DesignClient({ initialTheme }: { initialTheme: SiteTheme }) {
 
         <div style={{ padding: '10px 20px 20px', flex: 1 }}>
           <p style={{ margin: '10px 0', color: '#6b6a6a', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Template Options</p>
-          <DesignSections theme={theme} set={set} open={open} setOpen={setOpen} ImagePickerField={ImagePickerField} />
+          <DesignSections theme={theme} set={set} open={open} setOpen={setOpen} ImagePickerField={ImagePickerField} unsavedChanges={dirty} />
         </div>
 
         <div style={{ padding: '16px 20px', borderTop: '1px solid #1e1e1e', display: 'flex', gap: 10 }}>

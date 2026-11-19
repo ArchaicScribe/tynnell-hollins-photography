@@ -210,8 +210,9 @@ export function ColorInput({
 // Animations, Spacing, Buttons) for a given theme + setter, so both consumers
 // share one implementation of "what the controls look like."
 export function DesignSections({
-  theme, set, open, setOpen, ImagePickerField,
+  theme, set, open, setOpen, ImagePickerField, unsavedChanges = false,
 }: {
+  unsavedChanges?: boolean
   theme: SiteTheme
   set: <K extends keyof SiteTheme>(key: K, value: SiteTheme[K]) => void
   open: string | null
@@ -357,7 +358,7 @@ export function DesignSections({
           scroll. Photos you have already uploaded keep their current look until you press Apply to all photos. Your
           uploaded files are never altered, and a client&apos;s download is always the untouched original.
         </p>
-        <ApplyPhotoTreatment />
+        <ApplyPhotoTreatment blocked={unsavedChanges} />
       </AccordionRow>
 
       <AccordionRow label="Photo Sharpening" isOpen={open === 'sharpening'} onToggle={() => setOpen(open === 'sharpening' ? null : 'sharpening')}>

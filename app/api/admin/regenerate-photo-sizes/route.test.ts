@@ -16,9 +16,15 @@ vi.mock('payload', () => ({
 }))
 vi.mock('@payload-config', () => ({ default: {} }))
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
-vi.mock('@/app/lib/sharpening', () => ({ applySharpeningIfEnabled: vi.fn() }))
+// Order of the post-process steps, to pin: treatment, then sharpening, then watermark.
+const steps: string[] = []
+const treatmentMock = vi.fn()
+const sharpeningMock = vi.fn()
+vi.mock('@/app/lib/photoTreatment', () => ({ applyPhotoTreatmentIfEnabled: (...a: unknown[]) => treatmentMock(...a) }))
+vi.mock('@/app/lib/sharpening', () => ({ applySharpeningIfEnabled: (...a: unknown[]) => sharpeningMock(...a) }))
 const watermarkMock = vi.fn()
 vi.mock('@/app/lib/watermark', () => ({ applyWatermarkIfEnabled: (...a: unknown[]) => watermarkMock(...a) }))
+vi.mock('@aws-sdk/client-s3', () => ({ S3Client: class {} }))
 vi.mock('@/app/lib/privateOriginals', () => ({
   r2OriginalsStore: () => ({ get: privateGetMock, put: vi.fn(), delete: vi.fn() }),
 }))
@@ -35,7 +41,10 @@ beforeEach(() => {
   findByIDMock.mockReset()
   updateMock.mockReset().mockResolvedValue({ ...PHOTO, sizes: {} })
   privateGetMock.mockReset()
-  watermarkMock.mockReset()
+  steps.length = 0
+  treatmentMock.mockReset().mockImplementation(async () => void steps.push('treatment'))
+  sharpeningMock.mockReset().mockImplementation(async () => void steps.push('sharpening'))
+  watermarkMock.mockReset().mockImplementation(async () => void steps.push('watermark'))
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('public-display-copy')))
 })
 
@@ -117,5 +126,41 @@ describe('regenerate photo sizes', () => {
     await regenerate()
 
     expect(updateMock.mock.calls[0][0].context?.reuseOriginalKey).toBeUndefined()
+  })
+
+  // The colour treatment is baked into the freshly rebuilt sizes, first so that
+  // sharpening and the watermark work on the final colours. It is not idempotent,
+  // which is why it only ever runs right after the sizes were rebuilt.
+  it('rebuilds the sizes, then treats, sharpens and watermarks in that order', async () => {
+    findByIDMock.mockResolvedValue(PHOTO)
+
+    await regenerate()
+
+    expect(updateMock).toHaveBeenCalledTimes(1)
+    expect(steps).toEqual(['treatment', 'sharpening', 'watermark'])
+  })
+
+  it('does not treat anything when the rebuild itself fails', async () => {
+    findByIDMock.mockResolvedValue(PHOTO)
+    updateMock.mockRejectedValue(new Error('storage error'))
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const res = await regenerate()
+
+    expect(res.status).toBe(500)
+    expect(steps).toEqual([])
+    error.mockRestore()
+  })
+
+  it('still finishes when one post-process step fails', async () => {
+    findByIDMock.mockResolvedValue(PHOTO)
+    treatmentMock.mockRejectedValue(new Error('R2 hiccup'))
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const res = await regenerate()
+
+    expect(res.status).toBe(200)
+    expect(steps).toEqual(['sharpening', 'watermark'])
+    warn.mockRestore()
   })
 })
