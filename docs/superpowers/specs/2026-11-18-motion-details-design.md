@@ -127,8 +127,10 @@ animations" switch is off or the visitor prefers reduced motion.
   (inverted) at about 0.07. Direction flipped, levels raised to gentle 12, medium 22,
   strong 35 percent of frame height (strong is about 0.4 on a 1025px frame; a larger
   range would crop and zoom every photo further). Their hero photo does not move at
-  all. The six layouts still use Gentle; choosing Medium or Strong per block, and
-  leaving heroes still, is a separate decision.
+  all. Decided 2026-11-19 (Alex): heroes stand still (`none`) and the side-by-side
+  photos use Medium, in the six layouts and, by backed-up SQL, on the six live pages
+  (8 photos moved Gentle to Medium, 6 heroes to still). Large photos on Strong is
+  still open.
 - No smooth or inertial scrolling (the reference has none).
 - Cross-fade (item 4): the fade window (the middle half of the frame's trip across
   the screen, `CROSSFADE_START` 0.25 to `CROSSFADE_END` 0.75 in

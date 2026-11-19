@@ -7,9 +7,9 @@ import { buildPortraits } from './portraitsLayout'
 import { buildMyWork } from './myWorkLayout'
 import { buildContact } from './contactLayout'
 
-// Step 5, item 6: the Rising Roots page layouts turn the photo drift on, gently,
-// on every hero and every side-by-side photo, so new pages move like the
-// reference site without Tynnell setting it block by block.
+// Step 5, item 6: the Rising Roots page layouts set the photo drift on every hero
+// and every side-by-side photo, so new pages move like the reference site without
+// Tynnell setting it block by block.
 
 type Loose = Record<string, unknown>
 const pages: [string, Data][] = [
@@ -28,9 +28,12 @@ describe.each(pages)('the %s layout', (_name, data) => {
     expect(photoBlocks.length).toBeGreaterThan(0)
   })
 
-  it('sets every hero and split photo to a gentle drift', () => {
+  // Rising Roots keeps its hero photo still and drifts the large photos further
+  // down the page (measured 2026-11-19), so heroes stand still and the side-by-side
+  // photos use Medium.
+  it('keeps every hero photo still and drifts every side-by-side photo at Medium', () => {
     const levels = photoBlocks.map((b) => [(b.props as Loose).id, (b.props as Loose).photoMovement])
-    expect(levels).toEqual(photoBlocks.map((b) => [(b.props as Loose).id, 'gentle']))
+    expect(levels).toEqual(photoBlocks.map((b) => [(b.props as Loose).id, b.type === 'Hero' ? 'none' : 'medium']))
   })
 
   it('leaves blocks with no photo of their own without the setting', () => {

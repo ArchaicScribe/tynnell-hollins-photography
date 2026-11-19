@@ -17,7 +17,7 @@ export function buildWedding(): Data {
         type: 'Hero',
         props: {
           id: 'wedding-hero',
-          photoMovement: 'gentle',
+          photoMovement: 'none',
           layout: 'bottom',
           eyebrow: '',
           heading: '',
@@ -36,7 +36,7 @@ export function buildWedding(): Data {
         type: 'SplitImageText',
         props: {
           id: 'wedding-booking',
-          photoMovement: 'gentle',
+          photoMovement: 'medium',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'right',
@@ -63,7 +63,7 @@ export function buildWedding(): Data {
         type: 'SplitImageText',
         props: {
           id: 'wedding-approach',
-          photoMovement: 'gentle',
+          photoMovement: 'medium',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'left',

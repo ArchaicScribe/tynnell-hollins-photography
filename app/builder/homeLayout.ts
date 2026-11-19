@@ -100,7 +100,7 @@ export function buildHome(w: HomeWords): Data {
         type: 'Hero',
         props: {
           id: 'home-hero',
-          photoMovement: 'gentle',
+          photoMovement: 'none',
           layout: 'bottom',
           eyebrow: '',
           heading: w.heroHeading,
@@ -136,7 +136,7 @@ export function buildHome(w: HomeWords): Data {
         type: 'SplitImageText',
         props: {
           id: 'home-where',
-          photoMovement: 'gentle',
+          photoMovement: 'medium',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'left',
@@ -173,7 +173,7 @@ export function buildHome(w: HomeWords): Data {
         type: 'SplitImageText',
         props: {
           id: 'home-about',
-          photoMovement: 'gentle',
+          photoMovement: 'medium',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'right',
