@@ -13,6 +13,7 @@ import './globals.css'
 import './styles/tokens.css'
 import Navbar from '../components/Navbar/Navbar'
 import Footer from '../components/Footer/Footer'
+import { PageFade } from '../components/PageFade/PageFade'
 import { getBuilderNavLinks } from '@/app/lib/nav'
 import { getSiteDesign, themeToCssVars } from '@/app/lib/siteDesign'
 import { getSiteConfig } from '@/app/lib/siteConfig'
@@ -100,7 +101,7 @@ export default async function RootLayout({
       <body suppressHydrationWarning>
         <a href="#main-content" className="skipLink">Skip to content</a>
         <Navbar builderLinks={builderLinks} logoUrl={theme.logoUrl} siteTitle={site.title} menuCards={site.menuCards} />
-        <div id="main-content" tabIndex={-1}>{children}</div>
+        <div id="main-content" tabIndex={-1}><PageFade>{children}</PageFade></div>
         <Footer logoUrl={theme.logoUrl} />
         <DesignPreviewBridge />
         {/* No consent gate (TYN-27, investigated): Vercel Web Analytics and Speed

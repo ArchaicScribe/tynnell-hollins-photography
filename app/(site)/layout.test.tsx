@@ -24,6 +24,7 @@ vi.mock('@vercel/analytics/next', () => ({ Analytics: () => null }))
 vi.mock('@vercel/speed-insights/next', () => ({ SpeedInsights: () => null }))
 
 import RootLayout from './layout'
+import { PageFade } from '../components/PageFade/PageFade'
 
 type El = ReactElement<{ children?: ReactNode; dangerouslySetInnerHTML?: { __html: string } }>
 const childElements = (el: El) => Children.toArray(el.props.children).filter(isValidElement) as El[]
@@ -55,5 +56,15 @@ describe('app/(site)/layout.tsx document shell', () => {
     const style = head && (childElements(head).find((c) => c.type === 'style') as ReactElement<Record<string, unknown>>)
     expect(style?.props.precedence).toBeUndefined()
     expect(style?.props.href).toBeUndefined()
+  })
+
+  // Step 5: only the page area fades between routes, so PageFade must sit inside
+  // #main-content, with the nav and footer outside it (they are layout siblings).
+  it('fades only the page area: PageFade wraps the children inside #main-content', async () => {
+    const html = (await RootLayout({ children: null })) as El
+    const body = childElements(html).find((c) => c.type === 'body') as El
+    const main = childElements(body).find((c) => (c.props as { id?: string }).id === 'main-content') as El
+
+    expect(childElements(main).map((c) => c.type)).toEqual([PageFade])
   })
 })

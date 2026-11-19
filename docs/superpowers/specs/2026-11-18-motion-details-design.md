@@ -87,6 +87,14 @@ animations" switch is off or the visitor prefers reduced motion.
    transition globally (`globals.css`), so there is no extra switch.
 9. **Page-to-page fade** between routes: a short fade on the main content, with
    the nav and footer held still.
+   Built (PR #178): `PageFade` (client component inside `#main-content` in the
+   site layout) is keyed on the full pathname, so every client-side navigation
+   remounts the page area and it fades in (opacity only, `--motion-base`, `--ease`,
+   `backwards` fill). Not a `template.tsx`: that only remounts when the first path
+   segment changes, so /blog to /blog/a-post would not fade. The first page load
+   never fades (module flag set after first hydration), so nothing is hidden before
+   paint. Fade-in only, no fade-out of the old page (no exit animation without the
+   View Transitions API). Reduced motion and animations off collapse it globally.
 10. **Distances tuned by eye** on the live site after 6 is on, with Alex's
     comparison against Rising Roots (the reference cannot be measured by
     automation).
