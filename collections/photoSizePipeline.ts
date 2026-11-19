@@ -18,6 +18,14 @@ import type { Photo } from '@/payload-types'
 //    which a normal afterChange hook of ours would not (the plugin's own afterChange
 //    is appended after ours), so the files exist to be read back and rewritten.
 // A plain edit (title, featured, category) rebuilds nothing and is left alone.
+//
+// Known trade-off (PR #188 review): afterOperation runs before Payload commits the
+// transaction, so the finishing steps (a few seconds per photo) hold the photo's row
+// open. If the function were killed at its 60s limit mid-way, the save would roll back
+// and the files already in R2 would be orphans, where the old route-level steps would
+// have left a saved photo at natural colour. A failed save the admin sees and retries
+// was judged better than a silently untreated photo; the steps' own errors never fail
+// the save. Revisit (defer until after the commit) if upload timeouts ever show up.
 
 const FLAG = 'photoSizesRebuilt'
 
