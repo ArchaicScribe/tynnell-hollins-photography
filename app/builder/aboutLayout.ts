@@ -101,7 +101,7 @@ export function buildAbout(words: AboutWords = BLANK_ABOUT_WORDS, specialties: L
       type: 'Hero',
       props: {
         id: 'about-hero',
-        photoMovement: 'gentle',
+        photoMovement: 'none',
         layout: 'bottom',
         eyebrow: w.heroEyebrow,
         heading: w.heroHeading,
@@ -120,7 +120,7 @@ export function buildAbout(words: AboutWords = BLANK_ABOUT_WORDS, specialties: L
       type: 'SplitImageText',
       props: {
         id: 'about-story',
-        photoMovement: 'gentle',
+        photoMovement: 'medium',
         layout: 'side-by-side',
         imageUrl: w.storyImage,
         imagePosition: 'left',
@@ -141,7 +141,7 @@ export function buildAbout(words: AboutWords = BLANK_ABOUT_WORDS, specialties: L
       type: 'SplitImageText',
       props: {
         id: 'about-belief',
-        photoMovement: 'gentle',
+        photoMovement: 'medium',
         layout: 'side-by-side',
         imageUrl: '',
         imagePosition: 'right',
