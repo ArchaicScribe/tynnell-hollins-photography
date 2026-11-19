@@ -9,8 +9,8 @@ import { isGalleryPubliclyVisible } from '@/app/lib/galleryVisibility'
 // /api/portfolio-photos for the same reason: Payload's own /api/galleries
 // REST route has no public `read` access (confirmed - a direct request
 // returns 403). This route runs the same local-API query
-// app/(site)/portfolio/weddings/page.tsx already used before its own album
-// listing was extracted into AlbumGrid, and only returns what a public
+// the old /portfolio/weddings page used before its album listing was extracted
+// into AlbumGrid (that page is gone; /portfolio/weddings now redirects), and only returns what a public
 // album grid needs to display (cover, a few preview thumbnails, title,
 // photo count) - not the full gallery document.
 const VALID_CATEGORIES = ['weddings', 'portraits', 'families', 'couples', 'brands'] as const
