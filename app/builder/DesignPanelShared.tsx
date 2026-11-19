@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import { themeToCssVarMap, type SiteTheme } from '@/app/lib/siteTheme'
+import { ApplyPhotoTreatment } from './ApplyPhotoTreatment'
 
 // Shared pieces between the standalone /design editor (DesignClient.tsx) and
 // the embedded Design tab inside the /builder Website hub (SiteEditorClient.tsx),
@@ -321,9 +322,9 @@ export function DesignSections({
           Performance mode
         </label>
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
-          Turns off the photo muting and the paper grain texture together, so scrolling stays smooth on slower computers
-          and phones. Photos then show in their natural colour. Your Texture choices are kept and come back when you turn
-          this off. Leave unchecked for the full look.
+          Turns off the paper grain texture, the one effect drawn over the whole page on every frame, so scrolling stays
+          smooth on slower computers and phones. Your Paper grain choice is kept and comes back when you turn this off.
+          Photo colour is not affected: it is applied to each photo when it is processed. Leave unchecked for the full look.
         </p>
       </AccordionRow>
 
@@ -341,7 +342,7 @@ export function DesignSections({
         <FieldLabel>Paper grain</FieldLabel>
         {theme.performanceMode && (
           <p style={{ color: '#c9a45c', fontSize: 11, marginBottom: 8 }}>
-            Off while Performance mode is on. Your choices below are kept and apply again when you turn it off.
+            Off while Performance mode is on. Your grain choice is kept and applies again when you turn it off.
           </p>
         )}
         <Select value={theme.paperGrain} onChange={(v) => set('paperGrain', v as SiteTheme['paperGrain'])} options={GRAIN_OPTIONS} disabled={theme.performanceMode} ariaLabel="Paper grain" />
@@ -350,11 +351,13 @@ export function DesignSections({
           instead of sitting under them.
         </p>
         <FieldLabel style={{ marginTop: 12 }}>Photo color treatment</FieldLabel>
-        <Select value={theme.photoTreatment} onChange={(v) => set('photoTreatment', v as SiteTheme['photoTreatment'])} options={PHOTO_TREATMENT_OPTIONS} disabled={theme.performanceMode} ariaLabel="Photo color treatment" />
+        <Select value={theme.photoTreatment} onChange={(v) => set('photoTreatment', v as SiteTheme['photoTreatment'])} options={PHOTO_TREATMENT_OPTIONS} ariaLabel="Photo color treatment" />
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
-          Changes how photos are displayed sitewide. Your uploaded files are never altered, and a client&apos;s download is
-          always the untouched original.
+          Applied to each photo&apos;s web sizes when it is uploaded or reprocessed, so it costs nothing while visitors
+          scroll. Photos you have already uploaded keep their current look until you press Apply to all photos. Your
+          uploaded files are never altered, and a client&apos;s download is always the untouched original.
         </p>
+        <ApplyPhotoTreatment />
       </AccordionRow>
 
       <AccordionRow label="Photo Sharpening" isOpen={open === 'sharpening'} onToggle={() => setOpen(open === 'sharpening' ? null : 'sharpening')}>

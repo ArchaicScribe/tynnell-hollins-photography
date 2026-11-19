@@ -95,10 +95,11 @@ describe('Design panel: Performance mode', () => {
     expect(set).toHaveBeenCalledWith('performanceMode', true)
   })
 
-  it('says its Texture choices are kept and come back when it is turned off', () => {
+  it('says the grain choice is kept and comes back when it is turned off, and that photo colour is unaffected', () => {
     renderPanel({}, 'performance')
 
-    expect(screen.getByText(/choices are kept/i)).toBeTruthy()
+    expect(screen.getByText(/Paper grain choice is kept/i)).toBeTruthy()
+    expect(screen.getByText(/Photo colour is not affected/i)).toBeTruthy()
   })
 
   it('leaves the Texture controls usable while it is off', () => {
@@ -109,11 +110,23 @@ describe('Design panel: Performance mode', () => {
     expect(screen.queryByText(/Off while Performance mode is on/)).toBeNull()
   })
 
-  it('disables the two Texture controls it overrides, and says why, while it is on', () => {
+  it('disables the paper grain control it overrides, and says why, while it is on', () => {
     renderPanel({ performanceMode: true }, 'texture')
 
     expect((screen.getByRole('combobox', { name: 'Paper grain' }) as HTMLSelectElement).disabled).toBe(true)
-    expect((screen.getByRole('combobox', { name: 'Photo color treatment' }) as HTMLSelectElement).disabled).toBe(true)
     expect(screen.getByText(/Off while Performance mode is on/)).toBeTruthy()
+  })
+
+  it('leaves the photo treatment alone: it is baked into photos, not a live filter', () => {
+    renderPanel({ performanceMode: true }, 'texture')
+
+    expect((screen.getByRole('combobox', { name: 'Photo color treatment' }) as HTMLSelectElement).disabled).toBe(false)
+  })
+
+  it('explains that the treatment applies when a photo is processed, and offers to apply it to existing photos', () => {
+    renderPanel({}, 'texture')
+
+    expect(screen.getByText(/uploaded or reprocessed/i)).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Apply to all photos/ })).toBeTruthy()
   })
 })
