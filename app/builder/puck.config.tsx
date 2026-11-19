@@ -2105,8 +2105,8 @@ export const config: Config = {
     // pattern, fetching the dedicated /api/portfolio-albums route (Payload's
     // own /api/galleries REST route also has no public `read` access -
     // confirmed the same way as /api/photos). Reuses the exact album-card
-    // component (AlbumGridComponent) app/(site)/portfolio/weddings/page.tsx
-    // now also uses, so there is one markup implementation, not two.
+    // component (AlbumGridComponent) the old /portfolio/weddings page used,
+    // so there is one markup implementation, not two.
     AlbumGrid: {
       label: 'Album Grid',
       fields: {
