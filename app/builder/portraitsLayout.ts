@@ -68,7 +68,7 @@ export function buildPortraits(): Data {
         type: 'SplitImageText',
         props: {
           id: 'portraits-philosophy',
-          photoMovement: 'medium',
+          photoMovement: 'strong',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'right',

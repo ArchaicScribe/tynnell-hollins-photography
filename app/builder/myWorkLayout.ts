@@ -72,7 +72,7 @@ export function buildMyWork(words: MyWorkWords = { heroEyebrow: '', heroHeading:
         type: 'SplitImageText',
         props: {
           id: 'mywork-about',
-          photoMovement: 'medium',
+          photoMovement: 'strong',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'right',

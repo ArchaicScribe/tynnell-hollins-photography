@@ -30,10 +30,10 @@ describe.each(pages)('the %s layout', (_name, data) => {
 
   // Rising Roots keeps its hero photo still and drifts the large photos further
   // down the page (measured 2026-11-19), so heroes stand still and the side-by-side
-  // photos use Medium.
-  it('keeps every hero photo still and drifts every side-by-side photo at Medium', () => {
+  // photos use Strong.
+  it('keeps every hero photo still and drifts every side-by-side photo at Strong', () => {
     const levels = photoBlocks.map((b) => [(b.props as Loose).id, (b.props as Loose).photoMovement])
-    expect(levels).toEqual(photoBlocks.map((b) => [(b.props as Loose).id, b.type === 'Hero' ? 'none' : 'medium']))
+    expect(levels).toEqual(photoBlocks.map((b) => [(b.props as Loose).id, b.type === 'Hero' ? 'none' : 'strong']))
   })
 
   it('leaves blocks with no photo of their own without the setting', () => {

@@ -36,7 +36,7 @@ export function buildWedding(): Data {
         type: 'SplitImageText',
         props: {
           id: 'wedding-booking',
-          photoMovement: 'medium',
+          photoMovement: 'strong',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'right',
@@ -63,7 +63,7 @@ export function buildWedding(): Data {
         type: 'SplitImageText',
         props: {
           id: 'wedding-approach',
-          photoMovement: 'medium',
+          photoMovement: 'strong',
           layout: 'side-by-side',
           imageUrl: '',
           imagePosition: 'left',
