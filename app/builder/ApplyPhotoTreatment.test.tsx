@@ -77,6 +77,29 @@ describe('Apply to all photos', () => {
     expect(screen.getByText(/Photo 2 failed: sharp could not read it/)).toBeTruthy()
   })
 
+  it('does not start twice when clicked twice before the screen updates', async () => {
+    const calls = stubFetch([1])
+    render(<ApplyPhotoTreatment />)
+    const button = screen.getByRole('button', { name: /Apply to all photos/ })
+
+    fireEvent.click(button)
+    fireEvent.click(button)
+
+    await waitFor(() => expect(screen.getByText(/Done: 1 of 1 photos/)).toBeTruthy())
+    expect(calls.filter((c) => c.url.startsWith('/api/photos')).length).toBe(1)
+    expect(calls.filter((c) => c.url === '/api/admin/regenerate-photo-sizes').length).toBe(1)
+  })
+
+  it('is blocked while there are unpublished changes, because the server uses the published setting', () => {
+    const calls = stubFetch([1])
+    render(<ApplyPhotoTreatment blocked />)
+
+    expect((screen.getByRole('button', { name: /Apply to all photos/ }) as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.getByText(/Publish your changes first/)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: /Apply to all photos/ }))
+    expect(calls.length).toBe(0)
+  })
+
   it('reports a failure to list the photos instead of hanging', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 401, json: async () => ({}) })))
     render(<ApplyPhotoTreatment />)

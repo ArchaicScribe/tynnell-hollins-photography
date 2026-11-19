@@ -70,8 +70,8 @@ body::before {
    own color, and skipped for anything opting out with .no-photo-treatment. */
 
 img:not(.no-photo-treatment):not([src*="-400x300."]):not([src*="-1200x900."]):not([src*="-2560x1440."]) {
-  /* --photo-filter is "none" at natural colour and in Performance mode, and
-     "saturate(x)" otherwise (see themeToCssVarMap). */
+  /* --photo-filter is "none" at natural colour and "saturate(x)" otherwise (see
+     themeToCssVarMap). */
   filter: var(--photo-filter, none);
 }
 
