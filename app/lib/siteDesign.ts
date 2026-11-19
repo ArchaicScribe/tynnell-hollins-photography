@@ -55,6 +55,7 @@ export const getSiteDesign = cache(async (): Promise<SiteTheme> => {
       spacingScale: doc.spacingScale || DEFAULT_THEME.spacingScale,
       buttonStyle: doc.buttonStyle || DEFAULT_THEME.buttonStyle,
       animationsEnabled: doc.animationsEnabled ?? true,
+      performanceMode: doc.performanceMode ?? false,
       sharpeningLevel: doc.sharpeningLevel || DEFAULT_THEME.sharpeningLevel,
     }
   } catch {

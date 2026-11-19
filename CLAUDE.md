@@ -243,6 +243,8 @@ fallback, so an unmapped field emits `undefined` into the CSS), the `/design`
 panel in `DesignPanelShared.tsx`, and the field allowlist in
 `app/api/design/save/route.ts`.
 
+**Photo filter and grain are GPU work on every frame** (measured 2026-11-19: with both off, slow scroll frames on About dropped to a fraction). `--photo-filter` is `none` at natural colour (`saturate(1)` is invisible but still costs) and `saturate(x)` otherwise; **Performance mode** (`SiteDesign.performanceMode`, /design > Performance) turns both the filter and the paper grain off. Both are written by `themeToCssVarMap`, so the live preview follows. Off by default.
+
 **Payload selects are backed by real Postgres enums**, so a new font face or
 style option needs `ALTER TYPE ... ADD VALUE` (or `CREATE TYPE`) in
 `scripts/migrate-db.mjs`, never a plain varchar column. Same trap as

@@ -63,7 +63,10 @@ body::before {
    own color, and skipped for anything opting out with .no-photo-treatment. */
 
 img:not(.no-photo-treatment) {
-  filter: saturate(var(--photo-saturation, 1));
+  /* --photo-filter is "none" at natural colour and in Performance mode, and
+     "saturate(x)" otherwise (see themeToCssVarMap), so photos are only filtered
+     when the filter changes how they look. */
+  filter: var(--photo-filter, none);
 }
 
 a {

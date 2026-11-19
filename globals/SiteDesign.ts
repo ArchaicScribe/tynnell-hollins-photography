@@ -281,6 +281,14 @@ export const SiteDesign: GlobalConfig = {
       defaultValue: true,
     },
     {
+      // Scroll jank (2026-11-19): the photo muting filter and the paper grain
+      // layer are GPU work on every frame. This turns both off together.
+      name: 'performanceMode',
+      type: 'checkbox',
+      label: 'Performance mode',
+      defaultValue: false,
+    },
+    {
       // TYN-325: applied to new uploads' web display sizes only, never the
       // full original (see app/lib/sharpening.ts).
       name: 'sharpeningLevel',

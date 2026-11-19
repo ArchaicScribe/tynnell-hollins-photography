@@ -53,6 +53,7 @@ export interface SiteTheme {
   spacingScale: 'compact' | 'normal' | 'spacious'
   buttonStyle: 'sharp' | 'rounded' | 'pill'
   animationsEnabled: boolean
+  performanceMode: boolean
   sharpeningLevel: 'none' | 'subtle' | 'moderate' | 'strong'
 }
 
@@ -89,6 +90,7 @@ export const DEFAULT_THEME: SiteTheme = {
   spacingScale: 'normal',
   buttonStyle: 'sharp',
   animationsEnabled: true,
+  performanceMode: false,
   sharpeningLevel: 'none',
 }
 
@@ -179,8 +181,16 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--tape-mat': theme.tapeMatColor,
     '--tape-color': theme.tapeColor,
     '--tape-shadow': TAPE_SHADOW[theme.tapeShadow],
-    '--paper-grain-opacity': GRAIN_OPACITY[theme.paperGrain],
+    // Performance mode overrides both: no grain layer, no photo filter.
+    '--paper-grain-opacity': theme.performanceMode ? '0' : GRAIN_OPACITY[theme.paperGrain],
     '--photo-saturation': PHOTO_SATURATION[theme.photoTreatment],
+    // The filter itself, written only when it does something. At natural colour
+    // (or in performance mode) it is `none`: saturate(1) is invisible but still
+    // makes the browser filter every large photo on every frame.
+    '--photo-filter':
+      theme.performanceMode || PHOTO_SATURATION[theme.photoTreatment] === '1'
+        ? 'none'
+        : `saturate(${PHOTO_SATURATION[theme.photoTreatment]})`,
     '--space-scale': String(SPACE_SCALE[theme.spacingScale]),
     '--btn-radius': BTN_RADIUS[theme.buttonStyle],
   }
