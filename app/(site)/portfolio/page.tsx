@@ -42,19 +42,19 @@ export async function generateMetadata(): Promise<Metadata> {
 const CATEGORIES = [
   {
     label: 'Portraits',
-    href: '/portfolio/portraits',
+    href: '/portraits',
     dbCategory: 'portraits',
     description: 'Intimate portraits that capture who you really are.',
   },
   {
     label: 'Family',
-    href: '/portfolio/family',
+    href: '/portraits',
     dbCategory: 'families',
     description: 'Real connection, easy laughter, bonds that tell your story.',
   },
   {
     label: 'Weddings',
-    href: '/portfolio/weddings',
+    href: '/wedding-photography',
     dbCategory: 'weddings',
     description: 'Every wedding is a love story all its own.',
   },
