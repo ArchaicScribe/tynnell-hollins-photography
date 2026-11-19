@@ -15,8 +15,9 @@ import {
 // returned untouched, so existing pages render exactly as before.
 //
 // Otherwise a clipped frame holds a layer made taller than the frame by twice
-// the range; the layer is translated from +range to -range as the frame passes
-// through the viewport, so the frame never shows a gap.
+// the range; the layer is translated from -range to +range (up, then down inside
+// the frame, so slower than the page) as the frame passes through the viewport,
+// so the frame never shows a gap.
 
 const pct = (n: number) => `${Math.round(n * 1000) / 1000}%`
 

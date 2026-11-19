@@ -52,8 +52,8 @@ describe('ParallaxLayer', () => {
     placeFrame(200)
     const { container } = render(<ParallaxLayer level="medium"><img alt="" src="/a.jpg" /></ParallaxLayer>)
 
-    expect(layer(container).style.top).toBe('-15%')
-    expect(layer(container).style.height).toBe('130%')
+    expect(layer(container).style.top).toBe('-22%')
+    expect(layer(container).style.height).toBe('144%')
     expect(layer(container).parentElement?.style.overflow).toBe('hidden')
   })
 
@@ -67,18 +67,18 @@ describe('ParallaxLayer', () => {
     return { top: top + shift, bottom: top + shift + height }
   }
 
-  it('moves the layer down while the frame enters and up as it leaves, never leaving a gap', () => {
+  it('moves the layer up while the frame enters and down as it leaves (slower than the page), never leaving a gap', () => {
     placeFrame(800) // top meets the bottom of the viewport: progress 0
     const { container } = render(<ParallaxLayer level="medium"><img alt="" src="/a.jpg" /></ParallaxLayer>)
     const entering = edges(container)
-    expect(entering.top).toBeCloseTo(0) // as far down as it may go, still covering the top edge
-    expect(entering.bottom).toBeGreaterThanOrEqual(1)
+    expect(entering.bottom).toBeCloseTo(1) // as far up as it may go, still covering the bottom edge
+    expect(entering.top).toBeLessThanOrEqual(0)
 
     placeFrame(-400) // bottom meets the top of the viewport: progress 1
     fireEvent.scroll(window)
     const leaving = edges(container)
-    expect(leaving.bottom).toBeCloseTo(1) // as far up as it may go, still covering the bottom edge
-    expect(leaving.top).toBeLessThanOrEqual(0)
+    expect(leaving.top).toBeCloseTo(0) // as far down as it may go, still covering the top edge
+    expect(leaving.bottom).toBeGreaterThanOrEqual(1)
   })
 
   it('never leaves a gap for any movement level at any scroll position', () => {
@@ -100,7 +100,7 @@ describe('ParallaxLayer', () => {
     const gentle = render(<ParallaxLayer level="gentle"><img alt="" src="/a.jpg" /></ParallaxLayer>)
     const strong = render(<ParallaxLayer level="strong"><img alt="" src="/a.jpg" /></ParallaxLayer>)
 
-    const px = (c: HTMLElement) => parseFloat(/translate3d\(0, (-?[\d.]+)%/.exec(layer(c).style.transform)![1]) * parseFloat(layer(c).style.height)
+    const px = (c: HTMLElement) => Math.abs(parseFloat(/translate3d\(0, (-?[\d.]+)%/.exec(layer(c).style.transform)![1]) * parseFloat(layer(c).style.height))
     expect(px(strong.container)).toBeGreaterThan(px(gentle.container))
   })
 
@@ -127,7 +127,7 @@ describe('ParallaxLayer', () => {
     placeFrame(800)
     const { container } = render(<ParallaxLayer level="medium"><img alt="" src="/a.jpg" /></ParallaxLayer>)
 
-    expect(layer(container).style.transform).toMatch(/^translate3d\(0, [1-9]/)
+    expect(layer(container).style.transform).toMatch(/^translate3d\(0, -[1-9]/)
   })
 
   it('cancels a pending animation frame when unmounted', () => {
