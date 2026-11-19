@@ -57,30 +57,22 @@ describe('POST /api/admin/regenerate-photo-sizes', () => {
     expect(args.file.name).toBe('DSC07442-1.JPG')
   })
 
-  it('rebuilds the sizes from the stored file, then treats, sharpens and watermarks in that order', async () => {
-    await POST(request({ id: 7 }))
+  it('rebuilds the sizes once and leaves treating, sharpening and watermarking to the Photos collection', async () => {
+    // The collection finishes every rebuild itself (collections/photoSizePipeline.ts).
+    // The treatment mutes again each time it runs, so doing it here as well would
+    // mute these photos twice.
+    const res = await POST(request({ id: 7 }))
 
+    expect(res.status).toBe(200)
     expect(updateMock).toHaveBeenCalledTimes(1)
-    expect(calls).toEqual(['treatment', 'sharpening', 'watermark'])
+    expect(calls).toEqual([])
   })
 
-  it('does not treat anything when the rebuild itself fails', async () => {
+  it('reports a failed rebuild', async () => {
     updateMock.mockRejectedValue(new Error('storage error'))
 
     const res = await POST(request({ id: 7 }))
 
     expect(res.status).toBe(500)
-    expect(calls).toEqual([])
-  })
-
-  it('still finishes when one post-process step fails', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const treatment = await import('@/app/lib/photoTreatment')
-    vi.spyOn(treatment, 'applyPhotoTreatmentIfEnabled').mockRejectedValueOnce(new Error('R2 hiccup'))
-
-    const res = await POST(request({ id: 7 }))
-
-    expect(res.status).toBe(200)
-    expect(calls).toEqual(['sharpening', 'watermark'])
   })
 })

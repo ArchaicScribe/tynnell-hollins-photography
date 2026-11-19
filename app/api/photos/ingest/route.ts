@@ -3,10 +3,6 @@ import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import config from '@payload-config'
 import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
-import { applyWatermarkIfEnabled } from '@/app/lib/watermark'
-import { applySharpeningIfEnabled } from '@/app/lib/sharpening'
-import { applyPhotoTreatmentIfEnabled } from '@/app/lib/photoTreatment'
-import type { Photo } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 // This function downloads a full-size DSLR file from R2, runs it through sharp
@@ -146,37 +142,9 @@ export async function POST(request: Request) {
 
       console.log(`[photos/ingest] payload.create done for ${filename} in ${Date.now() - createStart}ms (total: ${Date.now() - requestStart}ms)`)
 
-      // Bake the photo colour treatment (muted, faded, black and white) into the
-      // preview sizes, first so sharpening and the watermark work on the final
-      // colours. Best-effort, never fails the upload; the original stays untouched.
-      try {
-        const treatStart = Date.now()
-        await applyPhotoTreatmentIfEnabled({ s3, bucket, sizes: (doc as Photo).sizes })
-        console.log(`[photos/ingest] photo treatment step for ${filename} took ${Date.now() - treatStart}ms`)
-      } catch (err) {
-        console.warn(`[photos/ingest] photo treatment step failed for ${filename} (non-fatal):`, err)
-      }
-
-      // Sharpen the preview sizes if enabled (TYN-325), before watermarking so
-      // the watermark itself is never re-sharpened. Both are best-effort and
-      // never fail the upload. The full original stays untouched.
-      try {
-        const sharpenStart = Date.now()
-        await applySharpeningIfEnabled({ s3, bucket, sizes: (doc as Photo).sizes })
-        console.log(`[photos/ingest] sharpening step for ${filename} took ${Date.now() - sharpenStart}ms`)
-      } catch (err) {
-        console.warn(`[photos/ingest] sharpening step failed for ${filename} (non-fatal):`, err)
-      }
-
-      // Watermark the preview sizes if enabled (TYN-322) - best-effort,
-      // never fails the upload. The full original stays untouched.
-      try {
-        const watermarkStart = Date.now()
-        await applyWatermarkIfEnabled({ s3, bucket, sizes: (doc as Photo).sizes })
-        console.log(`[photos/ingest] watermark step for ${filename} took ${Date.now() - watermarkStart}ms`)
-      } catch (err) {
-        console.warn(`[photos/ingest] watermark step failed for ${filename} (non-fatal):`, err)
-      }
+      // Colour treatment, sharpening and the watermark are applied by the Photos
+      // collection itself once the sizes are stored (collections/photoSizePipeline.ts),
+      // so a photo created or rebuilt any other way gets them too and none runs twice.
     } catch (err) {
       console.error(`[photos/ingest] payload.create failed for ${filename}:`, err)
       // Distinguish sharp format errors from other failures so we can surface them clearly
