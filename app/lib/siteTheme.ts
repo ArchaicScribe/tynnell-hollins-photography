@@ -183,6 +183,10 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--tape-shadow': TAPE_SHADOW[theme.tapeShadow],
     // Performance mode overrides both: no grain layer, no photo filter.
     '--paper-grain-opacity': theme.performanceMode ? '0' : GRAIN_OPACITY[theme.paperGrain],
+    // The grain is a full-viewport fixed layer: at opacity 0 the browser skips
+    // painting it but can still keep the layer, so it is removed outright when
+    // it would be invisible (no grain chosen, or Performance mode).
+    '--paper-grain-display': theme.performanceMode || theme.paperGrain === 'none' ? 'none' : 'block',
     '--photo-saturation': PHOTO_SATURATION[theme.photoTreatment],
     // The filter itself, written only when it does something. At natural colour
     // (or in performance mode) it is `none`: saturate(1) is invisible but still

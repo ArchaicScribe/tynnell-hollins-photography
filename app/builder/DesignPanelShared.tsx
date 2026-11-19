@@ -140,12 +140,36 @@ export function FieldLabel({ children, style }: { children: React.ReactNode; sty
   return <label style={{ display: 'block', color: '#9b9a9a', fontSize: 11.5, marginBottom: 6, ...style }}>{children}</label>
 }
 
-export function Select<T extends string>({ value, onChange, options }: { value: T; onChange: (v: string) => void; options: { label: string; value: T }[] }) {
+export function Select<T extends string>({
+  value,
+  onChange,
+  options,
+  disabled,
+  ariaLabel,
+}: {
+  value: T
+  onChange: (v: string) => void
+  options: { label: string; value: T }[]
+  disabled?: boolean
+  ariaLabel?: string
+}) {
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      style={{ width: '100%', background: '#1a1a1a', color: '#e6e1de', border: '1px solid #2a2a2a', borderRadius: 5, padding: '8px 10px', fontSize: 13 }}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      style={{
+        width: '100%',
+        background: '#1a1a1a',
+        color: '#e6e1de',
+        border: '1px solid #2a2a2a',
+        borderRadius: 5,
+        padding: '8px 10px',
+        fontSize: 13,
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : undefined,
+      }}
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>
@@ -298,7 +322,8 @@ export function DesignSections({
         </label>
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
           Turns off the photo muting and the paper grain texture together, so scrolling stays smooth on slower computers
-          and phones. Photos then show in their natural colour. Leave unchecked for the full look.
+          and phones. Photos then show in their natural colour. Your Texture choices are kept and come back when you turn
+          this off. Leave unchecked for the full look.
         </p>
       </AccordionRow>
 
@@ -314,13 +339,18 @@ export function DesignSections({
 
       <AccordionRow label="Texture" isOpen={open === 'texture'} onToggle={() => setOpen(open === 'texture' ? null : 'texture')}>
         <FieldLabel>Paper grain</FieldLabel>
-        <Select value={theme.paperGrain} onChange={(v) => set('paperGrain', v as SiteTheme['paperGrain'])} options={GRAIN_OPTIONS} />
+        {theme.performanceMode && (
+          <p style={{ color: '#c9a45c', fontSize: 11, marginBottom: 8 }}>
+            Off while Performance mode is on. Your choices below are kept and apply again when you turn it off.
+          </p>
+        )}
+        <Select value={theme.paperGrain} onChange={(v) => set('paperGrain', v as SiteTheme['paperGrain'])} options={GRAIN_OPTIONS} disabled={theme.performanceMode} ariaLabel="Paper grain" />
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
           A fine paper texture over the whole site. Keep it low: past &quot;Medium&quot; it starts competing with your photos
           instead of sitting under them.
         </p>
         <FieldLabel style={{ marginTop: 12 }}>Photo color treatment</FieldLabel>
-        <Select value={theme.photoTreatment} onChange={(v) => set('photoTreatment', v as SiteTheme['photoTreatment'])} options={PHOTO_TREATMENT_OPTIONS} />
+        <Select value={theme.photoTreatment} onChange={(v) => set('photoTreatment', v as SiteTheme['photoTreatment'])} options={PHOTO_TREATMENT_OPTIONS} disabled={theme.performanceMode} ariaLabel="Photo color treatment" />
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
           Changes how photos are displayed sitewide. Your uploaded files are never altered, and a client&apos;s download is
           always the untouched original.

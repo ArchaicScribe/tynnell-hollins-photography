@@ -82,3 +82,38 @@ describe('Design panel: Navbar section', () => {
     expect(set).toHaveBeenCalledWith('colorNavText', '')
   })
 })
+
+// Performance mode turns the photo muting and the paper grain off. While it is
+// on, the two Texture controls it overrides must say so: a select that shows
+// "Medium" while nothing changes on the site reads as a broken control.
+describe('Design panel: Performance mode', () => {
+  it('has a Performance mode checkbox that saves to the right setting', () => {
+    const set = renderPanel({}, 'performance')
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Performance mode/ }))
+
+    expect(set).toHaveBeenCalledWith('performanceMode', true)
+  })
+
+  it('says its Texture choices are kept and come back when it is turned off', () => {
+    renderPanel({}, 'performance')
+
+    expect(screen.getByText(/choices are kept/i)).toBeTruthy()
+  })
+
+  it('leaves the Texture controls usable while it is off', () => {
+    renderPanel({ performanceMode: false }, 'texture')
+
+    expect((screen.getByRole('combobox', { name: 'Paper grain' }) as HTMLSelectElement).disabled).toBe(false)
+    expect((screen.getByRole('combobox', { name: 'Photo color treatment' }) as HTMLSelectElement).disabled).toBe(false)
+    expect(screen.queryByText(/Off while Performance mode is on/)).toBeNull()
+  })
+
+  it('disables the two Texture controls it overrides, and says why, while it is on', () => {
+    renderPanel({ performanceMode: true }, 'texture')
+
+    expect((screen.getByRole('combobox', { name: 'Paper grain' }) as HTMLSelectElement).disabled).toBe(true)
+    expect((screen.getByRole('combobox', { name: 'Photo color treatment' }) as HTMLSelectElement).disabled).toBe(true)
+    expect(screen.getByText(/Off while Performance mode is on/)).toBeTruthy()
+  })
+})

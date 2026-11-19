@@ -61,6 +61,7 @@
      the "off" fallback for before SiteDesign has been read. */
   --paper-grain-opacity:  0;
   --photo-saturation:     1;
+  --photo-filter:         none;   /* "saturate(x)" once photos are muted; see themeToCssVarMap */
 
   /* ── Tape treatment ───────────────────────────────────────── */
   --tape-mat:             #f4efe8;
