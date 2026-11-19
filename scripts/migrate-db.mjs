@@ -746,6 +746,12 @@ async function run() {
     `)
     console.log('✓ site_design.sharpening_level column ready')
 
+    // Performance mode (2026-11-19): turns the photo filter and paper grain off.
+    await client.query(`
+      ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "performance_mode" boolean DEFAULT false
+    `)
+    console.log('✓ site_design.performance_mode column ready')
+
     // ------------------------------------------------------------------
     // Migration 20260721_100000: drop NOT NULL on galleries.cover_photo_id
     // (TYN-312). A brand-new gallery has no photos yet, so requiring a cover

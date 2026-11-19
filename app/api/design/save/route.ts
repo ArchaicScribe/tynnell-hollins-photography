@@ -41,6 +41,7 @@ const FIELDS = [
   'spacingScale',
   'buttonStyle',
   'animationsEnabled',
+  'performanceMode',
   'sharpeningLevel',
 ] as const
 

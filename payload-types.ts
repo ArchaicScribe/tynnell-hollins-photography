@@ -1197,6 +1197,7 @@ export interface SiteDesign {
   spacingScale?: ('compact' | 'normal' | 'spacious') | null;
   buttonStyle?: ('sharp' | 'rounded' | 'pill') | null;
   animationsEnabled?: boolean | null;
+  performanceMode?: boolean | null;
   sharpeningLevel?: ('none' | 'subtle' | 'moderate' | 'strong') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1442,6 +1443,7 @@ export interface SiteDesignSelect<T extends boolean = true> {
   spacingScale?: T;
   buttonStyle?: T;
   animationsEnabled?: T;
+  performanceMode?: T;
   sharpeningLevel?: T;
   updatedAt?: T;
   createdAt?: T;

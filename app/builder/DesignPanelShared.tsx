@@ -291,6 +291,17 @@ export function DesignSections({
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>Turns off decorative transitions/animations sitewide when unchecked.</p>
       </AccordionRow>
 
+      <AccordionRow label="Performance" isOpen={open === 'performance'} onToggle={() => setOpen(open === 'performance' ? null : 'performance')}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e6e1de', fontSize: 13, cursor: 'pointer' }}>
+          <input type="checkbox" checked={theme.performanceMode} onChange={(e) => set('performanceMode', e.target.checked)} />
+          Performance mode
+        </label>
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          Turns off the photo muting and the paper grain texture together, so scrolling stays smooth on slower computers
+          and phones. Photos then show in their natural colour. Leave unchecked for the full look.
+        </p>
+      </AccordionRow>
+
       <AccordionRow label="Spacing" isOpen={open === 'spacing'} onToggle={() => setOpen(open === 'spacing' ? null : 'spacing')}>
         <FieldLabel>Overall spacing</FieldLabel>
         <Select value={theme.spacingScale} onChange={(v) => set('spacingScale', v as SiteTheme['spacingScale'])} options={SPACING_OPTIONS} />
