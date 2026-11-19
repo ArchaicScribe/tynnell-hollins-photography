@@ -91,14 +91,6 @@ describe('regenerate photo sizes', () => {
     error.mockRestore()
   })
 
-  it('watermarks the public display copy along with the smaller sizes', async () => {
-    findByIDMock.mockResolvedValue(PHOTO)
-
-    await regenerate()
-
-    expect(watermarkMock.mock.calls[0][0].main).toEqual({ filename: 'first-dance.jpg', mimeType: 'image/jpeg' })
-  })
-
   // Builder pages and blog posts store photo URLs as plain strings. Renaming
   // the files (first-dance.jpg to first-dance-1.jpg) would break every one.
   it('keeps the same public filenames', async () => {
@@ -128,19 +120,20 @@ describe('regenerate photo sizes', () => {
     expect(updateMock.mock.calls[0][0].context?.reuseOriginalKey).toBeUndefined()
   })
 
-  // The colour treatment is baked into the freshly rebuilt sizes, first so that
-  // sharpening and the watermark work on the final colours. It is not idempotent,
-  // which is why it only ever runs right after the sizes were rebuilt.
-  it('rebuilds the sizes, then treats, sharpens and watermarks in that order', async () => {
+  // The Photos collection finishes every rebuild itself (collections/photoSizePipeline.ts).
+  // The colour treatment mutes again each time it runs, so doing it here as well would
+  // mute these photos twice.
+  it('rebuilds the sizes once and leaves treating, sharpening and watermarking to the Photos collection', async () => {
     findByIDMock.mockResolvedValue(PHOTO)
 
-    await regenerate()
+    const res = await regenerate()
 
+    expect(res.status).toBe(200)
     expect(updateMock).toHaveBeenCalledTimes(1)
-    expect(steps).toEqual(['treatment', 'sharpening', 'watermark'])
+    expect(steps).toEqual([])
   })
 
-  it('does not treat anything when the rebuild itself fails', async () => {
+  it('reports a failed rebuild', async () => {
     findByIDMock.mockResolvedValue(PHOTO)
     updateMock.mockRejectedValue(new Error('storage error'))
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -148,19 +141,6 @@ describe('regenerate photo sizes', () => {
     const res = await regenerate()
 
     expect(res.status).toBe(500)
-    expect(steps).toEqual([])
     error.mockRestore()
-  })
-
-  it('still finishes when one post-process step fails', async () => {
-    findByIDMock.mockResolvedValue(PHOTO)
-    treatmentMock.mockRejectedValue(new Error('R2 hiccup'))
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    const res = await regenerate()
-
-    expect(res.status).toBe(200)
-    expect(steps).toEqual(['sharpening', 'watermark'])
-    warn.mockRestore()
   })
 })

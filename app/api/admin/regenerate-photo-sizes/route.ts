@@ -2,10 +2,6 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import config from '@payload-config'
-import { S3Client } from '@aws-sdk/client-s3'
-import { applyWatermarkIfEnabled } from '@/app/lib/watermark'
-import { applySharpeningIfEnabled } from '@/app/lib/sharpening'
-import { applyPhotoTreatmentIfEnabled } from '@/app/lib/photoTreatment'
 import type { Photo } from '@/payload-types'
 import { r2OriginalsStore } from '@/app/lib/privateOriginals'
 import { streamToBuffer } from '@/app/lib/r2Stream'
@@ -18,22 +14,11 @@ export const maxDuration = 60
 // imageSizes in collections/Photos.ts were bumped to higher resolutions with
 // an explicit JPEG quality, but that only affects NEW uploads. This
 // regenerates ONE existing photo's preview sizes from its original file,
-// re-running the same sharp resize + sharpening/watermark pipeline the real
-// ingest route runs, so it ends up equivalent to a fresh upload. One photo
+// re-running the same sharp resize + treatment/sharpening/watermark pipeline the
+// real ingest runs, so it ends up equivalent to a fresh upload. One photo
 // per request (not a bulk loop) so it stays well inside Vercel's function
 // time limit regardless of library size - call it once per photo ID from an
 // authenticated admin session.
-function buildS3Client(): S3Client {
-  return new S3Client({
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
-    },
-    region: 'auto',
-    forcePathStyle: true,
-  })
-}
 
 async function fetchBuffer(url: string): Promise<Buffer> {
   const res = await fetch(url)
@@ -75,7 +60,7 @@ export async function POST(request: Request) {
     const buffer = photo.originalKey
       ? await streamToBuffer((await r2OriginalsStore().get(photo.originalKey)).body as unknown as AsyncIterable<Uint8Array>)
       : await fetchBuffer(photo.url)
-    const updated = (await payload.update({
+    await payload.update({
       collection: 'photos',
       id,
       data: {},
@@ -94,28 +79,10 @@ export async function POST(request: Request) {
       },
       overrideAccess: false,
       user,
-    })) as Photo
-
-    const s3 = buildS3Client()
-    const bucket = process.env.R2_BUCKET ?? 'tynnell-hollins-photos'
-
-    // Treatment first: it is not idempotent, which is fine here because the sizes
-    // were just rebuilt from the original above.
-    try {
-      await applyPhotoTreatmentIfEnabled({ s3, bucket, sizes: updated.sizes })
-    } catch (err) {
-      console.warn(`[regenerate-photo-sizes] photo treatment failed for ${id} (non-fatal):`, err)
-    }
-    try {
-      await applySharpeningIfEnabled({ s3, bucket, sizes: updated.sizes })
-    } catch (err) {
-      console.warn(`[regenerate-photo-sizes] sharpening failed for ${id} (non-fatal):`, err)
-    }
-    try {
-      await applyWatermarkIfEnabled({ s3, bucket, sizes: updated.sizes, main: { filename: updated.filename, mimeType: updated.mimeType } })
-    } catch (err) {
-      console.warn(`[regenerate-photo-sizes] watermark failed for ${id} (non-fatal):`, err)
-    }
+    })
+    // Colour treatment, sharpening and the watermark are applied by the Photos
+    // collection itself after any rebuild of the sizes (collections/photoSizePipeline.ts).
+    // Doing them here too would apply the (non-idempotent) treatment twice.
 
     return NextResponse.json({ ok: true, id })
   } catch (err) {

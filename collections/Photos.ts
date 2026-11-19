@@ -3,6 +3,7 @@ import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, Collectio
 import { recordOriginalFilename } from './photoOriginalFilename'
 import { r2OriginalsStore } from '@/app/lib/privateOriginals'
 import { photoOriginalHooks } from './photoOriginals'
+import { flagRebuiltSizes, postProcessRebuiltSizes } from './photoSizePipeline'
 
 // TYN-11: full-resolution originals live in a private bucket; the public file
 // is a display-size copy. See photoOriginals.ts.
@@ -48,9 +49,9 @@ export const Photos: CollectionConfig = {
   hooks: {
     beforeOperation: [photoOriginals.beforeOperation],
     beforeValidate: [autoPopulateFromFilename, recordOriginalFilename],
-    beforeChange: [photoOriginals.beforeChange],
+    beforeChange: [photoOriginals.beforeChange, flagRebuiltSizes],
     afterChange: [revalidatePhoto],
-    afterOperation: [photoOriginals.afterOperation],
+    afterOperation: [photoOriginals.afterOperation, postProcessRebuiltSizes],
     afterDelete: [photoOriginals.afterDelete],
   },
   upload: {

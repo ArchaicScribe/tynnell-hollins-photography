@@ -3,7 +3,9 @@ import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client
 
 // TYN-11: a new upload's public file is a display-size copy (the
 // full-resolution original goes to the private bucket in the Photos hooks),
-// so ingest watermarks it along with the smaller sizes.
+// so the watermark has to cover it too. That, the colour treatment and the
+// sharpening are applied by the Photos collection after every rebuild of the
+// sizes (collections/photoSizePipeline.ts), not by this route.
 
 const authMock = vi.fn()
 const createMock = vi.fn()
@@ -33,17 +35,15 @@ afterEach(() => {
 })
 
 describe('photo ingest', () => {
-  it('watermarks the public display copy along with the smaller sizes', async () => {
+  it('leaves the colour treatment, sharpening and watermark to the Photos collection', async () => {
     const res = await POST(new Request('https://tynnellhollinsphotography.com/api/photos/ingest', {
       method: 'POST',
       body: JSON.stringify({ key: 'temp/abc.jpg', filename: 'first-dance.jpg' }),
     }))
 
     expect(res.status).toBe(200)
-    expect(watermarkMock.mock.calls[0][0]).toMatchObject({
-      sizes: { card: { filename: 'first-dance-1200x900.jpg' } },
-      main: { filename: 'first-dance.jpg', mimeType: 'image/jpeg' },
-    })
+    // Done here as well, the (non-idempotent) treatment would be applied twice.
+    expect(watermarkMock).not.toHaveBeenCalled()
   })
 
   // The temporary upload is the full-resolution file sitting in the public
