@@ -122,7 +122,13 @@ animations" switch is off or the visitor prefers reduced motion.
 
 - Hover and stagger have no per-block control. The "Enable animations" switch is
   the control, which keeps the builder from growing another field per effect.
-- Parallax distances stay at gentle 8, medium 15, strong 25 percent until tuned.
+- Parallax (retuned 2026-11-19, PR #181): measured on Rising Roots, its large photos
+  drift about 0.5px per px scrolled and move SLOWER than the page; ours moved faster
+  (inverted) at about 0.07. Direction flipped, levels raised to gentle 12, medium 22,
+  strong 35 percent of frame height (strong is about 0.4 on a 1025px frame; a larger
+  range would crop and zoom every photo further). Their hero photo does not move at
+  all. The six layouts still use Gentle; choosing Medium or Strong per block, and
+  leaving heroes still, is a separate decision.
 - No smooth or inertial scrolling (the reference has none).
 - Cross-fade (item 4): the fade window (the middle half of the frame's trip across
   the screen, `CROSSFADE_START` 0.25 to `CROSSFADE_END` 0.75 in

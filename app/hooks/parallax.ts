@@ -5,12 +5,15 @@ export type PhotoMovement = 'none' | 'gentle' | 'medium' | 'strong'
 
 // How far the photo layer travels, as a fraction of the frame height, either
 // side of centre. The layer is oversized by twice this amount so the frame never
-// shows a gap. Tuned by eye against the Rising Roots reference, not copied from
-// its raw numbers.
+// shows a gap. Retuned 2026-11-19 after measuring Rising Roots: its large photos
+// drift about 0.5px per px scrolled. A frame of F px in a viewport of V px scrolls
+// F + V px while visible and the photo shifts 2 * range * F, so the rate is
+// 2 * range * F / (F + V). Strong lands just under the reference on a tall frame
+// (a bigger range would crop and zoom every photo further); gentle stays subtle.
 export const PARALLAX_RANGE: Record<Exclude<PhotoMovement, 'none'>, number> = {
-  gentle: 0.08,
-  medium: 0.15,
-  strong: 0.25,
+  gentle: 0.12,
+  medium: 0.22,
+  strong: 0.35,
 }
 
 // 0 when the frame's top meets the bottom edge of the viewport, 1 when its
@@ -23,12 +26,14 @@ export function parallaxProgress(rect: { top: number; height: number }, viewport
 }
 
 // Layer offset as a percent of the LAYER's own height (that is what a CSS
-// translate percentage means): +range of the frame height entering, -range
-// leaving. The layer is (1 + 2 * range) times the frame height, so the percent is
-// scaled down by that, otherwise the layer travels too far and a strip opens at
-// the frame edge. The photo moves faster than the page, as on the reference.
+// translate percentage means): -range of the frame height entering (as far up as
+// it may go), +range leaving (as far down). The layer is (1 + 2 * range) times the
+// frame height, so the percent is scaled down by that, otherwise the layer travels
+// too far and a strip opens at the frame edge. The photo moves down inside the
+// frame while the page scrolls up, so it travels SLOWER than the page: that is the
+// direction Rising Roots uses (measured 2026-11-19; this used to be inverted).
 export function parallaxTranslatePercent(progress: number, range: number): number {
-  return ((1 - 2 * progress) * range * 100) / (1 + 2 * range)
+  return ((2 * progress - 1) * range * 100) / (1 + 2 * range)
 }
 
 // Motion is off for the system reduced-motion preference and for the /design

@@ -37,7 +37,13 @@ describe('parallaxTranslatePercent', () => {
   it('is 0 in the middle and symmetric either side', () => {
     expect(parallaxTranslatePercent(0.5, 0.15)).toBeCloseTo(0)
     expect(parallaxTranslatePercent(0, 0.15)).toBeCloseTo(-parallaxTranslatePercent(1, 0.15))
-    expect(parallaxTranslatePercent(0, 0.15)).toBeGreaterThan(0)
+    // Entering (progress 0) the layer sits as far UP as it may, leaving as far down:
+    // the photo moves slower than the page, as on Rising Roots (measured 2026-11-19).
+    expect(parallaxTranslatePercent(0, 0.15)).toBeLessThan(0)
+  })
+
+  it('moves the photo down inside the frame as the page scrolls, so it travels slower than the page', () => {
+    expect(parallaxTranslatePercent(0.75, 0.22)).toBeGreaterThan(parallaxTranslatePercent(0.25, 0.22))
   })
 
   it('travels exactly range times the frame height in pixels at either end', () => {
@@ -45,7 +51,7 @@ describe('parallaxTranslatePercent', () => {
       const frame = 1000
       const layer = frame * (1 + 2 * range)
       const px = (parallaxTranslatePercent(0, range) / 100) * layer
-      expect(px).toBeCloseTo(range * frame)
+      expect(px).toBeCloseTo(-range * frame)
     }
   })
 
@@ -64,6 +70,21 @@ describe('parallaxTranslatePercent', () => {
 })
 
 describe('PARALLAX_RANGE', () => {
+  // Rising Roots drifts a large photo about 0.5px per px scrolled (measured). A frame
+  // of F px in a viewport of V px scrolls F + V px while visible and the photo shifts
+  // 2 * range * F, so the rate is 2 * range * F / (F + V). Strong gets close to the
+  // reference on a tall frame; gentle stays a subtle drift.
+  it('uses the retuned levels', () => {
+    expect(PARALLAX_RANGE).toEqual({ gentle: 0.12, medium: 0.22, strong: 0.35 })
+  })
+
+  it('puts strong near the reference rate on a tall frame, and gentle well below it', () => {
+    const rate = (range: number, frame: number, viewport: number) => (2 * range * frame) / (frame + viewport)
+    expect(rate(PARALLAX_RANGE.strong, 1025, 749)).toBeGreaterThan(0.35)
+    expect(rate(PARALLAX_RANGE.strong, 1025, 749)).toBeLessThan(0.5)
+    expect(rate(PARALLAX_RANGE.gentle, 1025, 749)).toBeLessThan(0.2)
+  })
+
   it('grows from gentle to medium to strong', () => {
     expect(PARALLAX_RANGE.gentle).toBeLessThan(PARALLAX_RANGE.medium)
     expect(PARALLAX_RANGE.medium).toBeLessThan(PARALLAX_RANGE.strong)
