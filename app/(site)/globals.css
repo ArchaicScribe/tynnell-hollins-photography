@@ -59,7 +59,7 @@ body::before {
 /* ── Photo color treatment ────────────────────────────────── */
 /* Rising Roots runs its photography desaturated. The thumbnail, card and hero
    renditions have the treatment baked in when a photo is processed (see
-   app/lib/photoTreatment.ts), because a CSS filter on a large photo is GPU work on
+   app/lib/photoFinish.ts), because a CSS filter on a large photo is GPU work on
    every frame while scrolling. Anything else (a full-size original, a legacy file, a
    static image) is not baked, so it keeps the live filter below and still looks
    muted. The baked sizes are excluded by their filename suffix, which

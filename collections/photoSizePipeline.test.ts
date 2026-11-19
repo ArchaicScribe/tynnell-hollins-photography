@@ -9,7 +9,7 @@ import { Photos } from './Photos'
 // and must not touch the files, because the colour treatment is not idempotent.
 
 const postProcess = vi.fn()
-vi.mock('@/app/lib/photoPostProcess', () => ({ postProcessPhotoSizes: (p: unknown) => postProcess(p) }))
+vi.mock('@/app/lib/photoFinish', () => ({ finishPhotoSizes: (p: unknown) => postProcess(p) }))
 vi.mock('@/app/lib/r2', () => ({ r2Client: () => ({ client: true }), r2Bucket: () => 'bucket' }))
 
 const { flagRebuiltSizes, postProcessRebuiltSizes } = await import('./photoSizePipeline')

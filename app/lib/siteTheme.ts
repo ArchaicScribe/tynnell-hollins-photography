@@ -196,7 +196,7 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
     '--photo-saturation': PHOTO_SATURATION[theme.photoTreatment],
     // The live filter, for any photo that is not a pre-muted rendition (a full-size
     // original, a legacy file, a static image): the thumbnail, card and hero sizes
-    // have the treatment baked in (app/lib/photoTreatment.ts) and are skipped in
+    // have the treatment baked in (app/lib/photoFinish.ts) and are skipped in
     // globals.css. Written only when it does something: at natural colour it is
     // `none`, because saturate(1) is invisible but still makes the browser filter.
     '--photo-filter':

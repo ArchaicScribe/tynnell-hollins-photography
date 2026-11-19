@@ -22,9 +22,7 @@ vi.mock('payload', () => ({
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 vi.mock('@payload-config', () => ({ default: {} }))
 vi.mock('@aws-sdk/client-s3', () => ({ S3Client: class {} }))
-vi.mock('@/app/lib/photoTreatment', () => ({ applyPhotoTreatmentIfEnabled: async () => void calls.push('treatment') }))
-vi.mock('@/app/lib/sharpening', () => ({ applySharpeningIfEnabled: async () => void calls.push('sharpening') }))
-vi.mock('@/app/lib/watermark', () => ({ applyWatermarkIfEnabled: async () => void calls.push('watermark') }))
+vi.mock('@/app/lib/photoFinish', () => ({ finishPhotoSizes: async () => void calls.push('finish') }))
 
 const { POST } = await import('./route')
 
