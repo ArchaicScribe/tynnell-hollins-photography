@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { recordOriginalFilename } from './photoOriginalFilename'
+import { flagRebuiltSizes, postProcessRebuiltSizes } from './photoSizePipeline'
 
 // Auto-populate title and alt from the filename so bulk uploads never get
 // blocked by required-field validation. Tynnell can clean up titles/alt text
@@ -38,7 +39,9 @@ export const Photos: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [autoPopulateFromFilename, recordOriginalFilename],
+    beforeChange: [flagRebuiltSizes],
     afterChange: [revalidatePhoto],
+    afterOperation: [postProcessRebuiltSizes],
   },
   upload: {
     staticDir: 'media',

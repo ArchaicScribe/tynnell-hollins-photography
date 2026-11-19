@@ -17,9 +17,11 @@ import { streamToBuffer } from './r2Stream'
 // generated the sizes, overwriting each rendition in place at the same R2 key. The
 // full original is never touched (clients download it as shot). It is not
 // idempotent (running it twice mutes twice), so it only ever runs on freshly
-// generated sizes: at ingest, and after the regenerate route rebuilds them from the
-// original. Changing the treatment in /design therefore applies to new uploads and
-// to photos reprocessed with "Apply to all photos".
+// generated sizes. The Photos collection calls it after every rebuild of the sizes
+// (collections/photoSizePipeline.ts): a new upload, the regenerate route, and a crop
+// or focal point edit in the admin. Changing the treatment in /design therefore
+// applies to new uploads, edited photos, and photos reprocessed with "Apply to all
+// photos".
 //
 // Order in the pipeline: treatment, then sharpening, then watermark.
 
