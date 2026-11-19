@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 // "Apply to all photos" (/design > Texture). The photo colour treatment is baked
 // into each photo's web renditions when the photo is processed (see
@@ -16,11 +16,25 @@ type State =
   | { phase: 'done'; ok: number; total: number; failures: string[] }
   | { phase: 'error'; message: string }
 
-export function ApplyPhotoTreatment() {
+// `blocked` is set while the /design draft has changes that are not published yet:
+// the server reads the PUBLISHED setting, so applying now would bake the old one.
+export function ApplyPhotoTreatment({ blocked = false }: { blocked?: boolean }) {
   const [state, setState] = useState<State>({ phase: 'idle' })
+  const running = useRef(false)
   const busy = state.phase === 'listing' || state.phase === 'working'
 
   async function run() {
+    // A ref, not the disabled button: two clicks can land before React re-renders.
+    if (running.current) return
+    running.current = true
+    try {
+      await runAll()
+    } finally {
+      running.current = false
+    }
+  }
+
+  async function runAll() {
     setState({ phase: 'listing' })
     let ids: (number | string)[]
     try {
@@ -60,7 +74,7 @@ export function ApplyPhotoTreatment() {
       <button
         type="button"
         onClick={run}
-        disabled={busy}
+        disabled={busy || blocked}
         style={{
           background: '#1a1a1a',
           color: '#e6e1de',
@@ -68,12 +82,17 @@ export function ApplyPhotoTreatment() {
           borderRadius: 5,
           padding: '8px 12px',
           fontSize: 12,
-          cursor: busy ? 'default' : 'pointer',
-          opacity: busy ? 0.6 : 1,
+          cursor: busy || blocked ? 'default' : 'pointer',
+          opacity: busy || blocked ? 0.6 : 1,
         }}
       >
         Apply to all photos
       </button>
+      {blocked && (
+        <p style={{ color: '#c9a45c', fontSize: 11, marginTop: 8 }}>
+          Publish your changes first. Apply uses your published setting, not the one on screen.
+        </p>
+      )}
       <div aria-live="polite" style={{ color: '#9b9a9a', fontSize: 11, marginTop: 8 }}>
         {state.phase === 'listing' && <p>Finding your photos...</p>}
         {state.phase === 'working' && <p>Processing photo {state.index} of {state.total}...</p>}

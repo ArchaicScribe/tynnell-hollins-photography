@@ -74,6 +74,11 @@ export async function POST(request: Request) {
         name: photo.filename ?? `photo-${id}.jpg`,
         size: buffer.length,
       },
+      // Keep the photo under its own filename. Without this Payload sees the photo's
+      // own row already using the name, renames the file to "name-1.jpg" and deletes
+      // the old original and sizes, which 404s every place that stored a size URL as
+      // a plain string (page builder image fields, blog covers, menu cards).
+      overwriteExistingFiles: true,
       overrideAccess: false,
       user,
     })) as Photo
