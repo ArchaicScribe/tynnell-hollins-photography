@@ -59,3 +59,38 @@ describe('performance mode', () => {
     expect(on['--color-bg']).toBe('#E4E2D8')
   })
 })
+
+// The grain is a full-viewport fixed layer. At opacity 0 the browser skips
+// painting it but can still keep the layer, so it is removed outright whenever
+// it would be invisible: no grain chosen, or Performance mode.
+describe('paper grain layer', () => {
+  it('is removed outright when no grain is chosen', () => {
+    expect(themeToCssVarMap(theme({ paperGrain: 'none' }))['--paper-grain-display']).toBe('none')
+  })
+
+  it('is shown when a grain is chosen', () => {
+    expect(themeToCssVarMap(theme({ paperGrain: 'medium' }))['--paper-grain-display']).toBe('block')
+  })
+
+  it('is removed outright in Performance mode, whatever grain was chosen', () => {
+    expect(themeToCssVarMap(theme({ performanceMode: true, paperGrain: 'strong' }))['--paper-grain-display']).toBe('none')
+  })
+
+  it('is driven by that variable in the stylesheet', () => {
+    const css = readFileSync(path.resolve(__dirname, '../(site)/globals.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+    const rule = css.match(/body::before\s*\{([^}]*)\}/)?.[1] ?? ''
+
+    expect(rule).toContain('display: var(--paper-grain-display, none)')
+  })
+})
+
+// The column is added by scripts/migrate-db.mjs, which the Vercel build runs
+// before the new code ships. Nothing else fails if the line is dropped: the site
+// would quietly fall back to the default theme.
+describe('performance_mode column', () => {
+  it('is added by the migration script', () => {
+    const script = readFileSync(path.resolve(__dirname, '../../scripts/migrate-db.mjs'), 'utf8')
+
+    expect(script).toMatch(/ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "performance_mode" boolean DEFAULT false/)
+  })
+})

@@ -36,6 +36,9 @@ body {
 
 body::before {
   content: '';
+  /* none when no grain is chosen or in Performance mode (see themeToCssVarMap),
+     so the full-viewport layer does not exist at all, not just at opacity 0. */
+  display: var(--paper-grain-display, none);
   position: fixed;
   inset: 0;
   z-index: 1;
