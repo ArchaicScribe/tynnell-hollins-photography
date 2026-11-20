@@ -203,3 +203,15 @@ a {
   opacity: 0.3;
   filter: invert(1);
 }
+
+/* iOS Safari zooms the whole page when a form field under 16px is focused, and does not
+   zoom back, so every field is 16px on phones and touch devices. The component stylesheets
+   set smaller sizes with higher specificity, hence !important. Checkboxes, radios and
+   buttons are left alone. */
+@media (max-width: 767px), (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='hidden']):not([type='submit']):not([type='button']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
