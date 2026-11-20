@@ -9,20 +9,19 @@ import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client
 
 const authMock = vi.fn()
 const createMock = vi.fn()
-const watermarkMock = vi.fn()
+const finishMock = vi.fn()
 
 vi.mock('payload', () => ({ getPayload: vi.fn().mockResolvedValue({ auth: authMock, create: createMock }) }))
 vi.mock('@payload-config', () => ({ default: {} }))
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
-vi.mock('@/app/lib/sharpening', () => ({ applySharpeningIfEnabled: vi.fn() }))
-vi.mock('@/app/lib/watermark', () => ({ applyWatermarkIfEnabled: (...a: unknown[]) => watermarkMock(...a) }))
+vi.mock('@/app/lib/photoFinish', () => ({ finishPhotoSizes: (...a: unknown[]) => finishMock(...a) }))
 
 const { POST } = await import('./route')
 
 beforeEach(() => {
   authMock.mockReset().mockResolvedValue({ user: { id: 1 } })
   createMock.mockReset().mockResolvedValue({ id: 9, filename: 'first-dance.jpg', mimeType: 'image/jpeg', sizes: { card: { filename: 'first-dance-1200x900.jpg' } } })
-  watermarkMock.mockReset()
+  finishMock.mockReset()
   vi.spyOn(S3Client.prototype, 'send').mockImplementation(async (command: unknown) => {
     if (command instanceof GetObjectCommand) return { Body: (async function* () { yield Buffer.from('jpeg') })() }
     return {}
@@ -43,7 +42,7 @@ describe('photo ingest', () => {
 
     expect(res.status).toBe(200)
     // Done here as well, the (non-idempotent) treatment would be applied twice.
-    expect(watermarkMock).not.toHaveBeenCalled()
+    expect(finishMock).not.toHaveBeenCalled()
   })
 
   // The temporary upload is the full-resolution file sitting in the public

@@ -1,6 +1,5 @@
-// Shared by the ingest-time image post-processing steps (watermark.ts,
-// sharpening.ts) that download an already-uploaded R2 object, transform it
-// with sharp, and re-upload it in place.
+// Shared by the image post-processing (photoFinish.ts) that downloads an
+// already-uploaded R2 object, transforms it with sharp, and re-uploads it in place.
 export async function streamToBuffer(stream: AsyncIterable<Uint8Array>): Promise<Buffer> {
   const chunks: Buffer[] = []
   for await (const chunk of stream) {

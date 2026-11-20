@@ -5,7 +5,7 @@ import type { Photo } from '@/payload-types'
 // whenever a file goes in: a new upload, the regenerate route, and a crop or focal
 // point edit in the admin. The rebuilt files come out at natural colour, unsharpened
 // and unwatermarked, so they have to be finished afterwards (colour treatment,
-// sharpening, watermark: app/lib/photoPostProcess.ts).
+// sharpening, watermark: app/lib/photoFinish.ts).
 //
 // Doing that in the collection, not in each caller, means no caller can forget it
 // (a crop edit used to put a muted photo back to natural colour) and none can do it
@@ -50,9 +50,9 @@ export const postProcessRebuiltSizes: CollectionAfterOperationHook = async ({ op
     // Loaded on use, not at the top: the finishing steps read the site design, which
     // imports the Payload config, which imports this collection. A top-level import
     // would make that a cycle (and drag sharp into every file that imports Photos).
-    const { postProcessPhotoSizes } = await import('@/app/lib/photoPostProcess')
+    const { finishPhotoSizes } = await import('@/app/lib/photoFinish')
     const { r2Bucket, r2Client } = await import('@/app/lib/r2')
-    await postProcessPhotoSizes({
+    await finishPhotoSizes({
       s3: r2Client(),
       bucket: r2Bucket(),
       sizes: doc.sizes,

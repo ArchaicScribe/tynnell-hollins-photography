@@ -16,14 +16,10 @@ vi.mock('payload', () => ({
 }))
 vi.mock('@payload-config', () => ({ default: {} }))
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
-// Order of the post-process steps, to pin: treatment, then sharpening, then watermark.
+// The Photos collection finishes every rebuild (collections/photoSizePipeline.ts); this
+// route must not, or the colour treatment would be applied twice.
 const steps: string[] = []
-const treatmentMock = vi.fn()
-const sharpeningMock = vi.fn()
-vi.mock('@/app/lib/photoTreatment', () => ({ applyPhotoTreatmentIfEnabled: (...a: unknown[]) => treatmentMock(...a) }))
-vi.mock('@/app/lib/sharpening', () => ({ applySharpeningIfEnabled: (...a: unknown[]) => sharpeningMock(...a) }))
-const watermarkMock = vi.fn()
-vi.mock('@/app/lib/watermark', () => ({ applyWatermarkIfEnabled: (...a: unknown[]) => watermarkMock(...a) }))
+vi.mock('@/app/lib/photoFinish', () => ({ finishPhotoSizes: async () => void steps.push('finish') }))
 vi.mock('@aws-sdk/client-s3', () => ({ S3Client: class {} }))
 vi.mock('@/app/lib/privateOriginals', () => ({
   r2OriginalsStore: () => ({ get: privateGetMock, put: vi.fn(), delete: vi.fn() }),
@@ -42,9 +38,6 @@ beforeEach(() => {
   updateMock.mockReset().mockResolvedValue({ ...PHOTO, sizes: {} })
   privateGetMock.mockReset()
   steps.length = 0
-  treatmentMock.mockReset().mockImplementation(async () => void steps.push('treatment'))
-  sharpeningMock.mockReset().mockImplementation(async () => void steps.push('sharpening'))
-  watermarkMock.mockReset().mockImplementation(async () => void steps.push('watermark'))
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('public-display-copy')))
 })
 

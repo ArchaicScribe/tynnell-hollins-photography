@@ -26,7 +26,7 @@ describe('photo filter', () => {
   })
 
   // The thumbnail, card and hero renditions have the colour treatment baked in when
-  // a photo is processed (app/lib/photoTreatment.ts). Anything else (a full-size
+  // a photo is processed (app/lib/photoFinish.ts). Anything else (a full-size
   // original, a legacy file, a static image) is not baked, so it keeps the live
   // filter and still looks muted. Filtering a baked rendition too would mute it twice.
   const globalCss = () => readFileSync(path.resolve(__dirname, '../(site)/globals.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')

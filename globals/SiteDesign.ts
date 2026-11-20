@@ -290,7 +290,7 @@ export const SiteDesign: GlobalConfig = {
     },
     {
       // TYN-325: applied to new uploads' web display sizes only, never the
-      // full original (see app/lib/sharpening.ts).
+      // full original (see app/lib/photoFinish.ts).
       name: 'sharpeningLevel',
       type: 'select',
       label: 'Photo sharpening',
