@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 
 // "Apply to all photos" (/design > Texture). The photo colour treatment is baked
 // into each photo's web renditions when the photo is processed (see
-// app/lib/photoTreatment.ts), so photos uploaded before a change keep their old look
+// app/lib/photoFinish.ts), so photos uploaded before a change keep their old look
 // until they are reprocessed. This rebuilds every photo's sizes from its original
 // through the existing admin route, one photo per request so each stays well inside
 // the serverless time limit. Originals are never altered.
