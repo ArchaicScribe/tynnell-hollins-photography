@@ -186,13 +186,15 @@ const EDITORIAL_CSS = `
 // Taped-photo treatment (TYN-233): an editorial "scrapbook" look where each
 // photo sits on a cream mat with a strip of translucent washi tape at the top.
 // Tape strips are pseudo-elements, which inline styles can't express, so the
-// rules live in the root-injected stylesheet. Per-photo rotation is applied
+// rules live in the root-injected stylesheet. They carry z-index:3 so both strips lie
+// on top of the photo whatever the photo's own styling (a filtered image is a stacking
+// context and would otherwise cover the ::before strip). Per-photo rotation is applied
 // inline (alternating) so the grid feels hand-placed, not mechanical.
 const TAPE_CSS = `
 .pk-taped{position:relative;background:var(--tape-mat);padding:0.7rem 0.7rem 1.1rem;box-shadow:var(--tape-shadow);transition:transform .25s ease}
 .pk-taped:hover{transform:rotate(0deg) scale(1.015) !important;z-index:2}
 .pk-taped img{display:block;width:100%;height:auto}
-.pk-taped::before,.pk-taped::after{content:'';position:absolute;top:-0.55rem;width:4.5rem;height:1.4rem;background:var(--tape-color);box-shadow:0 1px 2px rgba(0,0,0,0.18);backdrop-filter:blur(1px)}
+.pk-taped::before,.pk-taped::after{content:'';position:absolute;top:-0.55rem;width:4.5rem;height:1.4rem;background:var(--tape-color);box-shadow:0 1px 2px rgba(0,0,0,0.18);backdrop-filter:blur(1px);z-index:3}
 .pk-taped::before{left:0.6rem;transform:rotate(-32deg)}
 .pk-taped::after{right:0.6rem;transform:rotate(32deg)}
 `
