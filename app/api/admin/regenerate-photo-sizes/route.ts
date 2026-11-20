@@ -3,6 +3,9 @@ import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
+import { r2OriginalsStore } from '@/app/lib/privateOriginals'
+import { streamToBuffer } from '@/app/lib/r2Stream'
+import { REUSE_ORIGINAL_KEY } from '@/collections/photoOriginals'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -48,22 +51,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Photo not found or has no url' }, { status: 404 })
     }
 
-    const buffer = await fetchBuffer(photo.url)
+    // TYN-11: saving with a file runs it through the private-original hooks,
+    // which publish a display copy of it. So the source must be the private
+    // original whenever one exists: rebuilding from the public display copy
+    // would shrink every size for good. A photo not moved yet still has its
+    // full-resolution file public, so rebuilding it is also what moves it
+    // into the private bucket (the TYN-11 backfill).
+    const buffer = photo.originalKey
+      ? await streamToBuffer((await r2OriginalsStore().get(photo.originalKey)).body as unknown as AsyncIterable<Uint8Array>)
+      : await fetchBuffer(photo.url)
     await payload.update({
       collection: 'photos',
       id,
       data: {},
+      // Builder pages and blog posts store photo URLs as plain strings, so
+      // the rebuilt files must keep their names (Payload would otherwise
+      // save first-dance-1.jpg and delete first-dance.jpg).
+      overwriteExistingFiles: true,
+      // Rebuilding from the private original itself: keep it where it is
+      // rather than storing a second copy under a new key.
+      ...(photo.originalKey ? { context: { [REUSE_ORIGINAL_KEY]: photo.originalKey } } : {}),
       file: {
         data: buffer,
         mimetype: photo.mimeType ?? 'image/jpeg',
         name: photo.filename ?? `photo-${id}.jpg`,
         size: buffer.length,
       },
-      // Keep the photo under its own filename. Without this Payload sees the photo's
-      // own row already using the name, renames the file to "name-1.jpg" and deletes
-      // the old original and sizes, which 404s every place that stored a size URL as
-      // a plain string (page builder image fields, blog covers, menu cards).
-      overwriteExistingFiles: true,
       overrideAccess: false,
       user,
     })

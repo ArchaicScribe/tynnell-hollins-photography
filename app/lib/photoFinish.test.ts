@@ -13,7 +13,7 @@ import sharp from 'sharp'
 const getSiteDesignMock = vi.fn()
 vi.mock('./siteDesign', () => ({ getSiteDesign: () => getSiteDesignMock() }))
 
-const { saturationMatrix, finishBuffer, loadFinishPlan, finishPhotoSizes } = await import('./photoFinish')
+const { saturationMatrix, finishBuffer, watermarkOnly, loadFinishPlan, finishPhotoSizes } = await import('./photoFinish')
 
 const NOTHING = { saturation: 1, sharpenSigma: null, watermark: null }
 
@@ -192,6 +192,30 @@ describe('finishBuffer', () => {
   })
 })
 
+// TYN-11: a photo's own public file is a display-size copy (the full-resolution original
+// is in a private bucket). It is watermarked too, or it would be the best free copy of the
+// photo, but it is not recoloured or sharpened and keeps its own format.
+describe('watermarkOnly', () => {
+  const mark = () => sharp({ create: { width: 50, height: 50, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } } }).png().toBuffer()
+
+  it('puts the watermark on a JPEG without recolouring it, and keeps it a JPEG', async () => {
+    const out = await watermarkOnly(await solid(200, 60, 60, 400, 200), await mark())
+
+    expect((await sharp(out).metadata()).format).toBe('jpeg')
+    const [r, g, b] = await pixel(out, 60, 20) // away from the corner
+    expect(Math.abs(r - 200) + Math.abs(g - 60) + Math.abs(b - 60)).toBeLessThanOrEqual(9)
+    expect((await pixel(out, 350, 150))[1]).toBeGreaterThan(200) // bottom right: the white watermark
+  })
+
+  it('keeps a PNG a PNG', async () => {
+    const png = await sharp({ create: { width: 400, height: 200, channels: 3, background: { r: 10, g: 120, b: 200 } } }).png().toBuffer()
+
+    const out = await watermarkOnly(png, await mark())
+
+    expect((await sharp(out).metadata()).format).toBe('png')
+  })
+})
+
 describe('loadFinishPlan', () => {
   afterEach(() => vi.unstubAllGlobals())
 
@@ -330,6 +354,52 @@ describe('finishPhotoSizes', () => {
     await run({ thumbnail: sizes.thumbnail, card: null, hero: undefined })
 
     expect(sent.filter((s) => s.cmd === 'PutObjectCommand').map((p) => p.key)).toEqual(['a-400x300.jpg'])
+  })
+
+  describe('the public display copy (main)', () => {
+    const main = { filename: 'a.jpg', mimeType: 'image/jpeg' }
+    const mark = async () => new Response(await sharp({ create: { width: 10, height: 10, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } } }).png().toBuffer())
+
+    it('is watermarked in place when there is a watermark, but not recoloured', async () => {
+      getSiteDesignMock.mockResolvedValue({ photoTreatment: 'bw', sharpeningLevel: 'none', watermarkEnabled: true, watermarkUrl: 'https://m.example/w.png' })
+      vi.mocked(fetch).mockImplementation(async () => mark())
+      const bodies: Record<string, Buffer> = {}
+      const send = vi.fn(async (command: { constructor: { name: string }; input: { Key: string; Body?: Buffer; ContentType?: string } }) => {
+        if (command.constructor.name === 'GetObjectCommand') return { Body: (async function* () { yield await solid(200, 60, 60, 300, 200) })() }
+        bodies[command.input.Key] = command.input.Body as Buffer
+        return {}
+      })
+
+      await finishPhotoSizes({ s3: { send } as never, bucket: 'b', sizes, main })
+
+      const [r, g, b] = await pixel(bodies['a.jpg'], 20, 20)
+      expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeGreaterThan(100) // still red: black and white is for the sizes only
+      const [sr, sg, sb] = await pixel(bodies['a-400x300.jpg'], 20, 20)
+      expect(Math.max(sr, sg, sb) - Math.min(sr, sg, sb)).toBeLessThanOrEqual(2) // the sizes are black and white
+    })
+
+    it('is left alone when there is no watermark, even if the sizes are recoloured', async () => {
+      getSiteDesignMock.mockResolvedValue({ photoTreatment: 'muted', sharpeningLevel: 'none', watermarkEnabled: false })
+
+      await run().then(() => finishPhotoSizes({ s3: s3 as never, bucket: 'b', sizes, main }))
+
+      expect(sent.some((s) => s.key === 'a.jpg')).toBe(false)
+    })
+
+    it('can be the only thing a photo has, and a failing copy does not stop the sizes', async () => {
+      getSiteDesignMock.mockResolvedValue({ photoTreatment: 'muted', sharpeningLevel: 'none', watermarkEnabled: true, watermarkUrl: 'https://m.example/w.png' })
+      vi.mocked(fetch).mockImplementation(async () => mark())
+      s3.send.mockImplementationOnce(async () => {
+        throw new Error('R2 hiccup')
+      }) // the display copy is the first download
+
+      await finishPhotoSizes({ s3: s3 as never, bucket: 'b', sizes, main })
+
+      expect(sent.filter((x) => x.cmd === 'PutObjectCommand').map((x) => x.key)).toEqual(['a-400x300.jpg', 'a-1200x900.jpg', 'a-2560x1440.jpg'])
+      sent.length = 0
+      await finishPhotoSizes({ s3: s3 as never, bucket: 'b', sizes: null, main })
+      expect(sent.filter((x) => x.cmd === 'PutObjectCommand').map((x) => x.key)).toEqual(['a.jpg'])
+    })
   })
 
   it('does nothing for a photo with no sizes', async () => {

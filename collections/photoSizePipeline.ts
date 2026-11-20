@@ -56,6 +56,7 @@ export const postProcessRebuiltSizes: CollectionAfterOperationHook = async ({ op
       s3: r2Client(),
       bucket: r2Bucket(),
       sizes: doc.sizes,
+      main: { filename: doc.filename, mimeType: doc.mimeType },
       label: doc.filename ?? String(doc.id ?? 'photo'),
     })
   } catch (err) {

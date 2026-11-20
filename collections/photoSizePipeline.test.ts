@@ -26,7 +26,7 @@ function finish(args: { operation: string; req: Req; result: unknown }) {
   return (postProcessRebuiltSizes as CollectionAfterOperationHook)(args as never)
 }
 
-const doc = { id: 7, filename: 'DSC1.jpg', sizes: { card: { filename: 'DSC1-1200x900.jpg' } } }
+const doc = { id: 7, filename: 'DSC1.jpg', mimeType: 'image/jpeg', sizes: { card: { filename: 'DSC1-1200x900.jpg' } } }
 
 beforeEach(() => {
   postProcess.mockReset().mockResolvedValue(undefined)
@@ -75,7 +75,12 @@ describe('postProcessRebuiltSizes (after the whole save and upload)', () => {
     const out = await finish({ operation, req, result: doc })
 
     expect(postProcess).toHaveBeenCalledTimes(1)
-    expect(postProcess.mock.calls[0][0]).toMatchObject({ bucket: 'bucket', sizes: doc.sizes, label: 'DSC1.jpg' })
+    expect(postProcess.mock.calls[0][0]).toMatchObject({
+      bucket: 'bucket',
+      sizes: doc.sizes,
+      label: 'DSC1.jpg',
+      main: { filename: 'DSC1.jpg', mimeType: 'image/jpeg' },
+    })
     expect(out).toBe(doc)
   })
 
