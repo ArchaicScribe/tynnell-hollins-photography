@@ -173,6 +173,7 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -218,6 +219,7 @@ export interface Photo {
    * Controls the order this photo appears in. Lower numbers appear first. Leave blank and sort manually later.
    */
   displayOrder?: number | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -720,6 +722,7 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  resetPasswordRequestedAt?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -742,6 +745,7 @@ export interface PhotosSelect<T extends boolean = true> {
   caption?: T;
   featured?: T;
   displayOrder?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

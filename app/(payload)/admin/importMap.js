@@ -1,5 +1,5 @@
+import { UsersEditHeader as UsersEditHeader_3b70f535de38c80cc1705f1238be7764 } from '../../../components/admin/UsersEditHeader'
 import { UsersGridView as UsersGridView_e52e18109dd25c5262c4d2e001ae4a87 } from '../../../components/admin/UsersGridView'
-import { UsersEditHeader as UsersEditHeader_c9d0e1f20314253647586970819a2b3c } from '../../../components/admin/UsersEditHeader'
 import { PhotoEditHeader as PhotoEditHeader_994fa1cc565775730944a666ddd8cc75 } from '../../../components/admin/PhotoEditHeader'
 import { PhotoViewInPortfolioButton as PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93 } from '../../../components/admin/PhotoViewInPortfolioButton'
 import { PhotoGridView as PhotoGridView_416d697f5d1039cfdf395a457f2fc19a } from '../../../components/admin/PhotoGridView'
@@ -10,20 +10,18 @@ import { CoverPhotoPicker as CoverPhotoPicker_3b28ab93a98ad4c3c31c60877ff3dab4 }
 import { GalleryBulkPhotoPicker as GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a007c60f35b } from '../../../components/admin/GalleryBulkPhotoPicker'
 import { GalleryPhotoArranger as GalleryPhotoArranger_4f7a56c3214650ac93f2acac369662ae } from '../../../components/admin/GalleryPhotoArranger'
 import { GalleryGridView as GalleryGridView_694fcc37683b7c53f35803e850250b41 } from '../../../components/admin/GalleryGridView'
+import { TestimonialsEditHeader as TestimonialsEditHeader_77d09d4799f86c2cfadb4bb062794af7 } from '../../../components/admin/TestimonialsEditHeader'
 import { TestimonialsGridView as TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3 } from '../../../components/admin/TestimonialsGridView'
-import { TestimonialsEditHeader as TestimonialsEditHeader_a7b8c9d0e1f20314253647586970819a } from '../../../components/admin/TestimonialsEditHeader'
+import { ServicesEditHeader as ServicesEditHeader_ef2c940165e0e2fc59777b3aadc89ec6 } from '../../../components/admin/ServicesEditHeader'
 import { ServicesGridView as ServicesGridView_f8436fdecdb227662e953e6db61537d6 } from '../../../components/admin/ServicesGridView'
-import { ServicesEditHeader as ServicesEditHeader_b8c9d0e1f20314253647586970819a2b } from '../../../components/admin/ServicesEditHeader'
+import { ProjectsEditHeader as ProjectsEditHeader_01451fa7d45f824e84147cc8f9a17986 } from '../../../components/admin/ProjectsEditHeader'
 import { SessionRowLabel as SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc } from '../../../collections/Projects/SessionRowLabel'
 import { PaymentRowLabel as PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5 } from '../../../collections/Projects/PaymentRowLabel'
 import { DocumentRowLabel as DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c } from '../../../collections/Projects/DocumentRowLabel'
 import { ProjectsKanbanView as ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0 } from '../../../components/admin/ProjectsKanbanView'
-import { ProjectsEditHeader as ProjectsEditHeader_d0e1f20314253647586970819a2b3c4d } from '../../../components/admin/ProjectsEditHeader'
+import { HeroSlidesHeader as HeroSlidesHeader_b2fda4a2e245f9191ba006cd446d716e } from '../../../components/admin/HeroSlidesHeader'
+import { AboutPageHeader as AboutPageHeader_20c156c3bd0697b2e3bdd86efee5fb0d } from '../../../components/admin/AboutPageHeader'
 import { AboutViewOnSiteButton as AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe } from '../../../components/admin/AboutViewOnSiteButton'
-import { BookingSettingsHeader as BookingSettingsHeader_b2c3d4e5f60718293a4b5c6d7e8f9001 } from '../../../components/admin/BookingSettingsHeader'
-import { HeroSlidesHeader as HeroSlidesHeader_c3d4e5f60718293a4b5c6d7e8f900112 } from '../../../components/admin/HeroSlidesHeader'
-import { AboutPageHeader as AboutPageHeader_d4e5f60718293a4b5c6d7e8f90011223 } from '../../../components/admin/AboutPageHeader'
-import { AvailabilityHeader as AvailabilityHeader_e5f60718293a4b5c6d7e8f9001122334 } from '../../../components/admin/AvailabilityHeader'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -47,6 +45,8 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { BookingSettingsHeader as BookingSettingsHeader_39fb495e4be17b344f2d05882fb05dd6 } from '../../../components/admin/BookingSettingsHeader'
+import { AvailabilityHeader as AvailabilityHeader_b42e419a449fcca86d7e087b379fcb5f } from '../../../components/admin/AvailabilityHeader'
 import { OooWarnings as OooWarnings_24882b9d221e8df452e06e4f5a939af9 } from '../../../components/admin/OooWarnings'
 import { EmptyNav as EmptyNav_82b891e66c2c3695aa54244888ed30ee } from '../../../components/admin/EmptyNav'
 import { AdminIcon as AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c } from '../../../components/admin/AdminIcon'
@@ -60,8 +60,8 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "./components/admin/UsersEditHeader#UsersEditHeader": UsersEditHeader_3b70f535de38c80cc1705f1238be7764,
   "./components/admin/UsersGridView#UsersGridView": UsersGridView_e52e18109dd25c5262c4d2e001ae4a87,
-  "./components/admin/UsersEditHeader#UsersEditHeader": UsersEditHeader_c9d0e1f20314253647586970819a2b3c,
   "./components/admin/PhotoEditHeader#PhotoEditHeader": PhotoEditHeader_994fa1cc565775730944a666ddd8cc75,
   "./components/admin/PhotoViewInPortfolioButton#PhotoViewInPortfolioButton": PhotoViewInPortfolioButton_1bb693b5c948f71970f946083efd7d93,
   "./components/admin/PhotoGridView#PhotoGridView": PhotoGridView_416d697f5d1039cfdf395a457f2fc19a,
@@ -72,20 +72,18 @@ export const importMap = {
   "./components/admin/GalleryBulkPhotoPicker#GalleryBulkPhotoPicker": GalleryBulkPhotoPicker_c2bdfe7095d1b5597def4a007c60f35b,
   "./components/admin/GalleryPhotoArranger#GalleryPhotoArranger": GalleryPhotoArranger_4f7a56c3214650ac93f2acac369662ae,
   "./components/admin/GalleryGridView#GalleryGridView": GalleryGridView_694fcc37683b7c53f35803e850250b41,
+  "./components/admin/TestimonialsEditHeader#TestimonialsEditHeader": TestimonialsEditHeader_77d09d4799f86c2cfadb4bb062794af7,
   "./components/admin/TestimonialsGridView#TestimonialsGridView": TestimonialsGridView_9bf27bfb5cd9841095b9fe844bb8c4e3,
-  "./components/admin/TestimonialsEditHeader#TestimonialsEditHeader": TestimonialsEditHeader_a7b8c9d0e1f20314253647586970819a,
+  "./components/admin/ServicesEditHeader#ServicesEditHeader": ServicesEditHeader_ef2c940165e0e2fc59777b3aadc89ec6,
   "./components/admin/ServicesGridView#ServicesGridView": ServicesGridView_f8436fdecdb227662e953e6db61537d6,
-  "./components/admin/ServicesEditHeader#ServicesEditHeader": ServicesEditHeader_b8c9d0e1f20314253647586970819a2b,
+  "./components/admin/ProjectsEditHeader#ProjectsEditHeader": ProjectsEditHeader_01451fa7d45f824e84147cc8f9a17986,
   "./collections/Projects/SessionRowLabel#SessionRowLabel": SessionRowLabel_c92e93eada15d796d5db9f3cea7a28dc,
   "./collections/Projects/PaymentRowLabel#PaymentRowLabel": PaymentRowLabel_bf02cf58a8eb4dc67bc7319e475295f5,
   "./collections/Projects/DocumentRowLabel#DocumentRowLabel": DocumentRowLabel_30f116d44c8626ae90f0b4f8f5e9927c,
   "./components/admin/ProjectsKanbanView#ProjectsKanbanView": ProjectsKanbanView_f170bd24e886f73d32f9a84f0a9ad5a0,
-  "./components/admin/ProjectsEditHeader#ProjectsEditHeader": ProjectsEditHeader_d0e1f20314253647586970819a2b3c4d,
+  "./components/admin/HeroSlidesHeader#HeroSlidesHeader": HeroSlidesHeader_b2fda4a2e245f9191ba006cd446d716e,
+  "./components/admin/AboutPageHeader#AboutPageHeader": AboutPageHeader_20c156c3bd0697b2e3bdd86efee5fb0d,
   "./components/admin/AboutViewOnSiteButton#AboutViewOnSiteButton": AboutViewOnSiteButton_e4e233e4cbe47762c0d80a0c040deafe,
-  "./components/admin/BookingSettingsHeader#BookingSettingsHeader": BookingSettingsHeader_b2c3d4e5f60718293a4b5c6d7e8f9001,
-  "./components/admin/HeroSlidesHeader#HeroSlidesHeader": HeroSlidesHeader_c3d4e5f60718293a4b5c6d7e8f900112,
-  "./components/admin/AboutPageHeader#AboutPageHeader": AboutPageHeader_d4e5f60718293a4b5c6d7e8f90011223,
-  "./components/admin/AvailabilityHeader#AvailabilityHeader": AvailabilityHeader_e5f60718293a4b5c6d7e8f9001122334,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -109,6 +107,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "./components/admin/BookingSettingsHeader#BookingSettingsHeader": BookingSettingsHeader_39fb495e4be17b344f2d05882fb05dd6,
+  "./components/admin/AvailabilityHeader#AvailabilityHeader": AvailabilityHeader_b42e419a449fcca86d7e087b379fcb5f,
   "./components/admin/OooWarnings#OooWarnings": OooWarnings_24882b9d221e8df452e06e4f5a939af9,
   "./components/admin/EmptyNav#EmptyNav": EmptyNav_82b891e66c2c3695aa54244888ed30ee,
   "./components/admin/AdminIcon#AdminIcon": AdminIcon_a9476a6fd6a5c40a275ff80f24127c7c,
