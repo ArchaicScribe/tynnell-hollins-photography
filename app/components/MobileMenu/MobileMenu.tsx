@@ -45,19 +45,23 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks, cards = 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { onClose(); return }
       if (e.key === 'Tab' && menuRef.current) {
-        const focusableEls = Array.from(
-          menuRef.current.querySelectorAll<HTMLElement>(
-            'a, button, [tabindex]:not([tabindex="-1"])'
-          )
-        ).filter(el => !el.hasAttribute('disabled'))
+        // The Navbar's open / close button sits outside this dialog but above the panel
+        // on screen, so it is part of the Tab cycle (first, as it is on screen). Without
+        // it a keyboard user could only close the menu with Escape.
+        const toggle = document.querySelector<HTMLElement>('[aria-controls="mobile-menu"]')
+        const focusableEls = [
+          ...(toggle ? [toggle] : []),
+          ...Array.from(
+            menuRef.current.querySelectorAll<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])')
+          ).filter(el => !el.hasAttribute('disabled')),
+        ]
         if (!focusableEls.length) return
-        const first = focusableEls[0]
-        const last = focusableEls[focusableEls.length - 1]
-        if (e.shiftKey) {
-          if (document.activeElement === first) { e.preventDefault(); last.focus() }
-        } else {
-          if (document.activeElement === last) { e.preventDefault(); first.focus() }
-        }
+        // Cycle by hand so focus can never leave the menu and its close button.
+        e.preventDefault()
+        const at = focusableEls.indexOf(document.activeElement as HTMLElement)
+        const step = e.shiftKey ? -1 : 1
+        const next = at === -1 ? (e.shiftKey ? focusableEls.length - 1 : 0) : (at + step + focusableEls.length) % focusableEls.length
+        focusableEls[next].focus()
       }
     }
     document.addEventListener('keydown', handleKeyDown)

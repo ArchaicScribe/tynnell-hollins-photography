@@ -53,4 +53,18 @@ describe('staggered fade-up', () => {
     expect(css).toMatch(/\[data-fade-phase="revealed"\]\s*\.pk-stagger\{[^}]*transition-delay:calc\(min\(var\(--i,0\),7\)\*120ms\)/)
     expect(css).toMatch(/\[data-fade-phase="revealed"\]\s*\.pk-stagger\{[^}]*var\(--motion-slow/)
   })
+
+  // Blocks start hidden below the fold and are only revealed by scrolling to them, so
+  // printing a page (or saving it as a PDF) without scrolling used to leave every block
+  // below the fold blank. In print everything is shown.
+  it('shows every block in print, whether it rises as a whole or item by item', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const root = (config.root as any).render({ children: null }) as ReactElement
+    const css = render(root).container.querySelector('style')!.innerHTML.replace(/\s+/g, ' ').replace(/:\s+/g, ':')
+    const print = css.match(/@media print\s*\{(.*?\})\s*\}/)?.[1] ?? ''
+
+    expect(print).toMatch(/\[data-fade-up\][^{]*\{[^}]*opacity:1\s*!important/)
+    expect(print).toMatch(/\.pk-stagger[^{]*\{[^}]*opacity:1\s*!important/)
+    expect(print).toMatch(/transform:none\s*!important/)
+  })
 })

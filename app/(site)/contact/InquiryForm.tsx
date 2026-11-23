@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useId, FormEvent, ReactNode } from 'react'
+import { useState, useEffect, useRef, useId, FormEvent, KeyboardEvent, ReactNode } from 'react'
 import styles from './ContactForm.module.css'
 import { CONTACT_EMAIL } from '@/app/lib/constants'
 import Turnstile from '@/app/components/Turnstile/Turnstile'
@@ -133,18 +133,49 @@ export default function InquiryForm({ kind, minDate, maxDate }: { kind: Kind | '
   const wedding = active === 'wedding'
   const id = (name: string) => `${uid}-${name}`
 
+  // The wedding / portrait switch follows the tabs pattern: the selected tab is the only
+  // one in the Tab order, the arrow keys (and Home / End) move between them, and each tab
+  // names the panel that holds the form.
+  const TABS = ['wedding', 'portrait'] as const
+  const tabId = (k: Kind) => id(`tab-${k}`)
+  const panelId = id('panel')
+  const choose = (k: Kind) => {
+    if (status === 'loading') return
+    setPicked(k)
+    setStatus('idle')
+    setErrorMessage('')
+  }
+  const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const last = TABS.length - 1
+    const target =
+      event.key === 'ArrowRight' ? (index === last ? 0 : index + 1)
+      : event.key === 'ArrowLeft' ? (index === 0 ? last : index - 1)
+      : event.key === 'Home' ? 0
+      : event.key === 'End' ? last
+      : null
+    if (target === null) return
+    event.preventDefault()
+    choose(TABS[target])
+    document.getElementById(tabId(TABS[target]))?.focus()
+  }
+  const panelProps = kind === 'choice' ? { role: 'tabpanel' as const, id: panelId, 'aria-labelledby': tabId(picked) } : {}
+
   return (
     <div>
       {kind === 'choice' && (
         <div className={styles.tabs} role="tablist">
-          {(['wedding', 'portrait'] as const).map((k) => (
+          {TABS.map((k, index) => (
             <button
               key={k}
+              id={tabId(k)}
               type="button"
               role="tab"
               aria-selected={picked === k}
+              aria-controls={panelId}
+              tabIndex={picked === k ? 0 : -1}
               className={`${styles.tab} ${picked === k ? styles.tabActive : ''}`}
-              onClick={() => { if (status === 'loading') return; setPicked(k); setStatus('idle'); setErrorMessage('') }}
+              onClick={() => choose(k)}
+              onKeyDown={(event) => onTabKeyDown(event, index)}
             >
               {k === 'wedding' ? 'Wedding inquiry' : 'Portrait inquiry'}
             </button>
@@ -152,6 +183,7 @@ export default function InquiryForm({ kind, minDate, maxDate }: { kind: Kind | '
         </div>
       )}
 
+      <div {...panelProps}>
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <div className={styles.honeypot} aria-hidden="true">
           <label htmlFor={id('website')}>Website</label>
@@ -217,6 +249,7 @@ export default function InquiryForm({ kind, minDate, maxDate }: { kind: Kind | '
           {status === 'loading' ? 'Sending...' : 'Send Inquiry'}
         </button>
       </form>
+      </div>
     </div>
   )
 }
