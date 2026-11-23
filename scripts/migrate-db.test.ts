@@ -86,4 +86,21 @@ describe('scripts/migrate-db.mjs', () => {
       expect(source).toContain('ALTER TABLE "favorite_lists" DROP CONSTRAINT IF EXISTS "favorite_lists_gallery_id_fk"')
     })
   })
+  // Payload 3.90 added two columns to existing tables: users.reset_password_requested_at
+  // (auth) and photos._objectkey (the storage plugin's unique object key). Payload selects
+  // every column of a collection, so a database without them fails every users and photos
+  // query. The photos name is NOT _object_key: Payload names a field that starts with an
+  // underscore by prefixing "_" to to-snake-case(name), and to-snake-case does not split
+  // camelCase once the name contains a separator, so _objectKey becomes _objectkey.
+  describe('Payload 3.90 columns', () => {
+    it('adds users.reset_password_requested_at as a nullable timestamp with time zone', () => {
+      expect(source).toMatch(
+        /ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "reset_password_requested_at" timestamp\(3\) with time zone\s*`\)/,
+      )
+    })
+
+    it('adds photos._objectkey as a nullable varchar', () => {
+      expect(source).toMatch(/ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "_objectkey" varchar\s*`\)/)
+    })
+  })
 })

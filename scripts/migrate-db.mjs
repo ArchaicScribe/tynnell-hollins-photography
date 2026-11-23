@@ -1204,6 +1204,20 @@ async function run() {
       END $$
     `)
     console.log('✓ client favorites (galleries columns + favorite_lists) ready')
+
+    // Payload 3.90 added a column to each of two existing tables, and Payload
+    // selects every column of a collection, so a database without them fails
+    // every users and photos query. Both are nullable and need no backfill.
+    // The photos name is "_objectkey", not "_object_key": for a field that
+    // starts with an underscore Payload prefixes "_" to to-snake-case(name),
+    // and to-snake-case does not split camelCase when a separator is present.
+    await client.query(`
+      ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "reset_password_requested_at" timestamp(3) with time zone
+    `)
+    await client.query(`
+      ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "_objectkey" varchar
+    `)
+    console.log('✓ Payload 3.90 columns (users.reset_password_requested_at, photos._objectkey) ready')
   } finally {
     client.release()
     await pool.end()
