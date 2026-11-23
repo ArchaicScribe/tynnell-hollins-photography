@@ -77,6 +77,41 @@ describe('Footer.module.css long text', () => {
   })
 })
 
+describe('Footer.module.css tap targets', () => {
+  // The links are 12px text (about 19px tall) and the social icons 18px, too small to hit
+  // reliably with a thumb. On a touch screen every footer link gets a 44px target; with a
+  // mouse the footer keeps its tight spacing, so the desktop look does not change.
+  const touch = mediaBlock('(pointer: coarse)')
+  const inTouch = (selector: string) => {
+    let body = ''
+    for (const match of touch.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      if (norm(match[1]).split(',').map((s) => s.trim()).includes(selector)) body += match[2]
+    }
+    return body
+  }
+
+  it.each(['.link', '.legalLink'])('%s is at least 44px tall on a touch screen', (selector) => {
+    expect(inTouch(selector)).toMatch(/min-height:\s*44px/)
+    expect(inTouch(selector)).toMatch(/display:\s*inline-flex/)
+    expect(inTouch(selector)).toMatch(/align-items:\s*center/)
+  })
+
+  it('social icons are at least 44px square on a touch screen', () => {
+    expect(inTouch('.socialLink')).toMatch(/min-height:\s*44px/)
+    expect(inTouch('.socialLink')).toMatch(/min-width:\s*44px/)
+    expect(inTouch('.socialLink')).toMatch(/justify-content:\s*center/)
+  })
+
+  it('drops the gaps the bigger targets replace, so the footer does not grow twice', () => {
+    expect(inTouch('.linkList')).toMatch(/gap:\s*0/)
+    expect(inTouch('.socials')).toMatch(/gap:\s*0/)
+  })
+
+  it('leaves the mouse layout alone: no minimum height outside the touch block', () => {
+    expect(css.replace(touch, '')).not.toMatch(/min-height:\s*44px/)
+  })
+})
+
 describe('Footer.module.css photo strip', () => {
   // Every photo is one sixth of the width, so one or two featured photos stay a
   // normal size instead of stretching to fill the row (a 1440px square for one).
