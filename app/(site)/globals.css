@@ -22,6 +22,20 @@ body {
   margin: 0;
 }
 
+/* Headings are light. Without this every h1 to h6 fell back to the browser's bold,
+   and the serif ships in 300 to 600 only, so the browser faked a 700 from the 600
+   face. Rising Roots sets its headings in a light serif at 400. An element selector,
+   so a component class that sets its own weight still wins. Guarded by
+   headingWeight.test.ts. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: var(--heading-weight, 400);
+}
+
 /* ── Paper grain ──────────────────────────────────────────── */
 /* A fixed, non-interactive overlay over the whole viewport, driven by
    --paper-grain-opacity from SiteDesign (/design > Texture). The noise is an
