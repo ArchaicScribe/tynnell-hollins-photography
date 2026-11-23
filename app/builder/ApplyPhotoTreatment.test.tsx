@@ -16,7 +16,7 @@ afterEach(() => {
 
 type Call = { url: string; body?: unknown }
 
-function stubFetch(ids: number[], failing: number[] = []) {
+function stubFetch(ids: number[], failing: number[] = [], upToDate: number[] = []) {
   const calls: Call[] = []
   vi.stubGlobal(
     'fetch',
@@ -26,7 +26,7 @@ function stubFetch(ids: number[], failing: number[] = []) {
       const id = JSON.parse(init!.body!).id
       return failing.includes(id)
         ? { ok: false, status: 500, json: async () => ({ error: 'sharp could not read it' }) }
-        : { ok: true, json: async () => ({ ok: true, id }) }
+        : { ok: true, json: async () => (upToDate.includes(id) ? { ok: true, id, skipped: true } : { ok: true, id }) }
     }),
   )
   return calls
@@ -108,5 +108,37 @@ describe('Apply to all photos', () => {
 
     await waitFor(() => expect(screen.getByText(/Could not list your photos/)).toBeTruthy())
     expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  // Photos record what they were last finished with, so a run that was interrupted, or a
+  // second click with nothing changed, only does the photos that need it.
+  it('asks the server to skip photos already at the current look', async () => {
+    const calls = stubFetch([1, 2])
+    render(<ApplyPhotoTreatment />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Apply to all photos/ }))
+
+    await waitFor(() => expect(screen.getByText(/Done: 2 of 2 photos/)).toBeTruthy())
+    const posts = calls.filter((c) => c.url === '/api/admin/regenerate-photo-sizes')
+    expect(posts.every((c) => (c.body as { onlyIfStale?: boolean }).onlyIfStale === true)).toBe(true)
+  })
+
+  it('says how many photos were already up to date', async () => {
+    stubFetch([1, 2, 3], [], [2, 3])
+    render(<ApplyPhotoTreatment />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Apply to all photos/ }))
+
+    await waitFor(() => expect(screen.getByText(/Done: 3 of 3 photos \(2 already up to date\)/)).toBeTruthy())
+  })
+
+  it('does not mention up-to-date photos when there were none', async () => {
+    stubFetch([1, 2])
+    render(<ApplyPhotoTreatment />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Apply to all photos/ }))
+
+    await waitFor(() => expect(screen.getByText(/Done: 2 of 2 photos/)).toBeTruthy())
+    expect(screen.queryByText(/already up to date/)).toBeNull()
   })
 })

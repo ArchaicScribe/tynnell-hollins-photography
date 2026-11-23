@@ -115,6 +115,16 @@ export const Photos: CollectionConfig = {
       admin: { hidden: true },
     },
     {
+      // What the photo's web sizes were finished with (colour treatment, sharpening,
+      // watermark), as a string from finishSignature() in app/lib/photoFinish.ts. Set by
+      // collections/photoSizePipeline.ts after finishing succeeds, cleared when the sizes
+      // are rebuilt. Empty means "not known to be at the current look". "Apply to all
+      // photos" skips photos whose value already matches the site design.
+      name: 'finishSignature',
+      type: 'text',
+      admin: { hidden: true, readOnly: true },
+    },
+    {
       name: 'title',
       type: 'text',
       label: 'Internal Name',

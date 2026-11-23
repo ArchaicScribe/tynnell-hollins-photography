@@ -908,6 +908,15 @@ async function run() {
     `)
     console.log('✓ photos.original_filename column ready')
 
+    // photos.finish_signature: what a photo's web sizes were finished with, so "Apply
+    // to all photos" can skip the ones already at the current look. A Payload text
+    // field is varchar. Photos finished before it existed stay NULL (unknown), and are
+    // rebuilt once by the next Apply, which then marks them.
+    await client.query(`
+      ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "finish_signature" varchar
+    `)
+    console.log('✓ photos.finish_signature column ready')
+
     // ------------------------------------------------------------------
     // Migration 20260806_110000: Rising Roots type system (four font roles)
     // heading_font and body_font are REAL Postgres enums, so new faces need

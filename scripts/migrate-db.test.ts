@@ -63,6 +63,12 @@ describe('scripts/migrate-db.mjs', () => {
     }
   })
 
+  describe('photos finish signature', () => {
+    it('adds finish_signature as a nullable varchar (a Payload text field)', () => {
+      expect(source).toMatch(/ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "finish_signature" varchar\s*`\)/)
+    })
+  })
+
   describe('photos original filename (TYN-13)', () => {
     it('adds original_filename as a nullable varchar', () => {
       expect(source).toMatch(/ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "original_filename" varchar\s*`\)/)

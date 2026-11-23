@@ -8,12 +8,16 @@ import { useRef, useState } from 'react'
 // until they are reprocessed. This rebuilds every photo's sizes from its original
 // through the existing admin route, one photo per request so each stays well inside
 // the serverless time limit. Originals are never altered.
+//
+// Each photo records what it was last finished with, so the route is asked to skip the
+// ones already at the current look (onlyIfStale): an interrupted run resumes where it
+// stopped, and clicking again with nothing changed does nothing.
 
 type State =
   | { phase: 'idle' }
   | { phase: 'listing' }
   | { phase: 'working'; index: number; total: number }
-  | { phase: 'done'; ok: number; total: number; failures: string[] }
+  | { phase: 'done'; ok: number; total: number; upToDate: number; failures: string[] }
   | { phase: 'error'; message: string }
 
 // `blocked` is set while the /design draft has changes that are not published yet:
@@ -48,6 +52,7 @@ export function ApplyPhotoTreatment({ blocked = false }: { blocked?: boolean }) 
     }
 
     let ok = 0
+    let upToDate = 0
     const failures: string[] = []
     for (let i = 0; i < ids.length; i++) {
       setState({ phase: 'working', index: i + 1, total: ids.length })
@@ -55,10 +60,12 @@ export function ApplyPhotoTreatment({ blocked = false }: { blocked?: boolean }) 
         const res = await fetch('/api/admin/regenerate-photo-sizes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: ids[i] }),
+          body: JSON.stringify({ id: ids[i], onlyIfStale: true }),
         })
-        if (res.ok) ok++
-        else {
+        if (res.ok) {
+          ok++
+          if (((await res.json().catch(() => ({}))) as { skipped?: boolean }).skipped) upToDate++
+        } else {
           const detail = ((await res.json().catch(() => ({}))) as { error?: string }).error ?? `HTTP ${res.status}`
           failures.push(`Photo ${ids[i]} failed: ${detail}`)
         }
@@ -66,7 +73,7 @@ export function ApplyPhotoTreatment({ blocked = false }: { blocked?: boolean }) 
         failures.push(`Photo ${ids[i]} failed: ${err instanceof Error ? err.message : 'network error'}`)
       }
     }
-    setState({ phase: 'done', ok, total: ids.length, failures })
+    setState({ phase: 'done', ok, total: ids.length, upToDate, failures })
   }
 
   return (
@@ -96,7 +103,11 @@ export function ApplyPhotoTreatment({ blocked = false }: { blocked?: boolean }) 
       <div aria-live="polite" style={{ color: '#9b9a9a', fontSize: 11, marginTop: 8 }}>
         {state.phase === 'listing' && <p>Finding your photos...</p>}
         {state.phase === 'working' && <p>Processing photo {state.index} of {state.total}...</p>}
-        {state.phase === 'done' && <p>Done: {state.ok} of {state.total} photos.</p>}
+        {state.phase === 'done' && (
+          <p>
+            Done: {state.ok} of {state.total} photos{state.upToDate > 0 ? ` (${state.upToDate} already up to date)` : ''}.
+          </p>
+        )}
         {state.phase === 'done' && state.failures.map((f) => <p key={f} style={{ color: '#c87171' }}>{f}</p>)}
         {state.phase === 'error' && <p style={{ color: '#c87171' }}>{state.message}</p>}
       </div>

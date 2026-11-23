@@ -1,7 +1,7 @@
 import sharp, { type Sharp } from 'sharp'
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSiteDesign } from './siteDesign'
-import { photoSaturation } from './siteTheme'
+import { photoSaturation, type SiteTheme } from './siteTheme'
 import { streamToBuffer } from './r2Stream'
 
 // Finishes a photo's web renditions (thumbnail, card, hero) after Payload has
@@ -74,12 +74,17 @@ async function materialise(image: Sharp): Promise<Sharp> {
  * its watermark: the colour treatment and sharpening are still applied.
  */
 export async function finishBuffer(input: Buffer, plan: FinishPlan, quality: number): Promise<Buffer> {
-  if (!plan.watermark) return finishWith(input, plan, quality)
+  return (await finishBufferChecked(input, plan, quality)).buffer
+}
+
+/** Like finishBuffer, and says whether a requested watermark had to be left off. */
+async function finishBufferChecked(input: Buffer, plan: FinishPlan, quality: number): Promise<{ buffer: Buffer; watermarkDropped: boolean }> {
+  if (!plan.watermark) return { buffer: await finishWith(input, plan, quality), watermarkDropped: false }
   try {
-    return await finishWith(input, plan, quality)
+    return { buffer: await finishWith(input, plan, quality), watermarkDropped: false }
   } catch (err) {
     console.warn('[photo-finish] the watermark could not be applied, finishing without it:', err)
-    return finishWith(input, { ...plan, watermark: null }, quality)
+    return { buffer: await finishWith(input, { ...plan, watermark: null }, quality), watermarkDropped: true }
   }
 }
 
@@ -113,9 +118,28 @@ async function finishWith(input: Buffer, plan: FinishPlan, quality: number): Pro
   return image.jpeg({ quality }).toBuffer()
 }
 
+type FinishSettings = Pick<SiteTheme, 'photoTreatment' | 'sharpeningLevel' | 'watermarkEnabled' | 'watermarkUrl'>
+
+/**
+ * What a photo's renditions are finished with, as a string kept on the photo
+ * (Photo.finishSignature). It covers all three settings, not just the saturation, so a
+ * photo is only treated as up to date when a change to the sharpening or the watermark
+ * has been applied to it too. A watermark that is switched off ignores its image.
+ */
+export function finishSignature(theme: FinishSettings): string {
+  const sigma = theme.sharpeningLevel === 'none' ? 'none' : SHARPEN_SIGMA[theme.sharpeningLevel]
+  const watermark = theme.watermarkEnabled && theme.watermarkUrl ? theme.watermarkUrl : 'none'
+  return `sat=${photoSaturation(theme.photoTreatment)};sharp=${sigma};wm=${watermark}`
+}
+
+/** The signature of the site design as it stands now. */
+export async function currentFinishSignature(): Promise<string> {
+  return finishSignature(await getSiteDesign())
+}
+
 /** What to do to every rendition, from the site design. Fetches the watermark image once. */
-export async function loadFinishPlan(): Promise<FinishPlan> {
-  const theme = await getSiteDesign()
+export async function loadFinishPlan(theme?: SiteTheme): Promise<FinishPlan> {
+  theme = theme ?? (await getSiteDesign())
 
   let watermark: Buffer | null = null
   if (theme.watermarkEnabled && theme.watermarkUrl) {
@@ -135,32 +159,42 @@ export async function loadFinishPlan(): Promise<FinishPlan> {
   }
 }
 
-async function finishOneSize(params: { s3: S3Client; bucket: string; plan: FinishPlan; slot: SizeSlot; quality: number }) {
+/** Finishes one size in place. True when it ended up with everything the plan asked for. */
+async function finishOneSize(params: { s3: S3Client; bucket: string; plan: FinishPlan; slot: SizeSlot; quality: number }): Promise<boolean> {
   const { s3, bucket, plan, slot, quality } = params
   const key = slot?.filename
-  if (!key) return
+  if (!key) return true // the photo has no such size, so there is nothing to finish
 
   const { Body } = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }))
-  if (!Body) return
+  if (!Body) return false
   const input = await streamToBuffer(Body as AsyncIterable<Uint8Array>)
-  const output = await finishBuffer(input, plan, quality)
-  if (output === input) return // nothing was applied to this size
-
-  await s3.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: output, ContentType: slot?.mimeType ?? 'image/jpeg' }))
+  const { buffer: output, watermarkDropped } = await finishBufferChecked(input, plan, quality)
+  if (output !== input) {
+    await s3.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: output, ContentType: slot?.mimeType ?? 'image/jpeg' }))
+  }
+  return !watermarkDropped
 }
 
+/**
+ * Finishes the sizes and returns the finishSignature they now carry, or null when the photo
+ * was not fully brought to the current look (a size failed, or the watermark was wanted but
+ * could not be fetched or laid on). The caller stores the signature on the photo.
+ */
 export async function finishPhotoSizes(params: {
   s3: S3Client
   bucket: string
   sizes: { thumbnail?: SizeSlot; card?: SizeSlot; hero?: SizeSlot } | null | undefined
   /** For log lines only. */
   label?: string
-}): Promise<void> {
+}): Promise<string | null> {
   const { s3, bucket, sizes, label = 'photo' } = params
-  if (!sizes) return
+  if (!sizes) return null
 
-  const plan = await loadFinishPlan()
-  if (isNoop(plan)) return
+  const theme = await getSiteDesign()
+  const signature = finishSignature(theme)
+  const plan = await loadFinishPlan(theme)
+  const watermarkWanted = Boolean(theme.watermarkEnabled && theme.watermarkUrl)
+  if (isNoop(plan)) return watermarkWanted ? null : signature // wanted but not fetched, or nothing to do
 
   const slots: ['thumbnail' | 'card' | 'hero', SizeSlot][] = [
     ['thumbnail', sizes.thumbnail],
@@ -168,12 +202,15 @@ export async function finishPhotoSizes(params: {
     ['hero', sizes.hero],
   ]
   const start = Date.now()
+  let complete = watermarkWanted ? plan.watermark !== null : true
   for (const [name, slot] of slots) {
     try {
-      await finishOneSize({ s3, bucket, plan, slot, quality: SLOT_QUALITY[name] })
+      if (!(await finishOneSize({ s3, bucket, plan, slot, quality: SLOT_QUALITY[name] }))) complete = false
     } catch (err) {
+      complete = false
       console.warn(`[photo-finish] failed to finish the "${name}" size of ${label} (non-fatal):`, err)
     }
   }
   console.log(`[photo-finish] finished the sizes of ${label} in ${Date.now() - start}ms`)
+  return complete ? signature : null
 }

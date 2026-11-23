@@ -22,7 +22,11 @@ vi.mock('payload', () => ({
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 vi.mock('@payload-config', () => ({ default: {} }))
 vi.mock('@aws-sdk/client-s3', () => ({ S3Client: class {} }))
-vi.mock('@/app/lib/photoFinish', () => ({ finishPhotoSizes: async () => void calls.push('finish') }))
+const currentSignature = vi.fn()
+vi.mock('@/app/lib/photoFinish', () => ({
+  finishPhotoSizes: async () => void calls.push('finish'),
+  currentFinishSignature: () => currentSignature(),
+}))
 
 const { POST } = await import('./route')
 
@@ -35,6 +39,7 @@ const request = (body: unknown) =>
 
 beforeEach(() => {
   calls.length = 0
+  currentSignature.mockReset().mockResolvedValue('sat=0.65;sharp=none;wm=none')
   updateMock.mockReset().mockResolvedValue({ id: 7, sizes: {} })
   findByIDMock.mockReset().mockResolvedValue({
     id: 7,
@@ -72,5 +77,50 @@ describe('POST /api/admin/regenerate-photo-sizes', () => {
     const res = await POST(request({ id: 7 }))
 
     expect(res.status).toBe(500)
+  })
+
+  // "Apply to all photos" asks for onlyIfStale so a run that was interrupted, or a second
+  // click with nothing changed, skips the photos already finished with the current
+  // settings. Without the flag the route always rebuilds, as it did before.
+  describe('onlyIfStale', () => {
+    const photo = (finishSignature: string | null) => ({
+      id: 7,
+      url: 'https://media.example.com/DSC07442-1.JPG',
+      filename: 'DSC07442-1.JPG',
+      mimeType: 'image/jpeg',
+      finishSignature,
+    })
+
+    it('skips a photo already finished with the current settings, without downloading or rebuilding it', async () => {
+      findByIDMock.mockResolvedValue(photo('sat=0.65;sharp=none;wm=none'))
+
+      const res = await POST(request({ id: 7, onlyIfStale: true }))
+
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ ok: true, id: 7, skipped: true })
+      expect(updateMock).not.toHaveBeenCalled()
+      expect(fetch).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ['finished with different settings', 'sat=1;sharp=none;wm=none'],
+      ['not known to be finished at all', null],
+    ])('rebuilds a photo %s', async (_label, signature) => {
+      findByIDMock.mockResolvedValue(photo(signature))
+
+      const res = await POST(request({ id: 7, onlyIfStale: true }))
+
+      expect(res.status).toBe(200)
+      expect((await res.json()).skipped).toBeUndefined()
+      expect(updateMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('still rebuilds a photo that is up to date when the flag is not sent', async () => {
+      findByIDMock.mockResolvedValue(photo('sat=0.65;sharp=none;wm=none'))
+
+      await POST(request({ id: 7 }))
+
+      expect(updateMock).toHaveBeenCalledTimes(1)
+    })
   })
 })
