@@ -2,6 +2,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { DEFAULT_SITE_CONFIG } from '@/app/lib/siteConfig'
 import { SiteSettingsClient } from './SiteSettingsClient'
 
 // Site Settings rebuild (TYN-313), modeled on Pixieset's Settings > Branding
@@ -26,12 +27,15 @@ export default async function SiteSettingsPage() {
         tagline: siteConfig.tagline ?? '',
         email: siteConfig.email ?? '',
         phone: siteConfig.phone ?? '',
-        instagramUrl: siteConfig.instagramUrl ?? '',
-        facebookUrl: siteConfig.facebookUrl ?? '',
-        tiktokUrl: siteConfig.tiktokUrl ?? '',
-        pinterestUrl: siteConfig.pinterestUrl ?? '',
-        footerBio: siteConfig.footerBio ?? '',
-        footerLocation: siteConfig.footerLocation ?? '',
+        // The same rule as getSiteConfig: a value that was never saved shows (and the
+        // site uses) the default, a saved blank stays blank. Without it the box showed
+        // empty while the site showed the default, and saving once would have hidden it.
+        instagramUrl: siteConfig.instagramUrl ?? DEFAULT_SITE_CONFIG.instagramUrl,
+        facebookUrl: siteConfig.facebookUrl ?? DEFAULT_SITE_CONFIG.facebookUrl,
+        tiktokUrl: siteConfig.tiktokUrl ?? DEFAULT_SITE_CONFIG.tiktokUrl,
+        pinterestUrl: siteConfig.pinterestUrl ?? DEFAULT_SITE_CONFIG.pinterestUrl,
+        footerBio: siteConfig.footerBio ?? DEFAULT_SITE_CONFIG.footerBio,
+        footerLocation: siteConfig.footerLocation ?? DEFAULT_SITE_CONFIG.footerLocation,
         freebieTitle: siteConfig.freebieTitle ?? '',
         freebieUrl: siteConfig.freebieUrl ?? '',
         // Raw saved values (not cleaned), so Tynnell sees and can fix

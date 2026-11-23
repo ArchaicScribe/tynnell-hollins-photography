@@ -503,7 +503,11 @@ export function SiteSettingsClient({
       if (siteRes.ok && presetsRes.ok && templatesRes.ok) {
         setSaved(true)
       } else {
-        setError('Failed to save. Please try again.')
+        // A 400 from the site-settings route carries the reason (for example a social
+        // link that is not https), which is more useful than a generic failure.
+        let reason = ''
+        if (siteRes.status === 400) reason = ((await siteRes.json().catch(() => ({}))) as { error?: string }).error ?? ''
+        setError(reason || 'Failed to save. Please try again.')
       }
     } catch {
       setError('Failed to save. Please try again.')

@@ -283,3 +283,47 @@ describe('POST /api/site-settings/save, cleaning up a replaced guide PDF', () =>
     expect(deleteR2ObjectMock).not.toHaveBeenCalled()
   })
 })
+
+// A social link ends up as an href on every public page, so anything but a secure link
+// (javascript:, data:, plain http, a bare word) is refused instead of stored.
+describe('POST /api/site-settings/save, social links', () => {
+  const FIELDS = [
+    ['instagramUrl', 'Instagram'],
+    ['facebookUrl', 'Facebook'],
+    ['tiktokUrl', 'TikTok'],
+    ['pinterestUrl', 'Pinterest'],
+  ] as const
+
+  it.each(FIELDS)('saves a secure %s', async (field) => {
+    const res = await POST(makeRequest({ [field]: 'https://example.com/tynnell' }))
+
+    expect(res.status).toBe(200)
+    expect(updateGlobalMock.mock.calls[0][0].data[field]).toBe('https://example.com/tynnell')
+  })
+
+  it.each(FIELDS)('saves a blank %s, which is how a link is removed', async (field) => {
+    const res = await POST(makeRequest({ [field]: '' }))
+
+    expect(res.status).toBe(200)
+    expect(updateGlobalMock.mock.calls[0][0].data[field]).toBe('')
+  })
+
+  it.each([
+    ['a javascript: link', 'javascript:alert(1)'],
+    ['a plain http link', 'http://example.com/tynnell'],
+    ['a bare word', 'tynnell'],
+    ['a site page', '/contact'],
+  ])('refuses %s, saves nothing and names the field', async (_label, value) => {
+    const res = await POST(makeRequest({ title: 'Tynnell', instagramUrl: value }))
+
+    expect(res.status).toBe(400)
+    expect((await res.json()).error).toMatch(/Instagram/)
+    expect(updateGlobalMock).not.toHaveBeenCalled()
+  })
+
+  it('trims spaces round a link before checking and saving it', async () => {
+    await POST(makeRequest({ tiktokUrl: '  https://tiktok.com/@tynnell  ' }))
+
+    expect(updateGlobalMock.mock.calls[0][0].data.tiktokUrl).toBe('https://tiktok.com/@tynnell')
+  })
+})

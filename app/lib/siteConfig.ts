@@ -70,12 +70,15 @@ export const getSiteConfig = cache(async (): Promise<SiteConfigData> => {
       tagline: doc.tagline || DEFAULT_SITE_CONFIG.tagline,
       email: doc.email || DEFAULT_SITE_CONFIG.email,
       phone: doc.phone || DEFAULT_SITE_CONFIG.phone,
-      instagramUrl: doc.instagramUrl || DEFAULT_SITE_CONFIG.instagramUrl,
-      facebookUrl: doc.facebookUrl || DEFAULT_SITE_CONFIG.facebookUrl,
-      tiktokUrl: doc.tiktokUrl || DEFAULT_SITE_CONFIG.tiktokUrl,
-      pinterestUrl: doc.pinterestUrl || DEFAULT_SITE_CONFIG.pinterestUrl,
-      footerBio: doc.footerBio || DEFAULT_SITE_CONFIG.footerBio,
-      footerLocation: doc.footerLocation || DEFAULT_SITE_CONFIG.footerLocation,
+      // ?? not ||: these can be cleared on purpose, and a saved empty string must win
+      // over the default. Only a value that was never saved (null) falls back to it.
+      // The Site Settings page applies the same rule (app/site-settings/page.tsx).
+      instagramUrl: doc.instagramUrl ?? DEFAULT_SITE_CONFIG.instagramUrl,
+      facebookUrl: doc.facebookUrl ?? DEFAULT_SITE_CONFIG.facebookUrl,
+      tiktokUrl: doc.tiktokUrl ?? DEFAULT_SITE_CONFIG.tiktokUrl,
+      pinterestUrl: doc.pinterestUrl ?? DEFAULT_SITE_CONFIG.pinterestUrl,
+      footerBio: doc.footerBio ?? DEFAULT_SITE_CONFIG.footerBio,
+      footerLocation: doc.footerLocation ?? DEFAULT_SITE_CONFIG.footerLocation,
       menuCards: cleanMenuCards(doc.menuCards),
     }
   } catch {
