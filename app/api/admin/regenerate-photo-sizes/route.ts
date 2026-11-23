@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import config from '@payload-config'
 import type { Photo } from '@/payload-types'
+import { currentFinishSignature } from '@/app/lib/photoFinish'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -16,6 +17,11 @@ export const maxDuration = 60
 // per request (not a bulk loop) so it stays well inside Vercel's function
 // time limit regardless of library size - call it once per photo ID from an
 // authenticated admin session.
+//
+// With onlyIfStale the photo is left alone when it is already marked as finished with the
+// current site design (Photo.finishSignature, see collections/photoSizePipeline.ts). That
+// is what lets "Apply to all photos" resume an interrupted run and do nothing when
+// nothing has changed. Without the flag it always rebuilds.
 
 async function fetchBuffer(url: string): Promise<Buffer> {
   const res = await fetch(url)
@@ -33,9 +39,11 @@ export async function POST(request: Request) {
     }
 
     let id: number | string
+    let onlyIfStale = false
     try {
       const body = await request.json()
       id = body?.id
+      onlyIfStale = body?.onlyIfStale === true
     } catch {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
     }
@@ -46,6 +54,10 @@ export async function POST(request: Request) {
     const photo = (await payload.findByID({ collection: 'photos', id, depth: 0 })) as Photo
     if (!photo?.url) {
       return NextResponse.json({ error: 'Photo not found or has no url' }, { status: 404 })
+    }
+
+    if (onlyIfStale && photo.finishSignature && photo.finishSignature === (await currentFinishSignature())) {
+      return NextResponse.json({ ok: true, id, skipped: true })
     }
 
     const buffer = await fetchBuffer(photo.url)

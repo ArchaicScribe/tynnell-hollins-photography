@@ -14,7 +14,9 @@ vi.mock('@/app/lib/r2', () => ({ r2Client: () => ({ client: true }), r2Bucket: (
 
 const { flagRebuiltSizes, postProcessRebuiltSizes } = await import('./photoSizePipeline')
 
-type Req = { payloadUploadSizes?: Record<string, unknown>; context?: Record<string, unknown> }
+const updateOne = vi.fn()
+type Req = { payloadUploadSizes?: Record<string, unknown>; context?: Record<string, unknown>; payload?: unknown }
+const withDb = (context: Record<string, unknown>): Req => ({ context, payload: { db: { updateOne } } })
 
 const rebuilt = { thumbnail: Buffer.from('t'), card: Buffer.from('c'), hero: Buffer.from('h') }
 
@@ -30,6 +32,7 @@ const doc = { id: 7, filename: 'DSC1.jpg', sizes: { card: { filename: 'DSC1-1200
 
 beforeEach(() => {
   postProcess.mockReset().mockResolvedValue(undefined)
+  updateOne.mockReset().mockResolvedValue(undefined)
 })
 
 describe('flagRebuiltSizes (before a photo is saved)', () => {
@@ -60,6 +63,25 @@ describe('flagRebuiltSizes (before a photo is saved)', () => {
     expect(req.context!.photoSizesRebuilt).toBe(true)
   })
 
+  // The rebuilt files are at natural colour until the finishing step has run, so whatever the
+  // photo claimed to be finished with is no longer true the moment the sizes are rebuilt.
+  it('clears the finish marker, because the rebuilt sizes are not finished yet', async () => {
+    const req: Req = { payloadUploadSizes: { ...rebuilt }, context: {} }
+    const data: Record<string, unknown> = { title: 'x', finishSignature: 'old' }
+
+    const out = (await (flagRebuiltSizes as CollectionBeforeChangeHook)({ data, req } as never)) as Record<string, unknown>
+
+    expect(out.finishSignature).toBeNull()
+  })
+
+  it('leaves the finish marker alone when nothing was rebuilt', async () => {
+    const data: Record<string, unknown> = { title: 'x', finishSignature: 'old' }
+
+    const out = (await (flagRebuiltSizes as CollectionBeforeChangeHook)({ data, req: { context: {} } } as never)) as Record<string, unknown>
+
+    expect(out.finishSignature).toBe('old')
+  })
+
   it('returns the data unchanged', async () => {
     const data = { title: 'x' }
     const out = await (flagRebuiltSizes as CollectionBeforeChangeHook)({ data, req: { context: {} } } as never)
@@ -76,6 +98,39 @@ describe('postProcessRebuiltSizes (after the whole save and upload)', () => {
 
     expect(postProcess).toHaveBeenCalledTimes(1)
     expect(postProcess.mock.calls[0][0]).toMatchObject({ bucket: 'bucket', sizes: doc.sizes, label: 'DSC1.jpg' })
+    expect(out).toBe(doc)
+  })
+
+  it('records on the photo what its sizes were finished with', async () => {
+    postProcess.mockResolvedValue('sat=0.65;sharp=none;wm=none')
+    const req = withDb({ photoSizesRebuilt: true })
+
+    await finish({ operation: 'create', req, result: doc })
+
+    expect(updateOne).toHaveBeenCalledTimes(1)
+    expect(updateOne.mock.calls[0][0]).toMatchObject({
+      collection: 'photos',
+      id: 7,
+      data: { finishSignature: 'sat=0.65;sharp=none;wm=none' },
+      req,
+    })
+  })
+
+  it('records nothing when the photo was not fully finished, so it stays marked as out of date', async () => {
+    postProcess.mockResolvedValue(null)
+
+    await finish({ operation: 'create', req: withDb({ photoSizesRebuilt: true }), result: doc })
+
+    expect(updateOne).not.toHaveBeenCalled()
+  })
+
+  it('never fails the save when recording the marker throws', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    postProcess.mockResolvedValue('sig')
+    updateOne.mockRejectedValue(new Error('db hiccup'))
+
+    const out = await finish({ operation: 'create', req: withDb({ photoSizesRebuilt: true }), result: doc })
+
     expect(out).toBe(doc)
   })
 
@@ -120,6 +175,16 @@ describe('postProcessRebuiltSizes (after the whole save and upload)', () => {
 })
 
 describe('Photos collection wiring', () => {
+  it('keeps the finish marker as a hidden, read-only text field', () => {
+    const field = Photos.fields.find((f) => 'name' in f && f.name === 'finishSignature') as
+      | { type?: string; admin?: { hidden?: boolean; readOnly?: boolean } }
+      | undefined
+
+    expect(field?.type).toBe('text')
+    expect(field?.admin?.hidden).toBe(true)
+    expect(field?.admin?.readOnly).toBe(true)
+  })
+
   it('flags before the change and finishes after the operation', () => {
     expect(Photos.hooks?.beforeChange).toContain(flagRebuiltSizes)
     expect(Photos.hooks?.afterOperation).toContain(postProcessRebuiltSizes)
