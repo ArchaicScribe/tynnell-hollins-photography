@@ -148,6 +148,15 @@ html:not([data-animations="off"]) .pk-btn:hover{transform:translateY(-2px)}
 }
 `
 
+// A "Full screen" hero is stored as the inline value 100vh. On a phone that is the tall
+// viewport (address bar hidden), so a bottom-anchored headline and button sit under the
+// browser toolbar until the visitor scrolls. The Hero block marks that option with
+// pk-vh-full and this upgrades it to 100svh (the viewport as first seen) wherever the
+// browser knows the unit; an inline 100svh would collapse the hero in one that does not.
+const HERO_CSS = `
+@supports (height:100svh){.pk-vh-full{min-height:100svh !important}}
+`
+
 // Editorial bleed/offset for Split Image + Text (issue 5). The image runs off
 // the canvas edge and sits off the section baseline, which is what stops a run
 // of alternating rows reading as a stack of equal boxes.
@@ -177,13 +186,15 @@ const EDITORIAL_CSS = `
 // Taped-photo treatment (TYN-233): an editorial "scrapbook" look where each
 // photo sits on a cream mat with a strip of translucent washi tape at the top.
 // Tape strips are pseudo-elements, which inline styles can't express, so the
-// rules live in the root-injected stylesheet. Per-photo rotation is applied
+// rules live in the root-injected stylesheet. They carry z-index:3 so both strips lie
+// on top of the photo whatever the photo's own styling (a filtered image is a stacking
+// context and would otherwise cover the ::before strip). Per-photo rotation is applied
 // inline (alternating) so the grid feels hand-placed, not mechanical.
 const TAPE_CSS = `
 .pk-taped{position:relative;background:var(--tape-mat);padding:0.7rem 0.7rem 1.1rem;box-shadow:var(--tape-shadow);transition:transform .25s ease}
 .pk-taped:hover{transform:rotate(0deg) scale(1.015) !important;z-index:2}
 .pk-taped img{display:block;width:100%;height:auto}
-.pk-taped::before,.pk-taped::after{content:'';position:absolute;top:-0.55rem;width:4.5rem;height:1.4rem;background:var(--tape-color);box-shadow:0 1px 2px rgba(0,0,0,0.18);backdrop-filter:blur(1px)}
+.pk-taped::before,.pk-taped::after{content:'';position:absolute;top:-0.55rem;width:4.5rem;height:1.4rem;background:var(--tape-color);box-shadow:0 1px 2px rgba(0,0,0,0.18);backdrop-filter:blur(1px);z-index:3}
 .pk-taped::before{left:0.6rem;transform:rotate(-32deg)}
 .pk-taped::after{right:0.6rem;transform:rotate(32deg)}
 `
@@ -726,7 +737,7 @@ export const config: Config = {
   root: {
     render: ({ children }: { children?: ReactNode }) => (
       <div style={{ background: C.bg, color: C.body, minHeight: '100%', fontFamily: BODY_FONT }}>
-        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + BUTTON_CSS + STAGGER_CSS + EDITORIAL_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS + BUTTON_CSS + HERO_CSS + STAGGER_CSS + EDITORIAL_CSS + TAPE_CSS + POLAROID_CSS + FREEFORM_CSS }} />
         {children}
       </div>
     ),
@@ -820,10 +831,12 @@ export const config: Config = {
       },
       render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, photoMovement, align, buttonText, buttonHref, cornerLeft, cornerRight, hideOnMobile, hideOnDesktop, navHero }: any) => {
         const cls = visClass(hideOnMobile, hideOnDesktop)
+        const fullScreen = height === '100vh' ? 'pk-vh-full' : undefined
+        const heroCls = [cls, fullScreen].filter(Boolean).join(' ') || undefined
         if (layout === 'split') {
           const imageLeft = align !== 'center'
           const img = (
-            <div style={{ flex: '1 1 340px', minHeight: height, position: 'relative', overflow: 'hidden', background: C.accent }}>
+            <div className={fullScreen} style={{ flex: '1 1 340px', minHeight: height, position: 'relative', overflow: 'hidden', background: C.accent }}>
               {imageUrl && (
                 <ParallaxLayer level={photoMovement}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -849,7 +862,7 @@ export const config: Config = {
 
         const centered = layout === 'centered'
         return (
-          <section className={cls} data-nav-hero={navHero && imageUrl ? '' : undefined} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
+          <section className={heroCls} data-nav-hero={navHero && imageUrl ? '' : undefined} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
             {imageUrl ? (
               backgroundBehavior === 'fixed' ? (
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
