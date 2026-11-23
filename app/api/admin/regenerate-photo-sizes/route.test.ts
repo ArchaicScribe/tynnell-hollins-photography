@@ -19,7 +19,11 @@ vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 // The Photos collection finishes every rebuild (collections/photoSizePipeline.ts); this
 // route must not, or the colour treatment would be applied twice.
 const steps: string[] = []
-vi.mock('@/app/lib/photoFinish', () => ({ finishPhotoSizes: async () => void steps.push('finish') }))
+const currentSignature = vi.fn()
+vi.mock('@/app/lib/photoFinish', () => ({
+  finishPhotoSizes: async () => void steps.push('finish'),
+  currentFinishSignature: () => currentSignature(),
+}))
 vi.mock('@aws-sdk/client-s3', () => ({ S3Client: class {} }))
 vi.mock('@/app/lib/privateOriginals', () => ({
   r2OriginalsStore: () => ({ get: privateGetMock, put: vi.fn(), delete: vi.fn() }),
@@ -38,6 +42,7 @@ beforeEach(() => {
   updateMock.mockReset().mockResolvedValue({ ...PHOTO, sizes: {} })
   privateGetMock.mockReset()
   steps.length = 0
+  currentSignature.mockReset().mockResolvedValue('sat=0.65;sharp=none;wm=none')
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('public-display-copy')))
 })
 
@@ -135,5 +140,46 @@ describe('regenerate photo sizes', () => {
 
     expect(res.status).toBe(500)
     error.mockRestore()
+  })
+
+  // "Apply to all photos" asks for onlyIfStale so a run that was interrupted, or a second
+  // click with nothing changed, skips the photos already finished with the current
+  // settings. Without the flag the route always rebuilds, as it did before.
+  describe('onlyIfStale', () => {
+    const regenerateStale = (body: object) =>
+      POST(new Request('https://tynnellhollinsphotography.com/api/admin/regenerate-photo-sizes', { method: 'POST', body: JSON.stringify({ id: 5, ...body }) }))
+
+    it('skips a photo already finished with the current settings, without downloading or rebuilding it', async () => {
+      findByIDMock.mockResolvedValue({ ...PHOTO, finishSignature: 'sat=0.65;sharp=none;wm=none' })
+
+      const res = await regenerateStale({ onlyIfStale: true })
+
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ ok: true, id: 5, skipped: true })
+      expect(updateMock).not.toHaveBeenCalled()
+      expect(fetch).not.toHaveBeenCalled()
+      expect(privateGetMock).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ['finished with different settings', 'sat=1;sharp=none;wm=none'],
+      ['not known to be finished at all', null],
+    ])('rebuilds a photo %s', async (_label, signature) => {
+      findByIDMock.mockResolvedValue({ ...PHOTO, finishSignature: signature })
+
+      const res = await regenerateStale({ onlyIfStale: true })
+
+      expect(res.status).toBe(200)
+      expect((await res.json()).skipped).toBeUndefined()
+      expect(updateMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('still rebuilds a photo that is up to date when the flag is not sent', async () => {
+      findByIDMock.mockResolvedValue({ ...PHOTO, finishSignature: 'sat=0.65;sharp=none;wm=none' })
+
+      await regenerateStale({})
+
+      expect(updateMock).toHaveBeenCalledTimes(1)
+    })
   })
 })

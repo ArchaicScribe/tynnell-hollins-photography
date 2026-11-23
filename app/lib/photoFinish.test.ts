@@ -13,7 +13,7 @@ import sharp from 'sharp'
 const getSiteDesignMock = vi.fn()
 vi.mock('./siteDesign', () => ({ getSiteDesign: () => getSiteDesignMock() }))
 
-const { saturationMatrix, finishBuffer, watermarkOnly, loadFinishPlan, finishPhotoSizes } = await import('./photoFinish')
+const { saturationMatrix, finishBuffer, watermarkOnly, loadFinishPlan, finishPhotoSizes, finishSignature, currentFinishSignature } = await import('./photoFinish')
 
 const NOTHING = { saturation: 1, sharpenSigma: null, watermark: null }
 
@@ -400,6 +400,27 @@ describe('finishPhotoSizes', () => {
       await finishPhotoSizes({ s3: s3 as never, bucket: 'b', sizes: null, main })
       expect(sent.filter((x) => x.cmd === 'PutObjectCommand').map((x) => x.key)).toEqual(['a.jpg'])
     })
+
+    // The display copy is part of a photo's look, so the finish marker must not claim a
+    // photo is up to date when its copy missed the watermark.
+    it('leaves the photo unmarked when the watermark could not be put on the display copy', async () => {
+      const design = { photoTreatment: 'muted', sharpeningLevel: 'none', watermarkEnabled: true, watermarkUrl: 'https://m.example/w.png' }
+      getSiteDesignMock.mockResolvedValue(design)
+      vi.mocked(fetch).mockImplementation(async () => mark())
+      s3.send.mockImplementationOnce(async () => {
+        throw new Error('R2 hiccup')
+      }) // the display copy is the first download
+
+      expect(await finishPhotoSizes({ s3: s3 as never, bucket: 'b', sizes, main })).toBeNull()
+    })
+
+    it('marks the photo once the display copy and every size are finished', async () => {
+      const design = { photoTreatment: 'muted', sharpeningLevel: 'none', watermarkEnabled: true, watermarkUrl: 'https://m.example/w.png' }
+      getSiteDesignMock.mockResolvedValue(design)
+      vi.mocked(fetch).mockImplementation(async () => mark())
+
+      expect(await finishPhotoSizes({ s3: s3 as never, bucket: 'b', sizes, main })).toBe(finishSignature(design as never))
+    })
   })
 
   it('does nothing for a photo with no sizes', async () => {
@@ -408,5 +429,99 @@ describe('finishPhotoSizes', () => {
     await run(null)
 
     expect(s3.send).not.toHaveBeenCalled()
+  })
+})
+
+// The signature records what a photo's renditions were finished with, so "Apply to all
+// photos" can skip the ones already at the current look instead of rebuilding every photo
+// again. It has to cover all three settings: a marker for saturation alone would wrongly
+// skip a photo when only the sharpening or the watermark changed.
+describe('finishSignature', () => {
+  const base = { photoTreatment: 'muted', sharpeningLevel: 'moderate', watermarkEnabled: true, watermarkUrl: 'https://m.example/w.png' } as never
+
+  it('is the same for the same settings', () => {
+    expect(finishSignature(base)).toBe(finishSignature({ ...(base as object) } as never))
+  })
+
+  it.each([
+    ['the colour treatment', { photoTreatment: 'bw' }],
+    ['the sharpening level', { sharpeningLevel: 'strong' }],
+    ['the watermark image', { watermarkUrl: 'https://m.example/other.png' }],
+    ['the watermark being switched off', { watermarkEnabled: false }],
+  ])('changes when %s changes', (_label, change) => {
+    expect(finishSignature({ ...(base as object), ...change } as never)).not.toBe(finishSignature(base))
+  })
+
+  it('ignores a watermark image that is switched off, so a stale url does not matter', () => {
+    const off = { ...(base as object), watermarkEnabled: false } as never
+    expect(finishSignature(off)).toBe(finishSignature({ ...(off as object), watermarkUrl: 'https://m.example/other.png' } as never))
+  })
+
+  it('is the one currentFinishSignature reads from the site design', async () => {
+    getSiteDesignMock.mockResolvedValue(base)
+
+    expect(await currentFinishSignature()).toBe(finishSignature(base))
+  })
+})
+
+describe('finishPhotoSizes reports what it finished with', () => {
+  const s3 = {
+    send: vi.fn(async (command: { constructor: { name: string } }) =>
+      command.constructor.name === 'GetObjectCommand' ? { Body: (async function* () { yield await solid(200, 60, 60) })() } : {},
+    ),
+  }
+  const sizes = {
+    thumbnail: { filename: 'a-400x300.jpg', mimeType: 'image/jpeg' },
+    card: { filename: 'a-1200x900.jpg', mimeType: 'image/jpeg' },
+  }
+  const run = (s2: Parameters<typeof finishPhotoSizes>[0]['sizes'] = sizes) => finishPhotoSizes({ s3: s3 as never, bucket: 'b', sizes: s2 })
+  const design = (over: object = {}) => ({ photoTreatment: 'muted', sharpeningLevel: 'none', watermarkEnabled: false, ...over })
+
+  beforeEach(() => {
+    s3.send.mockClear()
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(Buffer.from('png'))))
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('returns the signature once every size is finished', async () => {
+    getSiteDesignMock.mockResolvedValue(design())
+
+    expect(await run()).toBe(finishSignature(design() as never))
+  })
+
+  it('returns the signature when there was nothing to do', async () => {
+    getSiteDesignMock.mockResolvedValue(design({ photoTreatment: 'color' }))
+
+    expect(await run()).toBe(finishSignature(design({ photoTreatment: 'color' }) as never))
+  })
+
+  it('returns null when a size failed, because that photo is not at the current look', async () => {
+    getSiteDesignMock.mockResolvedValue(design())
+    s3.send.mockImplementationOnce(async () => {
+      throw new Error('R2 hiccup')
+    })
+
+    expect(await run()).toBeNull()
+  })
+
+  it('returns null when the watermark image could not be fetched', async () => {
+    getSiteDesignMock.mockResolvedValue(design({ watermarkEnabled: true, watermarkUrl: 'https://m.example/w.png' }))
+    vi.mocked(fetch).mockResolvedValue(new Response('nope', { status: 404 }))
+
+    expect(await run()).toBeNull()
+  })
+
+  it('returns null when the watermark could not be laid on and was dropped', async () => {
+    getSiteDesignMock.mockResolvedValue(design({ watermarkEnabled: true, watermarkUrl: 'https://m.example/w.png' }))
+    vi.mocked(fetch).mockResolvedValue(new Response('<html>not an image</html>'))
+
+    expect(await run()).toBeNull()
+  })
+
+  it('returns null for a photo with no sizes', async () => {
+    getSiteDesignMock.mockResolvedValue(design())
+
+    expect(await run(null)).toBeNull()
   })
 })

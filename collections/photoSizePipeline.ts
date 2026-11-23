@@ -19,6 +19,12 @@ import type { Photo } from '@/payload-types'
 //    is appended after ours), so the files exist to be read back and rewritten.
 // A plain edit (title, featured, category) rebuilds nothing and is left alone.
 //
+// Photo.finishSignature records what the photo's sizes were finished with (see
+// finishSignature in photoFinish.ts), so "Apply to all photos" can skip photos already at
+// the current look. It is cleared the moment the sizes are rebuilt (they are natural colour
+// until finished) and set again only when finishing brought every size to the current
+// settings, so a photo whose finishing failed stays marked as out of date.
+//
 // Known trade-off (PR #188 review): afterOperation runs before Payload commits the
 // transaction, so the finishing steps (a few seconds per photo) hold the photo's row
 // open. If the function were killed at its 60s limit mid-way, the save would roll back
@@ -33,6 +39,7 @@ export const flagRebuiltSizes: CollectionBeforeChangeHook = ({ data, req }) => {
   if (Object.keys(req.payloadUploadSizes ?? {}).length > 0) {
     req.context = req.context ?? {}
     req.context[FLAG] = true
+    return { ...data, finishSignature: null }
   }
   return data
 }
@@ -52,13 +59,18 @@ export const postProcessRebuiltSizes: CollectionAfterOperationHook = async ({ op
     // would make that a cycle (and drag sharp into every file that imports Photos).
     const { finishPhotoSizes } = await import('@/app/lib/photoFinish')
     const { r2Bucket, r2Client } = await import('@/app/lib/r2')
-    await finishPhotoSizes({
+    const signature = await finishPhotoSizes({
       s3: r2Client(),
       bucket: r2Bucket(),
       sizes: doc.sizes,
       main: { filename: doc.filename, mimeType: doc.mimeType },
       label: doc.filename ?? String(doc.id ?? 'photo'),
     })
+    // Straight to the database: this is bookkeeping, not an edit, so it must not run the
+    // collection's hooks again (or touch updatedAt) and trigger another rebuild.
+    if (signature && doc.id != null) {
+      await req.payload.db.updateOne({ collection: 'photos', id: doc.id, data: { finishSignature: signature }, req, returning: false })
+    }
   } catch (err) {
     // Never fail the save: the photo is stored, only its finishing step missed.
     console.warn('[photos] finishing the rebuilt sizes failed (non-fatal):', err)
