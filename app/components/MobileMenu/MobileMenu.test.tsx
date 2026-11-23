@@ -94,6 +94,65 @@ describe('MobileMenu "Work with me" button', () => {
 })
 
 // CSS modules do not apply in jsdom, so the look is checked from the stylesheet.
+// The menu's open / close button lives in the Navbar, outside the dialog, and sits above the
+// panel on screen. Tab used to cycle only through the panel's own links and never reached
+// it, so a keyboard user could close the menu with Escape only.
+describe('MobileMenu keyboard focus', () => {
+  const tab = (shiftKey = false) => fireEvent.keyDown(document, { key: 'Tab', shiftKey })
+
+  function renderWithToggle(extra?: Partial<Parameters<typeof MobileMenu>[0]>) {
+    render(
+      <>
+        <button type="button" aria-controls="mobile-menu" aria-expanded="true">Close menu</button>
+        <MobileMenu isOpen onClose={() => {}} links={navLinks} {...extra} />
+      </>,
+    )
+    const toggle = document.querySelector('[aria-controls="mobile-menu"]') as HTMLElement
+    const inside = Array.from(menu().querySelectorAll<HTMLElement>('a, button'))
+    return { toggle, first: inside[0], last: inside[inside.length - 1] }
+  }
+
+  it('moves on from the last link to the close button', () => {
+    const { toggle, last } = renderWithToggle()
+    last.focus()
+
+    tab()
+
+    expect(toggle).toHaveFocus()
+  })
+
+  it('moves back from the first link to the close button with Shift+Tab', () => {
+    const { toggle, first } = renderWithToggle()
+    first.focus()
+
+    tab(true)
+
+    expect(toggle).toHaveFocus()
+  })
+
+  it('goes from the close button into the menu, wrapping at both ends', () => {
+    const { toggle, first, last } = renderWithToggle()
+    toggle.focus()
+
+    tab()
+    expect(first).toHaveFocus()
+
+    toggle.focus()
+    tab(true)
+    expect(last).toHaveFocus()
+  })
+
+  it('still wraps inside the menu when the page has no close button', () => {
+    render(<MobileMenu isOpen onClose={() => {}} links={navLinks} />)
+    const inside = Array.from(menu().querySelectorAll<HTMLElement>('a, button'))
+    inside[inside.length - 1].focus()
+
+    tab()
+
+    expect(inside[0]).toHaveFocus()
+  })
+})
+
 describe('MobileMenu.module.css', () => {
   const css = readFileSync(path.resolve(__dirname, 'MobileMenu.module.css'), 'utf8')
   const bodyOf = (selector: string) => {

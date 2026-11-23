@@ -119,6 +119,100 @@ describe('InquiryForm - visitor chooses', () => {
   })
 })
 
+// The wedding / portrait switch is a tab list, so it follows the tabs pattern: only the
+// selected tab is in the Tab order, the arrow keys move between tabs, and each tab names
+// the panel it controls.
+describe('InquiryForm - the tabs are keyboard and screen reader friendly', () => {
+  const wedding = () => screen.getByRole('tab', { name: 'Wedding inquiry' })
+  const portrait = () => screen.getByRole('tab', { name: 'Portrait inquiry' })
+
+  it('puts only the selected tab in the Tab order', () => {
+    render(<InquiryForm kind="choice" />)
+
+    expect(wedding()).toHaveAttribute('tabindex', '0')
+    expect(portrait()).toHaveAttribute('tabindex', '-1')
+  })
+
+  it('links each tab to the panel holding the form, and the panel back to the selected tab', () => {
+    render(<InquiryForm kind="choice" />)
+
+    const panel = screen.getByRole('tabpanel')
+
+    expect(wedding()).toHaveAttribute('aria-controls', panel.id)
+    expect(portrait()).toHaveAttribute('aria-controls', panel.id)
+    expect(panel).toHaveAttribute('aria-labelledby', wedding().id)
+    expect(panel).toContainElement(screen.getByRole('button', { name: 'Send Inquiry' }))
+  })
+
+  it('points the panel at the new tab after a switch', async () => {
+    const user = userEvent.setup()
+    render(<InquiryForm kind="choice" />)
+
+    await user.click(portrait())
+
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', portrait().id)
+  })
+
+  it('moves to the next tab with the right arrow, taking focus along', async () => {
+    const user = userEvent.setup()
+    render(<InquiryForm kind="choice" />)
+
+    wedding().focus()
+    await user.keyboard('{ArrowRight}')
+
+    expect(portrait()).toHaveAttribute('aria-selected', 'true')
+    expect(portrait()).toHaveFocus()
+    expect(portrait()).toHaveAttribute('tabindex', '0')
+    expect(wedding()).toHaveAttribute('tabindex', '-1')
+  })
+
+  it('wraps round with the arrow keys, and Home and End jump to the ends', async () => {
+    const user = userEvent.setup()
+    render(<InquiryForm kind="choice" />)
+
+    wedding().focus()
+    await user.keyboard('{ArrowLeft}')
+    expect(portrait()).toHaveAttribute('aria-selected', 'true')
+
+    await user.keyboard('{Home}')
+    expect(wedding()).toHaveAttribute('aria-selected', 'true')
+    expect(wedding()).toHaveFocus()
+
+    await user.keyboard('{End}')
+    expect(portrait()).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('ignores the arrow keys while a request is in flight', async () => {
+    fetchMock.mockReturnValue(new Promise<Response>(() => {}))
+    const user = userEvent.setup()
+    render(<InquiryForm kind="choice" />)
+    await user.type(screen.getByLabelText(/^Name/i), 'Ana')
+    await user.type(screen.getByLabelText(/^Email/i), 'ana@example.com')
+    await user.type(screen.getByLabelText(/Partner.s name/i), 'Sam')
+    await user.type(screen.getByLabelText(/Message/i), 'Hi')
+    await user.click(screen.getByRole('button', { name: 'Send Inquiry' }))
+
+    wedding().focus()
+    await user.keyboard('{ArrowRight}')
+
+    expect(wedding()).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('has no tab list and no tab panel when the form is fixed to one kind', () => {
+    render(<InquiryForm kind="wedding" />)
+
+    expect(screen.queryByRole('tablist')).toBeNull()
+    expect(screen.queryByRole('tabpanel')).toBeNull()
+  })
+
+  it('keeps every id on a page with two forms unique', () => {
+    const { container } = render(<><InquiryForm kind="choice" /><InquiryForm kind="choice" /></>)
+
+    const ids = [...container.querySelectorAll('[id]')].map((e) => e.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+})
+
 describe('InquiryForm - robustness', () => {
   it('ignores a tab switch while a request is in flight', async () => {
     let finish!: (r: Response) => void

@@ -8,6 +8,7 @@ import type { CSSProperties } from 'react'
 export const STAGGER_CSS = `
 [data-fade-phase="hidden"] .pk-stagger{opacity:0;transform:translateY(48px)}
 [data-fade-phase="revealed"] .pk-stagger{opacity:1;transform:translateY(0);transition:opacity var(--motion-slow,1s) var(--ease,ease-out),transform var(--motion-slow,1s) var(--ease,ease-out);transition-delay:calc(min(var(--i,0),7)*120ms)}
+@media print{[data-fade-up],[data-fade-up] .pk-stagger{opacity:1 !important;transform:none !important;transition:none !important}}
 `
 
 export function staggerItem(i: number, style: CSSProperties = {}): { className: string; style: CSSProperties } {
