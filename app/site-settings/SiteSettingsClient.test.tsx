@@ -75,6 +75,38 @@ describe('Site Settings, footer text', () => {
   })
 })
 
+describe('Site Settings, a refused save', () => {
+  beforeEach(() => vi.stubGlobal('fetch', fetchMock))
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    fetchMock.mockReset()
+  })
+
+  it('says why the settings were refused, instead of a generic failure', async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      url === '/api/site-settings/save'
+        ? { ok: false, status: 400, json: async () => ({ error: 'The Instagram link must start with https://' }) }
+        : { ok: true, json: async () => ({}) },
+    )
+    renderSettings()
+
+    fireEvent.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(await screen.findByText('The Instagram link must start with https://')).toBeTruthy()
+  })
+
+  it('still shows the generic message when the server gives no reason', async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      url === '/api/site-settings/save' ? { ok: false, status: 500, json: async () => ({}) } : { ok: true, json: async () => ({}) },
+    )
+    renderSettings()
+
+    fireEvent.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(await screen.findByText('Failed to save. Please try again.')).toBeTruthy()
+  })
+})
+
 describe('Site Settings, menu "Work with me" cards', () => {
   beforeEach(() => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) })

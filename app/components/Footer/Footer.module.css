@@ -140,6 +140,8 @@
   max-width: 28rem;
   margin: 0;
   overflow-wrap: anywhere;
+  /* Keep the line breaks Tynnell types in the Footer bio box. */
+  white-space: pre-line;
 }
 
 .button {

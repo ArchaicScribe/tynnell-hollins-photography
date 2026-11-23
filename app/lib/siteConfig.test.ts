@@ -67,3 +67,28 @@ describe('getSiteConfig menu cards', () => {
     expect((await getSiteConfig()).menuCards).toEqual([])
   })
 })
+
+// Tynnell has to be able to remove a social link or the location line. A saved empty
+// string means "none" and must win over the built-in default; only a value that was
+// never saved (null or missing) falls back to it.
+describe('getSiteConfig cleared fields', () => {
+  const FIELDS = ['instagramUrl', 'tiktokUrl', 'pinterestUrl', 'facebookUrl', 'footerLocation', 'footerBio'] as const
+
+  it('keeps a social link, the location and the bio blank when they were cleared', async () => {
+    findGlobalMock.mockResolvedValue({ instagramUrl: '', tiktokUrl: '', pinterestUrl: '', facebookUrl: '', footerLocation: '', footerBio: '' })
+
+    const site = await getSiteConfig()
+
+    for (const field of FIELDS) expect(site[field], field).toBe('')
+  })
+
+  it('still uses the defaults for values that were never saved', async () => {
+    findGlobalMock.mockResolvedValue({ instagramUrl: null, tiktokUrl: undefined, footerLocation: null })
+
+    const site = await getSiteConfig()
+
+    expect(site.instagramUrl).toBe('https://instagram.com/tynnellhollinsphotography')
+    expect(site.tiktokUrl).toBe('https://tiktok.com/@tynnellhollinsphotography')
+    expect(site.footerLocation).toBe('Based in New Mexico | Travel Worldwide')
+  })
+})

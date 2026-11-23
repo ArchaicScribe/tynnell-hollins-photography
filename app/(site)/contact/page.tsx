@@ -7,7 +7,7 @@ import { config as puckConfig } from '@/app/builder/puck.config'
 import ContactForm from './ContactForm'
 import JsonLd from '@/app/components/JsonLd/JsonLd'
 import styles from './page.module.css'
-import { getSiteConfig } from '@/app/lib/siteConfig'
+import { getSiteConfig, instagramHandle } from '@/app/lib/siteConfig'
 import { getActiveOoo, type BlockedRange } from '@/app/lib/availability'
 import { computeBookingDateBounds } from '@/app/lib/validation'
 import { isPreviewMode, pageRenderData } from '@/app/lib/builderPreview'
@@ -152,10 +152,15 @@ export default async function ContactPage() {
             <a href={`mailto:${site.email}`} className={styles.contactLink}>
               {site.email}
             </a>
-            <span className={styles.contactDivider}>·</span>
-            <a href={site.instagramUrl} className={styles.contactLink} target="_blank" rel="noopener noreferrer">
-              @tynnellhollinsphotography
-            </a>
+            {/* The link can be removed in Site Settings, so it shows only while one is set. */}
+            {site.instagramUrl && (
+              <>
+                <span className={styles.contactDivider}>·</span>
+                <a href={site.instagramUrl} className={styles.contactLink} target="_blank" rel="noopener noreferrer">
+                  {instagramHandle(site.instagramUrl)}
+                </a>
+              </>
+            )}
           </div>
         </div>
 

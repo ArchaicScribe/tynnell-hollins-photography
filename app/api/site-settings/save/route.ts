@@ -25,6 +25,16 @@ const FIELDS = [
   'freebieTitle',
 ] as const
 
+// Social links become an href on every public page, so each is stored only if it is
+// blank (which removes it) or a secure https link: not javascript:, data:, plain http, a
+// bare word or a page on this site.
+const SOCIAL_FIELDS = [
+  ['instagramUrl', 'Instagram'],
+  ['facebookUrl', 'Facebook'],
+  ['tiktokUrl', 'TikTok'],
+  ['pinterestUrl', 'Pinterest'],
+] as const
+
 // The storage key of the guide PDF this save replaces, or null to keep it.
 // Deletes only our own Site Settings uploads (files/<uuid>-name.pdf in R2),
 // never a guide hosted elsewhere or anything else in the bucket, and only
@@ -63,6 +73,14 @@ export async function POST(request: Request) {
   const data: Record<string, unknown> = {}
   for (const key of FIELDS) {
     if (key in body) data[key] = body[key]
+  }
+  for (const [field, label] of SOCIAL_FIELDS) {
+    if (!(field in data)) continue
+    const link = typeof data[field] === 'string' ? (data[field] as string).trim() : ''
+    if (link && (link.startsWith('/') || !isSafeLink(link))) {
+      return NextResponse.json({ error: `The ${label} link must start with https://` }, { status: 400 })
+    }
+    data[field] = link
   }
   // The menu cards' links appear on every public page, so they are cleaned
   // (unsafe links dropped, at most two cards) before they reach the database.

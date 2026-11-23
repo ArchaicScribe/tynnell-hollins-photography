@@ -51,6 +51,34 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+describe('Footer social links', () => {
+  it('shows the Facebook link when one is saved, which used to be stored but never shown', async () => {
+    await renderFooter({ site: { facebookUrl: 'https://facebook.com/tynnell' } })
+
+    const link = within(screen.getByRole('list', { name: 'Social links' })).getByRole('link', { name: 'Facebook' })
+
+    expect(link).toHaveAttribute('href', 'https://facebook.com/tynnell')
+  })
+
+  it('shows no Facebook icon when none is saved', async () => {
+    await renderFooter({ site: { facebookUrl: '' } })
+
+    expect(screen.queryByRole('link', { name: 'Facebook' })).toBeNull()
+  })
+
+  it('shows the social list for a Facebook link on its own', async () => {
+    await renderFooter({ site: { instagramUrl: '', tiktokUrl: '', pinterestUrl: '', facebookUrl: 'https://facebook.com/tynnell' } })
+
+    expect(screen.getByRole('list', { name: 'Social links' })).toBeTruthy()
+  })
+
+  it('shows no social list when every link was cleared', async () => {
+    await renderFooter({ site: { instagramUrl: '', tiktokUrl: '', pinterestUrl: '', facebookUrl: '' } })
+
+    expect(screen.queryByRole('list', { name: 'Social links' })).toBeNull()
+  })
+})
+
 describe('Footer link list', () => {
   it('lists every page in the reference order, then builder pages', async () => {
     await renderFooter({ footer: { builderLinks: [{ label: 'Pricing', href: '/pricing' }] } })
