@@ -76,6 +76,19 @@
   --nav-hairline: 0;
 }
 
+/* While the full-screen menu is open the bar is see-through, so the photo columns run to
+   the top of the screen, and it shows only "close menu" and the X (the link rows and the
+   brand step aside), as the reference does. visibility keeps the space, so nothing
+   shifts. This is more specific than the solid-state rule above, so it wins. */
+.navbar.menuOpen {
+  --nav-bg: transparent;
+}
+
+.menuOpen .row,
+.menuOpen .brand {
+  visibility: hidden;
+}
+
 /* ── Brand ───────────────────────────────────────────────── */
 
 .brand {

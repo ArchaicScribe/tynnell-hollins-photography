@@ -21,6 +21,19 @@ export const navLinks: NavLink[] = [
   { label: 'Blog', href: '/blog' },
 ]
 
+// The full-screen menu, in the order the Rising Roots menu lists its pages: seven flat,
+// numbered links, Weddings and Portraits side by side instead of under a Portfolio
+// drop-down. Services and Testimonials are not here; the footer still links them.
+export const menuLinks: NavLink[] = [
+  { label: 'Home', href: '/' },
+  { label: 'About me', href: '/about' },
+  { label: 'Weddings', href: '/wedding-photography' },
+  { label: 'Portraits', href: '/portraits' },
+  { label: 'My work', href: '/portfolio' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
+]
+
 // The desktop nav row. Its labels differ from the menu and footer (for example
 // "Wedding photography" here, "Weddings" under Portfolio in the menu), so it is
 // its own constant. Builder pages flagged show-in-menu never go in the row; they

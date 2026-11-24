@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { navLinks, navRow, type NavLink } from '@/app/constants/nav'
+import { menuLinks, navRow, type NavLink } from '@/app/constants/nav'
 import type { MenuCard } from '@/app/lib/menuCards'
 import { splitBrand } from '@/app/lib/constants'
 import { useScrollLock } from '@/app/hooks/useScrollLock'
@@ -11,7 +11,7 @@ import styles from './Navbar.module.css'
 
 // Rising Roots: five plain links split either side of a centred mark, a script
 // "Inquire now", and a menu button that is visible at every width. The row comes
-// from `navRow`; the menu gets every page (navLinks plus builder pages flagged
+// from `navRow`; the menu gets every page (menuLinks plus builder pages flagged
 // show-in-menu), so builder pages never crowd the row.
 export default function Navbar({
   builderLinks = [],
@@ -64,7 +64,7 @@ export default function Navbar({
   const closeMenu = useCallback(() => setMenuOpen(false), [])
 
   const brand = splitBrand(siteTitle)
-  const menuLinks = [...navLinks, ...builderLinks]
+  const allMenuLinks = [...menuLinks, ...builderLinks]
 
   const renderLink = (link: NavLink) => (
     <li key={link.href}>
@@ -133,7 +133,7 @@ export default function Navbar({
         </div>
       </nav>
 
-      <MobileMenu isOpen={menuOpen} onClose={closeMenu} links={menuLinks} cards={menuCards} />
+      <MobileMenu isOpen={menuOpen} onClose={closeMenu} links={allMenuLinks} cards={menuCards} />
     </>
   )
 }

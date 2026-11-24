@@ -180,3 +180,67 @@ describe('MobileMenu.module.css', () => {
     expect(bodyOf('.panel')).toContain('justify-content: safe center')
   })
 })
+
+// Measured on risingroots.showit.site, 2026-11-24: the open menu is three columns on a wide
+// screen. Each photo card is a full-height column (a third of the width, italic title and a
+// small-caps link at its bottom), and the olive panel holds the numbered links and a pill
+// "Work with me" button in the rest.
+describe('MobileMenu photo columns', () => {
+  it('marks how many photo columns there are, so the grid can give each one a column', () => {
+    const none = render(<MobileMenu isOpen onClose={() => {}} links={navLinks} />)
+    expect(menu().className).not.toMatch(/cards[12]/)
+    none.unmount()
+
+    const one = render(<MobileMenu isOpen onClose={() => {}} links={navLinks} cards={[cards[0]]} />)
+    expect(menu().className).toMatch(/cards1/)
+    one.unmount()
+
+    render(<MobileMenu isOpen onClose={() => {}} links={navLinks} cards={cards} />)
+    expect(menu().className).toMatch(/cards2/)
+  })
+})
+
+describe('MobileMenu.module.css, reference layout', () => {
+  const css = readFileSync(path.resolve(__dirname, 'MobileMenu.module.css'), 'utf8')
+  const norm = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim()
+  const bodyOf = (selector: string) => {
+    for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) if (norm(m[1]) === selector) return m[2]
+    return ''
+  }
+  const wide = css.slice(css.indexOf('@media (min-width: 1025px)'))
+  const wideBody = (selector: string) => {
+    for (const m of wide.matchAll(/([^{}]+)\{([^{}]*)\}/g)) if (norm(m[1]) === selector) return m[2]
+    return ''
+  }
+
+  it('gives each photo card its own column, with the panel taking the rest', () => {
+    expect(wideBody('.overlay.cards1')).toMatch(/grid-template-columns:\s*3fr 7fr/)
+    expect(wideBody('.overlay.cards2')).toMatch(/grid-template-columns:\s*3fr 3fr 4fr/)
+  })
+
+  it('runs each card photo full-bleed behind its title and link', () => {
+    expect(bodyOf('.card')).toMatch(/position:\s*relative/)
+    expect(bodyOf('.cardImg')).toMatch(/position:\s*absolute/)
+    expect(bodyOf('.cardImg')).toMatch(/inset:\s*0/)
+    expect(bodyOf('.cardImg')).toMatch(/object-fit:\s*cover/)
+  })
+
+  it('sets the card title in the italic accent face', () => {
+    expect(bodyOf('.cardTitle')).toMatch(/font-style:\s*italic/)
+    expect(bodyOf('.cardTitle')).toMatch(/var\(--font-accent/)
+  })
+
+  it('rounds the "Work with me" button into a bone pill like the reference', () => {
+    const body = bodyOf('.workBtn')
+    expect(body).toMatch(/border-radius:\s*999px/)
+    expect(body).toMatch(/background:\s*var\(--color-bg\)/)
+  })
+
+  it('sets the page links at the reference weight, not light', () => {
+    expect(bodyOf('.link')).toMatch(/font-weight:\s*400/)
+  })
+
+  it('keeps the "Work with me" heading for screen readers on a wide screen without showing it', () => {
+    expect(wideBody('.workHeading')).toMatch(/clip:\s*rect\(0, 0, 0, 0\)|clip-path:\s*inset\(50%\)/)
+  })
+})

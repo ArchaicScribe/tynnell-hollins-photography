@@ -44,3 +44,24 @@ describe('navLinks', () => {
     expect(labels).not.toContain('About')
   })
 })
+
+// The full-screen menu lists the pages in the order the Rising Roots menu does (measured
+// 2026-11-24): seven flat, numbered links, Weddings and Portraits side by side rather than
+// folded into a Portfolio drop-down. Services and Testimonials stay in the footer.
+import { menuLinks } from './nav'
+
+describe('menuLinks', () => {
+  it('is the reference list: Home, About me, Weddings, Portraits, My work, Blog, Contact', () => {
+    expect(menuLinks.map(l => l.label)).toEqual(['Home', 'About me', 'Weddings', 'Portraits', 'My work', 'Blog', 'Contact'])
+    expect(menuLinks.map(l => l.href)).toEqual(['/', '/about', '/wedding-photography', '/portraits', '/portfolio', '/blog', '/contact'])
+  })
+
+  it('is flat, with no drop-downs', () => {
+    expect(menuLinks.every(l => !l.children)).toBe(true)
+  })
+
+  it('includes every page the nav row links to', () => {
+    const hrefs = new Set(menuLinks.map(l => l.href))
+    for (const link of [...navRow.left, ...navRow.right, navRow.cta]) expect(hrefs.has(link.href), link.href).toBe(true)
+  })
+})
