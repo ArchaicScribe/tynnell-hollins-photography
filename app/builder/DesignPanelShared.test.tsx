@@ -130,3 +130,14 @@ describe('Design panel: Performance mode', () => {
     expect(screen.getByRole('button', { name: /Apply to all photos/ })).toBeTruthy()
   })
 })
+
+describe('Soft section edges setting', () => {
+  it('is a checkbox in the Texture section, on by default, that turns the fade off', () => {
+    const set = renderPanel({ softBandEdges: true }, 'texture')
+    const box = screen.getByLabelText('Soft section edges') as HTMLInputElement
+
+    expect(box.checked).toBe(true)
+    fireEvent.click(box)
+    expect(set).toHaveBeenCalledWith('softBandEdges', false)
+  })
+})

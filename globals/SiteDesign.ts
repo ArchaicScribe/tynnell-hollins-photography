@@ -290,6 +290,14 @@ export const SiteDesign: GlobalConfig = {
       defaultValue: false,
     },
     {
+      // Band sections (olive, deep olive) fade into their neighbours at the top and bottom.
+      // On by default; off gives the hard edge back.
+      name: 'softBandEdges',
+      type: 'checkbox',
+      label: 'Soft section edges',
+      defaultValue: true,
+    },
+    {
       // TYN-325: applied to new uploads' web display sizes only, never the
       // full original (see app/lib/photoFinish.ts).
       name: 'sharpeningLevel',

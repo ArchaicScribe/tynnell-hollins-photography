@@ -1204,6 +1204,7 @@ export interface SiteDesign {
   buttonStyle?: ('sharp' | 'rounded' | 'pill') | null;
   animationsEnabled?: boolean | null;
   performanceMode?: boolean | null;
+  softBandEdges?: boolean | null;
   sharpeningLevel?: ('none' | 'subtle' | 'moderate' | 'strong') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1450,6 +1451,7 @@ export interface SiteDesignSelect<T extends boolean = true> {
   buttonStyle?: T;
   animationsEnabled?: T;
   performanceMode?: T;
+  softBandEdges?: T;
   sharpeningLevel?: T;
   updatedAt?: T;
   createdAt?: T;

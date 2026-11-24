@@ -54,6 +54,9 @@ export interface SiteTheme {
   buttonStyle: 'sharp' | 'rounded' | 'pill'
   animationsEnabled: boolean
   performanceMode: boolean
+  // Band sections (olive, deep olive) fade into their neighbours at the top and bottom
+  // instead of meeting them in a hard line.
+  softBandEdges: boolean
   sharpeningLevel: 'none' | 'subtle' | 'moderate' | 'strong'
 }
 
@@ -91,6 +94,7 @@ export const DEFAULT_THEME: SiteTheme = {
   buttonStyle: 'sharp',
   animationsEnabled: true,
   performanceMode: false,
+  softBandEdges: true,
   sharpeningLevel: 'none',
 }
 
@@ -204,6 +208,9 @@ export function themeToCssVarMap(theme: SiteTheme): Record<string, string> {
       PHOTO_SATURATION[theme.photoTreatment] === '1' ? 'none' : `saturate(${PHOTO_SATURATION[theme.photoTreatment]})`,
     '--space-scale': String(SPACE_SCALE[theme.spacingScale]),
     '--btn-radius': BTN_RADIUS[theme.buttonStyle],
+    // The length of the fade at a band section's top and bottom edge (globals.css). Zero
+    // when off, which collapses the fade layers to nothing.
+    '--band-edge-size': theme.softBandEdges ? 'clamp(2.5rem, 6vw, 4.5rem)' : '0px',
   }
   // Only written once chosen: a default colour here would replace the button
   // colour the navbar follows today. Navbar.module.css falls back to it.

@@ -17,7 +17,10 @@
   --font-script-birthstone: 'Birthstone', cursive;
 }
 
+/* The page ground, captured here so a band section (which overrides --color-bg on itself to
+   its own colour) can still fade into the real page colour at its edges. */
 :root {
+  --color-ground:         var(--color-bg);
   /* ── Colors: dark mode (default) ─────────────────────────── */
   --color-bg:             #0C0C0C;
   --color-bg-accent:      #131313;
