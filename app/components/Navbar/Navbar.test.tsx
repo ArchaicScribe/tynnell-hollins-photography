@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 
 let mockPathname = '/'
@@ -102,6 +102,12 @@ describe('Navbar row', () => {
     expect(within(mainNav()).getByRole('link', { name: 'Tynnell Hollins Photography, home' })).toHaveTextContent(/Tynnell/)
   })
 
+  it('draws the menu button as two lines, like the reference', () => {
+    render(<Navbar />)
+
+    expect(hamburger().querySelectorAll('span')).toHaveLength(2)
+  })
+
   it('shows "close menu" next to the button only while the menu is open', () => {
     render(<Navbar />)
     expect(screen.queryByText('close menu')).toBeNull()
@@ -111,5 +117,84 @@ describe('Navbar row', () => {
 
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByText('close menu')).toBeNull()
+  })
+})
+
+// The Rising Roots bar stays transparent over the opening photo and turns solid once that
+// photo has scrolled away (measured 2026-11-24: it flips at about 720px on a 672px hero, not
+// at 50px). On a page with no opening photo there is nothing to wait for, so it keeps the
+// old 50px rule.
+describe('Navbar solid switch on scroll', () => {
+  beforeEach(() => {
+    mockPathname = '/'
+    vi.stubGlobal('requestAnimationFrame', (fn: FrameRequestCallback) => { fn(0); return 1 })
+    vi.stubGlobal('cancelAnimationFrame', () => {})
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    document.body.innerHTML = ''
+    Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
+  })
+
+  const mainNav = () => screen.getByRole('navigation', { name: /main navigation/i })
+  const scrollTo = (y: number) => {
+    Object.defineProperty(window, 'scrollY', { value: y, configurable: true })
+    fireEvent.scroll(window)
+  }
+  const addHero = (bottomRef: { bottom: number }) => {
+    const hero = document.createElement('section')
+    hero.setAttribute('data-nav-hero', '')
+    hero.getBoundingClientRect = () => ({ bottom: bottomRef.bottom }) as DOMRect
+    document.body.appendChild(hero)
+  }
+
+  it('stays transparent after 50px while the opening photo is still behind the bar', () => {
+    addHero({ bottom: 600 })
+    render(<Navbar />)
+
+    scrollTo(200)
+
+    expect(mainNav().className).not.toContain('scrolled')
+  })
+
+  it('turns solid once the opening photo has scrolled up past the bar', () => {
+    const hero = { bottom: 600 }
+    addHero(hero)
+    render(<Navbar />)
+
+    hero.bottom = -1
+    scrollTo(900)
+
+    expect(mainNav().className).toContain('scrolled')
+  })
+
+  it('goes back to transparent when scrolled back up over the photo', () => {
+    const hero = { bottom: -1 }
+    addHero(hero)
+    render(<Navbar />)
+    scrollTo(900)
+    expect(mainNav().className).toContain('scrolled')
+
+    hero.bottom = 500
+    scrollTo(100)
+
+    expect(mainNav().className).not.toContain('scrolled')
+  })
+
+  it('is already solid on arrival when the page loads scrolled past the photo', () => {
+    addHero({ bottom: -50 })
+    Object.defineProperty(window, 'scrollY', { value: 900, configurable: true })
+    render(<Navbar />)
+
+    expect(mainNav().className).toContain('scrolled')
+  })
+
+  it('keeps the 50px rule on a page with no opening photo', () => {
+    render(<Navbar />)
+    scrollTo(20)
+    expect(mainNav().className).not.toContain('scrolled')
+
+    scrollTo(100)
+    expect(mainNav().className).toContain('scrolled')
   })
 })

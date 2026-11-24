@@ -109,6 +109,15 @@ export const parisienne = localFont({
   display: 'swap',
 })
 
+// The closest free match found (2026-11-24) to Nostalgia, the paid script the reference
+// sets "Inquire now" in: narrow, thin and slanted at the same size. A choice for the
+// script role in /design, next to Parisienne.
+export const birthstone = localFont({
+  src: [{ path: './google/birthstone-400-normal.woff2', weight: '400', style: 'normal' }],
+  variable: '--font-script-birthstone',
+  display: 'swap',
+})
+
 // Studio / admin surfaces (studio, studio-manager, gallery-editor,
 // photo-library, availability, builder, coming-soon).
 //

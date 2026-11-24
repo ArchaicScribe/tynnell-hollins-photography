@@ -966,6 +966,12 @@ async function run() {
     )
     console.log('✓ site_design accent/script font columns ready')
 
+    // Birthstone, the closest free script to the reference's Nostalgia (2026-11-24).
+    // The script font is a Payload select, so it is a real Postgres enum: a new
+    // choice needs ADD VALUE or saving it in /design fails. Runs outside a transaction.
+    await client.query(`ALTER TYPE "enum_site_design_script_font" ADD VALUE IF NOT EXISTS 'birthstone'`)
+    console.log('✓ enum_site_design_script_font has birthstone')
+
     // ------------------------------------------------------------------
     // Migration 20260810_120000: shell finishes (paper grain + photo
     // treatment). Both are Payload selects, which the postgres adapter backs

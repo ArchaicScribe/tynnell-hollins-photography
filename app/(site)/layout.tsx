@@ -8,6 +8,7 @@ import {
   barlow,
   jost,
   parisienne,
+  birthstone,
 } from '@/app/fonts/fonts'
 import './globals.css'
 import './styles/tokens.css'
@@ -83,7 +84,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${tangerine.variable} ${poppinsHeading.variable} ${poppinsBody.variable} ${abrilFatface.variable} ${cormorant.variable} ${barlow.variable} ${jost.variable} ${parisienne.variable}`}
+      className={`${tangerine.variable} ${poppinsHeading.variable} ${poppinsBody.variable} ${abrilFatface.variable} ${cormorant.variable} ${barlow.variable} ${jost.variable} ${parisienne.variable} ${birthstone.variable}`}
       data-animations={theme.animationsEnabled ? undefined : 'off'}
     >
       {/* Site-wide theme (TYN-314), read fresh on every request from the

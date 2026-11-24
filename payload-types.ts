@@ -1184,7 +1184,7 @@ export interface SiteDesign {
   colorDetail?: string | null;
   colorBtnBg?: string | null;
   accentFont?: ('cormorant' | 'poppins' | 'tangerine' | 'abril' | 'barlow' | 'jost') | null;
-  scriptFont?: ('parisienne' | 'tangerine') | null;
+  scriptFont?: ('parisienne' | 'birthstone' | 'tangerine') | null;
   colorBgCard?: string | null;
   colorBgHover?: string | null;
   colorBgOverlay?: string | null;

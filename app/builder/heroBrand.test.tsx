@@ -89,17 +89,12 @@ describe('Hero brand layout', () => {
     expect(html).toMatch(/<h1[^>]*font-size:clamp\(2rem,5vw,4rem\)/)
   })
 
-  // The nav shows the same name, so over this hero (and only while the bar is transparent)
-  // the nav brand steps aside; the hero carries the marker the stylesheet keys on.
-  it('marks itself for the nav only when the wordmark is showing over the page opening', () => {
-    const marker = 'data-nav-brand-hero'
-    const section = (props: Record<string, unknown>) => draw(props).container.querySelector('section')!
+  // The nav keeps its centre mark over this hero (the reference has one there too), so the
+  // hero carries no marker asking the nav to hide it (PR #200's marker was taken out).
+  it('does not ask the nav to hide its brand', () => {
+    const section = draw({ wordmark: 'T', heading: 'x', navHero: true }).container.querySelector('section')!
 
-    expect(section({ wordmark: 'T', heading: 'x', navHero: true }).hasAttribute(marker)).toBe(true)
-    expect(section({ wordmark: 'T', heading: 'x' }).hasAttribute(marker)).toBe(false)
-    expect(section({ wordmark: '', heading: 'x', navHero: true }).hasAttribute(marker)).toBe(false)
-    expect(section({ wordmark: 'T', heading: 'x', navHero: true, imageUrl: '' }).hasAttribute(marker)).toBe(false)
-    expect(section({ wordmark: 'T', heading: 'x', navHero: true, layout: 'centered' }).hasAttribute(marker)).toBe(false)
+    expect(section.hasAttribute('data-nav-brand-hero')).toBe(false)
   })
 
   it('stacks the wordmark over the tagline on a phone and turns the rule sideways', () => {

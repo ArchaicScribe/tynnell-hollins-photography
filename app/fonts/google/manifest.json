@@ -214,5 +214,13 @@
       "style": "normal",
       "bytes": 32796
     }
+  ],
+  "birthstone": [
+    {
+      "file": "birthstone-400-normal.woff2",
+      "weight": "400",
+      "style": "normal",
+      "bytes": 33608
+    }
   ]
 }
