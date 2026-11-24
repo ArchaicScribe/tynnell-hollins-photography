@@ -76,14 +76,10 @@
   --nav-hairline: 0;
 }
 
-/* While the full-screen menu is open the bar is see-through, so the photo columns run to
-   the top of the screen, and it shows only "close menu" and the X (the link rows and the
-   brand step aside), as the reference does. visibility keeps the space, so nothing
-   shifts. This is more specific than the solid-state rule above, so it wins. */
-.navbar.menuOpen {
-  --nav-bg: transparent;
-}
-
+/* While the full-screen menu is open the bar shows only "close menu" and the X (the link
+   rows and the brand step aside), as the reference does. visibility keeps the space, so
+   nothing shifts. On wide screens the bar is also see-through (in the min-width block
+   below), so the photo columns run to the top of the screen. */
 .menuOpen .row,
 .menuOpen .brand {
   visibility: hidden;
@@ -264,6 +260,16 @@
 /* The three-column grid needs more room than the old stacked rows, so the
    collapse point moves up: below 1024px the link groups go and the hamburger
    takes over, leaving brand + CTA + burger. */
+
+/* Wide screens only: the photo columns sit beside the olive panel, so the X and "close menu"
+   always have olive behind them. On a phone the cards stack under the panel and scroll
+   beneath the bar, so there it stays solid olive. This is more specific than the solid-state
+   rule above, so it wins. */
+@media (min-width: 1025px) {
+  .navbar.menuOpen {
+    --nav-bg: transparent;
+  }
+}
 
 @media (min-width: 1025px) and (max-width: 1240px) {
   .row,

@@ -23,7 +23,9 @@ export default function PinnedTestimonials({
 }) {
   const { activeIndex, itemRef } = useActiveOnScroll(testimonials.length)
 
-  let activePhoto: TestimonialItem | null = null
+  // Start from the first portrait there is, so a first quote without one still has the photo
+  // column from the first paint instead of the column popping in when the second quote scrolls up.
+  let activePhoto: TestimonialItem | null = testimonials.find((t) => t.photoUrl) ?? null
   for (let i = 0; i <= activeIndex; i++) {
     if (testimonials[i]?.photoUrl) activePhoto = testimonials[i]
   }

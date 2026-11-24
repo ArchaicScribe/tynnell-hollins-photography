@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { menuLinks, navRow, type NavLink } from '@/app/constants/nav'
@@ -8,6 +8,10 @@ import { splitBrand } from '@/app/lib/constants'
 import { useScrollLock } from '@/app/hooks/useScrollLock'
 import MobileMenu from '@/app/components/MobileMenu/MobileMenu'
 import styles from './Navbar.module.css'
+
+// How far from the top of the window the opening photo's bottom edge must be before the bar
+// turns solid: about the height of the bar, halfway between its transparent and solid heights.
+const SOLID_AT_PX = 72
 
 // Rising Roots: five plain links split either side of a centred mark, a script
 // "Inquire now", and a menu button that is visible at every width. The row comes
@@ -26,22 +30,22 @@ export default function Navbar({
 }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const navRef = useRef<HTMLElement>(null)
   const pathname = usePathname()
 
   useScrollLock(menuOpen)
 
   // The bar is transparent over the page's opening photo and turns solid once that photo has
-  // scrolled up past it, as the reference does (it flips at about 720px on a 672px hero).
-  // With no opening photo there is nothing to wait for, so the old 50px rule applies. Re-run
-  // on every route change: the new page has its own opening photo, or none.
+  // scrolled up to the bar, close to where the reference flips. The threshold is a fixed
+  // number, not the bar's live height: the bar is taller while transparent than once solid, so
+  // comparing with its own height made it flip back and forth with the photo's edge between
+  // the two. With no opening photo there is nothing to wait for, so the old 50px rule applies.
+  // Re-run on every route change: the new page has its own opening photo, or none.
   useEffect(() => {
     let rafId: number
     const isPastOpening = () => {
       const hero = document.querySelector('[data-nav-hero]')
       if (!hero) return window.scrollY > 50
-      const barHeight = navRef.current?.getBoundingClientRect().height ?? 0
-      return hero.getBoundingClientRect().bottom <= barHeight
+      return hero.getBoundingClientRect().bottom <= SOLID_AT_PX
     }
     const update = () => {
       cancelAnimationFrame(rafId)
@@ -86,7 +90,7 @@ export default function Navbar({
 
   return (
     <>
-      <nav ref={navRef} className={navClass} aria-label="Main navigation">
+      <nav className={navClass} aria-label="Main navigation">
         <ul className={`${styles.row} ${styles.rowLeft}`} aria-label="Site navigation">
           {navRow.left.map(renderLink)}
         </ul>

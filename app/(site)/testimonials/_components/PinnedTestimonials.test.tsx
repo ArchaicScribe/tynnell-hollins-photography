@@ -64,6 +64,13 @@ describe('TestimonialsList pinned layout', () => {
     expect(screen.getByRole('img')).toHaveAttribute('alt', 'Ben session')
   })
 
+  it('shows the first portrait from the start even when the first quote has none, so the column never pops in', () => {
+    draw({ caption: 'From kinder people' }, [{ ...testimonials[0], photoUrl: null }, testimonials[1]])
+
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'Ben session')
+    expect(screen.getByText('From kinder people')).toBeInTheDocument()
+  })
+
   it('with no portraits at all shows the quotes alone, with no empty frame or caption', () => {
     draw({ caption: 'From kinder people' }, testimonials.map((t) => ({ ...t, photoUrl: null })))
 

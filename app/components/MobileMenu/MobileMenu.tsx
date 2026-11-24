@@ -76,7 +76,7 @@ export default function MobileMenu({ isOpen, onClose, links = menuLinks, cards =
     <div
       id="mobile-menu"
       ref={menuRef}
-      className={`${styles.overlay} ${isOpen ? styles.open : ''} ${workCards.length === 1 ? styles.cards1 : ''} ${workCards.length === 2 ? styles.cards2 : ''}`}
+      className={`${styles.overlay} ${isOpen ? styles.open : ''} ${workCards.length === 1 ? styles.cards1 : ''} ${workCards.length === 2 ? styles.cards2 : ''} ${workCards.length === 0 ? styles.noCards : ''}`}
       role="dialog"
       aria-modal="true"
       aria-label="Navigation menu"

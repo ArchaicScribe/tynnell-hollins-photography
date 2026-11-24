@@ -201,9 +201,13 @@ describe('Navbar.module.css while the menu is open', () => {
       .map((m) => ({ selector: norm(m[1]), body: m[2] }))
       .find((r) => r.selector.includes(needle))
 
-  it('makes the bar transparent so the photo columns reach the top of the screen', () => {
-    const r = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selector: norm(m[1]), body: m[2] })).find((x) => x.selector === '.navbar.menuOpen')
-    expect(r?.body).toMatch(/--nav-bg:\s*transparent/)
+  // Only where the photo columns sit beside the panel (wide screens). On a phone the cards
+  // stack under the panel and scroll beneath the bar, so a see-through bar would let the cream
+  // X drift over bone and photos; there it stays solid olive.
+  it('makes the bar transparent on wide screens only, so the close X always has olive behind it', () => {
+    const wide = mediaBlock('(min-width: 1025px) {')
+    expect(wide).toMatch(/\.navbar\.menuOpen\s*\{[^}]*--nav-bg:\s*transparent/)
+    expect(css.replace(wide, '')).not.toMatch(/\.navbar\.menuOpen\s*\{/)
   })
 
   it('hides the link rows and the brand, leaving the close label and the X', () => {

@@ -200,6 +200,17 @@ describe('MobileMenu photo columns', () => {
   })
 })
 
+describe('MobileMenu with no photo cards', () => {
+  it('marks itself so the link block can be centred instead of hugging the left edge of an empty screen', () => {
+    const none = render(<MobileMenu isOpen onClose={() => {}} links={navLinks} />)
+    expect(menu().className).toMatch(/noCards/)
+    none.unmount()
+
+    render(<MobileMenu isOpen onClose={() => {}} links={navLinks} cards={cards} />)
+    expect(menu().className).not.toMatch(/noCards/)
+  })
+})
+
 describe('MobileMenu.module.css, reference layout', () => {
   const css = readFileSync(path.resolve(__dirname, 'MobileMenu.module.css'), 'utf8')
   const norm = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim()
@@ -234,6 +245,14 @@ describe('MobileMenu.module.css, reference layout', () => {
     const body = bodyOf('.workBtn')
     expect(body).toMatch(/border-radius:\s*999px/)
     expect(body).toMatch(/background:\s*var\(--color-bg\)/)
+  })
+
+  it('centres the link block when there are no photo cards', () => {
+    expect(bodyOf('.overlay.noCards .panel')).toMatch(/align-items:\s*center/)
+  })
+
+  it('draws the card focus ring inside the card, which clips anything outside it', () => {
+    expect(bodyOf('.card:focus-visible')).toMatch(/outline-offset:\s*-\d/)
   })
 
   it('sets the page links at the reference weight, not light', () => {
