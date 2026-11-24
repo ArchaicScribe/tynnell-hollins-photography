@@ -210,6 +210,13 @@ describe('Navbar.module.css while the menu is open', () => {
     expect(css.replace(wide, '')).not.toMatch(/\.navbar\.menuOpen\s*\{/)
   })
 
+  // The no-opening-photo rule is `body:not(:has([data-nav-hero])) .navbar`, specificity (0,2,1).
+  // A plain `.navbar.menuOpen` is (0,2,0) and loses to it, which left an olive strip over the
+  // photo columns on every page without an opening photo (contact, services, ...).
+  it('outranks the no-opening-photo rule, so the bar is see-through on those pages too', () => {
+    expect(mediaBlock('(min-width: 1025px) {')).toMatch(/:global\(body\)\s+\.navbar\.menuOpen\s*\{/)
+  })
+
   it('hides the link rows and the brand, leaving the close label and the X', () => {
     expect(rule('.menuOpen .row')?.body).toMatch(/visibility:\s*hidden/)
     expect(rule('.menuOpen .brand')?.body).toMatch(/visibility:\s*hidden/)

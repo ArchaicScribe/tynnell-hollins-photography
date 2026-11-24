@@ -8,8 +8,8 @@ import styles from './PinnedTestimonials.module.css'
 // (with a caption) that swaps as each quote scrolls into the middle, and large light
 // quotes scrolling past on the right. With `onPhoto` (the block has a photo behind it)
 // the text is light; otherwise it takes the page's ink. A testimonial without its own
-// portrait keeps the last one seen, which is what makes "groups" share a photo, the same
-// rule as the sticky layout.
+// portrait keeps the last one seen, which is what makes "groups" share a photo; quotes before
+// the first portrait show that first portrait, so the photo column is there from the start.
 export default function PinnedTestimonials({
   testimonials,
   label,

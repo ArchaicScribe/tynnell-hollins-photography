@@ -251,8 +251,13 @@ describe('MobileMenu.module.css, reference layout', () => {
     expect(bodyOf('.overlay.noCards .panel')).toMatch(/align-items:\s*center/)
   })
 
-  it('draws the card focus ring inside the card, which clips anything outside it', () => {
-    expect(bodyOf('.card:focus-visible')).toMatch(/outline-offset:\s*-\d/)
+  // The card clips anything outside it, and its photo (an absolutely positioned child) paints
+  // over the card's own outline, so the ring is drawn on the ::after layer, which comes after
+  // the photo in paint order. Two tones so it shows on bright photos as well as dark ones.
+  it('draws the card focus ring on the layer above the photo, inside the card', () => {
+    const ring = bodyOf('.card:focus-visible::after')
+    expect(ring).toMatch(/box-shadow:\s*inset/)
+    expect(ring).toMatch(/inset 0 0 0 2px #ECE9E0/)
   })
 
   it('sets the page links at the reference weight, not light', () => {

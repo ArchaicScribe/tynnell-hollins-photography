@@ -10,7 +10,8 @@ import MobileMenu from '@/app/components/MobileMenu/MobileMenu'
 import styles from './Navbar.module.css'
 
 // How far from the top of the window the opening photo's bottom edge must be before the bar
-// turns solid: about the height of the bar, halfway between its transparent and solid heights.
+// turns solid: about the height of the bar (roughly 84px transparent, 71px solid). A fixed
+// number, so it cannot depend on the bar's state.
 const SOLID_AT_PX = 72
 
 // Rising Roots: five plain links split either side of a centred mark, a script

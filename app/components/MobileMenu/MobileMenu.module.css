@@ -268,11 +268,18 @@
   text-transform: uppercase;
 }
 
-/* Inside the card: it clips what is outside it (overflow hidden, and on wide screens the
-   grid column edge), so an outer ring was cut off. */
+/* The focus ring sits inside the card: the card clips what is outside it (overflow hidden,
+   and on wide screens the grid column edge), so an outer ring was cut off. It is drawn on
+   ::after, which paints above the photo (a plain outline is painted under the absolutely
+   positioned photo). Cream inside a dark line, so it shows on bright photos too. The
+   transparent outline is what a forced-colors (high contrast) mode turns into a visible one. */
 .card:focus-visible {
-  outline: 2px solid #ECE9E0;
+  outline: 2px solid transparent;
   outline-offset: -6px;
+}
+
+.card:focus-visible::after {
+  box-shadow: inset 0 0 0 2px #ECE9E0, inset 0 0 0 4px rgba(20, 18, 10, 0.55);
 }
 
 /* Wide screens, three columns like the reference: each photo card is a full-height
