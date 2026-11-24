@@ -74,7 +74,12 @@ const isBand = (background?: string) => typeof background === 'string' && /^var\
 // before the wrapper below re-points the button variables, so nothing resolves
 // in a circle.
 function bandGround(background?: string): React.CSSProperties {
-  return isBand(background) ? ({ '--color-bg': background, '--band-cream': CREAM } as React.CSSProperties) : {}
+  if (!isBand(background)) return {}
+  // --band-edge is the colour the band fades into at its top and bottom (see globals.css):
+  // a deep band sits inside olive (the About band above it, the footer below), an olive
+  // band sits on the page ground.
+  const edge = /^var\(--color-btn-hover\b/.test(background as string) ? BAND_OLIVE : 'var(--color-ground, #E4E2D8)'
+  return { '--color-bg': background, '--band-cream': CREAM, '--band-edge': edge } as React.CSSProperties
 }
 // On the element that wraps the section's words and button. Besides the words,
 // the button flips (cream button, band-coloured label: the Contact and Inquiry

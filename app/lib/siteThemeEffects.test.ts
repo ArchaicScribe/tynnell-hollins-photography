@@ -114,3 +114,26 @@ describe('performance_mode column', () => {
     expect(script).toMatch(/ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "performance_mode" boolean DEFAULT false/)
   })
 })
+
+// Soft section edges (2026-11-24): a band section (olive or deep olive) used to meet its
+// neighbours in a hard line, which the owner flagged as abrupt (the olive About band, the
+// near-black closing band and the olive footer). A band now fades into its neighbour over a
+// short stretch at its top and bottom; this switch (on by default) turns that off.
+describe('soft band edges', () => {
+  it('is on by default', () => {
+    expect(DEFAULT_THEME.softBandEdges).toBe(true)
+  })
+
+  it('writes a fade length when on, and zero when off', () => {
+    const on = themeToCssVarMap(theme({ softBandEdges: true }))['--band-edge-size']
+    const off = themeToCssVarMap(theme({ softBandEdges: false }))['--band-edge-size']
+
+    expect(on).toMatch(/clamp\(/)
+    expect(off).toBe('0px')
+  })
+
+  it('has its column added by the migration, on by default', () => {
+    const script = readFileSync(path.resolve(__dirname, '../../scripts/migrate-db.mjs'), 'utf8')
+    expect(script).toMatch(/ALTER TABLE "site_design" ADD COLUMN IF NOT EXISTS "soft_band_edges" boolean DEFAULT true/)
+  })
+})

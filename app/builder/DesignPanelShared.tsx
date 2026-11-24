@@ -352,6 +352,14 @@ export function DesignSections({
           A fine paper texture over the whole site. Keep it low: past &quot;Medium&quot; it starts competing with your photos
           instead of sitting under them.
         </p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e6e1de', fontSize: 13, cursor: 'pointer', marginTop: 12 }}>
+          <input type="checkbox" checked={theme.softBandEdges} onChange={(e) => set('softBandEdges', e.target.checked)} />
+          Soft section edges
+        </label>
+        <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>
+          Where an olive or deep-olive band meets the section above or below it, it fades into that colour over a short
+          stretch instead of ending in a hard line. Uncheck for the hard edge.
+        </p>
         <FieldLabel style={{ marginTop: 12 }}>Photo color treatment</FieldLabel>
         <Select value={theme.photoTreatment} onChange={(v) => set('photoTreatment', v as SiteTheme['photoTreatment'])} options={PHOTO_TREATMENT_OPTIONS} ariaLabel="Photo color treatment" />
         <p style={{ color: '#6b6a6a', fontSize: 11, marginTop: 8 }}>

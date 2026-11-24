@@ -229,3 +229,35 @@ a {
     font-size: 16px !important;
   }
 }
+
+/* ── Soft band edges ──────────────────────────────────────── */
+/* A band section (olive or deep olive; bandGround() in the builder marks it with
+   --band-cream and gives it --band-edge, the colour it fades into) used to meet its
+   neighbours in a hard line. These two layers fade it into that colour over
+   --band-edge-size at the top and bottom (SiteDesign "Soft section edges"; zero when off).
+   Painted over the band, never catching a click. position: relative is for the few band
+   sections that set none (a sticky one already positions itself inline). */
+section[style*="--band-cream"] {
+  position: relative;
+}
+
+section[style*="--band-cream"]::before,
+section[style*="--band-cream"]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--band-edge-size, 0px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+section[style*="--band-cream"]::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--band-edge), transparent);
+}
+
+section[style*="--band-cream"]::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--band-edge), transparent);
+}

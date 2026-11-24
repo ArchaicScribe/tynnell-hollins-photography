@@ -42,6 +42,7 @@ const FIELDS = [
   'buttonStyle',
   'animationsEnabled',
   'performanceMode',
+  'softBandEdges',
   'sharpeningLevel',
 ] as const
 
