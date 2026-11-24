@@ -261,3 +261,17 @@ section[style*="--band-cream"]::after {
   bottom: 0;
   background: linear-gradient(to top, var(--band-edge), transparent);
 }
+
+/* Where two bands touch, only one fade is drawn. An olive band fades into the page ground
+   and a deep band into olive, so letting both draw leaves a light stripe between them (olive
+   fading to cream above a deep band fading in from olive). The deep band's fade is the join
+   when olive and deep meet; two bands of the same kind need no fade between them at all.
+   Olive bands carry --band-edge:var(--color-ground...), deep ones var(--color-btn-bg...). */
+section[style*="--band-edge:var(--color-ground"]:has(+ section[style*="--band-edge:var(--color-btn-bg"])::after,
+section[style*="--band-edge:var(--color-ground"]:has(+ section[style*="--band-edge:var(--color-ground"])::after,
+section[style*="--band-edge:var(--color-btn-bg"]:has(+ section[style*="--band-edge:var(--color-btn-bg"])::after,
+section[style*="--band-edge:var(--color-btn-bg"] + section[style*="--band-edge:var(--color-ground"]::before,
+section[style*="--band-edge:var(--color-ground"] + section[style*="--band-edge:var(--color-ground"]::before,
+section[style*="--band-edge:var(--color-btn-bg"] + section[style*="--band-edge:var(--color-btn-bg"]::before {
+  display: none;
+}
