@@ -153,8 +153,16 @@ html:not([data-animations="off"]) .pk-btn:hover{transform:translateY(-2px)}
 // browser toolbar until the visitor scrolls. The Hero block marks that option with
 // pk-vh-full and this upgrades it to 100svh (the viewport as first seen) wherever the
 // browser knows the unit; an inline 100svh would collapse the hero in one that does not.
+// The Brand + tagline hero sets the wordmark and the tagline side by side with a hairline
+// rule between them; on a phone they stack and the rule turns sideways (inline styles
+// cannot carry a media query, hence !important on the rule's own inline values).
 const HERO_CSS = `
 @supports (height:100svh){.pk-vh-full{min-height:100svh !important}}
+@media (max-width:760px){
+.pk-hero-brand{flex-direction:column;text-align:center}
+.pk-hero-brand-rule{width:3rem !important;height:1px !important;align-self:center !important}
+.pk-hero-brand-tagline{text-align:center !important}
+}
 `
 
 // Editorial bleed/offset for Split Image + Text (issue 5). The image runs off
@@ -423,6 +431,19 @@ const HERO_LAYOUT_OPTIONS: LayoutOption[] = [
         <div style={{ position: 'absolute', inset: 0, background: '#2a2a2a' }} />
         <div style={diagramBar({ left: '50%', top: 16, width: 24, height: 6, opacity: 0.6, transform: 'translateX(-50%)' })} />
         <div style={diagramBar({ left: '50%', top: 24, width: 30, height: 4, transform: 'translateX(-50%)' })} />
+      </>
+    ),
+  },
+  {
+    value: 'brand',
+    label: 'Brand + tagline',
+    preview: (
+      <>
+        <div style={{ position: 'absolute', inset: 0, background: '#2a2a2a' }} />
+        <div style={diagramBar({ left: 8, top: 20, width: 26, height: 7 })} />
+        <div style={diagramBar({ left: 38, top: 16, width: 1, height: 15, opacity: 0.8 })} />
+        <div style={diagramBar({ left: 42, top: 19, width: 16, height: 3, opacity: 0.6 })} />
+        <div style={diagramBar({ left: 42, top: 25, width: 12, height: 3, opacity: 0.6 })} />
       </>
     ),
   },
@@ -815,10 +836,16 @@ export const config: Config = {
         // ends. Blank by default, so nothing appears unless filled in.
         cornerLeft: { type: 'text', label: 'Bottom-left label (optional)' },
         cornerRight: { type: 'text', label: 'Bottom-right label (optional)' },
+        // Brand + tagline layout only: the big wordmark beside the heading, which
+        // becomes the italic tagline. A logo image replaces the wordmark text.
+        wordmark: { type: 'text', label: 'Wordmark (Brand + tagline layout)' },
+        wordmarkImageUrl: imageField('Wordmark image (Brand + tagline layout, optional)'),
         ...responsiveFields,
       },
       defaultProps: {
         layout: 'bottom',
+        wordmark: '',
+        wordmarkImageUrl: '',
         eyebrow: '',
         heading: 'Refined. Editorial. Artful. Lasting.',
         subheading: 'Photos that feel like your favorite memory.',
@@ -833,7 +860,7 @@ export const config: Config = {
         cornerRight: '',
         ...responsiveDefaults,
       },
-      render: ({ layout, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, photoMovement, align, buttonText, buttonHref, cornerLeft, cornerRight, hideOnMobile, hideOnDesktop, navHero }: any) => {
+      render: ({ layout, wordmark, wordmarkImageUrl, eyebrow, heading, subheading, imageUrl, height, backgroundBehavior, photoMovement, align, buttonText, buttonHref, cornerLeft, cornerRight, hideOnMobile, hideOnDesktop, navHero }: any) => {
         const cls = visClass(hideOnMobile, hideOnDesktop)
         const fullScreen = height === '100vh' ? 'pk-vh-full' : undefined
         const heroCls = [cls, fullScreen].filter(Boolean).join(' ') || undefined
@@ -864,7 +891,12 @@ export const config: Config = {
           )
         }
 
-        const centered = layout === 'centered'
+        // Brand + tagline: with a wordmark (text or logo image) the wordmark is the h1 and
+        // the heading becomes the italic tagline beside it; with neither it is a plain
+        // centred hero.
+        const wordmarkText = typeof wordmark === 'string' ? wordmark.trim() : ''
+        const brand = layout === 'brand' && Boolean(wordmarkText || wordmarkImageUrl)
+        const centered = layout === 'centered' || layout === 'brand'
         return (
           <section className={heroCls} data-nav-hero={navHero && imageUrl ? '' : undefined} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
             {imageUrl ? (
@@ -880,9 +912,28 @@ export const config: Config = {
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a1a,#0c0c0c)' }} />
             )}
             <div style={{ position: 'absolute', inset: 0, ...(centered ? scrimStyle(0.45) : scrimGradient(0.7, 0.1)) }} />
-            <div style={{ position: 'relative', padding: 'clamp(2rem,5vw,4rem) clamp(1.25rem,5vw,5rem)', maxWidth: centered ? '70ch' : '60ch', textAlign: centered ? 'center' : align }}>
+            <div style={{ position: 'relative', padding: 'clamp(2rem,5vw,4rem) clamp(1.25rem,5vw,5rem)', maxWidth: brand ? '100%' : centered ? '70ch' : '60ch', textAlign: centered ? 'center' : align }}>
               {eyebrow && <p style={{ ...eyebrowStyle, color: HERO_TEXT_SOFT }}>{eyebrow}</p>}
-              {heading?.trim() && <h1 style={{ ...headingStyle('clamp(2rem,5vw,3.75rem)'), color: HERO_TEXT }}>{heading}</h1>}
+              {brand ? (
+                <div className="pk-hero-brand" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(1.25rem,3vw,2.75rem)' }}>
+                  <h1 style={{ margin: 0, fontFamily: HEADING_FONT, fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.14em', fontSize: 'clamp(2.25rem,5.6vw,4.5rem)', lineHeight: 1.05, color: HERO_TEXT }}>
+                    {wordmarkImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={wordmarkImageUrl} alt={wordmarkText || heading?.trim() || ''} className="no-photo-treatment" style={{ display: 'block', maxWidth: 'min(100%, 26rem)', height: 'auto' }} />
+                    ) : (
+                      wordmarkText
+                    )}
+                  </h1>
+                  {heading?.trim() && (
+                    <>
+                      <span className="pk-hero-brand-rule" aria-hidden="true" style={{ alignSelf: 'stretch', width: '1px', background: HERO_TEXT_SOFT, opacity: 0.7 }} />
+                      <p className="pk-hero-brand-tagline" style={{ margin: 0, maxWidth: '24ch', textAlign: 'left', fontFamily: 'var(--font-accent, var(--font-heading))', fontStyle: 'italic', fontSize: 'clamp(1.1rem,1.7vw,1.4rem)', lineHeight: 1.6, color: HERO_TEXT }}>{heading}</p>
+                    </>
+                  )}
+                </div>
+              ) : (
+                heading?.trim() && <h1 style={{ ...headingStyle('clamp(2rem,5vw,3.75rem)'), color: HERO_TEXT }}>{heading}</h1>
+              )}
               {subheading && <p style={{ marginTop: '1rem', color: HERO_TEXT_SOFT, letterSpacing: '0.06em', fontSize: '0.95rem' }}>{subheading}</p>}
               {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
             </div>
