@@ -21,6 +21,24 @@ function solidRules(): { selector: string; body: string }[] {
   return rules
 }
 
+// The Brand + tagline hero shows the business name large, so the nav brand steps aside
+// while the bar is transparent over it (data-nav-brand-hero), and comes back the moment
+// the bar turns solid (scrolled or menu open).
+describe('Navbar.module.css brand hero', () => {
+  const rule = () =>
+    [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map((m) => ({ selector: m[1].replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim(), body: m[2] }))
+      .find((r) => r.selector.includes('data-nav-brand-hero'))
+
+  it('hides the nav brand only while the bar is transparent over a brand hero', () => {
+    expect(rule()).toBeDefined()
+    expect(rule()!.selector).toContain('.brand')
+    expect(rule()!.selector).toContain(':not(.scrolled)')
+    expect(rule()!.selector).toContain(':not(.menuOpen)')
+    expect(rule()!.body).toMatch(/visibility:\s*hidden/)
+  })
+})
+
 describe('Navbar.module.css solid state', () => {
   it('finds the solid-state rule it is meant to check', () => {
     expect(solidRules().length).toBeGreaterThanOrEqual(1)
