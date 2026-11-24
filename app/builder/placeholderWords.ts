@@ -65,6 +65,20 @@ const PATCHES: Record<string, Loose> = {
   'mywork-about': { heading: `${P} A little about me`, body: `${P} A few sentences about you.`, buttonText: `${P} About me` },
   'mywork-cta': { heading: `${P} Ready to work together?`, subtext: `${P} A line inviting people to get in touch.`, buttonText: `${P} Inquire now` },
 
+  // Home. The numbers row and the freebie sign-up have no entry on purpose: the numbers
+  // would be invented, and the freebie also needs a guide link. Albums and testimonials
+  // are data-driven.
+  'home-intro': { text: `${P} A few sentences introducing who you are and the work you do.` },
+  'home-where': { heading: `${P} Where I work`, body: `${P} A few sentences about where you photograph and who you work with.`, buttonText: `${P} Get in touch` },
+  'home-paths': {
+    heading: `${P} Choose your path`,
+    cards: [
+      { label: 'Weddings', href: '/wedding-photography' },
+      { label: 'Portraits', href: '/portraits' },
+    ],
+  },
+  'home-quote': { text: `${P} A line about what your photographs feel like.` },
+
   // Contact
   'contact-hero': { heading: `${P} Get in touch`, subheading: `${P} A line about how to reach you.` },
   'contact-inquiry': { heading: `${P} Send an inquiry` },

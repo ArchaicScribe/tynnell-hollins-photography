@@ -8,6 +8,7 @@ import { buildWedding } from './weddingLayout'
 import { buildPortraits } from './portraitsLayout'
 import { buildMyWork } from './myWorkLayout'
 import { buildContact } from './contactLayout'
+import { buildHome, BLANK_HOME_WORDS } from './homeLayout'
 import { config } from './puck.config'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,7 +19,35 @@ const pages: [string, Data][] = [
   ['portraits', buildPortraits()],
   ['my work', buildMyWork()],
   ['contact', buildContact()],
+  ['home', buildHome(BLANK_HOME_WORDS)],
 ]
+
+// Home (2026-11-24): the sections that need Tynnell's words get placeholders so the page is
+// as long as the reference. The freebie sign-up is left out on purpose (it also needs a
+// guide link, and a placeholder offer would be misleading), and albums and testimonials
+// are data-driven, so they appear when those exist.
+describe('placeholder words on Home', () => {
+  const filled = fillPlaceholders(buildHome(BLANK_HOME_WORDS))
+  const byId = (id: string) => filled.content.find((b) => (b.props as Loose).id === id)!
+  const shown = (id: string) => {
+    const b = byId(id)
+    const block = components[b.type]
+    return render(block.render({ ...block.defaultProps, ...b.props, puck: {} }) as ReactElement).container.innerHTML !== ''
+  }
+
+  it('shows the intro, where-I-work, paths and quote sections', () => {
+    for (const id of ['home-intro', 'home-where', 'home-paths', 'home-quote']) expect(shown(id), id).toBe(true)
+  })
+
+  it('keeps the numbers and the freebie sign-up hidden', () => {
+    for (const id of ['home-stats', 'home-freebie']) expect(shown(id), id).toBe(false)
+  })
+
+  it('links the two paths to the real Wedding and Portraits pages', () => {
+    const cards = (byId('home-paths').props as Loose).cards as { label: string; href: string }[]
+    expect(cards.map((c) => c.href)).toEqual(['/wedding-photography', '/portraits'])
+  })
+})
 
 type Loose = Record<string, unknown>
 
