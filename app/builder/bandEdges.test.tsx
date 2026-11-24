@@ -51,6 +51,23 @@ describe('site stylesheet band edges', () => {
     expect(bottom).toMatch(/linear-gradient\(to top,\s*var\(--band-edge\)/)
   })
 
+  // Live 2026-11-24: the olive About band faded to the page ground at its bottom while the
+  // deep band right below it faded in from olive, leaving a light stripe and a hard line
+  // between them. Where two bands touch, only one of the two fades may be drawn.
+  it('draws no fade between two bands that touch, so the join is not a light stripe', () => {
+    const olive = 'section[style*="--band-edge:var(--color-ground"]'
+    const deep = 'section[style*="--band-edge:var(--color-btn-bg"]'
+    const hidden = (pseudo: string) =>
+      [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+        .filter((m) => /display:\s*none/.test(m[2]))
+        .flatMap((m) => m[1].split(',').map((s) => s.replace(/\s+/g, ' ').trim()))
+        .filter((s) => s.endsWith(pseudo))
+    // olive above deep: the deep band's own top fade (from olive) is the join
+    expect(hidden('::after')).toContain(`${olive}:has(+ ${deep})::after`)
+    // deep above olive: the deep band's bottom fade (into olive) is the join
+    expect(hidden('::before')).toContain(`${deep} + ${olive}::before`)
+  })
+
   it('never blocks a click on the section underneath', () => {
     expect(rule('--band-cream"]::before')).toMatch(/pointer-events:\s*none/)
   })
