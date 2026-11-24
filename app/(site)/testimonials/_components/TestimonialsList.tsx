@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useActiveOnScroll } from '@/app/hooks/useActiveOnScroll'
 import TestimonialSlider from './TestimonialSlider'
+import PinnedTestimonials from './PinnedTestimonials'
 import styles from './TestimonialsList.module.css'
 
 export type TestimonialItem = {
@@ -102,9 +103,29 @@ function StickyScrollTestimonials({ testimonials }: { testimonials: TestimonialI
 // `stickyPhotoScroll` is true (sticky photo), 'slider' (numbered slider, two or
 // more testimonials only) or false/absent (the plain list). Never branch on its
 // truthiness: 'slider' is truthy.
-export default function TestimonialsList({ testimonials, stickyPhotoScroll = false }: { testimonials: TestimonialItem[]; stickyPhotoScroll?: boolean | 'slider' }) {
+//
+// 'pinned' is the Rising Roots opening: label, pinned portrait with caption, and large light
+// quotes (PinnedTestimonials). Unlike the slider it needs no minimum count. `label`, `caption`
+// and `onPhoto` only matter for it.
+export default function TestimonialsList({
+  testimonials,
+  stickyPhotoScroll = false,
+  label,
+  caption,
+  onPhoto = false,
+}: {
+  testimonials: TestimonialItem[]
+  stickyPhotoScroll?: boolean | 'slider' | 'pinned'
+  label?: string
+  caption?: string
+  onPhoto?: boolean
+}) {
   if (testimonials.length === 0) {
     return <p className={styles.empty}>Kind words are on their way.</p>
+  }
+
+  if (stickyPhotoScroll === 'pinned') {
+    return <PinnedTestimonials testimonials={testimonials} label={label} caption={caption} onPhoto={onPhoto} />
   }
 
   if (stickyPhotoScroll === 'slider' && testimonials.length >= 2) {

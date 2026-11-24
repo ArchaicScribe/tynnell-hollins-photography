@@ -1,0 +1,122 @@
+/* Rising Roots "Kind words" (2026-11-24): pinned portrait on the left, large light quotes
+   scrolling past on the right. The ink is the page's own until a photo sits behind the
+   block (.onPhoto), where it turns light. */
+
+.root {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--padding-x);
+  color: var(--color-heading);
+}
+
+.onPhoto {
+  color: #ECE9E0;
+}
+
+.label {
+  font-family: var(--font-label, var(--font-body));
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin: 0 0 1.25rem;
+  opacity: 0.85;
+}
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(2rem, 8vw, 9rem);
+}
+
+.photoCol {
+  flex: 0 0 clamp(14rem, 24vw, 19rem);
+  position: sticky;
+  top: 7rem;
+  align-self: flex-start;
+}
+
+.photoFrame {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  position: relative;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  animation: pinnedPhotoFade 0.6s ease;
+}
+
+@keyframes pinnedPhotoFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.caption {
+  font-family: var(--font-label, var(--font-body));
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: right;
+  margin: 0.9rem 0 0;
+  opacity: 0.85;
+}
+
+.quoteCol {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 34rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tall enough that one quote is in the middle of the screen at a time, which is what
+   hands the pinned portrait from one testimonial to the next. */
+.item {
+  min-height: 62vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.quote {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 300;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.name {
+  font-family: var(--font-label, var(--font-body));
+  font-size: 0.6rem;
+  font-style: normal;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .photoCol {
+    position: static;
+    flex-basis: auto;
+    width: min(100%, 20rem);
+  }
+
+  .item {
+    min-height: 0;
+    padding: 1.5rem 0;
+  }
+}

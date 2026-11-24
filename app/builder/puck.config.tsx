@@ -1561,13 +1561,17 @@ export const config: Config = {
             { label: 'Photo beside each quote', value: false },
             { label: 'Sticky photo, changes on scroll', value: true },
             { label: 'Slider with numbers (two or more quotes)', value: 'slider' },
+            { label: 'Pinned photo, large quotes (Rising Roots)', value: 'pinned' },
           ],
         },
+        // Only used by the pinned layout; clear either to leave it out.
+        kindWordsLabel: { type: 'text' as const, label: 'Small label, top left (pinned layout)' },
+        photoCaption: { type: 'text' as const, label: 'Caption under the photo (pinned layout)' },
         hideUntilFilled: hideUntilFilledField,
         ...styleFields,
         ...responsiveFields,
       },
-      defaultProps: { stickyPhotoScroll: false, hideUntilFilled: false, ...styleDefaults, ...responsiveDefaults },
+      defaultProps: { stickyPhotoScroll: false, kindWordsLabel: 'Kind words', photoCaption: 'From kinder people', hideUntilFilled: false, ...styleDefaults, ...responsiveDefaults },
       resolveData: async () => {
         const base = typeof window === 'undefined' ? 'https://tynnellhollinsphotography.com' : ''
         try {
@@ -1579,10 +1583,10 @@ export const config: Config = {
           return { props: { resolvedTestimonials: [] } }
         }
       },
-      render: ({ resolvedTestimonials, stickyPhotoScroll, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
+      render: ({ resolvedTestimonials, stickyPhotoScroll, kindWordsLabel, photoCaption, hideUntilFilled, puck, background, backgroundImage, backgroundFade, scrollFadeIn, scrollOverlap, photoMovement, textFadeUp, spacing, hideOnMobile, hideOnDesktop }: any) => (
         <GateEmpty hide={hideUntilFilled} empty={testimonialsIsEmpty(resolvedTestimonials)} editing={puck?.isEditing} label="testimonials">
           <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-            <TestimonialsListComponent testimonials={resolvedTestimonials ?? []} stickyPhotoScroll={stickyPhotoScroll} />
+            <TestimonialsListComponent testimonials={resolvedTestimonials ?? []} stickyPhotoScroll={stickyPhotoScroll} label={kindWordsLabel} caption={photoCaption} onPhoto={Boolean(backgroundImage)} />
           </Section>
         </GateEmpty>
       ),
