@@ -63,6 +63,7 @@ export const postProcessRebuiltSizes: CollectionAfterOperationHook = async ({ op
       s3: r2Client(),
       bucket: r2Bucket(),
       sizes: doc.sizes,
+      main: { filename: doc.filename, mimeType: doc.mimeType },
       label: doc.filename ?? String(doc.id ?? 'photo'),
     })
     // Straight to the database: this is bookkeeping, not an edit, so it must not run the

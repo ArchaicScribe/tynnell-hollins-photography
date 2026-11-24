@@ -44,6 +44,9 @@ export type FinishPlan = {
 // The JPEG qualities collections/Photos.ts generates each size at.
 const SLOT_QUALITY: Record<'thumbnail' | 'card' | 'hero', number> = { thumbnail: 80, card: 85, hero: 88 }
 
+// The quality privateOriginals.displayCopy encodes the display copy at.
+const DISPLAY_COPY_JPEG_QUALITY = 92
+
 const SHARPEN_SIGMA: Record<'subtle' | 'moderate' | 'strong', number> = {
   subtle: 0.5,
   moderate: 1,
@@ -66,6 +69,28 @@ const isNoop = (plan: FinishPlan) => plan.saturation === 1 && plan.sharpenSigma 
 async function materialise(image: Sharp): Promise<Sharp> {
   const { data, info } = await image.raw().toBuffer({ resolveWithObject: true })
   return sharp(data, { raw: { width: info.width, height: info.height, channels: info.channels } })
+}
+
+// Scaled to ~20% of the image's width, with a small transparent margin on the bottom
+// and right so it does not sit flush against the edge.
+async function watermarkOverlay(watermark: Buffer, width = 800): Promise<Buffer> {
+  return sharp(watermark)
+    .resize({ width: Math.round(width * 0.2) })
+    .extend({ bottom: Math.round(width * 0.03), right: Math.round(width * 0.03), background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .toBuffer()
+}
+
+/**
+ * TYN-11: the photo's own public file is a display-size copy (the full-resolution
+ * original lives in the private bucket and is never watermarked). It is watermarked too,
+ * or it would be the best free copy of the photo, but it is not recoloured or sharpened,
+ * and it keeps its own format (JPEG at the quality the copy was made with, PNG, WebP).
+ */
+export async function watermarkOnly(input: Buffer, watermark: Buffer): Promise<Buffer> {
+  const { format, width } = await sharp(input).metadata()
+  const overlay = await watermarkOverlay(watermark, width)
+  const image = sharp(input).composite([{ input: overlay, gravity: 'southeast' }])
+  return (format === 'jpeg' ? image.jpeg({ quality: DISPLAY_COPY_JPEG_QUALITY }) : image).toBuffer()
 }
 
 /**
@@ -100,13 +125,7 @@ async function finishWith(input: Buffer, plan: FinishPlan, quality: number): Pro
     steps.push((image) => image.sharpen({ sigma }))
   }
   if (plan.watermark) {
-    // Scaled to ~20% of the image's width, with a small transparent margin on the
-    // bottom and right so it does not sit flush against the edge.
-    const { width = 800 } = await sharp(input).metadata()
-    const overlay = await sharp(plan.watermark)
-      .resize({ width: Math.round(width * 0.2) })
-      .extend({ bottom: Math.round(width * 0.03), right: Math.round(width * 0.03), background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .toBuffer()
+    const overlay = await watermarkOverlay(plan.watermark, (await sharp(input).metadata()).width)
     steps.push((image) => image.composite([{ input: overlay, gravity: 'southeast' }]))
   }
 
@@ -175,6 +194,18 @@ async function finishOneSize(params: { s3: S3Client; bucket: string; plan: Finis
   return !watermarkDropped
 }
 
+async function watermarkDisplayCopy(params: { s3: S3Client; bucket: string; watermark: Buffer; slot: SizeSlot }) {
+  const { s3, bucket, watermark, slot } = params
+  const key = slot?.filename
+  if (!key) return
+
+  const { Body } = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }))
+  if (!Body) return
+  const output = await watermarkOnly(await streamToBuffer(Body as AsyncIterable<Uint8Array>), watermark)
+
+  await s3.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: output, ContentType: slot?.mimeType ?? 'image/jpeg' }))
+}
+
 /**
  * Finishes the sizes and returns the finishSignature they now carry, or null when the photo
  * was not fully brought to the current look (a size failed, or the watermark was wanted but
@@ -184,11 +215,13 @@ export async function finishPhotoSizes(params: {
   s3: S3Client
   bucket: string
   sizes: { thumbnail?: SizeSlot; card?: SizeSlot; hero?: SizeSlot } | null | undefined
+  /** TYN-11: the photo's own public file, a display-size copy. Only the watermark is applied to it. */
+  main?: SizeSlot
   /** For log lines only. */
   label?: string
 }): Promise<string | null> {
-  const { s3, bucket, sizes, label = 'photo' } = params
-  if (!sizes) return null
+  const { s3, bucket, sizes, main, label = 'photo' } = params
+  if (!sizes && !main) return null
 
   const theme = await getSiteDesign()
   const signature = finishSignature(theme)
@@ -197,12 +230,22 @@ export async function finishPhotoSizes(params: {
   if (isNoop(plan)) return watermarkWanted ? null : signature // wanted but not fetched, or nothing to do
 
   const slots: ['thumbnail' | 'card' | 'hero', SizeSlot][] = [
-    ['thumbnail', sizes.thumbnail],
-    ['card', sizes.card],
-    ['hero', sizes.hero],
+    ['thumbnail', sizes?.thumbnail],
+    ['card', sizes?.card],
+    ['hero', sizes?.hero],
   ]
   const start = Date.now()
   let complete = watermarkWanted ? plan.watermark !== null : true
+  if (plan.watermark) {
+    try {
+      await watermarkDisplayCopy({ s3, bucket, watermark: plan.watermark, slot: main })
+    } catch (err) {
+      // The display copy is part of the look, so a photo whose copy missed its watermark is
+      // not at the current settings and must not be marked as finished.
+      complete = false
+      console.warn(`[photo-finish] failed to watermark the display copy of ${label} (non-fatal):`, err)
+    }
+  }
   for (const [name, slot] of slots) {
     try {
       if (!(await finishOneSize({ s3, bucket, plan, slot, quality: SLOT_QUALITY[name] }))) complete = false

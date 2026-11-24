@@ -194,6 +194,7 @@ export interface User {
  */
 export interface Photo {
   id: number;
+  originalKey?: string | null;
   originalFilename?: string | null;
   finishSignature?: string | null;
   /**
@@ -739,6 +740,7 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "photos_select".
  */
 export interface PhotosSelect<T extends boolean = true> {
+  originalKey?: T;
   originalFilename?: T;
   finishSignature?: T;
   title?: T;

@@ -1214,6 +1214,18 @@ async function run() {
     `)
     console.log('✓ client favorites (galleries columns + favorite_lists) ready')
 
+    // ------------------------------------------------------------------
+    // Migration 20261110_120000: photos.original_key (TYN-11). Where each
+    // photo's full-resolution original sits in the private
+    // R2_ORIGINALS_BUCKET. Null for photos uploaded before it existed, until
+    // the backfill route moves them.
+    // ------------------------------------------------------------------
+
+    await client.query(`
+      ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "original_key" varchar
+    `)
+    console.log('✓ photos.original_key column ready')
+
     // Payload 3.90 added a column to each of two existing tables, and Payload
     // selects every column of a collection, so a database without them fails
     // every users and photos query. Both are nullable and need no backfill.

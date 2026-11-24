@@ -34,6 +34,12 @@ vi.mock('@/app/lib/ratelimit', () => ({
   safeLimit: (...args: unknown[]) => safeLimitMock(...args),
 }))
 
+// TYN-11: the private bucket that holds full-resolution originals.
+const privateGetMock = vi.fn()
+vi.mock('@/app/lib/privateOriginals', () => ({
+  r2OriginalsStore: () => ({ get: privateGetMock, put: vi.fn(), delete: vi.fn() }),
+}))
+
 const { GET: download } = await import('./route')
 const { POST: galleryAuth } = await import('@/app/api/gallery-auth/route')
 
@@ -142,5 +148,51 @@ describe('protected gallery download auth', () => {
 
     const res = await download(downloadRequest(), params)
     expect(res.status).toBe(404)
+  })
+})
+
+// TYN-11: the public file is only a display-size copy; the download is the
+// full-resolution original from the private bucket.
+describe('full-resolution download', () => {
+  const openGallery = () => protectedGallery({ isPasswordProtected: false, password: null })
+
+  beforeEach(() => {
+    privateGetMock.mockReset()
+    findMock.mockResolvedValue({ docs: [openGallery()] })
+  })
+
+  it('serves the private full-resolution original, not the public display copy', async () => {
+    findByIDMock.mockResolvedValue({ id: PHOTO_ID, filename: 'first-dance.jpg', url: 'https://media.example/first-dance.jpg', originalKey: 'abc/first-dance.jpg' })
+    privateGetMock.mockResolvedValue({ body: new Response('full-res-bytes').body, contentType: 'image/jpeg' })
+
+    const res = await download(downloadRequest(), params)
+
+    expect(privateGetMock).toHaveBeenCalledWith('abc/first-dance.jpg')
+    expect(fetch).not.toHaveBeenCalled()
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('image/jpeg')
+    expect(res.headers.get('content-disposition')).toBe('attachment; filename="first-dance.jpg"')
+    expect(await res.text()).toBe('full-res-bytes')
+  })
+
+  // Photos uploaded before private originals existed, until the backfill moves them.
+  it('still serves a photo whose original has not been moved yet', async () => {
+    const res = await download(downloadRequest(), params)
+
+    expect(privateGetMock).not.toHaveBeenCalled()
+    expect(await res.text()).toBe('jpeg-bytes')
+  })
+
+  it('reports a failure instead of quietly serving the display copy when the original cannot be read', async () => {
+    findByIDMock.mockResolvedValue({ id: PHOTO_ID, filename: 'first-dance.jpg', url: 'https://media.example/first-dance.jpg', originalKey: 'abc/first-dance.jpg' })
+    privateGetMock.mockRejectedValue(new Error('NoSuchKey'))
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const res = await download(downloadRequest(), params)
+
+    expect(res.status).toBe(502)
+    expect(fetch).not.toHaveBeenCalled()
+    expect(error).toHaveBeenCalled()
+    error.mockRestore()
   })
 })
