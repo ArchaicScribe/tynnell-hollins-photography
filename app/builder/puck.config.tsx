@@ -342,10 +342,14 @@ const cornerLabelStyle: React.CSSProperties = {
   color: 'rgba(236,233,224,0.82)',
   whiteSpace: 'pre-wrap',
 }
-const headingStyle = (size = 'clamp(1.6rem, 3.5vw, 2.75rem)'): React.CSSProperties => ({
+// Section headings: Rising Roots sets them at 48px with a 1.2 line height at desktop width.
+// 3.75vw is 48px at the 1278px it was measured at, capped at 3rem. Smaller headings (card
+// titles, steps, freeform text boxes) pass their own size.
+const SECTION_HEADING_SIZE = 'clamp(1.9rem, 3.75vw, 3rem)'
+const headingStyle = (size = SECTION_HEADING_SIZE): React.CSSProperties => ({
   fontFamily: HEADING_FONT,
   fontSize: size,
-  lineHeight: 1.1,
+  lineHeight: 1.2,
   color: C.heading,
   margin: 0,
 })
@@ -650,7 +654,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
           <div style={{ position: 'absolute', inset: 0, ...scrimGradient(0.75, 0.1) }} />
           <div style={{ position: 'relative', padding: 'clamp(2rem,4vw,3.5rem)', maxWidth: '60ch' }}>
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-            <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+            <h2 style={headingStyle()}>{heading}</h2>
             <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
             {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
           </div>
@@ -673,7 +677,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
           </div>
           <div style={{ padding: 'clamp(2rem,4vw,3.5rem)', textAlign: 'center', maxWidth: '65ch', margin: '0 auto', ...bandText(background) }}>
             {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-            <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+            <h2 style={headingStyle()}>{heading}</h2>
             <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
             {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
           </div>
@@ -710,7 +714,7 @@ function renderSplitImageText({ layout, imageUrl, extraPhotos, imagePosition, ey
     const textColumn = (style: React.CSSProperties) => (
       <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(2rem,4vw,3.5rem)', ...bandText(background), ...style }}>
         {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-        <h2 style={headingStyle('clamp(1.5rem,3vw,2.4rem)')}>{heading}</h2>
+        <h2 style={headingStyle()}>{heading}</h2>
         <p style={{ marginTop: '1rem', color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{body}</p>
         {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
       </div>
@@ -998,7 +1002,7 @@ export const config: Config = {
             )}
             <div>
               {eyebrow && <p style={eyebrowStyle}>{eyebrow}</p>}
-              {heading && <h2 style={headingStyle('clamp(1.75rem, 3.5vw, 2.6rem)')}>{heading}</h2>}
+              {heading && <h2 style={headingStyle()}>{heading}</h2>}
               {body && <p style={{ color: C.body, lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: '1rem 0 1.75rem' }}>{body}</p>}
               <EmailSignupFormComponent kind={kind === 'freebie' ? 'freebie' : 'newsletter'} buttonText={buttonText || 'Sign me up'} successMessage={successMessage || 'Thank you for signing up!'} />
             </div>
@@ -1101,7 +1105,7 @@ export const config: Config = {
         return (
           <GateEmpty hide={hideUntilFilled} empty={statsIsEmpty({ items })} editing={puck?.isEditing} label="stats">
           <Section stagger background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-            {heading && <h2 {...staggerItem(0, { ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), textAlign: align === 'center' ? 'center' : 'left', marginBottom: '2rem' })}>{heading}</h2>}
+            {heading && <h2 {...staggerItem(0, { ...headingStyle(), textAlign: align === 'center' ? 'center' : 'left', marginBottom: '2rem' })}>{heading}</h2>}
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 5vw, 4.5rem)', justifyContent: align === 'center' ? 'center' : 'flex-start' }}>
               {stats.map((item: any, i: number) => (
                 <li key={i} {...staggerItem(i + 1, { textAlign: align, minWidth: '8rem' })}>
@@ -1597,7 +1601,7 @@ export const config: Config = {
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ maxWidth: '640px', margin: '0 auto' }}>
             {eyebrow && <p style={{ ...eyebrowStyle, textAlign: 'center' }}>{eyebrow}</p>}
-            {heading && <h2 style={{ ...headingStyle('clamp(1.5rem,3vw,2.4rem)'), textAlign: 'center' }}>{heading}</h2>}
+            {heading && <h2 style={{ ...headingStyle(), textAlign: 'center' }}>{heading}</h2>}
             {subtext && <p style={{ marginTop: '0.85rem', marginBottom: '2rem', color: C.detail, textAlign: 'center' }}>{subtext}</p>}
             <ContactForm minDate={resolvedMinDate} maxDate={resolvedMaxDate} />
           </div>
@@ -1630,7 +1634,7 @@ export const config: Config = {
         <GateEmpty hide={hideUntilFilled} empty={ctaIsEmpty({ heading })} editing={puck?.isEditing} label="call to action">
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div style={{ textAlign: 'center' }}>
-            <h2 style={headingStyle('clamp(1.5rem,3vw,2.5rem)')}>{heading}</h2>
+            <h2 style={headingStyle()}>{heading}</h2>
             {subtext && <p style={{ marginTop: '0.85rem', color: C.detail, maxWidth: '60ch', margin: '0.85rem auto 0' }}>{subtext}</p>}
             {buttonText && <a href={buttonHref || '#'} {...btnProps()}>{buttonText}</a>}
           </div>
@@ -1918,7 +1922,7 @@ export const config: Config = {
         <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
           <div id="inquire" style={{ maxWidth: '640px', margin: '0 auto' }}>
             {eyebrow && <p style={{ ...eyebrowStyle, textAlign: 'center' }}>{eyebrow}</p>}
-            {heading && <h2 style={{ ...headingStyle('clamp(1.5rem,3vw,2.4rem)'), textAlign: 'center' }}>{heading}</h2>}
+            {heading && <h2 style={{ ...headingStyle(), textAlign: 'center' }}>{heading}</h2>}
             {subtext && <p style={{ marginTop: '0.85rem', marginBottom: '2rem', color: C.detail, textAlign: 'center' }}>{subtext}</p>}
             <InquiryFormComponent kind={kind ?? 'wedding'} minDate={resolvedMinDate} maxDate={resolvedMaxDate} />
           </div>
@@ -2172,7 +2176,7 @@ export const config: Config = {
         return (
           <GateEmpty hide={hideUntilFilled} empty={albumsIsEmpty(albums)} editing={puck?.isEditing} label="albums">
             <Section background={background} backgroundImage={backgroundImage} backgroundFade={backgroundFade} scrollFadeIn={scrollFadeIn} scrollOverlap={scrollOverlap} photoMovement={photoMovement} textFadeUp={textFadeUp} spacing={spacing} className={visClass(hideOnMobile, hideOnDesktop)}>
-              {hasAlbums && heading && <h2 style={{ ...headingStyle('clamp(1.75rem, 3.4vw, 3rem)'), textAlign: 'center' }}>{heading}</h2>}
+              {hasAlbums && heading && <h2 style={{ ...headingStyle(), textAlign: 'center' }}>{heading}</h2>}
               {hasAlbums && heading && subtext && <p style={{ color: C.detail, textAlign: 'center', margin: '0.75rem 0 0' }}>{subtext}</p>}
               <AlbumGridComponent albums={albums} layout={layout === 'strip' ? 'strip' : 'grid'} hideHeading={Boolean(heading)} />
               {hasAlbums && buttonText && (
