@@ -14,8 +14,9 @@
   overflow-y: auto;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-8px);
-  transition: opacity var(--motion-base) var(--ease), transform var(--motion-base) var(--ease);
+  /* Slides down into place, like the reference's menu (about a second there). */
+  transform: translateY(-3rem);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
 }
 
 .overlay.open {
@@ -46,7 +47,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1.1rem;
+  gap: 1.7rem;
 }
 
 .item {
@@ -59,8 +60,8 @@
 
 .link {
   font-family: var(--font-serif);
-  font-size: clamp(1.6rem, 4.5vw, 2.6rem);
-  font-weight: 300;
+  font-size: clamp(1.6rem, 2.9vw, 2.3rem);
+  font-weight: 400;
   letter-spacing: 0.01em;
   color: var(--color-nav-text, var(--color-btn-text));
   text-decoration: none;
@@ -145,27 +146,30 @@
   outline: none;
 }
 
-/* The "Work with me" button under the list. Outlined, in the small-caps label
-   style the reference uses for its buttons. */
+/* The "Work with me" button under the list: a bone pill with dark small-caps text, as
+   the reference draws it. Hover turns it into an outline. */
 .workBtn {
   display: inline-block;
-  margin-top: 2.25rem;
-  padding: 0.95rem 2.1rem;
-  border: 1px solid currentColor;
+  margin-top: 2.5rem;
+  padding: 0.95rem 1.9rem;
+  border: 1px solid var(--color-bg);
+  border-radius: 999px;
+  background: var(--color-bg);
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: 1.8px;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--color-nav-text, var(--color-btn-text));
-  transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
+  color: var(--color-nav-bg, var(--color-btn-bg));
+  transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease);
 }
 
 .workBtn:hover,
 .workBtn:focus-visible {
-  background: var(--color-nav-text, var(--color-btn-text));
-  color: var(--color-nav-bg, var(--color-btn-bg));
+  background: transparent;
+  border-color: currentColor;
+  color: var(--color-nav-text, var(--color-btn-text));
   outline: none;
 }
 
@@ -195,20 +199,43 @@
   gap: 1.25rem;
 }
 
+/* Each card is a photo with its title and link set over the bottom of it, as the
+   reference does. A card with no photo is a deep olive tile. */
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  min-height: 22rem;
+  padding: 2rem clamp(1.5rem, 3vw, 3.5rem);
+  overflow: hidden;
+  background: var(--color-btn-hover, #2E2A19);
   text-decoration: none;
-  color: var(--color-heading);
+  color: #ECE9E0;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(20, 18, 10, 0.62), rgba(20, 18, 10, 0) 55%);
+  pointer-events: none;
 }
 
 .cardImg {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  height: 100%;
   object-fit: cover;
-  background: var(--color-bg-accent);
   transition: opacity var(--motion-base) var(--ease);
+}
+
+.cardTitle,
+.cardLink {
+  position: relative;
+  z-index: 1;
 }
 
 .card:hover .cardImg,
@@ -217,19 +244,20 @@
 }
 
 .cardTitle {
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 300;
+  font-family: var(--font-accent, var(--font-serif));
+  font-style: italic;
+  font-size: clamp(1.6rem, 2.9vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
 .cardLink {
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: 1.8px;
   text-transform: uppercase;
-  color: var(--color-detail);
 }
 
 .card:focus-visible {
@@ -237,8 +265,10 @@
   outline-offset: 4px;
 }
 
-/* Wide screens: photo cards on the left, the olive panel filling the right half
-   from top to bottom. With no cards the panel simply takes the whole width. */
+/* Wide screens, three columns like the reference: each photo card is a full-height
+   column (a third of the width), and the olive panel takes the rest, so with two
+   cards the panel is 40%. With no cards the panel takes the whole width. The cards'
+   list wrappers use display: contents so each card is a grid item of the overlay. */
 @media (min-width: 1025px) {
   .overlay {
     display: grid;
@@ -247,26 +277,52 @@
        grows to fit the panel, the overlay clips the overflow and the panel's own
        scrolling never starts, hiding the last links and the button. */
     grid-template-rows: minmax(0, 1fr);
-    grid-template-areas: 'panel';
     overflow: hidden;
   }
 
-  .overlay.hasCards {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas: 'cards panel';
+  .overlay.cards1 {
+    grid-template-columns: 3fr 7fr;
+  }
+
+  .overlay.cards2 {
+    grid-template-columns: 3fr 3fr 4fr;
+  }
+
+  .work,
+  .cards {
+    display: contents;
+  }
+
+  .cards li {
+    order: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .card {
+    height: 100%;
+    min-height: 0;
+    padding-bottom: 4.5rem;
   }
 
   .panel {
-    grid-area: panel;
+    order: 2;
     overflow-y: auto;
     padding: 7rem clamp(2rem, 6vw, 7rem) 3rem;
   }
 
-  .work {
-    grid-area: cards;
-    align-self: center;
-    overflow-y: auto;
-    max-height: 100%;
-    padding: 7rem clamp(2rem, 5vw, 5rem) 3rem;
+  .overlay.cards1 .panel,
+  .overlay.cards2 .panel {
+    padding-left: clamp(3rem, 11vw, 10rem);
+  }
+
+  /* There is no room for a heading over the photos; screen readers still get it. */
+  .workHeading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
 }

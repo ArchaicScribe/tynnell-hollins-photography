@@ -198,3 +198,19 @@ describe('Navbar solid switch on scroll', () => {
     expect(mainNav().className).toContain('scrolled')
   })
 })
+
+describe('Navbar full-screen menu list', () => {
+  beforeEach(() => {
+    mockPathname = '/'
+  })
+
+  it('lists the seven reference pages in order, then any builder page flagged for the menu', () => {
+    render(<Navbar builderLinks={[{ label: 'Pricing', href: '/pricing' }]} />)
+    fireEvent.click(hamburger())
+
+    const nav = within(mobileMenu()).getByRole('navigation')
+    const names = within(nav).getAllByRole('link').map(a => (a.textContent ?? '').replace(/^\d\d\./, ''))
+
+    expect(names).toEqual(['Home', 'About me', 'Weddings', 'Portraits', 'My work', 'Blog', 'Contact', 'Pricing', 'Work with me'])
+  })
+})

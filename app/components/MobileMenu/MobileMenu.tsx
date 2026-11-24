@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { navLinks, type NavLink } from '@/app/constants/nav'
+import { menuLinks, type NavLink } from '@/app/constants/nav'
 import { cleanMenuCards, type MenuCard } from '@/app/lib/menuCards'
 import styles from './MobileMenu.module.css'
 
@@ -18,7 +18,7 @@ interface MobileMenuProps {
 // The number is decoration (aria-hidden), so a screen reader still hears "Home".
 const pageNumber = (i: number) => `${String(i + 1).padStart(2, '0')}.`
 
-export default function MobileMenu({ isOpen, onClose, links = navLinks, cards = [] }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, onClose, links = menuLinks, cards = [] }: MobileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const pathname = usePathname()
@@ -76,7 +76,7 @@ export default function MobileMenu({ isOpen, onClose, links = navLinks, cards = 
     <div
       id="mobile-menu"
       ref={menuRef}
-      className={`${styles.overlay} ${isOpen ? styles.open : ''} ${workCards.length > 0 ? styles.hasCards : ''}`}
+      className={`${styles.overlay} ${isOpen ? styles.open : ''} ${workCards.length === 1 ? styles.cards1 : ''} ${workCards.length === 2 ? styles.cards2 : ''}`}
       role="dialog"
       aria-modal="true"
       aria-label="Navigation menu"

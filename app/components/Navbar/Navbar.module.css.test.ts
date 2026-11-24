@@ -25,9 +25,10 @@ function solidRules(): { selector: string; body: string }[] {
 // reference has a mark in the middle of the bar there too (2026-11-24; the hide rule from
 // PR #200 was taken out again).
 describe('Navbar.module.css centre mark', () => {
-  it('never hides the brand over a hero', () => {
+  it('never hides the brand over a hero (only the open menu does)', () => {
     expect(css).not.toMatch(/data-nav-brand-hero/)
-    expect(css).not.toMatch(/visibility:\s*hidden/)
+    const hiding = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => /visibility:\s*hidden/.test(m[2])).map((m) => m[1].replace(/\s+/g, ' ').trim())
+    for (const selector of hiding) expect(selector).toMatch(/\.menuOpen/)
   })
 })
 
@@ -189,5 +190,24 @@ describe('Navbar.module.css fades slowly between transparent and solid', () => {
     expect(bodyOf('.brandSub')).toMatch(/transition:\s*color var\(--nav-fade\)/)
     expect(bodyOf('.link')).toMatch(/transition:\s*color var\(--nav-fade\)/)
     expect(bodyOf('.bar')).toMatch(/background var\(--nav-fade\)/)
+  })
+})
+
+// While the full-screen menu is open the bar is see-through (the photo columns run to the top
+// of the screen) and shows only "close menu" and the X, as the reference does.
+describe('Navbar.module.css while the menu is open', () => {
+  const rule = (needle: string) =>
+    [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map((m) => ({ selector: norm(m[1]), body: m[2] }))
+      .find((r) => r.selector.includes(needle))
+
+  it('makes the bar transparent so the photo columns reach the top of the screen', () => {
+    const r = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selector: norm(m[1]), body: m[2] })).find((x) => x.selector === '.navbar.menuOpen')
+    expect(r?.body).toMatch(/--nav-bg:\s*transparent/)
+  })
+
+  it('hides the link rows and the brand, leaving the close label and the X', () => {
+    expect(rule('.menuOpen .row')?.body).toMatch(/visibility:\s*hidden/)
+    expect(rule('.menuOpen .brand')?.body).toMatch(/visibility:\s*hidden/)
   })
 })
