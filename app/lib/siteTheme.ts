@@ -10,7 +10,7 @@
 // (what the reference template actually uses) are commercially licensed and are
 // deliberately not embedded - Cormorant Garamond and Parisienne stand in.
 export type FontChoice = 'poppins' | 'tangerine' | 'abril' | 'cormorant' | 'barlow' | 'jost'
-export type ScriptChoice = 'parisienne' | 'tangerine'
+export type ScriptChoice = 'parisienne' | 'tangerine' | 'birthstone'
 
 // Shell-level finishes: applied by the shell over whatever photos exist,
 // rather than baked into the files themselves.
@@ -97,13 +97,14 @@ export const DEFAULT_THEME: SiteTheme = {
 // Every face except poppins maps to its own next/font variable. poppins is the
 // historic default for heading/body, so those two roles skip the override
 // entirely and fall through to tokens.css rather than emitting a redundant var.
-const FONT_ROLE_VAR: Record<Exclude<FontChoice, 'poppins'> | 'parisienne', string> = {
+const FONT_ROLE_VAR: Record<Exclude<FontChoice, 'poppins'> | 'parisienne' | 'birthstone', string> = {
   tangerine: 'var(--font-display)',
   abril: 'var(--font-display-bold)',
   cormorant: 'var(--font-serif)',
   barlow: 'var(--font-sans)',
   jost: 'var(--font-label)',
   parisienne: 'var(--font-script)',
+  birthstone: 'var(--font-script-birthstone)',
 }
 
 const POPPINS_VAR = "'Poppins', sans-serif"

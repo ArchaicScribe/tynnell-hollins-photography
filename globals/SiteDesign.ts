@@ -127,6 +127,7 @@ export const SiteDesign: GlobalConfig = {
       defaultValue: 'parisienne',
       options: [
         { label: 'Parisienne', value: 'parisienne' },
+        { label: 'Birthstone', value: 'birthstone' },
         { label: 'Tangerine', value: 'tangerine' },
       ],
     },

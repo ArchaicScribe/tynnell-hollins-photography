@@ -21,21 +21,13 @@ function solidRules(): { selector: string; body: string }[] {
   return rules
 }
 
-// The Brand + tagline hero shows the business name large, so the nav brand steps aside
-// while the bar is transparent over it (data-nav-brand-hero), and comes back the moment
-// the bar turns solid (scrolled or menu open).
-describe('Navbar.module.css brand hero', () => {
-  const rule = () =>
-    [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
-      .map((m) => ({ selector: m[1].replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim(), body: m[2] }))
-      .find((r) => r.selector.includes('data-nav-brand-hero'))
-
-  it('hides the nav brand only while the bar is transparent over a brand hero', () => {
-    expect(rule()).toBeDefined()
-    expect(rule()!.selector).toContain('.brand')
-    expect(rule()!.selector).toContain(':not(.scrolled)')
-    expect(rule()!.selector).toContain(':not(.menuOpen)')
-    expect(rule()!.body).toMatch(/visibility:\s*hidden/)
+// The nav keeps its centre mark over every hero, the Brand + tagline one included: the
+// reference has a mark in the middle of the bar there too (2026-11-24; the hide rule from
+// PR #200 was taken out again).
+describe('Navbar.module.css centre mark', () => {
+  it('never hides the brand over a hero', () => {
+    expect(css).not.toMatch(/data-nav-brand-hero/)
+    expect(css).not.toMatch(/visibility:\s*hidden/)
   })
 })
 
@@ -146,5 +138,56 @@ describe('Navbar.module.css logo stays put when the menu opens', () => {
 describe('Navbar.module.css phones', () => {
   it('hides the "close menu" label on narrow screens so it cannot push the close button off the edge', () => {
     expect(mediaBlock('(max-width: 560px)')).toMatch(/\.menuLabel\s*\{[^}]*display:\s*none/)
+  })
+})
+
+// Matching the Rising Roots bar (measured 2026-11-24 on risingroots.showit.site): the links
+// of each half spread evenly across it, the hairline runs edge to edge, the menu button is
+// two short thin lines, and "Inquire now" is 25px.
+describe('Navbar.module.css matches the Rising Roots bar', () => {
+  it('spreads the left links evenly across their half', () => {
+    expect(bodyOf('.rowLeft')).toMatch(/justify-content:\s*space-between/)
+  })
+
+  it('spreads the right links evenly across what is left of their half, beside the CTA and button', () => {
+    const body = bodyOf('.rowRight > .row') ?? ''
+    expect(body).toMatch(/flex:\s*1/)
+    expect(body).toMatch(/justify-content:\s*space-between/)
+  })
+
+  it('runs the hairline from edge to edge, not inset by the page padding', () => {
+    const body = bodyOf('.navbar::after') ?? ''
+    expect(body).toMatch(/left:\s*0\b/)
+    expect(body).toMatch(/right:\s*0\b/)
+  })
+
+  it('draws the menu button as two thin lines that cross into an X when open', () => {
+    expect(bodyOf('.bar')).toMatch(/height:\s*1px/)
+    expect(css).not.toMatch(/\.bar:nth-child\(3\)/)
+    expect(bodyOf('.hamburgerOpen .bar:nth-child(1)')).toMatch(/rotate\(45deg\)/)
+    expect(bodyOf('.hamburgerOpen .bar:nth-child(2)')).toMatch(/rotate\(-45deg\)/)
+    expect(bodyOf('.hamburgerOpen .bar:nth-child(2)')).not.toMatch(/opacity:\s*0/)
+  })
+
+  it('sets "Inquire now" at 25px like the reference', () => {
+    expect(bodyOf('.cta')).toMatch(/font-size:\s*1\.5625rem/)
+  })
+})
+
+// The reference crossfades between its transparent and solid bars over about a second
+// (measured 2026-11-24, opacity 1 to 0 in ~1s each way), so the colours, the hairline and the
+// padding of the bar all ride one slow fade rather than the quick UI one.
+describe('Navbar.module.css fades slowly between transparent and solid', () => {
+  it('defines one fade time of about a second on the bar', () => {
+    expect(bodyOf('.navbar')).toMatch(/--nav-fade:\s*1s/)
+  })
+
+  it('uses it for the bar background and padding, the hairline and every nav colour', () => {
+    expect(bodyOf('.navbar')).toMatch(/transition:[^;]*background var\(--nav-fade\)[^;]*padding var\(--nav-fade\)/)
+    expect(bodyOf('.navbar::after')).toMatch(/transition:\s*opacity var\(--nav-fade\)/)
+    expect(bodyOf('.brandMark')).toMatch(/transition:\s*color var\(--nav-fade\)/)
+    expect(bodyOf('.brandSub')).toMatch(/transition:\s*color var\(--nav-fade\)/)
+    expect(bodyOf('.link')).toMatch(/transition:\s*color var\(--nav-fade\)/)
+    expect(bodyOf('.bar')).toMatch(/background var\(--nav-fade\)/)
   })
 })

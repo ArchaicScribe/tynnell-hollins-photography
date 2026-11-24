@@ -22,6 +22,7 @@ export const FONT_OPTIONS: { label: string; value: SiteTheme['headingFont'] }[] 
 // misuse.
 export const SCRIPT_FONT_OPTIONS: { label: string; value: SiteTheme['scriptFont'] }[] = [
   { label: 'Parisienne', value: 'parisienne' },
+  { label: 'Birthstone', value: 'birthstone' },
   { label: 'Tangerine', value: 'tangerine' },
 ]
 export const SPACING_OPTIONS: { label: string; value: SiteTheme['spacingScale'] }[] = [

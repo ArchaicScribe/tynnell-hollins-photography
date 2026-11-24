@@ -6,7 +6,7 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 vi.mock('@/app/fonts/fonts', () => {
   const face = (name: string) => ({ variable: `font-${name}`, className: name, style: {} })
   return Object.fromEntries(
-    ['tangerine', 'poppinsHeading', 'poppinsBody', 'abrilFatface', 'cormorant', 'barlow', 'jost', 'parisienne'].map(
+    ['tangerine', 'poppinsHeading', 'poppinsBody', 'abrilFatface', 'cormorant', 'barlow', 'jost', 'parisienne', 'birthstone'].map(
       (n) => [n, face(n)],
     ),
   )

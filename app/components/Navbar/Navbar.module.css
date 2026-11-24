@@ -17,10 +17,13 @@
   gap: 1.5rem;
   padding: var(--nav-pad) var(--padding-x);
   background: var(--nav-bg);
-  transition: background var(--motion-base) var(--ease), padding var(--motion-base) var(--ease);
+  transition: background var(--nav-fade) var(--ease), padding var(--nav-fade) var(--ease);
 
   /* The transparent state, over a hero. Every element below reads these, so the
      solid state (next rule) only has to override them in one place. */
+  /* One slow fade for everything that changes between transparent and solid: the
+     reference crossfades its two bars over about a second, in both directions. */
+  --nav-fade: 1s;
   --nav-pad: 1.25rem;
   --nav-bg: transparent;
   --nav-mark: #ECE9E0;
@@ -32,19 +35,20 @@
   --nav-hairline: 0.4;
 }
 
-/* The hairline the reference draws along the bottom of the transparent nav. It
-   goes away once the bar is solid, where the colour change already marks the edge. */
+/* The hairline the reference draws along the bottom of the transparent nav, edge to
+   edge of the window (not inset by the page padding). It goes away once the bar is
+   solid, where the colour change already marks the edge. */
 .navbar::after {
   content: '';
   position: absolute;
-  left: var(--padding-x);
-  right: var(--padding-x);
+  left: 0;
+  right: 0;
   bottom: 0;
   height: 1px;
   background: #ECE9E0;
   opacity: var(--nav-hairline);
   pointer-events: none;
-  transition: opacity var(--motion-base) var(--ease);
+  transition: opacity var(--nav-fade) var(--ease);
 }
 
 /* The solid bar (the olive, matching the reference). It applies in three cases,
@@ -83,14 +87,6 @@
   flex-shrink: 0;
 }
 
-/* The Brand + tagline hero shows the business name large, so the nav brand steps
-   aside while the bar is transparent over it (the name would otherwise appear twice,
-   one above the other). visibility keeps its space, so the links do not shift, and it
-   returns as soon as the bar turns solid: scrolled or menu open. */
-:global(body):has([data-nav-brand-hero]) .navbar:not(.scrolled):not(.menuOpen) .brand {
-  visibility: hidden;
-}
-
 .brandLogo {
   display: block;
   height: 40px;
@@ -107,7 +103,7 @@
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--nav-mark);
-  transition: color var(--motion-base) var(--ease);
+  transition: color var(--nav-fade) var(--ease);
 }
 
 .brandSub {
@@ -122,7 +118,7 @@
   text-indent: 0.42em;
   color: var(--nav-sub);
   margin-top: 0.28rem;
-  transition: color var(--motion-base) var(--ease);
+  transition: color var(--nav-fade) var(--ease);
 }
 
 /* ── Desktop link rows ───────────────────────────────────── */
@@ -136,8 +132,10 @@
   gap: 1.75rem;
 }
 
+/* The links of each half spread evenly across it, as the reference sets them, rather
+   than bunching against the page edge. The gap is the least space between two links. */
 .rowLeft {
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 
 .rowRight {
@@ -147,17 +145,22 @@
   gap: 1.75rem;
 }
 
+.rowRight > .row {
+  flex: 1 1 auto;
+  justify-content: space-between;
+}
+
 /* ── Inquire CTA ─────────────────────────────────────────── */
 /* The one script moment in the chrome, exactly as the reference uses it. */
 
 .cta {
   font-family: var(--font-script-role, var(--font-display));
-  font-size: 1.5rem;
+  font-size: 1.5625rem;
   line-height: 1;
   color: var(--nav-cta);
   text-decoration: none;
   white-space: nowrap;
-  transition: color var(--motion-fast) var(--ease), opacity var(--motion-fast) var(--ease);
+  transition: color var(--nav-fade) var(--ease), opacity var(--motion-fast) var(--ease);
 }
 
 .cta:hover {
@@ -188,7 +191,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  transition: color var(--motion-fast) var(--ease);
+  transition: color var(--nav-fade) var(--ease);
   white-space: nowrap;
 }
 
@@ -199,12 +202,14 @@
 /* ── Hamburger ───────────────────────────────────────────── */
 
 /* Visible at every width: on desktop it opens the full-screen menu that holds
-   every page, not just the five in the row. */
+   every page, not just the five in the row. Two short thin lines like the reference's
+   icon (two 392 x 12 bars, 100 apart, in a 512 box), centred in a 44px target. */
 .hamburger {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 8px;
   width: 44px;
   height: 44px;
   background: none;
@@ -217,22 +222,19 @@
 
 .bar {
   display: block;
-  width: 100%;
+  width: 30px;
   height: 1px;
   background: var(--nav-bar);
   transform-origin: center;
-  transition: transform var(--motion-base) var(--ease), opacity var(--motion-base) var(--ease), background var(--motion-base) var(--ease);
+  transition: transform var(--motion-base) var(--ease), background var(--nav-fade) var(--ease);
 }
 
+/* Each line moves half the gap (8px + its 1px) to the middle and tilts: an X. */
 .hamburgerOpen .bar:nth-child(1) {
-  transform: translateY(6px) rotate(45deg);
+  transform: translateY(4.5px) rotate(45deg);
 }
 .hamburgerOpen .bar:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
-}
-.hamburgerOpen .bar:nth-child(3) {
-  transform: translateY(-6px) rotate(-45deg);
+  transform: translateY(-4.5px) rotate(-45deg);
 }
 
 /* The script "close menu" beside the X while the menu is open. */

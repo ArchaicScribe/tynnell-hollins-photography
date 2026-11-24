@@ -19,13 +19,19 @@ const FAMILIES = {
   barlow: 'family=Barlow:wght@300;400;500;600',
   jost: 'family=Jost:wght@300;400;500',
   parisienne: 'family=Parisienne:wght@400',
+  birthstone: 'family=Birthstone:wght@400',
   archivo: 'family=Archivo:wght@400;500;600;700',
   'roboto-mono': 'family=Roboto+Mono:ital,wght@0,300;0,400;0,500;1,400',
 }
 
-const manifest = {}
+// Pass slugs to fetch only those (and keep the rest of the manifest as it is):
+//   node scripts/fetch-google-fonts.mjs birthstone
+const only = process.argv.slice(2)
+const manifestPath = path.join(OUT, 'manifest.json')
+const manifest = only.length && fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : {}
 
 for (const [slug, query] of Object.entries(FAMILIES)) {
+  if (only.length && !only.includes(slug)) continue
   const cssUrl = `https://fonts.googleapis.com/css2?${query}&subset=latin&display=swap`
   const css = await fetch(cssUrl, { headers: { 'User-Agent': UA } }).then((r) => {
     if (!r.ok) throw new Error(`${slug}: css ${r.status}`)

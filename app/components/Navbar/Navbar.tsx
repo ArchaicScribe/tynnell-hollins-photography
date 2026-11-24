@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { navLinks, navRow, type NavLink } from '@/app/constants/nav'
@@ -26,22 +26,36 @@ export default function Navbar({
 }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const navRef = useRef<HTMLElement>(null)
   const pathname = usePathname()
 
   useScrollLock(menuOpen)
 
+  // The bar is transparent over the page's opening photo and turns solid once that photo has
+  // scrolled up past it, as the reference does (it flips at about 720px on a 672px hero).
+  // With no opening photo there is nothing to wait for, so the old 50px rule applies. Re-run
+  // on every route change: the new page has its own opening photo, or none.
   useEffect(() => {
     let rafId: number
-    const handleScroll = () => {
-      cancelAnimationFrame(rafId)
-      rafId = requestAnimationFrame(() => setScrolled(window.scrollY > 50))
+    const isPastOpening = () => {
+      const hero = document.querySelector('[data-nav-hero]')
+      if (!hero) return window.scrollY > 50
+      const barHeight = navRef.current?.getBoundingClientRect().height ?? 0
+      return hero.getBoundingClientRect().bottom <= barHeight
     }
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    const update = () => {
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(() => setScrolled(isPastOpening()))
+    }
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
       cancelAnimationFrame(rafId)
     }
-  }, [])
+  }, [pathname])
 
   useEffect(() => {
     setMenuOpen(false)
@@ -72,7 +86,7 @@ export default function Navbar({
 
   return (
     <>
-      <nav className={navClass} aria-label="Main navigation">
+      <nav ref={navRef} className={navClass} aria-label="Main navigation">
         <ul className={`${styles.row} ${styles.rowLeft}`} aria-label="Site navigation">
           {navRow.left.map(renderLink)}
         </ul>
@@ -113,7 +127,6 @@ export default function Navbar({
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
           >
-            <span className={styles.bar} aria-hidden="true" />
             <span className={styles.bar} aria-hidden="true" />
             <span className={styles.bar} aria-hidden="true" />
           </button>
