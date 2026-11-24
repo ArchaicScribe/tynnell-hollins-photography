@@ -898,7 +898,7 @@ export const config: Config = {
         const brand = layout === 'brand' && Boolean(wordmarkText || wordmarkImageUrl)
         const centered = layout === 'centered' || layout === 'brand'
         return (
-          <section className={heroCls} data-nav-hero={navHero && imageUrl ? '' : undefined} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
+          <section className={heroCls} data-nav-hero={navHero && imageUrl ? '' : undefined} data-nav-brand-hero={brand && navHero && imageUrl ? '' : undefined} style={{ position: 'relative', minHeight: height, display: 'flex', alignItems: centered ? 'center' : 'flex-end', justifyContent: centered ? 'center' : (align === 'center' ? 'center' : 'flex-start'), overflow: 'hidden' }}>
             {imageUrl ? (
               backgroundBehavior === 'fixed' ? (
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
@@ -916,7 +916,7 @@ export const config: Config = {
               {eyebrow && <p style={{ ...eyebrowStyle, color: HERO_TEXT_SOFT }}>{eyebrow}</p>}
               {brand ? (
                 <div className="pk-hero-brand" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(1.25rem,3vw,2.75rem)' }}>
-                  <h1 style={{ margin: 0, fontFamily: HEADING_FONT, fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.14em', fontSize: 'clamp(2.25rem,5.6vw,4.5rem)', lineHeight: 1.05, color: HERO_TEXT }}>
+                  <h1 style={{ margin: 0, fontFamily: HEADING_FONT, fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.14em', fontSize: 'clamp(2rem,5vw,4rem)', lineHeight: 1.05, color: HERO_TEXT }}>
                     {wordmarkImageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={wordmarkImageUrl} alt={wordmarkText || heading?.trim() || ''} className="no-photo-treatment" style={{ display: 'block', maxWidth: 'min(100%, 26rem)', height: 'auto' }} />

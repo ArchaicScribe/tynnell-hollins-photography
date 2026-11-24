@@ -83,6 +83,14 @@
   flex-shrink: 0;
 }
 
+/* The Brand + tagline hero shows the business name large, so the nav brand steps
+   aside while the bar is transparent over it (the name would otherwise appear twice,
+   one above the other). visibility keeps its space, so the links do not shift, and it
+   returns as soon as the bar turns solid: scrolled or menu open. */
+:global(body):has([data-nav-brand-hero]) .navbar:not(.scrolled):not(.menuOpen) .brand {
+  visibility: hidden;
+}
+
 .brandLogo {
   display: block;
   height: 40px;

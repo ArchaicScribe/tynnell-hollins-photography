@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { config } from './puck.config'
 
 // Hero "Brand + tagline" layout (2026-11-24), the Rising Roots opening: a large, light,
@@ -78,6 +79,27 @@ describe('Hero brand layout', () => {
     expect(container.querySelector('.pk-hero-corners')!.textContent).toContain('Based in New Mexico')
     expect(section.hasAttribute('data-nav-hero')).toBe(true)
     expect(section.className).toContain('pk-vh-full')
+  })
+
+  // The reference's wordmark is about 64px at a 1278px window; 5.6vw made ours 71px.
+  it('sizes the wordmark to 5vw, capped at 4rem, so it is about 64px on a laptop', () => {
+    // jsdom drops clamp(), so read the markup the server would send.
+    const html = renderToStaticMarkup(hero.render({ ...hero.defaultProps, layout: 'brand', imageUrl: '/a.jpg', wordmark: 'Tynnell Hollins', heading: 'x', puck: {} }) as ReactElement)
+
+    expect(html).toMatch(/<h1[^>]*font-size:clamp\(2rem,5vw,4rem\)/)
+  })
+
+  // The nav shows the same name, so over this hero (and only while the bar is transparent)
+  // the nav brand steps aside; the hero carries the marker the stylesheet keys on.
+  it('marks itself for the nav only when the wordmark is showing over the page opening', () => {
+    const marker = 'data-nav-brand-hero'
+    const section = (props: Record<string, unknown>) => draw(props).container.querySelector('section')!
+
+    expect(section({ wordmark: 'T', heading: 'x', navHero: true }).hasAttribute(marker)).toBe(true)
+    expect(section({ wordmark: 'T', heading: 'x' }).hasAttribute(marker)).toBe(false)
+    expect(section({ wordmark: '', heading: 'x', navHero: true }).hasAttribute(marker)).toBe(false)
+    expect(section({ wordmark: 'T', heading: 'x', navHero: true, imageUrl: '' }).hasAttribute(marker)).toBe(false)
+    expect(section({ wordmark: 'T', heading: 'x', navHero: true, layout: 'centered' }).hasAttribute(marker)).toBe(false)
   })
 
   it('stacks the wordmark over the tagline on a phone and turns the rule sideways', () => {
