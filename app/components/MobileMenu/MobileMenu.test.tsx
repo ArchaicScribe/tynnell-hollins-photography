@@ -200,6 +200,17 @@ describe('MobileMenu photo columns', () => {
   })
 })
 
+describe('MobileMenu with no photo cards', () => {
+  it('marks itself so the link block can be centred instead of hugging the left edge of an empty screen', () => {
+    const none = render(<MobileMenu isOpen onClose={() => {}} links={navLinks} />)
+    expect(menu().className).toMatch(/noCards/)
+    none.unmount()
+
+    render(<MobileMenu isOpen onClose={() => {}} links={navLinks} cards={cards} />)
+    expect(menu().className).not.toMatch(/noCards/)
+  })
+})
+
 describe('MobileMenu.module.css, reference layout', () => {
   const css = readFileSync(path.resolve(__dirname, 'MobileMenu.module.css'), 'utf8')
   const norm = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim()
@@ -234,6 +245,19 @@ describe('MobileMenu.module.css, reference layout', () => {
     const body = bodyOf('.workBtn')
     expect(body).toMatch(/border-radius:\s*999px/)
     expect(body).toMatch(/background:\s*var\(--color-bg\)/)
+  })
+
+  it('centres the link block when there are no photo cards', () => {
+    expect(bodyOf('.overlay.noCards .panel')).toMatch(/align-items:\s*center/)
+  })
+
+  // The card clips anything outside it, and its photo (an absolutely positioned child) paints
+  // over the card's own outline, so the ring is drawn on the ::after layer, which comes after
+  // the photo in paint order. Two tones so it shows on bright photos as well as dark ones.
+  it('draws the card focus ring on the layer above the photo, inside the card', () => {
+    const ring = bodyOf('.card:focus-visible::after')
+    expect(ring).toMatch(/box-shadow:\s*inset/)
+    expect(ring).toMatch(/inset 0 0 0 2px #ECE9E0/)
   })
 
   it('sets the page links at the reference weight, not light', () => {

@@ -181,6 +181,22 @@ describe('Navbar solid switch on scroll', () => {
     expect(mainNav().className).not.toContain('scrolled')
   })
 
+  // The bar is taller while transparent than once solid (its padding shrinks), so a switch
+  // that compares the photo's edge with the bar's CURRENT height flips back and forth when
+  // the edge sits between the two heights. The threshold must not depend on the bar's state.
+  it('settles when the photo edge sits between the transparent and the solid bar height', () => {
+    addHero({ bottom: 70 })
+    render(<Navbar />)
+    mainNav().getBoundingClientRect = () => ({ height: mainNav().className.includes('scrolled') ? 58 : 84 }) as DOMRect
+
+    const states = [0, 1, 2, 3].map(() => {
+      scrollTo(500)
+      return mainNav().className.includes('scrolled')
+    })
+
+    expect(new Set(states).size).toBe(1)
+  })
+
   it('is already solid on arrival when the page loads scrolled past the photo', () => {
     addHero({ bottom: -50 })
     Object.defineProperty(window, 'scrollY', { value: 900, configurable: true })
